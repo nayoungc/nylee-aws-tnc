@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { Amplify } from 'aws-amplify';
+import '@aws-amplify/ui-react/styles.css'; 
 
 // Amplify 설정 로드 시도
 try {

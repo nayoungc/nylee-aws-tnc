@@ -273,28 +273,52 @@ export class NyleeAwsTncStack extends cdk.Stack {
     const connectIntegration = new apigatewayv2.CfnIntegration(this, 'ConnectIntegration', {
       apiId: webSocketApi.ref,
       integrationType: 'AWS_PROXY',
-      integrationUri: `arn:aws:apigateway:\${this.region}:lambda:path/2015-03-31/functions/\${connectHandler.functionArn}/invocations`,
+      integrationUri: cdk.Fn.join('', [
+        'arn:aws:apigateway:',
+        this.region,
+        ':lambda:path/2015-03-31/functions/',
+        connectHandler.functionArn,
+        '/invocations'
+      ]),
       credentialsArn: webSocketIntegrationRole.roleArn,
     });
 
     const disconnectIntegration = new apigatewayv2.CfnIntegration(this, 'DisconnectIntegration', {
       apiId: webSocketApi.ref,
       integrationType: 'AWS_PROXY',
-      integrationUri: `arn:aws:apigateway:\${this.region}:lambda:path/2015-03-31/functions/\${disconnectHandler.functionArn}/invocations`,
+      integrationUri: cdk.Fn.join('', [
+        'arn:aws:apigateway:',
+        this.region,
+        ':lambda:path/2015-03-31/functions/',
+        disconnectHandler.functionArn,
+        '/invocations'
+      ]),
       credentialsArn: webSocketIntegrationRole.roleArn,
     });
 
     const defaultIntegration = new apigatewayv2.CfnIntegration(this, 'DefaultIntegration', {
       apiId: webSocketApi.ref,
       integrationType: 'AWS_PROXY',
-      integrationUri: `arn:aws:apigateway:\${this.region}:lambda:path/2015-03-31/functions/\${defaultHandler.functionArn}/invocations`,
+      integrationUri: cdk.Fn.join('', [
+        'arn:aws:apigateway:',
+        this.region,
+        ':lambda:path/2015-03-31/functions/',
+        defaultHandler.functionArn,
+        '/invocations'
+      ]),
       credentialsArn: webSocketIntegrationRole.roleArn,
     });
 
     const messageIntegration = new apigatewayv2.CfnIntegration(this, 'MessageIntegration', {
       apiId: webSocketApi.ref,
       integrationType: 'AWS_PROXY',
-      integrationUri: `arn:aws:apigateway:\${this.region}:lambda:path/2015-03-31/functions/\${messageHandler.functionArn}/invocations`,
+      integrationUri: cdk.Fn.join('', [
+        'arn:aws:apigateway:',
+        this.region,
+        ':lambda:path/2015-03-31/functions/',
+        messageHandler.functionArn,
+        '/invocations'
+      ]),
       credentialsArn: webSocketIntegrationRole.roleArn,
     });
 
@@ -303,28 +327,28 @@ export class NyleeAwsTncStack extends cdk.Stack {
       apiId: webSocketApi.ref,
       routeKey: '\$connect',
       authorizationType: 'NONE',
-      target: `integrations/\${connectIntegration.ref}`,
+      target: cdk.Fn.join('/', ['integrations', connectIntegration.ref]),
     });
 
     new apigatewayv2.CfnRoute(this, 'DisconnectRoute', {
       apiId: webSocketApi.ref,
       routeKey: '\$disconnect',
       authorizationType: 'NONE',
-      target: `integrations/\${disconnectIntegration.ref}`,
+      target: cdk.Fn.join('/', ['integrations', disconnectIntegration.ref]),
     });
 
     new apigatewayv2.CfnRoute(this, 'DefaultRoute', {
       apiId: webSocketApi.ref,
       routeKey: '\$default',
       authorizationType: 'NONE',
-      target: `integrations/\${defaultIntegration.ref}`,
+      target: cdk.Fn.join('/', ['integrations', defaultIntegration.ref]),
     });
 
     new apigatewayv2.CfnRoute(this, 'MessageRoute', {
       apiId: webSocketApi.ref,
       routeKey: 'message',
       authorizationType: 'NONE',
-      target: `integrations/\${messageIntegration.ref}`,
+      target: cdk.Fn.join('/', ['integrations', messageIntegration.ref]),
     });
 
     // 스테이지 생성
@@ -334,56 +358,64 @@ export class NyleeAwsTncStack extends cdk.Stack {
       autoDeploy: true,
     });
 
-    // Lambda 함수에 권한 부여
+    // Lambda 함수에 권한 부여 - 수정된 부분
     connectHandler.addPermission('InvokeByApiGateway', {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: `arn:aws:execute-api:\${this.region}:\${this.account}:\${webSocketApi.ref}/\${webSocketStage.stageName}/\$connect`,
+      sourceArn: cdk.Fn.join(':', [
+        'arn',
+        'aws',
+        'execute-api',
+        this.region,
+        this.account,
+        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, '\$connect'])
+      ]),
     });
 
     disconnectHandler.addPermission('InvokeByApiGateway', {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: `arn:aws:execute-api:\${this.region}:\${this.account}:\${webSocketApi.ref}/\${webSocketStage.stageName}/\$disconnect`,
+      sourceArn: cdk.Fn.join(':', [
+        'arn',
+        'aws',
+        'execute-api',
+        this.region,
+        this.account,
+        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, '\$disconnect'])
+      ]),
     });
 
     defaultHandler.addPermission('InvokeByApiGateway', {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: `arn:aws:execute-api:\${this.region}:\${this.account}:\${webSocketApi.ref}/\${webSocketStage.stageName}/\$default`,
+      sourceArn: cdk.Fn.join(':', [
+        'arn',
+        'aws',
+        'execute-api',
+        this.region,
+        this.account,
+        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, '\$default'])
+      ]),
     });
 
     messageHandler.addPermission('InvokeByApiGateway', {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: `arn:aws:execute-api:\${this.region}:\${this.account}:\${webSocketApi.ref}/\${webSocketStage.stageName}/message`,
+      sourceArn: cdk.Fn.join(':', [
+        'arn',
+        'aws',
+        'execute-api',
+        this.region,
+        this.account,
+        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, 'message'])
+      ]),
     });
 
-    // ===============================================================
-    // Amplify Hosting
-    // ===============================================================
-    
-    // CDK v2에서는 amplify.App 대신 amplify.CfnApp을 사용
-    // const amplifyApp = new amplify.CfnApp(this, 'TnCAmplifyApp', {
-    //   name: 'nylee-aws-tnc',
-    //   // 직접 repository와 accessToken 설정
-    //   repository: 'https://github.com/YOUR_GITHUB_USERNAME/nylecdk bootstrape-aws-tnc',
-    //   accessToken: cdk.SecretValue.secretsManager('github-token').toString(),
-    //   environmentVariables: [
-    //     {
-    //       name: 'AMPLIFY_MONOREPO_APP_ROOT',
-    //       value: '/',
-    //     },
-    //     {
-    //       name: 'AMPLIFY_DIFF_DEPLOY',
-    //       value: 'false',
-    //     },
-    //   ],
-    // });
-
-    // // 브랜치 추가 (CfnBranch 사용)
-    // const mainBranch = new amplify.CfnBranch(this, 'MainBranch', {
-    //   appId: amplifyApp.attrAppId,
-    //   branchName: 'main',
-    //   enableAutoBuild: true,
-    //   stage: 'PRODUCTION',
-    // });
+    // WebSocket API URL은 Fn.join()을 사용하여 구성
+    const webSocketApiEndpoint = cdk.Fn.join('', [
+      'wss://',
+      webSocketApi.ref,
+      '.execute-api.',
+      this.region,
+      '.amazonaws.com/',
+      webSocketStage.stageName
+    ]);
 
     // ===============================================================
     // CloudFront 배포
@@ -403,9 +435,6 @@ export class NyleeAwsTncStack extends cdk.Stack {
     // ===============================================================
     // 출력값
     // ===============================================================
-    
-    // WebSocket API URL은 수동으로 구성
-    const webSocketApiEndpoint = `wss://\${webSocketApi.ref}.execute-api.\${this.region}.amazonaws.com/\${webSocketStage.stageName}`;
     
     // 중요한 리소스 정보 출력
     new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
