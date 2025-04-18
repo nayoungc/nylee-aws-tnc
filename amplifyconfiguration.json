@@ -1,0 +1,17 @@
+{
+    "Auth": {
+      "Cognito": {
+        "userPoolId": "YOUR_USER_POOL_ID",
+        "userPoolClientId": "YOUR_USER_POOL_CLIENT_ID",
+        "identityPoolId": "YOUR_IDENTITY_POOL_ID",
+        "signUpVerificationMethod": "code"
+      }
+    },
+    "API": {
+      "GraphQL": {
+        "endpoint": "YOUR_GRAPHQL_ENDPOINT",
+        "region": "YOUR_REGION",
+        "defaultAuthMode": "userPool"
+      }
+    }
+  }

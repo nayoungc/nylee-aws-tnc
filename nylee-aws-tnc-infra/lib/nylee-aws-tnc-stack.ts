@@ -11,7 +11,6 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as amplify from 'aws-cdk-lib/aws-amplify';
 
-
 export class NyleeAwsTncStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -233,7 +232,7 @@ export class NyleeAwsTncStack extends cdk.Stack {
     // ===============================================================
     // WebSocket API (실시간 통신)
     // ===============================================================
-
+    
     // 먼저 Lambda 함수들을 생성
     const connectHandler = new lambda.Function(this, 'WebSocketConnectFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -264,7 +263,6 @@ export class NyleeAwsTncStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
     });
 
-    // Lambda로 LambdaProxy 통합 만들기 대신, WebsocketApi로 직접 라우팅
     // L1 (CloudFormation 수준) 구성체 사용
     const webSocketApi = new apigatewayv2.CfnApi(this, 'TnCWebSocketAPI', {
       name: 'TnC-WebSocket-API',
@@ -358,31 +356,33 @@ export class NyleeAwsTncStack extends cdk.Stack {
       sourceArn: `arn:aws:execute-api:\${this.region}:\${this.account}:\${webSocketApi.ref}/\${webSocketStage.stageName}/message`,
     });
 
-    // WebSocket API 엔드포인트 출력용
-    const webSocketApiEndpoint = `wss://\${webSocketApi.ref}.execute-api.\${this.region}.amazonaws.com/\${webSocketStage.stageName}`;
-
-
     // ===============================================================
     // Amplify Hosting
     // ===============================================================
     
-    // GitHub 리포지토리로부터 Amplify 앱 생성
-    const amplifyApp = new amplify.App(this, 'TnCAmplifyApp', {
-      appName: 'nylee-aws-tnc',
-      sourceCodeProvider: new amplify.GitHubSourceCodeProvider({
-        owner: 'YOUR_GITHUB_USERNAME', // GitHub 사용자명 입력 필요
-        repository: 'nylee-aws-tnc', // GitHub 리포지토리명
-        oauthToken: cdk.SecretValue.secretsManager('github-token'), // GitHub 토큰은 SecretsManager에 저장
-      }),
-      environmentVariables: {
-        AMPLIFY_MONOREPO_APP_ROOT: '/',
-        AMPLIFY_DIFF_DEPLOY: 'false',
-      },
+    // CDK v2에서는 amplify.App 대신 amplify.CfnApp을 사용
+    const amplifyApp = new amplify.CfnApp(this, 'TnCAmplifyApp', {
+      name: 'nylee-aws-tnc',
+      // 직접 repository와 accessToken 설정
+      repository: 'https://github.com/YOUR_GITHUB_USERNAME/nylee-aws-tnc',
+      accessToken: cdk.SecretValue.secretsManager('github-token').toString(),
+      environmentVariables: [
+        {
+          name: 'AMPLIFY_MONOREPO_APP_ROOT',
+          value: '/',
+        },
+        {
+          name: 'AMPLIFY_DIFF_DEPLOY',
+          value: 'false',
+        },
+      ],
     });
 
-    // 브랜치 추가
-    const mainBranch = amplifyApp.addBranch('main', {
-      autoBuild: true,
+    // 브랜치 추가 (CfnBranch 사용)
+    const mainBranch = new amplify.CfnBranch(this, 'MainBranch', {
+      appId: amplifyApp.attrAppId,
+      branchName: 'main',
+      enableAutoBuild: true,
       stage: 'PRODUCTION',
     });
 
@@ -405,13 +405,16 @@ export class NyleeAwsTncStack extends cdk.Stack {
     // 출력값
     // ===============================================================
     
+    // WebSocket API URL은 수동으로 구성
+    const webSocketApiEndpoint = `wss://\${webSocketApi.ref}.execute-api.\${this.region}.amazonaws.com/\${webSocketStage.stageName}`;
+    
     // 중요한 리소스 정보 출력
     new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
     new cdk.CfnOutput(this, 'UserPoolClientId', { value: userPoolClient.userPoolClientId });
     new cdk.CfnOutput(this, 'GraphQLApiUrl', { value: api.graphqlUrl });
     new cdk.CfnOutput(this, 'GraphQLApiId', { value: api.apiId });
-    new cdk.CfnOutput(this, 'WebSocketApiUrl', { value: webSocketStage.url });
-    new cdk.CfnOutput(this, 'AmplifyAppId', { value: amplifyApp.appId });
+    new cdk.CfnOutput(this, 'WebSocketApiUrl', { value: webSocketApiEndpoint });
+    new cdk.CfnOutput(this, 'AmplifyAppId', { value: amplifyApp.attrAppId });
     new cdk.CfnOutput(this, 'CourseMaterialsBucketName', { value: courseMaterialsBucket.bucketName });
     new cdk.CfnOutput(this, 'ReportsBucketName', { value: reportsBucket.bucketName });
     new cdk.CfnOutput(this, 'CourseMaterialsCloudfrontUrl', { value: materialsDistribution.distributionDomainName });
