@@ -103,9 +103,9 @@ export class NyleeAwsTncStack extends cdk.Stack {
     // S3 버킷
     // ===============================================================
     
-    // 과정 자료 저장 버킷
+   // 과정 자료 저장 버킷
     const courseMaterialsBucket = new s3.Bucket(this, 'CourseMaterialsBucket', {
-      bucketName: `tnc-course-materials-\${this.account}-\${this.region}`,
+      bucketName: 'tnc-course-materials-' + this.account + '-' + this.region,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       versioned: true,
@@ -113,11 +113,10 @@ export class NyleeAwsTncStack extends cdk.Stack {
 
     // 보고서 저장 버킷
     const reportsBucket = new s3.Bucket(this, 'ReportsBucket', {
-      bucketName: `tnc-reports-\${this.account}-\${this.region}`,
+      bucketName: 'tnc-reports-' + this.account + '-' + this.region,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
-
     // ===============================================================
     // Cognito 사용자 풀 (강사 인증)
     // ===============================================================
@@ -361,30 +360,30 @@ export class NyleeAwsTncStack extends cdk.Stack {
     // ===============================================================
     
     // CDK v2에서는 amplify.App 대신 amplify.CfnApp을 사용
-    const amplifyApp = new amplify.CfnApp(this, 'TnCAmplifyApp', {
-      name: 'nylee-aws-tnc',
-      // 직접 repository와 accessToken 설정
-      repository: 'https://github.com/YOUR_GITHUB_USERNAME/nylee-aws-tnc',
-      accessToken: cdk.SecretValue.secretsManager('github-token').toString(),
-      environmentVariables: [
-        {
-          name: 'AMPLIFY_MONOREPO_APP_ROOT',
-          value: '/',
-        },
-        {
-          name: 'AMPLIFY_DIFF_DEPLOY',
-          value: 'false',
-        },
-      ],
-    });
+    // const amplifyApp = new amplify.CfnApp(this, 'TnCAmplifyApp', {
+    //   name: 'nylee-aws-tnc',
+    //   // 직접 repository와 accessToken 설정
+    //   repository: 'https://github.com/YOUR_GITHUB_USERNAME/nylecdk bootstrape-aws-tnc',
+    //   accessToken: cdk.SecretValue.secretsManager('github-token').toString(),
+    //   environmentVariables: [
+    //     {
+    //       name: 'AMPLIFY_MONOREPO_APP_ROOT',
+    //       value: '/',
+    //     },
+    //     {
+    //       name: 'AMPLIFY_DIFF_DEPLOY',
+    //       value: 'false',
+    //     },
+    //   ],
+    // });
 
-    // 브랜치 추가 (CfnBranch 사용)
-    const mainBranch = new amplify.CfnBranch(this, 'MainBranch', {
-      appId: amplifyApp.attrAppId,
-      branchName: 'main',
-      enableAutoBuild: true,
-      stage: 'PRODUCTION',
-    });
+    // // 브랜치 추가 (CfnBranch 사용)
+    // const mainBranch = new amplify.CfnBranch(this, 'MainBranch', {
+    //   appId: amplifyApp.attrAppId,
+    //   branchName: 'main',
+    //   enableAutoBuild: true,
+    //   stage: 'PRODUCTION',
+    // });
 
     // ===============================================================
     // CloudFront 배포
@@ -414,7 +413,7 @@ export class NyleeAwsTncStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'GraphQLApiUrl', { value: api.graphqlUrl });
     new cdk.CfnOutput(this, 'GraphQLApiId', { value: api.apiId });
     new cdk.CfnOutput(this, 'WebSocketApiUrl', { value: webSocketApiEndpoint });
-    new cdk.CfnOutput(this, 'AmplifyAppId', { value: amplifyApp.attrAppId });
+    //new cdk.CfnOutput(this, 'AmplifyAppId', { value: amplifyApp.attrAppId });
     new cdk.CfnOutput(this, 'CourseMaterialsBucketName', { value: courseMaterialsBucket.bucketName });
     new cdk.CfnOutput(this, 'ReportsBucketName', { value: reportsBucket.bucketName });
     new cdk.CfnOutput(this, 'CourseMaterialsCloudfrontUrl', { value: materialsDistribution.distributionDomainName });
