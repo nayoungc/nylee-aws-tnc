@@ -359,52 +359,72 @@ export class NyleeAwsTncStack extends cdk.Stack {
     });
 
     // Lambda 함수에 권한 부여 - 수정된 부분
-    connectHandler.addPermission('InvokeByApiGateway', {
-      principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: cdk.Fn.join(':', [
-        'arn',
-        'aws',
-        'execute-api',
+    new lambda.CfnPermission(this, 'WebSocketConnectFunctionPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: connectHandler.functionName,
+      principal: 'apigateway.amazonaws.com',
+      sourceArn: cdk.Fn.join('', [
+        'arn:aws:execute-api:',
         this.region,
+        ':',
         this.account,
-        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, '\$connect'])
-      ]),
+        ':',
+        webSocketApi.ref,
+        '/',
+        webSocketStage.stageName,
+        '/\$connect'
+      ])
     });
 
-    disconnectHandler.addPermission('InvokeByApiGateway', {
-      principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: cdk.Fn.join(':', [
-        'arn',
-        'aws',
-        'execute-api',
+    new lambda.CfnPermission(this, 'WebSocketDisconnectFunctionPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: disconnectHandler.functionName,
+      principal: 'apigateway.amazonaws.com',
+      sourceArn: cdk.Fn.join('', [
+        'arn:aws:execute-api:',
         this.region,
+        ':',
         this.account,
-        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, '\$disconnect'])
-      ]),
+        ':',
+        webSocketApi.ref,
+        '/',
+        webSocketStage.stageName,
+        '/\$disconnect'
+      ])
     });
 
-    defaultHandler.addPermission('InvokeByApiGateway', {
-      principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: cdk.Fn.join(':', [
-        'arn',
-        'aws',
-        'execute-api',
+    new lambda.CfnPermission(this, 'WebSocketDefaultFunctionPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: defaultHandler.functionName,
+      principal: 'apigateway.amazonaws.com',
+      sourceArn: cdk.Fn.join('', [
+        'arn:aws:execute-api:',
         this.region,
+        ':',
         this.account,
-        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, '\$default'])
-      ]),
+        ':',
+        webSocketApi.ref,
+        '/',
+        webSocketStage.stageName,
+        '/\$default'
+      ])
     });
 
-    messageHandler.addPermission('InvokeByApiGateway', {
-      principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      sourceArn: cdk.Fn.join(':', [
-        'arn',
-        'aws',
-        'execute-api',
+    new lambda.CfnPermission(this, 'WebSocketMessageFunctionPermission', {
+      action: 'lambda:InvokeFunction',
+      functionName: messageHandler.functionName,
+      principal: 'apigateway.amazonaws.com',
+      sourceArn: cdk.Fn.join('', [
+        'arn:aws:execute-api:',
         this.region,
+        ':',
         this.account,
-        cdk.Fn.join('/', [webSocketApi.ref, webSocketStage.stageName, 'message'])
-      ]),
+        ':',
+        webSocketApi.ref,
+        '/',
+        webSocketStage.stageName,
+        '/message'
+      ])
     });
 
     // WebSocket API URL은 Fn.join()을 사용하여 구성
