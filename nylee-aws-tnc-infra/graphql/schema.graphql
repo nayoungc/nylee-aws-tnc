@@ -1,4 +1,25 @@
-# 제공하신 GraphQL 스키마를 이 파일에 넣으세요
+# 최상위 스키마 정의 추가
+schema {
+  query: Query
+  mutation: Mutation
+  # subscription: Subscription  
+}
+
+# Query 타입 정의 - 필수!
+type Query {
+  # 최소한 하나 이상의 쿼리 필드가 필요합니다
+  getCourseTemplate(id: ID!, version: String): CourseTemplate
+  listCourseTemplates: [CourseTemplate]
+}
+
+# Mutation 타입 정의 - schema에 선언했다면 필수!
+type Mutation {
+  # 최소한 하나 이상의 뮤테이션 필드가 필요합니다
+  createCourseTemplate(input: CourseTemplateInput!): CourseTemplate
+  updateCourseTemplate(id: ID!, version: String!, input: CourseTemplateUpdateInput!): CourseTemplate
+}
+
+# 기존 타입 정의
 type CourseTemplate {
   id: ID!
   version: String!
@@ -8,4 +29,22 @@ type CourseTemplate {
   learningObjectives: [String]
   contentReference: String
   lastUpdated: AWSDateTime
+}
+
+# 추가로 필요한 입력 타입
+input CourseTemplateInput {
+  title: String!
+  version: String!
+  description: String
+  category: String
+  learningObjectives: [String]
+  contentReference: String
+}
+
+input CourseTemplateUpdateInput {
+  title: String
+  description: String
+  category: String
+  learningObjectives: [String]
+  contentReference: String
 }
