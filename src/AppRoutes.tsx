@@ -76,18 +76,17 @@ const AppRoutes: React.FC = () => {
           authFailCount.current = 0;
           authRetryDelay.current = 1000; // 지연 시간 초기화
         }
-      } catch (error: unknown) {
-        // 속성 가져오기 실패
-        console.warn('속성 가져오기 실패:', error);
+      } catch (error) {
+        // 타입 캐스팅 사용
+        const err = error as Error;
+        console.warn('속성 가져오기 실패:', err);
         authFailCount.current++;
         
         // 지수 백오프 (실패할수록 대기 시간 증가)
         authRetryDelay.current = Math.min(authRetryDelay.current * 2, 30000); // 최대 30초
         
-        // 오류 메시지를 안전하게 확인하는 방법
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : String(error);
+        // 안전하게 오류 메시지 확인
+        const errorMessage = String(error);
         
         // Rate Exceeded 오류시 추가 처리
         if (errorMessage.includes('TooManyRequestsException')) {
@@ -356,6 +355,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/student/:courseId/survey" element={<Navigate to="/course/:courseId/survey" replace />} />
       <Route path="/student/:courseId/pre-quiz" element={<Navigate to="/course/:courseId/pre-quiz" replace />} />
       <Route path="/student/:courseId/post-quiz" element={<Navigate to="/course/:courseId/post-quiz" replace />} />
+     
 
       {/* 404 라우트 */}
       <Route path="*" element={<Navigate to="/" replace />} />
