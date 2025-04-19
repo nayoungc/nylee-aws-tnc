@@ -8,8 +8,8 @@ import Backend from 'i18next-http-backend';
 
 // Import translation resources directly
 // 실제 프로젝트에서는 경로 조정이 필요할 수 있습니다
-import enTranslation from '../locales/en.json';
-import koTranslation from '../locales/ko.json';
+import enTranslation from '../locales/en/translation.json';
+import koTranslation from '../locales/ko/translation.json';
 
 // Initialize i18n if not already initialized
 if (!i18n.isInitialized) {
