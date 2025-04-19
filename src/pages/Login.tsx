@@ -59,6 +59,9 @@ const Login: React.FC = () => {
   };
 
   return (
+    <div style={{ marginTop: '20px', textAlign: 'center' }}>
+  계정이 없으신가요? <Button variant="link" onClick={() => navigate('/signup')}>회원가입</Button>
+</div>
     <div style={{ 
       display: 'flex', 
       justifyContent: 'center', 
