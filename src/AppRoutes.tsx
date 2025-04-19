@@ -1,22 +1,27 @@
+// src/AppRoutes.tsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  fetchAuthSession, 
+  getCurrentUser, 
+  fetchUserAttributes,
+  signOut 
+} from 'aws-amplify/auth';
+import { Hub } from 'aws-amplify/utils';
+import { useTranslation } from 'react-i18next';
 
 // 인증 관련 컴포넌트
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import ConfirmSignUp from './components/ConfirmSignUp';
-import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPassword from './components/ForgotPassword';
 import NewPassword from './components/NewPassword';
-
-// 레이아웃 컴포넌트
-import MainLayout from './components/MainLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoadingScreen from './components/LoadingScreen';
 
 // 페이지 컴포넌트
 import Dashboard from './pages/Dashboard';
 import StudentHome from './pages/StudentHome';
-
-// 강사용 페이지
 import CourseCatalog from './pages/instructor/CourseCatalog';
 import MyCourses from './pages/instructor/MyCourses';
 import SessionManagement from './pages/instructor/SessionManagement';
@@ -25,16 +30,11 @@ import PostQuizManagement from './pages/instructor/PostQuizManagement';
 import SurveyManagement from './pages/instructor/SurveyManagement';
 import AiGenerator from './pages/instructor/AiGenerator';
 import CourseDetailPage from './pages/instructor/CourseDetailPage';
-
-// 어드민 페이지
 import AdminPage from './pages/admin/AdminPage';
 
-// Amplify Gen 2 임포트
-import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
-import { Hub } from 'aws-amplify/utils';
-
-// 다국어 지원
-import { useTranslation } from 'react-i18next';
+// 레이아웃 컴포넌트
+import AuthLayout from './layouts/AuthLayout';
+import MainLayout from './layouts/MainLayout';
 
 const AppRoutes: React.FC = () => {
   const navigate = useNavigate();
@@ -48,27 +48,32 @@ const AppRoutes: React.FC = () => {
   const checkAuthState = useCallback(async () => {
     setIsLoading(true);
     try {
+      // 현재 사용자 가져오기
       const user = await getCurrentUser();
-
+      
       try {
+        // Amplify Gen 2 방식으로 사용자 속성 가져오기
         const attributes = await fetchUserAttributes();
-        console.log('인증된 사용자:', attributes);
         setUserAttributes(attributes);
       } catch (attrError) {
-        console.warn('속성 가져오기 실패, 기본 인증은 유지:', attrError);
+        console.warn('속성 가져오기 실패:', attrError);
       }
-
+      
+      // 세션 가져오기
+      const session = await fetchAuthSession();
+      if (!session.tokens) {
+        throw new Error('No valid tokens');
+      }
+      
       setAuthenticated(true);
     } catch (error) {
       console.log('사용자 미인증:', error);
       setAuthenticated(false);
       setUserAttributes(null);
-
-      if (location.pathname !== '/signin' &&
-        location.pathname !== '/signup' &&
-        location.pathname !== '/confirm-signup' &&
-        location.pathname !== '/forgot-password' &&
-        location.pathname !== '/new-password') {
+      
+      // 보호된 경로에 있다면 로그인으로 리디렉션
+      const publicPaths = ['/signin', '/signup', '/confirm-signup', '/forgot-password', '/new-password', '/courses'];
+      if (!publicPaths.some(path => location.pathname.startsWith(path))) {
         navigate('/signin');
       }
     } finally {
@@ -81,12 +86,11 @@ const AppRoutes: React.FC = () => {
     checkAuthState();
   }, [checkAuthState]);
 
-  // Hub 이벤트 리스너 설정
+  // Amplify Gen 2 방식의 Auth Hub 이벤트 리스너
   useEffect(() => {
-    const listener = Hub.listen('auth', (data) => {
-      const { payload } = data;
+    const listener = Hub.listen('auth', ({ payload }) => {
       console.log('Auth 이벤트:', payload.event);
-
+      
       switch (payload.event) {
         case 'signedIn':
           checkAuthState();
@@ -99,198 +103,213 @@ const AppRoutes: React.FC = () => {
         case 'tokenRefresh_failure':
           setAuthenticated(false);
           setUserAttributes(null);
-          navigate('/signin', {
-            state: { message: t('auth.session_expired') || '세션이 만료되었습니다. 다시 로그인해주세요.' }
+          navigate('/signin', { 
+            state: { message: t('auth.session_expired') || '세션이 만료되었습니다.' } 
           });
           break;
       }
     });
-
-    return () => {
-      listener();
-    };
+    
+    return () => listener();
   }, [checkAuthState, navigate, t]);
 
-  // 로그인 상태에 따른 리다이렉션
-  useEffect(() => {
-    const authPaths = ['/signin', '/login', '/signup', '/confirm-signup', '/forgot-password'];
-    if (authenticated && authPaths.includes(location.pathname)) {
-      navigate('/');
-    }
-  }, [authenticated, location.pathname, navigate]);
-
-  // 로딩 중 표시
+  // 로딩 중 화면
   if (isLoading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        flexDirection: 'column',
-        gap: '10px'
-      }}>
-        <div className="loading-spinner"></div>
-        <div>{t('common.loading') || '로딩 중...'}</div>
-      </div>
-    );
+    return <LoadingScreen message={t('common.loading') || '로딩 중...'} />;
   }
 
   return (
     <Routes>
-      {/* 인증 관련 라우트 - 레이아웃 없음 */}
-      <Route path="/signin" element={authenticated ? <Navigate to="/" /> : <SignIn />} />
-      <Route path="/signup" element={authenticated ? <Navigate to="/" /> : <SignUp />} />
-      <Route path="/confirm-signup" element={authenticated ? <Navigate to="/" /> : <ConfirmSignUp />} />
-      <Route path="/forgot-password" element={authenticated ? <Navigate to="/" /> : <ForgotPassword />} />
-      <Route path="/new-password" element={authenticated ? <Navigate to="/" /> : <NewPassword />} />
-
-      {/* 인증된 라우트 - 메인 레이아웃 적용 */}
-      <Route element={<MainLayout />}>
-        {/* 홈 리다이렉션 */}
-        <Route
-          path="/"
-          element={
-            !authenticated ?
-              <Navigate to="/signin" /> :
-              (userAttributes?.profile === 'instructor' ?
-                <Navigate to="/dashboard" /> :
-                <Navigate to="/student" />)
-          }
+      {/* 인증 페이지 라우트 - 별도 레이아웃 */}
+      <Route element={<AuthLayout />}>
+        <Route 
+          path="/signin" 
+          element={authenticated ? <Navigate to="/" /> : <SignIn />} 
         />
-
-        {/* 강사용 라우트 */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <Dashboard />
-            </ProtectedRoute>
-          }
+        <Route 
+          path="/signup" 
+          element={authenticated ? <Navigate to="/" /> : <SignUp />} 
         />
-
-        <Route
-          path="/courses/catalog"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <CourseCatalog />
-            </ProtectedRoute>
-          }
+        <Route 
+          path="/confirm-signup" 
+          element={authenticated ? <Navigate to="/" /> : <ConfirmSignUp />} 
         />
-
-        <Route
-          path="/courses/my-courses"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <MyCourses />
-            </ProtectedRoute>
-          }
+        <Route 
+          path="/forgot-password" 
+          element={authenticated ? <Navigate to="/" /> : <ForgotPassword />} 
         />
-
-        <Route
-          path="/courses/sessions"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <SessionManagement />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/assessments/pre-quiz"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <PreQuizManagement />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/assessments/post-quiz"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <PostQuizManagement />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/assessments/survey"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <SurveyManagement />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/assessments/ai-generator"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              userAttributes={userAttributes}
-              requiredRole="instructor"
-            >
-              <AiGenerator />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* 교육생용 라우트 */}
-        <Route
-          path="/courses"
-          element={<StudentHome />}
-        />
-
-        <Route
-          path="/course/:courseId"
-          element={<CourseDetailPage />}
+        <Route 
+          path="/new-password" 
+          element={authenticated ? <Navigate to="/" /> : <NewPassword />} 
         />
       </Route>
 
-      {/* 관리자 페이지 - 별도 레이아웃 */}
+      {/* 공개 페이지 라우트 */}
+      <Route path="/courses" element={<MainLayout><StudentHome /></MainLayout>} />
+      <Route path="/course/:courseId" element={<MainLayout><CourseDetailPage /></MainLayout>} />
+
+      {/* 보호된 라우트 - 인증 필요 */}
       <Route
-        path="/admin"
+        path="/"
         element={
-          <ProtectedRoute
-            authenticated={authenticated}
-            userAttributes={userAttributes}
-            requiredRole="admin"
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
           >
-            <AdminPage />
+            {userAttributes?.profile === 'instructor' ? 
+              <Navigate to="/dashboard" /> : 
+              <Navigate to="/courses" />}
           </ProtectedRoute>
         }
       />
 
-      {/* 404 페이지 */}
+      {/* 강사용 보호된 라우트 */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <Dashboard />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/courses/catalog"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <CourseCatalog />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/courses/my-courses"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <MyCourses />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/courses/sessions"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <SessionManagement />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/assessments/pre-quiz"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <PreQuizManagement />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/assessments/post-quiz"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <PostQuizManagement />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/assessments/survey"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <SurveyManagement />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/assessments/ai-generator"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <AiGenerator />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      
+      {/* 관리자 라우트 */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute 
+            authenticated={authenticated} 
+            redirectPath="/signin"
+            requiredRole="admin"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <AdminPage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* 404 라우트 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
