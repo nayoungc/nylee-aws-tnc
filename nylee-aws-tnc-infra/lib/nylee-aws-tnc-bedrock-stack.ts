@@ -45,18 +45,18 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     const embeddingModelArn = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0";
     const foundationModelArn = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0";
 
-    // OpenSearch Serverless 벡터 컬렉션 생성
+    // OpenSearch Serverless 벡터 컬렉션 생성 - 올바른 Type 값 사용
     const vectorCollection = new opensearch.CfnCollection(this, 'TnCVectorCollection', {
       name: 'tnc-vector-store',
-      type: 'VECTOR_SEARCH',
+      type: 'VECTORSEARCH',  // 수정: VECTOR_SEARCH -> VECTORSEARCH
       description: 'Vector collection for TnC Knowledge Base',
       standbyReplicas: 'ENABLED'
     });
     
-    // 벡터 컬렉션에 대한 보안 정책 설정
+    // 벡터 컬렉션에 대한 보안 정책 설정 - 올바른 Type 값 사용
     const vectorCollectionPolicy = new opensearch.CfnSecurityPolicy(this, 'VectorCollectionPolicy', {
       name: 'tnc-vector-policy',
-      type: 'data',
+      type: 'data',  // 다시 소문자로 변경: DATA -> data
       policy: JSON.stringify({
         Rules: [
           {
@@ -74,7 +74,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       })
     });
 
-    // Knowledge Base 생성 (벡터 컬렉션 ID 참조)
+    // Knowledge Base 생성
     const reportsKB = new bedrock.CfnKnowledgeBase(this, 'ReportsKnowledgeBase', {
       name: 'TnC-Reports-Knowledge',
       description: 'Knowledge base for course reports and analytics',
@@ -83,30 +83,30 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         type: 'VECTOR',
         vectorKnowledgeBaseConfiguration: {
           embeddingModelArn: embeddingModelArn,
-          // 올바른 구조로 dimensions 속성 설정
           embeddingModelConfiguration: {
             bedrockEmbeddingModelConfiguration: {
-              dimensions: 1536  // Titan Embeddings V2의 차원 수
+              dimensions: 1536
             }
-          },
-          vectorStore: {
-            opensearchServerlessConfiguration: {
-              collectionArn: vectorCollection.attrArn,
-              vectorIndexName: 'tnc-vector-index',
-              fieldMapping: {
-                vectorField: 'vector_field',
-                textField: 'text_content',
-                metadataField: 'metadata'
-              }
-            }
+          }
+        }
+      },
+      storageConfiguration: {
+        type: 'OPENSEARCH_SERVERLESS',
+        opensearchServerlessConfiguration: {
+          collectionArn: vectorCollection.attrArn,
+          vectorIndexName: 'tnc-vector-index',
+          fieldMapping: {
+            vectorField: 'vector_field',
+            textField: 'text_content',
+            metadataField: 'metadata'
           }
         }
       }
     });
     
     // 컬렉션 생성 후에 Knowledge Base 생성
-    reportsKB.addDependsOn(vectorCollection);
-    reportsKB.addDependsOn(vectorCollectionPolicy);
+    reportsKB.node.addDependency(vectorCollection);
+    reportsKB.node.addDependency(vectorCollectionPolicy);
     
     const materialsKB = new bedrock.CfnKnowledgeBase(this, 'MaterialsKnowledgeBase', {
       name: 'TnC-Materials-Knowledge',
@@ -116,18 +116,22 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         type: 'VECTOR',
         vectorKnowledgeBaseConfiguration: {
           embeddingModelArn: embeddingModelArn,
-          dimensions: 1536,
-          // 별도의 벡터 인덱스 사용
-          vectorStore: {
-            opensearchServerlessConfiguration: {
-              collectionArn: vectorCollection.attrArn,
-              vectorIndexName: 'tnc-materials-index',
-              fieldMapping: {
-                vectorField: 'vector_field',
-                textField: 'text_content',
-                metadataField: 'metadata'
-              }
+          embeddingModelConfiguration: {
+            bedrockEmbeddingModelConfiguration: {
+              dimensions: 1536
             }
+          }
+        }
+      },
+      storageConfiguration: {
+        type: 'OPENSEARCH_SERVERLESS',
+        opensearchServerlessConfiguration: {
+          collectionArn: vectorCollection.attrArn,
+          vectorIndexName: 'tnc-materials-index',
+          fieldMapping: {
+            vectorField: 'vector_field',
+            textField: 'text_content',
+            metadataField: 'metadata'
           }
         }
       }
@@ -144,18 +148,22 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         type: 'VECTOR',
         vectorKnowledgeBaseConfiguration: {
           embeddingModelArn: embeddingModelArn,
-          dimensions: 1536,
-          // 별도의 벡터 인덱스 사용
-          vectorStore: {
-            opensearchServerlessConfiguration: {
-              collectionArn: vectorCollection.attrArn,
-              vectorIndexName: 'tnc-docs-index',
-              fieldMapping: {
-                vectorField: 'vector_field',
-                textField: 'text_content',
-                metadataField: 'metadata'
-              }
+          embeddingModelConfiguration: {
+            bedrockEmbeddingModelConfiguration: {
+              dimensions: 1536
             }
+          }
+        }
+      },
+      storageConfiguration: {
+        type: 'OPENSEARCH_SERVERLESS',
+        opensearchServerlessConfiguration: {
+          collectionArn: vectorCollection.attrArn,
+          vectorIndexName: 'tnc-docs-index',
+          fieldMapping: {
+            vectorField: 'vector_field',
+            textField: 'text_content',
+            metadataField: 'metadata'
           }
         }
       }
