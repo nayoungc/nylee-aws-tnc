@@ -81,3 +81,87 @@ export const checkCourseEnrollment = /* GraphQL */ `
     }
   }
 `;
+
+export const listCustomers = /* GraphQL */ `
+  query ListCustomers(
+    \$filter: ModelCustomerFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listCustomers(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        name
+        contactPerson
+        email
+        phone
+        address
+        status
+        joinDate
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+export const getCustomer = /* GraphQL */ `
+  query GetCustomer(\$id: ID!) {
+    getCustomer(id: \$id) {
+      id
+      name
+      contactPerson
+      email
+      phone
+      address
+      status
+      joinDate
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const listInstructors = /* GraphQL */ `
+  query ListInstructors(
+    \$filter: ModelInstructorFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listInstructors(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        cognitoId
+        name
+        email
+        phone
+        specialization
+        bio
+        status
+        joinDate
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+export const getInstructor = /* GraphQL */ `
+  query GetInstructor(\$id: ID!) {
+    getInstructor(id: \$id) {
+      id
+      cognitoId
+      name
+      email
+      phone
+      specialization
+      bio
+      status
+      joinDate
+      createdAt
+      updatedAt
+    }
+  }
+`;

@@ -27,6 +27,10 @@ import SurveyManagement from './pages/instructor/SurveyManagement';
 import AiGenerator from './pages/instructor/AiGenerator';
 import CourseDetailPage from './pages/instructor/CourseDetailPage';
 
+// 어드민 페이지
+import AdminPage from './pages/admin/AdminPage';
+
+
 // Amplify Gen 2 임포트
 import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils'; // Hub 추가하여 인증 이벤트 감지
@@ -47,7 +51,7 @@ const AppRoutes: React.FC = () => {
     setIsLoading(true);
     try {
       const user = await getCurrentUser();
-      
+
       try {
         const attributes = await fetchUserAttributes();
         console.log('인증된 사용자:', attributes);
@@ -55,20 +59,20 @@ const AppRoutes: React.FC = () => {
       } catch (attrError) {
         console.warn('속성 가져오기 실패, 기본 인증은 유지:', attrError);
       }
-      
+
       // 사용자 객체가 있으면 인증된 것으로 간주
       setAuthenticated(true);
     } catch (error) {
       console.log('사용자 미인증:', error);
       setAuthenticated(false);
       setUserAttributes(null);
-      
+
       // 인증이 필요한 페이지에 있으면 로그인으로 리다이렉트
       if (location.pathname !== '/signin' &&
-          location.pathname !== '/signup' &&
-          location.pathname !== '/confirm-signup' &&
-          location.pathname !== '/forgot-password' &&
-          location.pathname !== '/new-password') {
+        location.pathname !== '/signup' &&
+        location.pathname !== '/confirm-signup' &&
+        location.pathname !== '/forgot-password' &&
+        location.pathname !== '/new-password') {
         navigate('/signin');
       }
     } finally {
@@ -86,7 +90,7 @@ const AppRoutes: React.FC = () => {
     const listener = Hub.listen('auth', (data) => {
       const { payload } = data;
       console.log('Auth 이벤트:', payload.event);
-  
+
       switch (payload.event) {
         case 'signedIn':
           checkAuthState();
@@ -106,14 +110,14 @@ const AppRoutes: React.FC = () => {
           break;
       }
     });
-  
+
     // 컴포넌트 언마운트 시 리스너 제거 - 함수 직접 호출
     return () => {
       listener(); // .remove() 메서드 대신 함수 자체를 호출
     };
   }, [checkAuthState, navigate, t]);
 
-  
+
 
   // 로그인 상태에 따라 리다이렉션
   useEffect(() => {
@@ -326,6 +330,20 @@ const AppRoutes: React.FC = () => {
         path="/new-password"
         element={authenticated ? <Navigate to="/" /> : <NewPassword />}
       />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute
+            authenticated={authenticated}
+            userAttributes={userAttributes}
+            requiredRole="admin"
+          >
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
+
 
       {/* 404 페이지 - 찾을 수 없는 페이지 */}
       <Route path="*" element={<Navigate to="/" replace />} />
