@@ -1,5 +1,6 @@
 // src/pages/CourseDetailPage.tsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';  
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
 import { useTranslation } from 'react-i18next';
@@ -23,8 +24,6 @@ import { GraphQLQuery } from 'aws-amplify/api';
 // 상대 경로로 변경
 import { getCourse } from '../../graphql/queries';
 
-// 중복 선언 제거
-// const getCourse = /* GraphQL */ `...`; 
 
 const client = generateClient();
 
@@ -249,3 +248,4 @@ const CourseDetailPage: React.FC = () => {
 };
 
 export default CourseDetailPage;
+
