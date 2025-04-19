@@ -13,13 +13,11 @@ import {
   Checkbox,
   Alert,
   Modal,
-  ColumnLayout,
-  Select,
-  SelectProps
+  ColumnLayout
 } from '@cloudscape-design/components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { post } from 'aws-amplify/api';
-import { generateClient } from 'aws-amplify/api';
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 // 타입 정의
 interface Question {
@@ -47,21 +45,22 @@ interface LocationState {
 }
 
 export default function QuizCreator() {
+  const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState;
-  
+
   // 상태가 없으면 리디렉션
   useEffect(() => {
     if (!state?.courseId) {
-      navigate('/instructor/assessments/pre-quiz');
+      navigate('/instructor/assessments/quiz');
     }
   }, [state, navigate]);
 
   // 기본값 설정
   const initialMeta: QuizMeta = {
-    title: `\${state?.courseName || '과정'} \${state?.quizType === 'pre' ? '사전' : '사후'} 퀴즈`,
-    description: '본 퀴즈는 학습 과정에서의 지식 수준을 측정하기 위한 도구입니다.',
+    title: `\${state?.courseName || t('quiz_creator.default_course')} \${state?.quizType === 'pre' ? t('quiz_creator.pre_quiz') : t('quiz_creator.post_quiz')}`,
+    description: t('quiz_creator.default_description'),
     timeLimit: 30,
     passScore: 70,
     shuffleQuestions: true,
@@ -123,13 +122,13 @@ export default function QuizCreator() {
     
     // 질문 유효성 검사
     if (!currentQuestion.question.trim()) {
-      alert("질문 내용을 입력해주세요.");
+      alert(t('quiz_creator.validation.question_required'));
       return;
     }
 
     // 옵션 유효성 검사
     if (currentQuestion.options.some(opt => !opt.trim())) {
-      alert("모든 보기 옵션을 입력해주세요.");
+      alert(t('quiz_creator.validation.options_required'));
       return;
     }
     
@@ -199,7 +198,7 @@ export default function QuizCreator() {
   // 퀴즈 저장
   const handleSaveQuiz = async () => {
     if (questions.length === 0) {
-      alert("최소 1개 이상의 질문이 필요합니다.");
+      alert(t('quiz_creator.validation.min_question_required'));
       return;
     }
 
@@ -224,8 +223,8 @@ export default function QuizCreator() {
       
       setShowSaveModal(true);
     } catch (error) {
-      console.error('퀴즈 저장 오류:', error);
-      setSaveError('퀴즈 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error(t('quiz_creator.errors.save_error'), error);
+      setSaveError(t('quiz_creator.errors.save_error_message'));
     } finally {
       setSaving(false);
     }
@@ -233,32 +232,32 @@ export default function QuizCreator() {
 
   // 퀴즈 관리 페이지로 돌아가기
   const handleReturn = () => {
-    navigate('/instructor/assessments/pre-quiz');
+    navigate('/instructor/assessments/quiz');
   };
   
   return (
     <SpaceBetween size="l">
       {/* 퀴즈 메타데이터 */}
-      <Container header={<Header variant="h2">퀴즈 정보</Header>}>
+      <Container header={<Header variant="h2">{t('quiz_creator.sections.quiz_info')}</Header>}>
         <SpaceBetween size="l">
-          <FormField label="퀴즈 제목">
+          <FormField label={t('quiz_creator.meta.title_label')}>
             <Input
               value={quizMeta.title}
               onChange={({ detail }) => handleMetaChange('title', detail.value)}
-              placeholder="퀴즈 제목을 입력하세요"
+              placeholder={tString('quiz_creator.meta.title_placeholder')}
             />
           </FormField>
           
-          <FormField label="설명">
+          <FormField label={t('quiz_creator.meta.description_label')}>
             <Textarea
               value={quizMeta.description}
               onChange={({ detail }) => handleMetaChange('description', detail.value)}
-              placeholder="수강생에게 보여질 퀴즈 설명을 입력하세요"
+              placeholder={tString('quiz_creator.meta.description_placeholder')}
             />
           </FormField>
           
           <ColumnLayout columns={2} variant="text-grid">
-            <FormField label="시간 제한 (분)">
+            <FormField label={t('quiz_creator.meta.time_limit')}>
               <Input
                 type="number"
                 value={quizMeta.timeLimit.toString()}
@@ -272,7 +271,7 @@ export default function QuizCreator() {
               />
             </FormField>
             
-            <FormField label="합격 점수 (%)">
+            <FormField label={t('quiz_creator.meta.pass_score')}>
               <Input
                 type="number"
                 value={quizMeta.passScore.toString()}
@@ -292,21 +291,21 @@ export default function QuizCreator() {
               checked={quizMeta.shuffleQuestions}
               onChange={({ detail }) => handleMetaChange('shuffleQuestions', detail.checked)}
             >
-              문제 순서 섞기
+              {t('quiz_creator.meta.shuffle_questions')}
             </Checkbox>
             
             <Checkbox
               checked={quizMeta.shuffleOptions}
               onChange={({ detail }) => handleMetaChange('shuffleOptions', detail.checked)}
             >
-              보기 순서 섞기
+              {t('quiz_creator.meta.shuffle_options')}
             </Checkbox>
             
             <Checkbox
               checked={quizMeta.showFeedback}
               onChange={({ detail }) => handleMetaChange('showFeedback', detail.checked)}
             >
-              응시 후 정답 피드백 보여주기
+              {t('quiz_creator.meta.show_feedback')}
             </Checkbox>
           </SpaceBetween>
         </SpaceBetween>
@@ -319,11 +318,11 @@ export default function QuizCreator() {
             variant="h2"
             actions={
               <Button onClick={handleAddQuestion} iconName="add-plus">
-                질문 추가
+                {t('quiz_creator.actions.add_question')}
               </Button>
             }
           >
-            퀴즈 문항 ({questions.length}개)
+            {t('quiz_creator.sections.questions_count', { count: questions.length })}
           </Header>
         }
       >
@@ -333,22 +332,23 @@ export default function QuizCreator() {
               cardDefinition={{
                 header: (item: Question) => {
                   const index = questions.findIndex(q => q === item);
-                  return `문제 \${index + 1}`;
+                  return t('quiz_creator.question_number', { number: index + 1 });
                 },
                 sections: [
                   {
                     id: "question",
-                    header: "질문",
+                    header: t('quiz_creator.labels.question'),
                     content: (item: Question) => item.question
                   },
                   {
                     id: "options",
-                    header: "보기 옵션",
+                    header: t('quiz_creator.labels.options'),
                     content: (item: Question) => (
                       <ul>
                         {item.options.map((opt, idx) => (
                           <li key={idx}>
-                            {opt} {idx === item.correctAnswer || opt === item.correctAnswer ? '(정답)' : ''}
+                            {opt} {idx === item.correctAnswer || opt === item.correctAnswer ? 
+                              `(\${t('quiz_creator.labels.correct_answer')})` : ''}
                           </li>
                         ))}
                       </ul>
@@ -359,7 +359,7 @@ export default function QuizCreator() {
               cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 2 }]}
               items={questions}
               loading={false}
-              loadingText="질문을 불러오는 중..."
+              loadingText={tString('quiz_creator.loading.questions')}
               selectionType="single"
               selectedItems={selectedQuestion ? [selectedQuestion] : []}
               onSelectionChange={({ detail }) => {
@@ -376,32 +376,32 @@ export default function QuizCreator() {
               trackBy="id"
               empty={
                 <Box textAlign="center" color="inherit">
-                  <b>질문이 없습니다</b>
+                  <b>{t('quiz_creator.empty_states.no_questions')}</b>
                   <Box padding={{ bottom: "s" }}>
-                    '질문 추가' 버튼을 눌러 퀴즈 문항을 추가하세요.
+                    {t('quiz_creator.empty_states.add_instructions')}
                   </Box>
                   <Button onClick={handleAddQuestion} iconName="add-plus">
-                    질문 추가
+                    {t('quiz_creator.actions.add_question')}
                   </Button>
                 </Box>
               }
-              header={<Header>질문 목록</Header>}
+              header={<Header>{t('quiz_creator.sections.question_list')}</Header>}
               stickyHeader={true}
             />
             
             {/* Cards 컴포넌트 아래에 안내 메시지 추가 */}
             <Box textAlign="right" padding={{ top: "s" }}>
-              편집하려면 카드를 클릭하세요
+              {t('quiz_creator.hints.click_to_edit')}
             </Box>
           </>
         ) : (
           <Box textAlign="center" color="inherit">
-            <b>질문이 없습니다</b>
+            <b>{t('quiz_creator.empty_states.no_questions')}</b>
             <Box padding={{ bottom: "s" }}>
-              '질문 추가' 버튼을 눌러 퀴즈 문항을 추가하세요.
+              {t('quiz_creator.empty_states.add_instructions')}
             </Box>
             <Button onClick={handleAddQuestion} iconName="add-plus">
-              질문 추가
+              {t('quiz_creator.actions.add_question')}
             </Button>
           </Box>
         )}
@@ -410,14 +410,14 @@ export default function QuizCreator() {
       {/* 하단 버튼 */}
       <SpaceBetween direction="horizontal" size="xs" alignItems="center">
         <Button onClick={handleReturn} variant="link">
-          취소 및 돌아가기
+          {t('quiz_creator.actions.cancel_return')}
         </Button>
         <Button 
           onClick={handleSaveQuiz}
           variant="primary"
           loading={saving}
         >
-          퀴즈 저장
+          {t('quiz_creator.actions.save_quiz')}
         </Button>
       </SpaceBetween>
       
@@ -427,12 +427,14 @@ export default function QuizCreator() {
       <Modal
         visible={isEditingQuestion}
         onDismiss={handleCancelEdit}
-        header={editingIndex >= 0 ? '질문 수정' : '새 질문 추가'}
+        header={editingIndex >= 0 ? 
+          t('quiz_creator.modal.edit_question') : 
+          t('quiz_creator.modal.add_question')}
         size="large"
       >
         {currentQuestion && (
           <SpaceBetween size="l">
-            <FormField label="질문">
+            <FormField label={t('quiz_creator.labels.question')}>
               <Textarea
                 value={currentQuestion.question}
                 onChange={({ detail }) => 
@@ -441,23 +443,23 @@ export default function QuizCreator() {
                     question: detail.value
                   })
                 }
-                placeholder="질문 내용을 입력하세요"
+                placeholder={tString('quiz_creator.placeholders.question')}
               />
             </FormField>
             
-            <FormField label="보기 옵션">
+            <FormField label={t('quiz_creator.labels.options')}>
               <SpaceBetween size="xs">
                 {currentQuestion.options.map((option, index) => (
                   <SpaceBetween direction="horizontal" size="xs" key={index}>
                     <Input
                       value={option}
                       onChange={({ detail }) => handleOptionChange(index, detail.value)}
-                      placeholder={`보기 \${index + 1}`}
+                      placeholder={tString('quiz_creator.placeholders.option', { number: index + 1 })}
                     />
                     
                     <RadioGroup
                       items={[
-                        { value: index.toString(), label: '정답' }
+                        { value: index.toString(), label: t('quiz_creator.labels.correct') }
                       ]}
                       value={currentQuestion.correctAnswer === index ? index.toString() : ''}
                       onChange={({ detail }) => 
@@ -482,17 +484,19 @@ export default function QuizCreator() {
                   onClick={handleAddOption}
                   disabled={currentQuestion.options.length >= 6}
                 >
-                  보기 추가
+                  {t('quiz_creator.actions.add_option')}
                 </Button>
               </SpaceBetween>
             </FormField>
             
             <SpaceBetween direction="horizontal" size="xs" alignItems="center">
               <Button onClick={handleCancelEdit} variant="link">
-                취소
+                {t('quiz_creator.actions.cancel')}
               </Button>
               <Button onClick={handleSaveQuestion} variant="primary">
-                {editingIndex >= 0 ? '질문 저장' : '질문 추가'}
+                {editingIndex >= 0 ? 
+                  t('quiz_creator.actions.save_question') : 
+                  t('quiz_creator.actions.add_question')}
               </Button>
             </SpaceBetween>
           </SpaceBetween>
@@ -506,18 +510,18 @@ export default function QuizCreator() {
           setShowSaveModal(false);
           handleReturn();
         }}
-        header="퀴즈 저장 완료"
+        header={t('quiz_creator.modal.save_success')}
         footer={
           <Box float="right">
             <SpaceBetween direction="horizontal" size="xs">
               <Button onClick={handleReturn} variant="primary">
-                퀴즈 관리로 돌아가기
+                {t('quiz_creator.actions.return_to_management')}
               </Button>
             </SpaceBetween>
           </Box>
         }
       >
-        <p>퀴즈가 성공적으로 저장되었습니다.</p>
+        <p>{t('quiz_creator.messages.save_success')}</p>
       </Modal>
     </SpaceBetween>
   );

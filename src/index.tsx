@@ -1,3 +1,4 @@
+// index.tsx
 import './styles/theme.css';
 import './styles/auth.css';
 import { StrictMode } from 'react';

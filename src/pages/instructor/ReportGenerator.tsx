@@ -24,8 +24,7 @@ import { SelectProps } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
 import { post } from 'aws-amplify/api';
 import { useNavigate } from 'react-router-dom';
-import { getAuthenticatedGraphQLClient } from '../../utils/amplify-utils';
-
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 // 타입 정의
 interface CourseItem {
@@ -101,6 +100,7 @@ const listReports = /* GraphQL */ `
 
 export default function ReportGenerator() {
   const navigate = useNavigate();
+  const { t, tString, i18n } = useTypedTranslation();
   
   // 상태 관리
   const [courses, setCourses] = useState<SelectProps.Option[]>([]);
@@ -116,31 +116,32 @@ export default function ReportGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("generate");
   const [previewData, setPreviewData] = useState<any>(null);
-  
+  const [client] = useState(() => generateClient());
+
   // 보고서 유형 목록
   const reportTypes: ReportType[] = [
     {
       id: 'quiz-comparison',
-      title: '사전/사후 퀴즈 비교 분석',
-      description: '사전 및 사후 퀴즈 결과를 비교하여 학습 효과를 분석합니다.',
+      title: t('reports.types.quiz_comparison.title'),
+      description: t('reports.types.quiz_comparison.description'),
       icon: 'bar-chart'
     },
     {
       id: 'survey-analysis',
-      title: '설문조사 분석',
-      description: '설문조사 응답을 분석하여 과정 만족도 및 피드백을 확인합니다.',
+      title: t('reports.types.survey_analysis.title'),
+      description: t('reports.types.survey_analysis.description'),
       icon: 'pie-chart'
     },
     {
       id: 'comprehensive',
-      title: '종합 과정 분석',
-      description: '퀴즈, 설문조사, 참여도 등 모든 데이터를 종합적으로 분석합니다.',
+      title: t('reports.types.comprehensive.title'),
+      description: t('reports.types.comprehensive.description'),
       icon: 'dashboard'
     },
     {
       id: 'attendance',
-      title: '출석 및 참여도 보고서',
-      description: '세션별 출석 및 참여도를 분석합니다.',
+      title: t('reports.types.attendance.title'),
+      description: t('reports.types.attendance.description'),
       icon: 'user-profile'
     }
   ];
@@ -150,7 +151,7 @@ export default function ReportGenerator() {
     { id: 'pdf', label: 'PDF', type: 'pdf' },
     { id: 'excel', label: 'Excel', type: 'excel' },
     { id: 'csv', label: 'CSV', type: 'csv' },
-    { id: 'html', label: 'Web (HTML)', type: 'html' }
+    { id: 'html', label: t('reports.formats.html'), type: 'html' }
   ];
 
   // 과정 목록 로드
@@ -164,16 +165,13 @@ export default function ReportGenerator() {
     setLoadingCourses(true);
     
     try {
-      const client = generateClient();
-      
       const response = await client.graphql({
         query: listCourseCatalogs,
         variables: {
           limit: 100,
           filter: {
             status: { eq: "ACTIVE" }
-          },
-          authMode: 'userPool'
+          }
         }
       });
 
@@ -187,8 +185,8 @@ export default function ReportGenerator() {
       
       setCourses(courseOptions);
     } catch (error) {
-      console.error('과정 로드 오류:', error);
-      setError('과정 목록을 로드하는 데 실패했습니다.');
+      console.error(t('reports.errors.course_load'), error);
+      setError(t('reports.errors.course_load_message'));
       
       // 개발 환경 폴백 데이터
       if (process.env.NODE_ENV === 'development') {
@@ -208,8 +206,6 @@ export default function ReportGenerator() {
     setLoadingReports(true);
     
     try {
-      const client = generateClient();
-      
       const response = await client.graphql({
         query: listReports,
         variables: {
@@ -227,15 +223,15 @@ export default function ReportGenerator() {
       
       setGeneratedReports(sortedReports);
     } catch (error) {
-      console.error('보고서 로드 오류:', error);
-      setError('보고서 목록을 로드하는 데 실패했습니다.');
+      console.error(t('reports.errors.report_load'), error);
+      setError(t('reports.errors.report_load_message'));
       
       // 개발 환경 폴백 데이터
       if (process.env.NODE_ENV === 'development') {
         setGeneratedReports([
           {
             id: 'report-1',
-            title: 'AWS Cloud Practitioner - 사전/사후 퀴즈 비교 분석',
+            title: 'AWS Cloud Practitioner - ' + t('reports.types.quiz_comparison.title'),
             type: 'quiz-comparison',
             courseId: 'course-1',
             courseName: 'AWS Cloud Practitioner',
@@ -246,7 +242,7 @@ export default function ReportGenerator() {
           },
           {
             id: 'report-2',
-            title: 'AWS Solutions Architect Associate - 설문조사 분석',
+            title: 'AWS Solutions Architect Associate - ' + t('reports.types.survey_analysis.title'),
             type: 'survey-analysis',
             courseId: 'course-2',
             courseName: 'AWS Solutions Architect Associate',
@@ -270,36 +266,53 @@ export default function ReportGenerator() {
       // 여기서는 API 호출 대신 샘플 데이터 사용
       const sampleData = {
         quizComparison: {
-          labels: ['문제 1', '문제 2', '문제 3', '문제 4', '문제 5', '문제 6', '문제 7', '문제 8', '문제 9', '문제 10'],
+          labels: [
+            t('reports.preview.question', { number: 1 }),
+            t('reports.preview.question', { number: 2 }),
+            t('reports.preview.question', { number: 3 }),
+            t('reports.preview.question', { number: 4 }),
+            t('reports.preview.question', { number: 5 }),
+            t('reports.preview.question', { number: 6 }),
+            t('reports.preview.question', { number: 7 }),
+            t('reports.preview.question', { number: 8 }),
+            t('reports.preview.question', { number: 9 }),
+            t('reports.preview.question', { number: 10 })
+          ],
           preSeries: [65, 59, 80, 81, 56, 55, 40, 45, 60, 70],
           postSeries: [80, 75, 90, 88, 76, 82, 69, 80, 85, 95],
           averageImprovement: '23.5%'
         },
         surveyAnalysis: {
           satisfaction: {
-            labels: ['매우 만족', '만족', '보통', '불만족', '매우 불만족'],
+            labels: [
+              t('reports.preview.satisfaction.very_high'),
+              t('reports.preview.satisfaction.high'),
+              t('reports.preview.satisfaction.neutral'),
+              t('reports.preview.satisfaction.low'),
+              t('reports.preview.satisfaction.very_low')
+            ],
             data: [42, 35, 15, 5, 3]
           },
           recommendationScore: 8.7,
           topComments: [
-            '실습 시간이 충분해서 좋았습니다.',
-            '강사님의 설명이 매우 이해하기 쉬웠어요.',
-            '더 많은 실전 예제가 있었으면 좋겠습니다.'
+            t('reports.preview.comment1'),
+            t('reports.preview.comment2'),
+            t('reports.preview.comment3')
           ]
         }
       };
       
       setPreviewData(sampleData);
     } catch (error) {
-      console.error('미리보기 데이터 로드 오류:', error);
-      setError('미리보기 데이터를 로드하는 데 실패했습니다.');
+      console.error(t('reports.errors.preview_load'), error);
+      setError(t('reports.errors.preview_load_message'));
     }
   };
 
   // 보고서 생성
   const generateReport = async () => {
     if (!selectedCourse) {
-      setError('과정을 선택해주세요.');
+      setError(t('reports.errors.select_course'));
       return;
     }
     
@@ -329,7 +342,7 @@ export default function ReportGenerator() {
       }).response;
       
       // 보고서 생성이 시작되었음을 알림
-      alert('보고서 생성이 시작되었습니다. 생성된 보고서 탭에서 확인할 수 있습니다.');
+      alert(t('reports.alerts.generation_started'));
       
       // 보고서 목록 다시 불러오기
       fetchReports();
@@ -338,8 +351,8 @@ export default function ReportGenerator() {
       setActiveTab('reports');
       
     } catch (error) {
-      console.error('보고서 생성 오류:', error);
-      setError('보고서 생성 중 오류가 발생했습니다.');
+      console.error(t('reports.errors.generation'), error);
+      setError(t('reports.errors.generation_message'));
       
       // 개발 환경에서는 mock 응답
       if (process.env.NODE_ENV === 'development') {
@@ -358,7 +371,7 @@ export default function ReportGenerator() {
           
           setGeneratedReports(prev => [newReport, ...prev]);
           setActiveTab('reports');
-          alert('보고서가 생성되었습니다.');
+          alert(t('reports.alerts.report_created'));
         }, 2000);
       }
     } finally {
@@ -371,13 +384,13 @@ export default function ReportGenerator() {
     if (report.url) {
       window.open(report.url, '_blank');
     } else {
-      alert('다운로드 URL을 찾을 수 없습니다.');
+      alert(t('reports.alerts.no_download_url'));
     }
   };
 
   // 보고서 삭제
   const deleteReport = async (reportId: string) => {
-    if (confirm('정말로 이 보고서를 삭제하시겠습니까?')) {
+    if (confirm(tString('reports.alerts.confirm_delete'))) {
       try {
         await post({
           apiName: 'reportApi',
@@ -391,8 +404,8 @@ export default function ReportGenerator() {
         setGeneratedReports(prev => prev.filter(report => report.id !== reportId));
         
       } catch (error) {
-        console.error('보고서 삭제 오류:', error);
-        alert('보고서를 삭제하는 데 실패했습니다.');
+        console.error(t('reports.errors.delete'), error);
+        alert(t('reports.errors.delete_message'));
       }
     }
   };
@@ -404,10 +417,19 @@ export default function ReportGenerator() {
     }
   }, [selectedCourse, activeTab]);
 
+  const getStatusLabel = (status: string) => {
+    switch(status) {
+      case 'completed': return t('reports.status.completed');
+      case 'in-progress': return t('reports.status.in_progress');
+      case 'failed': return t('reports.status.failed');
+      default: return status;
+    }
+  };
+
   return (
     <ContentLayout>
       <SpaceBetween size="l">
-        <Header variant="h1">보고서 생성</Header>
+        <Header variant="h1">{t('reports.title')}</Header>
         
         {error && (
           <Alert type="error">
@@ -421,31 +443,31 @@ export default function ReportGenerator() {
           tabs={[
             {
               id: "generate",
-              label: "보고서 생성",
+              label: t('reports.tabs.generate'),
               content: (
-                <Container header={<Header variant="h2">보고서 설정</Header>}>
+                <Container header={<Header variant="h2">{t('reports.report_settings')}</Header>}>
                   <SpaceBetween size="l">
-                    <FormField label="과정 선택">
+                    <FormField label={t('reports.select_course')}>
                       <Select
                         selectedOption={selectedCourse}
                         onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
                         options={courses}
-                        placeholder="과정 선택"
+                        placeholder={tString('reports.course_placeholder')}
                         filteringType="auto"
                         statusType={loadingCourses ? "loading" : "finished"}
-                        loadingText="과정 목록을 불러오는 중..."
+                        loadingText={tString('reports.loading_courses')}
                         empty={
                           <Box textAlign="center" color="inherit">
-                            <b>과정이 없습니다</b>
+                            <b>{t('reports.no_courses.title')}</b>
                             <Box padding={{ bottom: "xs" }}>
-                              사용 가능한 과정이 없습니다. 과정을 먼저 등록하세요.
+                              {t('reports.no_courses.message')}
                             </Box>
                           </Box>
                         }
                       />
                     </FormField>
                     
-                    <FormField label="보고서 유형">
+                    <FormField label={t('reports.report_type')}>
                       <Cards
                         cardDefinition={{
                           header: item => item.title,
@@ -472,24 +494,34 @@ export default function ReportGenerator() {
                     </FormField>
                     
                     <ColumnLayout columns={2}>
-                      <FormField label="시작 날짜">
+                      <FormField label={t('reports.start_date')}>
                         <DatePicker
                           onChange={({ detail }) => detail.value && setStartDate(detail.value)}
                           value={startDate ? startDate.split('T')[0] : ''}
                           placeholder="YYYY/MM/DD"
+                          i18nStrings={{
+                            nextMonthAriaLabel: tString('common.date.next_month'),
+                            previousMonthAriaLabel: tString('common.date.previous_month'),
+                            todayAriaLabel: tString('common.date.today')
+                          }}
                         />
                       </FormField>
                       
-                      <FormField label="종료 날짜">
+                      <FormField label={t('reports.end_date')}>
                         <DatePicker
                           onChange={({ detail }) => detail.value && setEndDate(detail.value)}
                           value={endDate ? endDate.split('T')[0] : ''}
                           placeholder="YYYY/MM/DD"
+                          i18nStrings={{
+                            nextMonthAriaLabel: tString('common.date.next_month'),
+                            previousMonthAriaLabel: tString('common.date.previous_month'),
+                            todayAriaLabel: tString('common.date.today')
+                          }}
                         />
                       </FormField>
                     </ColumnLayout>
                     
-                    <FormField label="보고서 형식">
+                    <FormField label={t('reports.format')}>
                       <SegmentedControl
                         selectedId={selectedFormat}
                         onChange={({ detail }) => setSelectedFormat(detail.selectedId)}
@@ -505,7 +537,7 @@ export default function ReportGenerator() {
                         onClick={() => setActiveTab('preview')}
                         disabled={!selectedCourse}
                       >
-                        미리보기
+                        {t('reports.buttons.preview')}
                       </Button>
                       <Button
                         variant="primary"
@@ -513,7 +545,7 @@ export default function ReportGenerator() {
                         onClick={generateReport}
                         disabled={!selectedCourse}
                       >
-                        보고서 생성
+                        {t('reports.buttons.generate')}
                       </Button>
                     </SpaceBetween>
                   </SpaceBetween>
@@ -522,32 +554,32 @@ export default function ReportGenerator() {
             },
             {
               id: "preview",
-              label: "미리보기",
+              label: t('reports.tabs.preview'),
               content: (
-                <Container header={<Header variant="h2">보고서 미리보기</Header>}>
+                <Container header={<Header variant="h2">{t('reports.preview_title')}</Header>}>
                   {!selectedCourse ? (
                     <Box textAlign="center" color="inherit" padding="l">
-                      <b>과정을 선택해주세요</b>
-                      <p>보고서 미리보기를 위해 과정을 먼저 선택해주세요.</p>
+                      <b>{t('reports.preview_select_course.title')}</b>
+                      <p>{t('reports.preview_select_course.message')}</p>
                     </Box>
                   ) : !previewData ? (
                     <Box textAlign="center" padding="l">
                       <Spinner size="large" />
-                      <p>데이터를 불러오는 중입니다...</p>
+                      <p>{t('reports.loading_data')}</p>
                     </Box>
                   ) : (
                     <SpaceBetween size="l">
-                      <Header variant="h3">{selectedCourse.label} - 보고서 미리보기</Header>
+                      <Header variant="h3">{selectedCourse.label} - {t('reports.preview_subtitle')}</Header>
                       
                       {selectedReportType === 'quiz-comparison' && (
                         <SpaceBetween size="l">
-                          <Header variant="h3">사전/사후 퀴즈 비교</Header>
+                          <Header variant="h3">{t('reports.quiz_comparison')}</Header>
                           
                           {/* Cloudscape BarChart 사용 */}
                           <BarChart
                             series={[
                               {
-                                title: "사전 퀴즈",
+                                title: t('reports.pre_quiz'),
                                 type: "bar",
                                 data: previewData.quizComparison.labels.map((label: string, i: number) => ({
                                   x: label,
@@ -555,7 +587,7 @@ export default function ReportGenerator() {
                                 })),
                               },
                               {
-                                title: "사후 퀴즈",
+                                title: t('reports.post_quiz'),
                                 type: "bar",
                                 data: previewData.quizComparison.labels.map((label: string, i: number) => ({
                                   x: label,
@@ -565,59 +597,59 @@ export default function ReportGenerator() {
                             ]}
                             yDomain={[0, 100]}
                             i18nStrings={{
-                              filterLabel: "필터",
-                              filterPlaceholder: "필터",
-                              filterSelectedAriaLabel: "선택됨",
-                              legendAriaLabel: "범례",
-                              chartAriaRoleDescription: "막대 차트",
-                              xAxisAriaRoleDescription: "X축",
-                              yAxisAriaRoleDescription: "Y축"
+                              filterLabel: tString('common.filter'),
+                              filterPlaceholder: tString('common.filter'),
+                              filterSelectedAriaLabel: tString('common.selected'),
+                              legendAriaLabel: tString('common.legend'),
+                              chartAriaRoleDescription: tString('common.chart.bar'),
+                              xAxisAriaRoleDescription: tString('common.chart.xAxis'),
+                              yAxisAriaRoleDescription: tString('common.chart.yAxis')
                             }}
-                            ariaLabel="사전/사후 퀴즈 비교"
+                            ariaLabel={tString('reports.quiz_comparison')}
                             height={400}
                             hideFilter
                           />
                           
-                          <Box variant="awsui-key-label">평균 향상도: {previewData.quizComparison.averageImprovement}</Box>
+                          <Box variant="awsui-key-label">{t('reports.average_improvement')}: {previewData.quizComparison.averageImprovement}</Box>
                         </SpaceBetween>
                       )}
                       
                       {selectedReportType === 'survey-analysis' && (
                         <SpaceBetween size="l">
-                          <Header variant="h3">설문조사 분석</Header>
+                          <Header variant="h3">{t('reports.survey_analysis')}</Header>
                           
                           {/* Cloudscape PieChart 사용 */}
                           <div style={{ height: "400px" }}>
                             <PieChart
-                                data={previewData.surveyAnalysis.satisfaction.labels.map((label: string, i: number) => ({
+                              data={previewData.surveyAnalysis.satisfaction.labels.map((label: string, i: number) => ({
                                 title: label,
                                 value: previewData.surveyAnalysis.satisfaction.data[i]
-                                }))}
-                                detailPopoverContent={(datum, sum) => [
-                                { key: '응답 수', value: datum.value },
-                                { key: '비율', value: `\${((datum.value / sum) * 100).toFixed(1)}%` }
-                                ]}
-                                segmentDescription={(datum, sum) => 
+                              }))}
+                              detailPopoverContent={(datum, sum) => [
+                                { key: t('reports.responses'), value: datum.value },
+                                { key: t('reports.percentage'), value: `\${((datum.value / sum) * 100).toFixed(1)}%` }
+                              ]}
+                              segmentDescription={(datum, sum) => 
                                 `\${datum.title}: \${((datum.value / sum) * 100).toFixed(1)}%`
-                                }
-                                i18nStrings={{
-                                detailsValue: "값",
-                                detailsPercentage: "백분율",
-                                filterLabel: "필터",
-                                filterPlaceholder: "필터",
-                                filterSelectedAriaLabel: "선택됨",
-                                legendAriaLabel: "범례",
-                                chartAriaRoleDescription: "파이 차트"
-                                }}
-                                ariaLabel="설문 조사 분석"
-                                hideFilter
-                                size="large" // size 속성을 사용하여 크기 조절
+                              }
+                              i18nStrings={{
+                                detailsValue: tString('common.value'),
+                                detailsPercentage: tString('common.percentage'),
+                                filterLabel: tString('common.filter'),
+                                filterPlaceholder: tString('common.filter'),
+                                filterSelectedAriaLabel: tString('common.selected'),
+                                legendAriaLabel: tString('common.legend'),
+                                chartAriaRoleDescription: tString('common.chart.pie')
+                              }}
+                              ariaLabel={tString('reports.survey_analysis')}
+                              hideFilter
+                              size="large"
                             />
-                            </div>
+                          </div>
                           
-                          <Box variant="awsui-key-label">추천 점수: {previewData.surveyAnalysis.recommendationScore}/10</Box>
+                          <Box variant="awsui-key-label">{t('reports.recommendation_score')}: {previewData.surveyAnalysis.recommendationScore}/10</Box>
                           <SpaceBetween size="s">
-                            <Box variant="awsui-key-label">주요 의견:</Box>
+                            <Box variant="awsui-key-label">{t('reports.top_opinions')}:</Box>
                             <ul>
                               {previewData.surveyAnalysis.topComments.map((comment: string, index: number) => (
                                 <li key={index}>{comment}</li>
@@ -633,23 +665,23 @@ export default function ReportGenerator() {
             },
             {
               id: "reports",
-              label: "생성된 보고서",
+              label: t('reports.tabs.generated'),
               content: (
-                <Container header={<Header variant="h2" counter={`(\${generatedReports.length}개)`}>생성된 보고서</Header>}>
+                <Container header={<Header variant="h2" counter={`(\${generatedReports.length}개)`}>{t('reports.generated_reports')}</Header>}>
                   <Table
                     items={generatedReports}
                     loading={loadingReports}
-                    loadingText="보고서 목록을 불러오는 중..."
+                    loadingText={tString('reports.loading_reports')}
                     columnDefinitions={[
                       {
                         id: "title",
-                        header: "제목",
+                        header: t('reports.columns.title'),
                         cell: item => item.title,
                         sortingField: "title"
                       },
                       {
                         id: "type",
-                        header: "보고서 유형",
+                        header: t('reports.columns.type'),
                         cell: item => {
                           const reportType = reportTypes.find(type => type.id === item.type);
                           return reportType?.title || item.type;
@@ -657,35 +689,34 @@ export default function ReportGenerator() {
                       },
                       {
                         id: "courseName",
-                        header: "과정",
+                        header: t('reports.columns.course'),
                         cell: item => item.courseName
                       },
                       {
                         id: "format",
-                        header: "형식",
+                        header: t('reports.columns.format'),
                         cell: item => item.format.toUpperCase()
                       },
                       {
                         id: "status",
-                        header: "상태",
+                        header: t('reports.columns.status'),
                         cell: item => (
                           <Badge color={
                             item.status === 'completed' ? 'green' : 
                             item.status === 'in-progress' ? 'blue' : 'red'
                           }>
-                            {item.status === 'completed' ? '완료' : 
-                             item.status === 'in-progress' ? '생성 중' : '실패'}
+                            {getStatusLabel(item.status)}
                           </Badge>
                         )
                       },
                       {
                         id: "createdAt",
-                        header: "생성 날짜",
+                        header: t('reports.columns.created_date'),
                         cell: item => new Date(item.createdAt).toLocaleDateString()
                       },
                       {
                         id: "actions",
-                        header: "작업",
+                        header: t('reports.columns.actions'),
                         cell: item => (
                           <SpaceBetween direction="horizontal" size="xs">
                             <Button
@@ -693,13 +724,13 @@ export default function ReportGenerator() {
                               onClick={() => downloadReport(item)}
                               iconName="download"
                             >
-                              다운로드
+                              {t('reports.buttons.download')}
                             </Button>
                             <Button
                               onClick={() => deleteReport(item.id)}
                               iconName="remove"
                             >
-                              삭제
+                              {t('reports.buttons.delete')}
                             </Button>
                           </SpaceBetween>
                         )
@@ -707,9 +738,9 @@ export default function ReportGenerator() {
                     ]}
                     empty={
                       <Box textAlign="center" color="inherit">
-                        <b>생성된 보고서가 없습니다</b>
+                        <b>{t('reports.no_reports.title')}</b>
                         <Box padding={{ bottom: "s" }}>
-                          '보고서 생성' 탭에서 새 보고서를 생성하세요.
+                          {t('reports.no_reports.message')}
                         </Box>
                       </Box>
                     }

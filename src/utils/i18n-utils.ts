@@ -1,6 +1,42 @@
 // src/utils/i18n-utils.ts
 import { useTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import Backend from 'i18next-http-backend';
+
+// Import translation resources
+import enTranslation from '../locales/en.json';
+import koTranslation from '../locales/ko.json';
+
+// Initialize i18next if not already initialized
+if (!i18n.isInitialized) {
+  i18n
+    .use(Backend)
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources: {
+        en: {
+          translation: enTranslation
+        },
+        ko: {
+          translation: koTranslation
+        }
+      },
+      fallbackLng: 'en',
+      debug: process.env.NODE_ENV === 'development',
+      interpolation: {
+        escapeValue: false
+      },
+      detection: {
+        order: ['localStorage', 'cookie', 'navigator'],
+        lookupLocalStorage: 'language',
+        caches: ['localStorage']
+      }
+    });
+}
 
 /**
  * useTranslation 훅을 확장하여 타입 안전한 번역 기능을 제공하는 커스텀 훅
@@ -36,3 +72,22 @@ export const createTString = (translationFunc: TFunction) => {
     return String(translationFunc(key, options));
   };
 };
+
+/**
+ * Change the current language
+ * @param language Language code to change to (e.g., 'en', 'ko')
+ */
+export const changeLanguage = (language: string): Promise<typeof i18n.t> => {
+  return i18n.changeLanguage(language);
+};
+
+/**
+ * Get the current language
+ * @returns Current language code
+ */
+export const getCurrentLanguage = (): string => {
+  return i18n.language;
+};
+
+// Export the i18n instance for direct usage
+export default i18n;

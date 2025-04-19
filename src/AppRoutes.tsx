@@ -270,29 +270,22 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* 인증 페이지 라우트 */}
-      <Route element={<AuthLayout />}>
-        <Route
-          path="/signin"
-          element={authenticated ? <Navigate to="/" /> : <SignIn />}
-        />
-        <Route
-          path="/signup"
-          element={authenticated ? <Navigate to="/" /> : <SignUp />}
-        />
-        <Route
-          path="/confirm-signup"
-          element={authenticated ? <Navigate to="/" /> : <ConfirmSignUp />}
-        />
-        <Route
-          path="/forgot-password"
-          element={authenticated ? <Navigate to="/" /> : <ForgotPassword />}
-        />
-        <Route
-          path="/new-password"
-          element={authenticated ? <Navigate to="/" /> : <NewPassword />}
-        />
-      </Route>
+      {/* 인증 페이지 라우트 - AuthLayout을 각 라우트의 element 안에 포함시켜 children 전달 */}
+      <Route path="/signin" element={
+        authenticated ? <Navigate to="/" /> : <AuthLayout><SignIn /></AuthLayout>
+      } />
+      <Route path="/signup" element={
+        authenticated ? <Navigate to="/" /> : <AuthLayout><SignUp /></AuthLayout>
+      } />
+      <Route path="/confirm-signup" element={
+        authenticated ? <Navigate to="/" /> : <AuthLayout><ConfirmSignUp /></AuthLayout>
+      } />
+      <Route path="/forgot-password" element={
+        authenticated ? <Navigate to="/" /> : <AuthLayout><ForgotPassword /></AuthLayout>
+      } />
+      <Route path="/new-password" element={
+        authenticated ? <Navigate to="/" /> : <AuthLayout><NewPassword /></AuthLayout>
+      } />
 
       {/* 루트 리디렉션 */}
       <Route

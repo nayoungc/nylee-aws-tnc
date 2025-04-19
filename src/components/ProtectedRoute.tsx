@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-// MainLayout import 제거
 
 interface ProtectedRouteProps {
   authenticated: boolean | null;

@@ -1,3 +1,4 @@
+// src/pages/CourseCreation.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Container,
@@ -22,6 +23,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
 import { v4 as uuidv4 } from 'uuid';
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 interface CourseTemplate {
   id: string;
@@ -42,7 +44,9 @@ interface Customer {
 }
 
 const CourseCreation: React.FC = () => {
+  const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
+  const [client] = useState(() => generateClient());
   
   // 상태 관리
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
@@ -121,7 +125,7 @@ const CourseCreation: React.FC = () => {
         setLoadingTemplates(false);
       }, 500);
     } catch (error) {
-      console.error('과정 템플릿 로드 오류:', error);
+      console.error(t('course_creation.errors.template_load'), error);
       setCourseTemplates([]);
       setLoadingTemplates(false);
     }
@@ -142,7 +146,7 @@ const CourseCreation: React.FC = () => {
         setLoadingInstructors(false);
       }, 500);
     } catch (error) {
-      console.error('강사 로드 오류:', error);
+      console.error(t('course_creation.errors.instructor_load'), error);
       setInstructors([]);
       setLoadingInstructors(false);
     }
@@ -165,7 +169,7 @@ const CourseCreation: React.FC = () => {
         setLoadingCustomers(false);
       }, 500);
     } catch (error) {
-      console.error('고객사 로드 오류:', error);
+      console.error(t('course_creation.errors.customer_load'), error);
       setCustomers([]);
       setLoadingCustomers(false);
     }
@@ -191,7 +195,7 @@ const CourseCreation: React.FC = () => {
         setLoadingAssessments(false);
       }, 500);
     } catch (error) {
-      console.error('평가 도구 로드 오류:', error);
+      console.error(t('course_creation.errors.assessment_load'), error);
       setPreQuizzes([]);
       setPostQuizzes([]);
       setSurveys([]);
@@ -227,7 +231,7 @@ const CourseCreation: React.FC = () => {
         setLoadingPreview(false);
       }, 700);
     } catch (error) {
-      console.error('문제 로드 오류:', error);
+      console.error(t('course_creation.errors.preview_load'), error);
       setPreviewQuestions([]);
       setLoadingPreview(false);
     }
@@ -247,7 +251,7 @@ const CourseCreation: React.FC = () => {
   // 과정 생성 처리
   const handleCreateCourse = async () => {
     if (!selectedTemplate || !startDate || !duration || !customCourseName) {
-      setError('필수 항목을 모두 입력해주세요.');
+      setError(t('course_creation.errors.required_fields'));
       return;
     }
     
@@ -288,7 +292,7 @@ const CourseCreation: React.FC = () => {
       };
       
       // 실제 구현에서는 GraphQL API 호출
-      console.log('생성할 과정 데이터:', courseData);
+      console.log(t('course_creation.logs.create_data'), courseData);
       
       // 제출 시뮬레이션
       setTimeout(() => {
@@ -303,8 +307,8 @@ const CourseCreation: React.FC = () => {
       }, 1000);
       
     } catch (error) {
-      console.error('과정 생성 오류:', error);
-      setError('과정 생성에 실패했습니다. 다시 시도해 주세요.');
+      console.error(t('course_creation.errors.creation_failed'), error);
+      setError(t('course_creation.errors.creation_message'));
       setSubmitting(false);
     }
   };
@@ -314,11 +318,11 @@ const CourseCreation: React.FC = () => {
       header={
         <Header
           variant="h2"
-          description="새로운 교육 과정을 개설합니다"
+          description={t('course_creation.description')}
           actions={
             <SpaceBetween direction="horizontal" size="xs">
               <Button onClick={() => navigate('/instructor/courses')}>
-                취소
+                {t('common.cancel')}
               </Button>
               <Button 
                 variant="primary" 
@@ -326,50 +330,50 @@ const CourseCreation: React.FC = () => {
                 loading={submitting}
                 disabled={submitting || !selectedTemplate || !startDate || !customCourseName}
               >
-                과정 생성
+                {t('course_creation.create_button')}
               </Button>
             </SpaceBetween>
           }
         >
-          새 과정 개설
+          {t('course_creation.title')}
         </Header>
       }
     >
       <SpaceBetween size="l">
         {success && (
-          <Alert type="success" header="과정이 성공적으로 생성되었습니다">
-            과정 목록 페이지로 이동합니다...
+          <Alert type="success" header={t('course_creation.success.header')}>
+            {t('course_creation.success.message')}
           </Alert>
         )}
         
         {error && (
-          <Alert type="error" header="오류">
+          <Alert type="error" header={t('common.error')}>
             {error}
           </Alert>
         )}
         
         {/* 기본 정보 섹션 */}
-        <Container header={<Header variant="h3">기본 정보</Header>}>
+        <Container header={<Header variant="h3">{t('course_creation.sections.basic_info')}</Header>}>
           <ColumnLayout columns={2}>
             <SpaceBetween size="l">
               {/* LMS ID */}
-              <FormField label="LMS ID">
+              <FormField label={t('course_creation.fields.lms_id')}>
                 <Input
                   value={lmsId}
                   onChange={({ detail }) => setLmsId(detail.value)}
-                  placeholder="LMS ID 입력"
+                  placeholder={tString('course_creation.placeholders.lms_id')}
                 />
               </FormField>
               
               {/* 과정 */}
               <FormField 
-                label="과정명" 
-                description="과정을 선택하세요" 
-                constraintText="필수 항목"
+                label={t('course_creation.fields.course_name')} 
+                description={t('course_creation.descriptions.select_course')} 
+                constraintText={t('common.required')}
               >
                 <Select
-                  placeholder="과정 선택"
-                  loadingText="과정 목록을 불러오는 중..."
+                  placeholder={tString('course_creation.placeholders.select_course')}
+                  loadingText={tString('course_creation.loading.courses')}
                   statusType={loadingTemplates ? "loading" : "finished"}
                   options={courseTemplates.map(template => ({
                     label: template.title,
@@ -383,11 +387,11 @@ const CourseCreation: React.FC = () => {
               
               {/* 강사 선택 */}
               <FormField 
-                label="강사 이름" 
+                label={t('course_creation.fields.instructor_name')} 
               >
                 <Select
-                  placeholder="강사 선택"
-                  loadingText="강사 목록을 불러오는 중..."
+                  placeholder={tString('course_creation.placeholders.select_instructor')}
+                  loadingText={tString('course_creation.loading.instructors')}
                   statusType={loadingInstructors ? "loading" : "finished"}
                   options={instructors.map(instructor => ({
                     label: instructor.name,
@@ -403,27 +407,29 @@ const CourseCreation: React.FC = () => {
             <SpaceBetween size="l">
               {/* 고객사 정보 */}
               <FormField 
-                label="고객 이름" 
-                constraintText={useCustomCustomerName ? "직접 입력" : "목록에서 선택"}
+                label={t('course_creation.fields.customer_name')} 
+                constraintText={useCustomCustomerName ? 
+                  t('course_creation.constraints.direct_input') : 
+                  t('course_creation.constraints.select_from_list')}
               >
                 <SpaceBetween size="s">
                   <Toggle
                     checked={useCustomCustomerName}
                     onChange={({ detail }) => setUseCustomCustomerName(detail.checked)}
                   >
-                    직접 입력
+                    {t('course_creation.fields.direct_input')}
                   </Toggle>
                   
                   {useCustomCustomerName ? (
                     <Input
                       value={customerName}
                       onChange={({ detail }) => setCustomerName(detail.value)}
-                      placeholder="고객사 이름 직접 입력"
+                      placeholder={tString('course_creation.placeholders.customer_name_direct')}
                     />
                   ) : (
                     <Select
-                      placeholder="고객사 선택"
-                      loadingText="고객사 목록을 불러오는 중..."
+                      placeholder={tString('course_creation.placeholders.select_customer')}
+                      loadingText={tString('course_creation.loading.customers')}
                       statusType={loadingCustomers ? "loading" : "finished"}
                       options={customers.map(customer => ({
                         label: customer.name,
@@ -438,41 +444,43 @@ const CourseCreation: React.FC = () => {
               
               {/* 강의 시작 날짜 */}
               <FormField 
-                label="강의 시작 날짜" 
-                constraintText="필수 항목"
+                label={t('course_creation.fields.start_date')} 
+                constraintText={t('common.required')}
               >
                 <DatePicker
                   onChange={({ detail }) => setStartDate(detail.value)}
                   value={startDate}
                   openCalendarAriaLabel={(selectedDate: string | null) => 
-                    selectedDate ? `날짜 선택, 선택된 날짜: \${selectedDate}` : '날짜 선택'
+                    selectedDate ? 
+                      t('course_creation.aria.open_calendar_selected', { date: selectedDate }) : 
+                      t('course_creation.aria.open_calendar')
                   }
                   placeholder="YYYY/MM/DD"
                   i18nStrings={{
-                    previousMonthAriaLabel: '이전 달',
-                    nextMonthAriaLabel: '다음 달',
-                    todayAriaLabel: '오늘'
+                    previousMonthAriaLabel: tString('date_picker.previous_month'),
+                    nextMonthAriaLabel: tString('date_picker.next_month'),
+                    todayAriaLabel: tString('date_picker.today')
                   }}
                 />
               </FormField>
               
               {/* 강의실 위치 */}
               <FormField 
-                label="강의실 위치"
+                label={t('course_creation.fields.location')}
               >
                 <SpaceBetween size="s">
                   <Checkbox
                     checked={isVirtual}
                     onChange={({ detail }) => setIsVirtual(detail.checked)}
                   >
-                    vILT (가상 교육)
+                    {t('course_creation.fields.virtual_training')}
                   </Checkbox>
                   
                   {!isVirtual && (
                     <Input
                       value={location}
                       onChange={({ detail }) => setLocation(detail.value)}
-                      placeholder="강의실 위치 입력"
+                      placeholder={tString('course_creation.placeholders.location')}
                       disabled={isVirtual}
                     />
                   )}
@@ -481,7 +489,7 @@ const CourseCreation: React.FC = () => {
               
               {/* 교육 관련 수치 정보 */}
               <ColumnLayout columns={3}>
-                <FormField label="수업 일수">
+                <FormField label={t('course_creation.fields.duration')}>
                   <Input
                     type="number"
                     value={duration}
@@ -490,7 +498,7 @@ const CourseCreation: React.FC = () => {
                   />
                 </FormField>
                 
-                <FormField label="실습 개수">
+                <FormField label={t('course_creation.fields.lab_count')}>
                   <Input
                     type="number"
                     value={labCount}
@@ -499,7 +507,7 @@ const CourseCreation: React.FC = () => {
                   />
                 </FormField>
                 
-                <FormField label="수강생 수">
+                <FormField label={t('course_creation.fields.student_count')}>
                   <Input
                     type="number"
                     value={studentCount}
@@ -513,11 +521,11 @@ const CourseCreation: React.FC = () => {
         </Container>
         
         {/* 평가 옵션 섹션 */}
-        <Container header={<Header variant="h3">평가 옵션</Header>}>
+        <Container header={<Header variant="h3">{t('course_creation.sections.assessment')}</Header>}>
           <SpaceBetween size="l">
             {/* 사전 퀴즈 섹션 */}
             <ExpandableSection 
-              headerText="사전 퀴즈"
+              headerText={t('course_creation.assessments.pre_quiz')}
               variant="container"
               expanded={includePreQuiz}
             >
@@ -526,27 +534,27 @@ const CourseCreation: React.FC = () => {
                   checked={includePreQuiz}
                   onChange={({ detail }) => setIncludePreQuiz(detail.checked)}
                 >
-                  사전 퀴즈 포함
+                  {t('course_creation.assessments.include_pre_quiz')}
                 </Checkbox>
                 
                 {includePreQuiz && (
                   <>
                     <FormField 
-                      label="사전 퀴즈 선택" 
-                      description="이 과정에 포함할 사전 퀴즈를 선택하세요."
+                      label={t('course_creation.assessments.select_pre_quiz')} 
+                      description={t('course_creation.descriptions.select_pre_quiz')}
                     >
                       <Select
-                        placeholder="사전 퀴즈 선택"
-                        loadingText="퀴즈 목록을 불러오는 중..."
+                        placeholder={tString('course_creation.placeholders.select_pre_quiz')}
+                        loadingText={tString('course_creation.loading.quizzes')}
                         statusType={loadingAssessments ? "loading" : "finished"}
                         options={preQuizzes.map(quiz => ({
                           label: quiz.title,
                           value: quiz.id,
-                          description: `\${quiz.questionCount}개 문항`
+                          description: tString('course_creation.assessments.question_count', { count: quiz.questionCount })
                         }))}
                         selectedOption={selectedPreQuiz}
                         onChange={({ detail }) => setSelectedPreQuiz(detail.selectedOption)}
-                        empty="사용 가능한 사전 퀴즈가 없습니다."
+                        empty={tString('course_creation.assessments.no_pre_quiz')}
                       />
                     </FormField>
                     
@@ -555,7 +563,7 @@ const CourseCreation: React.FC = () => {
                         iconName="external" 
                         onClick={() => openPreview(selectedPreQuiz.value, 'pre')}
                       >
-                        사전 퀴즈 미리보기
+                        {t('course_creation.assessments.preview_pre_quiz')}
                       </Button>
                     )}
                   </>
@@ -565,7 +573,7 @@ const CourseCreation: React.FC = () => {
             
             {/* 사후 퀴즈 섹션 */}
             <ExpandableSection 
-              headerText="사후 퀴즈"
+              headerText={t('course_creation.assessments.post_quiz')}
               variant="container"
               expanded={includePostQuiz}
             >
@@ -574,27 +582,27 @@ const CourseCreation: React.FC = () => {
                   checked={includePostQuiz}
                   onChange={({ detail }) => setIncludePostQuiz(detail.checked)}
                 >
-                  사후 퀴즈 포함
+                  {t('course_creation.assessments.include_post_quiz')}
                 </Checkbox>
                 
                 {includePostQuiz && (
                   <>
                     <FormField 
-                      label="사후 퀴즈 선택" 
-                      description="이 과정에 포함할 사후 퀴즈를 선택하세요."
+                      label={t('course_creation.assessments.select_post_quiz')} 
+                      description={t('course_creation.descriptions.select_post_quiz')}
                     >
-                      <Select
-                        placeholder="사후 퀴즈 선택"
-                        loadingText="퀴즈 목록을 불러오는 중..."
+                     <Select
+                        placeholder={tString('course_creation.placeholders.select_post_quiz')}
+                        loadingText={tString('course_creation.loading.quizzes')}
                         statusType={loadingAssessments ? "loading" : "finished"}
                         options={postQuizzes.map(quiz => ({
                           label: quiz.title,
                           value: quiz.id,
-                          description: `\${quiz.questionCount}개 문항`
+                          description: tString('course_creation.assessments.question_count', { count: quiz.questionCount })
                         }))}
                         selectedOption={selectedPostQuiz}
                         onChange={({ detail }) => setSelectedPostQuiz(detail.selectedOption)}
-                        empty="사용 가능한 사후 퀴즈가 없습니다."
+                        empty={tString('course_creation.assessments.no_post_quiz')}
                       />
                     </FormField>
                     
@@ -603,7 +611,7 @@ const CourseCreation: React.FC = () => {
                         iconName="external" 
                         onClick={() => openPreview(selectedPostQuiz.value, 'post')}
                       >
-                        사후 퀴즈 미리보기
+                        {t('course_creation.assessments.preview_post_quiz')}
                       </Button>
                     )}
                   </>
@@ -613,7 +621,7 @@ const CourseCreation: React.FC = () => {
             
             {/* 사전 설문조사 섹션 */}
             <ExpandableSection 
-              headerText="사전 설문조사"
+              headerText={t('course_creation.assessments.survey')}
               variant="container"
               expanded={includeSurvey}
             >
@@ -622,27 +630,27 @@ const CourseCreation: React.FC = () => {
                   checked={includeSurvey}
                   onChange={({ detail }) => setIncludeSurvey(detail.checked)}
                 >
-                  사전 설문조사 포함
+                  {t('course_creation.assessments.include_survey')}
                 </Checkbox>
                 
                 {includeSurvey && (
                   <>
                     <FormField 
-                      label="설문조사 선택" 
-                      description="이 과정에 포함할 사전 설문조사를 선택하세요."
+                      label={t('course_creation.assessments.select_survey')} 
+                      description={t('course_creation.descriptions.select_survey')}
                     >
                       <Select
-                        placeholder="설문조사 선택"
-                        loadingText="설문조사 목록을 불러오는 중..."
+                        placeholder={tString('course_creation.placeholders.select_survey')}
+                        loadingText={tString('course_creation.loading.surveys')}
                         statusType={loadingAssessments ? "loading" : "finished"}
                         options={surveys.map(survey => ({
                           label: survey.title,
                           value: survey.id,
-                          description: `\${survey.questionCount}개 문항`
+                          description: tString('course_creation.assessments.question_count', { count: survey.questionCount })
                         }))}
                         selectedOption={selectedSurvey}
                         onChange={({ detail }) => setSelectedSurvey(detail.selectedOption)}
-                        empty="사용 가능한 설문조사가 없습니다."
+                        empty={tString('course_creation.assessments.no_survey')}
                       />
                     </FormField>
                     
@@ -651,7 +659,7 @@ const CourseCreation: React.FC = () => {
                         iconName="external" 
                         onClick={() => openPreview(selectedSurvey.value, 'survey')}
                       >
-                        설문조사 미리보기
+                        {t('course_creation.assessments.preview_survey')}
                       </Button>
                     )}
                   </>
@@ -667,21 +675,23 @@ const CourseCreation: React.FC = () => {
         visible={previewModalVisible}
         onDismiss={() => setPreviewModalVisible(false)}
         header={
-          previewType === 'pre' ? '사전 퀴즈 미리보기' : 
-          previewType === 'post' ? '사후 퀴즈 미리보기' : 
-          '사전 설문조사 미리보기'
+          previewType === 'pre' ? t('course_creation.previews.pre_quiz_title') : 
+          previewType === 'post' ? t('course_creation.previews.post_quiz_title') : 
+          t('course_creation.previews.survey_title')
         }
         size="large"
         footer={
           <Box float="right">
-            <Button onClick={() => setPreviewModalVisible(false)}>닫기</Button>
+            <Button onClick={() => setPreviewModalVisible(false)}>
+              {t('common.close')}
+            </Button>
           </Box>
         }
       >
         {loadingPreview ? (
           <Box textAlign="center" padding="l">
             <Spinner />
-            <Box padding="s">문항을 불러오는 중...</Box>
+            <Box padding="s">{t('course_creation.loading.questions')}</Box>
           </Box>
         ) : (
           <SpaceBetween size="l">
@@ -690,28 +700,26 @@ const CourseCreation: React.FC = () => {
                 columnDefinitions={[
                   {
                     id: "number",
-                    header: "번호",
-                    cell: (item) => {
-                      // 각 항목의 인덱스는 내부적으로 추적됨
-                      // 미리 항목에 인덱스를 추가하는 방식으로 수정
-                      return item.rowIndex;
-                    }
+                    header: t('course_creation.previews.question_number'),
+                    cell: (item) => item.rowIndex
                   },
                   {
                     id: "question",
-                    header: "문항",
+                    header: t('course_creation.previews.question'),
                     cell: item => item.questionText
                   },
                   {
                     id: "options",
-                    header: "보기",
+                    header: t('course_creation.previews.options'),
                     cell: item => (
                       <Box>
                         {item.options.map((option: string, index: number) => (
                           <div key={index}>
                             {String.fromCharCode(65 + index)}. {option}
                             {previewType !== 'survey' && item.correctAnswer === index && 
-                              <span style={{ color: 'green', marginLeft: '5px' }}>(정답)</span>
+                              <span style={{ color: 'green', marginLeft: '5px' }}>
+                                ({t('course_creation.previews.correct_answer')})
+                              </span>
                             }
                           </div>
                         ))}
@@ -726,18 +734,18 @@ const CourseCreation: React.FC = () => {
                 trackBy="id"
                 empty={
                   <Box textAlign="center" color="inherit">
-                    <b>문항이 없습니다</b>
+                    <b>{t('course_creation.previews.no_questions')}</b>
                     <Box padding={{ bottom: "s" }}>
-                      선택한 평가 도구에 문항이 없습니다.
+                      {t('course_creation.previews.no_questions_description')}
                     </Box>
                   </Box>
                 }
               />
             ) : (
               <Box textAlign="center" color="inherit">
-                <b>문항이 없습니다</b>
+                <b>{t('course_creation.previews.no_questions')}</b>
                 <Box padding={{ bottom: "s" }}>
-                  선택한 평가 도구에 문항이 없거나 불러오는데 실패했습니다.
+                  {t('course_creation.previews.load_failed')}
                 </Box>
               </Box>
             )}

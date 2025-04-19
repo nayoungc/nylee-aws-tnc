@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { fetchUserAttributes, signOut, getCurrentUser, UserAttributeKey } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTypedTranslation } from '../utils/i18n-utils';
 import { TopNavigation } from '@cloudscape-design/components';
 
 // UserAttributes 인터페이스를 AWS Amplify의 타입과 호환되게 정의
@@ -9,7 +9,7 @@ interface UserAttributes extends Partial<Record<UserAttributeKey, string>> {}
 
 const Header = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTypedTranslation();
   const [username, setUsername] = useState<string>('');
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userAttributes, setUserAttributes] = useState<UserAttributes | null>(null);

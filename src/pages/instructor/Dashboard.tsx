@@ -8,17 +8,14 @@ import {
   SpaceBetween,
   Button,
   ColumnLayout,
-  Link,
   Badge,
   StatusIndicator,
-  Grid,
-  ProgressBar,
-  PieChart,
-  BarChart,
-  Tiles
+  Grid
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { generateClient } from 'aws-amplify/api';
 
 // 수정: Cloudscape의 Tiles 컴포넌트 속성에 맞게 정의
 interface QuickActionDefinition {
@@ -39,6 +36,8 @@ interface QuickAction {
 const Dashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [client] = useState(() => generateClient());
+
   
   // 안전한 번역 함수를 생성
   const tStr = (key: string, options?: any): string => {

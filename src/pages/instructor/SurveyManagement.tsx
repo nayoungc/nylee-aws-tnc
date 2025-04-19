@@ -18,6 +18,7 @@ import { post } from 'aws-amplify/api';
 import { SelectProps } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
 import { useNavigate } from 'react-router-dom';
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 // 타입 정의
 interface Question {
@@ -108,6 +109,8 @@ function isSurveyGenerationResponse(obj: unknown): obj is SurveyGenerationRespon
 
 export default function SurveyManagement() {
   const navigate = useNavigate();
+  const { t, tString } = useTypedTranslation();
+  
   const [selectedCourse, setSelectedCourse] = useState<SelectProps.Option | null>(null);
   const [courses, setCourses] = useState<SelectProps.Option[]>([]);
   const [loading, setLoading] = useState(false);
@@ -120,6 +123,7 @@ export default function SurveyManagement() {
   const [syncSurveys, setSyncSurveys] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [surveyToDelete, setSurveyToDelete] = useState<Survey | null>(null);
+  const [client] = useState(() => generateClient());
   
   // 페이지 로드 시 과정 목록 가져오기
   useEffect(() => {
@@ -138,9 +142,7 @@ export default function SurveyManagement() {
     setLoadingCourses(true);
     
     try {
-      // GraphQL API를 사용하여 데이터 가져오기
-      const client = generateClient();
-      
+      // GraphQL API를 사용하여 데이터 가져오기      
       try {
         const response = await client.graphql({
           query: listCourseCatalogs,
@@ -163,12 +165,12 @@ export default function SurveyManagement() {
         
         setCourses(courseOptions);
       } catch (error) {
-        console.error('GraphQL 쿼리 오류:', error);
+        console.error(t('survey.errors.graphql_query_error'), error);
         throw error;
       }
       
     } catch (error) {
-      console.error('과정 목록 로드 오류:', error);
+      console.error(t('survey.errors.load_courses_error'), error);
       
       // 오류 발생 시 기본 데이터 사용 (개발용)
       if (process.env.NODE_ENV === 'development') {
@@ -212,14 +214,14 @@ export default function SurveyManagement() {
       
       setExistingSurveys(sortedSurveys);
     } catch (error) {
-      console.error('설문조사 목록 로드 오류:', error);
+      console.error(t('survey.errors.load_surveys_error'), error);
       
       // 개발용 더미 데이터
       if (process.env.NODE_ENV === 'development') {
         const dummyData: Survey[] = [
           {
             id: 'survey-1',
-            title: `\${type === 'pre' ? '사전' : '사후'} 학습 만족도 설문조사`,
+            title: `\${type === 'pre' ? t('survey.pre') : t('survey.post')} \${t('survey.satisfaction_survey')}`,
             courseId,
             surveyType: type,
             questionCount: 10,
@@ -228,7 +230,7 @@ export default function SurveyManagement() {
           },
           {
             id: 'survey-2',
-            title: `\${type === 'pre' ? '사전' : '사후'} 기대사항 설문조사`,
+            title: `\${type === 'pre' ? t('survey.pre') : t('survey.post')} \${t('survey.expectations_survey')}`,
             courseId,
             surveyType: type,
             questionCount: 5,
@@ -272,11 +274,11 @@ export default function SurveyManagement() {
       if (isSurveyGenerationResponse(jsonData)) {
         setGeneratedQuestions(jsonData.questions);
       } else {
-        console.error('응답 데이터가 예상 형식과 일치하지 않음:', jsonData);
+        console.error(t('survey.errors.invalid_response_format'), jsonData);
         setGeneratedQuestions([]);
       }
     } catch (error) {
-      console.error('설문조사 생성 오류:', error);
+      console.error(t('survey.errors.generate_survey_error'), error);
       setGeneratedQuestions([]);
       
       // 개발용 더미 데이터
@@ -284,24 +286,41 @@ export default function SurveyManagement() {
         setTimeout(() => {
           const dummyQuestions: Question[] = [
             {
-              question: "이번 과정에 대한 전반적인 기대치를 평가해주세요.",
+              question: t('survey.dummy.question1'),
               type: "single",
-              options: ["매우 낮음", "낮음", "보통", "높음", "매우 높음"]
+              options: [
+                t('survey.dummy.option1_verylow'),
+                t('survey.dummy.option1_low'),
+                t('survey.dummy.option1_medium'),
+                t('survey.dummy.option1_high'),
+                t('survey.dummy.option1_veryhigh')
+              ]
             },
             {
-              question: "이 과정을 수강하는 주된 목적은 무엇입니까?",
+              question: t('survey.dummy.question2'),
               type: "multiple",
-              options: ["업무 역량 강화", "자기 계발", "승진/이직 준비", "자격증 취득", "기타"]
+              options: [
+                t('survey.dummy.option2_1'),
+                t('survey.dummy.option2_2'),
+                t('survey.dummy.option2_3'),
+                t('survey.dummy.option2_4'),
+                t('survey.dummy.option2_5')
+              ]
             },
             {
-              question: "이 과정에서 가장 배우고 싶은 내용은 무엇입니까?",
+              question: t('survey.dummy.question3'),
               type: "text",
               options: []
             },
             {
-              question: "해당 주제에 대한 사전 지식 수준이 어느 정도입니까?",
+              question: t('survey.dummy.question4'),
               type: "single",
-              options: ["초보자 (지식 없음)", "기초 (기본 개념만 알고 있음)", "중급 (일부 경험 있음)", "전문가 (관련 분야 경력 있음)"]
+              options: [
+                t('survey.dummy.option4_1'),
+                t('survey.dummy.option4_2'),
+                t('survey.dummy.option4_3'),
+                t('survey.dummy.option4_4')
+              ]
             }
           ];
           setGeneratedQuestions(dummyQuestions);
@@ -358,10 +377,10 @@ export default function SurveyManagement() {
       }
       
       // 성공 알림
-      alert(`설문조사가 \${surveyType === 'pre' ? '사후' : '사전'} 설문조사로 복사되었습니다.`);
+      alert(t('survey.alerts.copy_success', { type: surveyType === 'pre' ? t('survey.post') : t('survey.pre') }));
     } catch (error) {
-      console.error('설문조사 복사 오류:', error);
-      alert('설문조사 복사 중 오류가 발생했습니다.');
+      console.error(t('survey.errors.copy_survey_error'), error);
+      alert(t('survey.errors.copy_survey_error_message'));
     } finally {
       setLoading(false);
     }
@@ -394,8 +413,8 @@ export default function SurveyManagement() {
       setShowDeleteModal(false);
       setSurveyToDelete(null);
     } catch (error) {
-      console.error('설문조사 삭제 오류:', error);
-      alert('설문조사 삭제 중 오류가 발생했습니다.');
+      console.error(t('survey.errors.delete_survey_error'), error);
+      alert(t('survey.errors.delete_survey_error_message'));
     }
   };
 
@@ -410,22 +429,42 @@ export default function SurveyManagement() {
     // 기본 템플릿 설문조사 문항 생성
     const templateQuestions: Question[] = [
       {
-        question: `\${surveyType === 'pre' ? '교육 시작 전' : '교육 수료 후'} 본 과정에 대한 전반적인 만족도는 어떠신가요?`,
-        options: ["매우 불만족", "불만족", "보통", "만족", "매우 만족"],
+        question: t('survey.template.overall_satisfaction', { 
+          period: surveyType === 'pre' ? t('survey.template.before') : t('survey.template.after')
+        }),
+        options: [
+          t('survey.template.very_dissatisfied'),
+          t('survey.template.dissatisfied'),
+          t('survey.template.neutral'),
+          t('survey.template.satisfied'),
+          t('survey.template.very_satisfied')
+        ],
         type: "single"
       },
       {
-        question: `\${selectedCourse.label} 과정에서 가장 기대되는(\${surveyType === 'post' ? '유익했던' : ''}) 부분은 무엇인가요?`,
+        question: t('survey.template.most_expected_part', { 
+          course: selectedCourse.label,
+          past: surveyType === 'post' ? t('survey.template.beneficial') : ''
+        }),
         options: [],
         type: "text"
       },
       {
-        question: `본 교육에 \${surveyType === 'pre' ? '참여하시는' : '참여하신'} 주된 목적은 무엇인가요? (해당하는 항목 모두 선택)`,
-        options: ["업무 역량 강화", "자기 개발", "자격증 취득 준비", "승진/이직 준비", "팀 내 지식 공유", "기타"],
+        question: t('survey.template.participation_purpose', { 
+          past: surveyType === 'pre' ? t('survey.template.participating') : t('survey.template.participated')
+        }),
+        options: [
+          t('survey.template.purpose_1'),
+          t('survey.template.purpose_2'),
+          t('survey.template.purpose_3'),
+          t('survey.template.purpose_4'),
+          t('survey.template.purpose_5'),
+          t('survey.template.purpose_other')
+        ],
         type: "multiple"
       },
       {
-        question: "교육과 관련하여 추가 의견이나 요청사항이 있으시면 기재해 주세요.",
+        question: t('survey.template.additional_comment'),
         options: [],
         type: "text"
       }
@@ -435,16 +474,28 @@ export default function SurveyManagement() {
     const courseLabel = selectedCourse?.label || '';
     if (courseLabel.includes("AWS") || courseLabel.includes("Cloud")) {
       templateQuestions.push({
-        question: "클라우드 기술 사용 경험은 어느 정도인가요?",
-        options: ["전혀 없음", "초보 수준", "중급 수준", "고급 수준", "전문가 수준"],
+        question: t('survey.template.cloud_experience'),
+        options: [
+          t('survey.template.experience_none'),
+          t('survey.template.experience_basic'),
+          t('survey.template.experience_intermediate'),
+          t('survey.template.experience_advanced'),
+          t('survey.template.experience_expert')
+        ],
         type: "single"
       });
     }
     
     if (surveyType === 'post') {
       templateQuestions.push({
-        question: "교육을 통해 실무 역량이 향상되었다고 생각하시나요?",
-        options: ["전혀 그렇지 않다", "그렇지 않다", "보통이다", "그렇다", "매우 그렇다"],
+        question: t('survey.template.skill_improvement'),
+        options: [
+          t('survey.template.strongly_disagree'),
+          t('survey.template.disagree'),
+          t('survey.template.neutral'),
+          t('survey.template.agree'),
+          t('survey.template.strongly_agree')
+        ],
         type: "single"
       });
     }
@@ -455,36 +506,36 @@ export default function SurveyManagement() {
   
   return (
     <SpaceBetween size="l">
-      <Container header={<Header variant="h2">설문조사 관리</Header>}>
+      <Container header={<Header variant="h2">{t('survey.management_title')}</Header>}>
         <SpaceBetween size="l">
-          <FormField label="과정 선택">
+          <FormField label={t('survey.select_course')}>
             <Select
               selectedOption={selectedCourse}
               onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
               options={courses}
-              placeholder="과정 선택"
+              placeholder={tString('survey.course_placeholder')}
               filteringType="auto"
               statusType={loadingCourses ? "loading" : "finished"}
-              loadingText="과정 목록을 불러오는 중..."
+              loadingText={tString('survey.loading_courses')}
               empty={
                 <Box textAlign="center" color="inherit">
-                  <b>과정이 없습니다</b>
+                  <b>{t('survey.no_courses')}</b>
                   <Box padding={{ bottom: "xs" }}>
-                    사용 가능한 과정이 없습니다. 과정을 먼저 등록하세요.
+                    {t('survey.register_course_first')}
                   </Box>
                 </Box>
               }
             />
           </FormField>
 
-          <FormField label="설문조사 유형">
+          <FormField label={t('survey.survey_type')}>
             <SegmentedControl
               selectedId={surveyType}
               onChange={handleSurveyTypeChange}
-              label="설문조사 유형 선택"
+              label={tString('survey.survey_type_selection')}
               options={[
-                { id: 'pre', text: '사전 설문조사' },
-                { id: 'post', text: '사후 설문조사' },
+                { id: 'pre', text: tString('survey.pre_survey') },
+                { id: 'post', text: tString('survey.post_survey') },
               ]}
             />
           </FormField>
@@ -494,7 +545,7 @@ export default function SurveyManagement() {
               checked={syncSurveys}
               onChange={({ detail }) => handleSyncCheckboxChange(detail.checked)}
             >
-              사후 설문조사를 사전 설문조사와 동일하게 설정
+              {t('survey.sync_with_pre_survey')}
             </Checkbox>
           )}
           
@@ -504,14 +555,14 @@ export default function SurveyManagement() {
               disabled={!selectedCourse || (surveyType === 'post' && syncSurveys)}
               onClick={() => navigateToSurveyCreator()}
             >
-              설문조사 만들기
+              {t('survey.create_survey')}
             </Button>
             <Button 
               onClick={generateSurveyWithAI}
               iconName="add-plus"
               disabled={!selectedCourse || (surveyType === 'post' && syncSurveys)}
             >
-              AI로 자동 생성
+              {t('survey.generate_with_ai')}
             </Button>
             {/* 템플릿으로 생성 버튼 추가 */}
             <Button 
@@ -519,7 +570,7 @@ export default function SurveyManagement() {
               iconName="file"
               disabled={!selectedCourse || (surveyType === 'post' && syncSurveys)}
             >
-              기본 템플릿으로 생성
+              {t('survey.create_from_template')}
             </Button>
             {surveyType === 'post' && syncSurveys && existingSurveys.length > 0 && (
               <Button 
@@ -527,7 +578,7 @@ export default function SurveyManagement() {
                 iconName="copy"
                 onClick={() => copySurvey(existingSurveys[0].id)}
               >
-                사전 설문조사에서 복사
+                {t('survey.copy_from_pre_survey')}
               </Button>
             )}
           </SpaceBetween>
@@ -539,50 +590,54 @@ export default function SurveyManagement() {
         header={
           <Header 
             variant="h2"
-            description={`선택한 과정의 \${surveyType === 'pre' ? '사전' : '사후'} 설문조사 목록`}
+            description={t('survey.survey_list_description', {
+              type: surveyType === 'pre' ? t('survey.pre') : t('survey.post')
+            })}
             counter={`(\${existingSurveys.length})`}
           >
-            설문조사 목록
+            {t('survey.survey_list')}
           </Header>
         }
       >
         <Table
           items={existingSurveys}
           loading={loadingSurveys}
-          loadingText="설문조사 목록을 불러오는 중..."
+          loadingText={tString('survey.loading_surveys')}
           columnDefinitions={[
             {
               id: "title",
-              header: "제목",
+              header: t('survey.columns.title'),
               cell: item => item.title
             },
             {
               id: "questionCount",
-              header: "문항 수",
+              header: t('survey.columns.question_count'),
               cell: item => item.questionCount
             },
             {
               id: "responseCount",
-              header: "응답 수",
+              header: t('survey.columns.response_count'),
               cell: item => item.responseCount
             },
             {
               id: "createdAt",
-              header: "생성 일자",
+              header: t('survey.columns.created_date'),
               cell: item => new Date(item.createdAt).toLocaleDateString()
             },
             {
               id: "actions",
-              header: "관리",
+              header: t('survey.columns.actions'),
               cell: item => (
                 <SpaceBetween direction="horizontal" size="xs">
                   <ButtonDropdown
                     items={[
-                      { text: '결과 보기', id: 'view' },
-                      { text: '편집', id: 'edit' },
-                      { text: '복제', id: 'duplicate' },
-                      { text: `\${surveyType === 'pre' ? '사후' : '사전'} 설문조사로 복사`, id: 'copy-to-other' },
-                      { text: '삭제', id: 'delete' }
+                      { text: tString('survey.actions.view_results'), id: 'view' },
+                      { text: tString('survey.actions.edit'), id: 'edit' },
+                      { text: tString('survey.actions.duplicate'), id: 'duplicate' },
+                      { text: tString('survey.actions.copy_to_other', {
+                        type: surveyType === 'pre' ? t('survey.post') : t('survey.pre')
+                      }), id: 'copy-to-other' },
+                      { text: tString('survey.actions.delete'), id: 'delete' }
                     ]}
                     onItemClick={({ detail }) => {
                       switch (detail.id) {
@@ -604,7 +659,7 @@ export default function SurveyManagement() {
                       }
                     }}
                   >
-                    작업
+                    {t('survey.actions.button_text')}
                   </ButtonDropdown>
                 </SpaceBetween>
               )
@@ -612,9 +667,9 @@ export default function SurveyManagement() {
           ]}
           empty={
             <Box textAlign="center" color="inherit">
-              <b>설문조사가 없습니다</b>
+              <b>{t('survey.no_surveys')}</b>
               <Box padding={{ bottom: "xs" }}>
-                선택한 과정에 대한 설문조사가 없습니다. 새 설문조사를 생성하세요.
+                {t('survey.create_new_survey_prompt')}
               </Box>
             </Box>
           }
@@ -625,22 +680,24 @@ export default function SurveyManagement() {
       <Modal
         visible={showAiModal}
         onDismiss={() => setShowAiModal(false)}
-        header={`AI \${surveyType === 'pre' ? '사전' : '사후'} 설문조사 자동 생성`}
+        header={t('survey.ai_modal.title', {
+          type: surveyType === 'pre' ? t('survey.pre') : t('survey.post')
+        })}
         size="large"
       >
         {loading ? (
           <Box textAlign="center" padding="l">
             <Spinner />
-            <p>과정 자료를 분석하여 설문조사를 생성하고 있습니다...</p>
+            <p>{t('survey.ai_modal.generating')}</p>
           </Box>
         ) : (
           <SpaceBetween size="l">
-            <p>생성된 {generatedQuestions.length}개의 질문이 있습니다. 필요에 맞게 수정할 수 있습니다.</p>
+            <p>{t('survey.ai_modal.question_count', { count: generatedQuestions.length })}</p>
             
             {/* 생성된 질문 목록 표시 */}
             {generatedQuestions.map((q, index) => (
               <div key={index}>
-                <p><strong>질문 {index+1}:</strong> {q.question}</p>
+                <p><strong>{t('survey.ai_modal.question_number', { number: index + 1 })}</strong> {q.question}</p>
                 {q.type !== 'text' && (
                   <ul>
                     {q.options.map((opt, idx) => (
@@ -648,12 +705,19 @@ export default function SurveyManagement() {
                     ))}
                   </ul>
                 )}
-                <p><em>유형: {q.type === 'single' ? '단일 선택' : q.type === 'multiple' ? '다중 선택' : '주관식'}</em></p>
+                <p><em>{t('survey.ai_modal.type')}: {q.type === 'single' 
+                  ? t('survey.question_types.single') 
+                  : q.type === 'multiple' 
+                  ? t('survey.question_types.multiple') 
+                  : t('survey.question_types.text')}
+                </em></p>
               </div>
             ))}
             
             <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-              <Button onClick={() => setShowAiModal(false)}>취소</Button>
+              <Button onClick={() => setShowAiModal(false)}>
+                {t('common.cancel')}
+              </Button>
               <Button 
                 variant="primary" 
                 onClick={() => {
@@ -661,7 +725,7 @@ export default function SurveyManagement() {
                   navigateToSurveyCreator(generatedQuestions);
                 }}
               >
-                이 질문으로 설문조사 만들기
+                {t('survey.ai_modal.create_with_questions')}
               </Button>
             </SpaceBetween>
           </SpaceBetween>
@@ -675,7 +739,7 @@ export default function SurveyManagement() {
           setShowDeleteModal(false);
           setSurveyToDelete(null);
         }}
-        header="설문조사 삭제"
+        header={t('survey.delete_modal.title')}
         footer={
           <Box float="right">
             <SpaceBetween direction="horizontal" size="xs">
@@ -686,25 +750,24 @@ export default function SurveyManagement() {
                   setSurveyToDelete(null);
                 }}
               >
-                취소
+                {t('common.cancel')}
               </Button>
               <Button 
                 variant="primary" 
                 onClick={confirmDeleteSurvey}
               >
-                삭제
+                {t('common.delete')}
               </Button>
             </SpaceBetween>
           </Box>
         }
       >
         <p>
-          정말로 "{surveyToDelete?.title}" 설문조사를 삭제하시겠습니까? 
-          이 작업은 되돌릴 수 없으며, 모든 응답 데이터가 함께 삭제됩니다.
+          {t('survey.delete_modal.confirmation', { title: surveyToDelete?.title })}
         </p>
         {surveyToDelete?.responseCount && surveyToDelete.responseCount > 0 && (
           <Box color="text-status-error">
-            <strong>주의:</strong> 이 설문조사에는 {surveyToDelete.responseCount}개의 응답 데이터가 있습니다.
+            <strong>{t('survey.delete_modal.warning')}</strong> {t('survey.delete_modal.response_count', { count: surveyToDelete.responseCount })}
           </Box>
         )}
       </Modal>

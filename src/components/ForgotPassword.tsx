@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
-import { useTranslation } from 'react-i18next';
+import { useTypedTranslation } from '../utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 import { 
   Form, 
@@ -15,7 +15,7 @@ import {
 } from '@cloudscape-design/components';
 
 const ForgotPassword: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTypedTranslation();
   const navigate = useNavigate();
   
   // 단계 관리: SEND_CODE(코드 전송) 또는 CONFIRM_CODE(코드 확인 및 새 비밀번호 설정)

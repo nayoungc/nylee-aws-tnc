@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { confirmSignIn } from 'aws-amplify/auth';
-import { useTranslation } from 'react-i18next';
+import { useTypedTranslation } from '../utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 import { 
   Form, 
@@ -15,7 +15,7 @@ import {
 } from '@cloudscape-design/components';
 
 const NewPassword: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTypedTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { username } = location.state || { username: '' };

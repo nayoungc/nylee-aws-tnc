@@ -18,6 +18,7 @@ import { post } from 'aws-amplify/api';
 import { SelectProps } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
 import { useNavigate } from 'react-router-dom';
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 // 타입 정의
 interface Question {
@@ -40,7 +41,7 @@ interface QuizGenerationResponse {
   questions: Question[];
 }
 
-// GraphQL 쿼리 정의
+// GraphQL 쿼리 정의 - 이스케이프 문자 제거
 const listCourseCatalogs = /* GraphQL */ `
   query ListCourseCatalogs(
     \$filter: ModelCourseCatalogFilterInput
@@ -73,6 +74,7 @@ function isQuizGenerationResponse(obj: unknown): obj is QuizGenerationResponse {
 }
 
 export default function QuizManagement() {
+  const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
   const [selectedCourse, setSelectedCourse] = useState<SelectProps.Option | null>(null);
   const [courses, setCourses] = useState<SelectProps.Option[]>([]);
@@ -83,6 +85,8 @@ export default function QuizManagement() {
   const [existingQuizzes, setExistingQuizzes] = useState<any[]>([]);
   const [quizType, setQuizType] = useState<'pre' | 'post'>('pre');
   const [syncQuizzes, setSyncQuizzes] = useState<boolean>(false);
+  // Amplify Gen 2에 맞는 클라이언트 생성 방식
+  const [client] = useState(() => generateClient());
   
   // 페이지 로드 시 과정 목록 가져오기
   useEffect(() => {
@@ -94,9 +98,7 @@ export default function QuizManagement() {
     setLoadingCourses(true);
     
     try {
-      // GraphQL API를 사용하여 데이터 가져오기
-      const client = generateClient();
-      
+      // GraphQL API를 사용하여 데이터 가져오기      
       try {
         const response = await client.graphql({
           query: listCourseCatalogs,
@@ -105,7 +107,8 @@ export default function QuizManagement() {
             filter: {
               status: { eq: "ACTIVE" }
             }
-          }
+          },
+          authMode: 'userPool'
         });
 
         const responseAny: any = response;
@@ -119,12 +122,12 @@ export default function QuizManagement() {
         
         setCourses(courseOptions);
       } catch (error) {
-        console.error('GraphQL 쿼리 오류:', error);
+        console.error(t('quiz_management.errors.graphql_query'), error);
         throw error;
       }
       
     } catch (error) {
-      console.error('과정 목록 로드 오류:', error);
+      console.error(t('quiz_management.errors.course_load'), error);
       
       // 오류 발생 시 기본 데이터 사용 (개발용)
       if (process.env.NODE_ENV === 'development') {
@@ -167,11 +170,11 @@ export default function QuizManagement() {
       if (isQuizGenerationResponse(jsonData)) {
         setGeneratedQuestions(jsonData.questions);
       } else {
-        console.error('응답 데이터가 예상 형식과 일치하지 않음:', jsonData);
+        console.error(t('quiz_management.errors.response_format'), jsonData);
         setGeneratedQuestions([]);
       }
     } catch (error) {
-      console.error('퀴즈 생성 오류:', error);
+      console.error(t('quiz_management.errors.quiz_generation'), error);
       setGeneratedQuestions([]);
     } finally {
       setLoading(false);
@@ -204,36 +207,36 @@ export default function QuizManagement() {
   
   return (
     <SpaceBetween size="l">
-      <Container header={<Header variant="h2">퀴즈 관리</Header>}>
+      <Container header={<Header variant="h2">{t('quiz_management.title')}</Header>}>
         <SpaceBetween size="l">
-          <FormField label="과정 선택">
+          <FormField label={t('quiz_management.course_selection')}>
             <Select
               selectedOption={selectedCourse}
               onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
               options={courses}
-              placeholder="과정 선택"
+              placeholder={tString('quiz_management.course_placeholder')}
               filteringType="auto"
               statusType={loadingCourses ? "loading" : "finished"}
-              loadingText="과정 목록을 불러오는 중..."
+              loadingText={tString('quiz_management.loading.courses')}
               empty={
                 <Box textAlign="center" color="inherit">
-                  <b>과정이 없습니다</b>
+                  <b>{t('quiz_management.empty_states.no_courses')}</b>
                   <Box padding={{ bottom: "xs" }}>
-                    사용 가능한 과정이 없습니다. 과정을 먼저 등록하세요.
+                    {t('quiz_management.empty_states.register_course')}
                   </Box>
                 </Box>
               }
             />
           </FormField>
 
-          <FormField label="퀴즈 유형">
+          <FormField label={t('quiz_management.quiz_type')}>
             <SegmentedControl
               selectedId={quizType}
               onChange={handleQuizTypeChange}
-              label="퀴즈 유형 선택"
+              label={tString('quiz_management.select_quiz_type')}
               options={[
-                { id: 'pre', text: '사전 퀴즈' },
-                { id: 'post', text: '사후 퀴즈' },
+                { id: 'pre', text: tString('quiz_management.pre_quiz') },
+                { id: 'post', text: tString('quiz_management.post_quiz') },
               ]}
             />
           </FormField>
@@ -243,7 +246,7 @@ export default function QuizManagement() {
               checked={syncQuizzes}
               onChange={({ detail }) => handleSyncCheckboxChange(detail.checked)}
             >
-              사후 퀴즈를 사전 퀴즈와 동일하게 설정
+              {t('quiz_management.sync_with_pre_quiz')}
             </Checkbox>
           )}
           
@@ -253,21 +256,21 @@ export default function QuizManagement() {
               disabled={!selectedCourse || (quizType === 'post' && syncQuizzes)}
               onClick={() => navigateToQuizCreator()}
             >
-              퀴즈 만들기
+              {t('quiz_management.actions.create_quiz')}
             </Button>
             <Button 
               onClick={generateQuizWithAI}
               iconName="add-plus"
               disabled={!selectedCourse || (quizType === 'post' && syncQuizzes)}
             >
-              AI로 자동 생성
+              {t('quiz_management.actions.ai_generate')}
             </Button>
             {quizType === 'post' && syncQuizzes && (
               <Button 
                 variant="normal"
                 iconName="copy"
               >
-                사전 퀴즈에서 복사
+                {t('quiz_management.actions.copy_from_pre')}
               </Button>
             )}
           </SpaceBetween>
@@ -279,49 +282,51 @@ export default function QuizManagement() {
         header={
           <Header 
             variant="h2"
-            description={`선택한 과정의 \${quizType === 'pre' ? '사전' : '사후'} 퀴즈 목록`}
+            description={t('quiz_management.existing_quiz_description', { 
+              type: quizType === 'pre' ? t('quiz_management.pre_quiz') : t('quiz_management.post_quiz')
+            })}
           >
-            기존 퀴즈
+            {t('quiz_management.existing_quizzes')}
           </Header>
         }
       >
         <Table
           items={existingQuizzes}
           loading={loadingCourses}
-          loadingText="퀴즈 목록을 불러오는 중..."
+          loadingText={tString('quiz_management.loading.quizzes')}
           columnDefinitions={[
             {
               id: "title",
-              header: "제목",
+              header: t('quiz_management.columns.title'),
               cell: item => item.title
             },
             {
               id: "questionCount",
-              header: "문항 수",
+              header: t('quiz_management.columns.question_count'),
               cell: item => item.questionCount
             },
             {
               id: "createdAt",
-              header: "생성 일자",
+              header: t('quiz_management.columns.created_at'),
               cell: item => new Date(item.createdAt).toLocaleDateString()
             },
             {
               id: "actions",
-              header: "관리",
+              header: t('quiz_management.columns.actions'),
               cell: item => (
                 <SpaceBetween direction="horizontal" size="xs">
-                  <Button iconName="search">보기</Button>
-                  <Button iconName="edit">편집</Button>
-                  <Button iconName="remove">삭제</Button>
+                  <Button iconName="search">{t('quiz_management.actions.view')}</Button>
+                  <Button iconName="edit">{t('quiz_management.actions.edit')}</Button>
+                  <Button iconName="remove">{t('quiz_management.actions.delete')}</Button>
                 </SpaceBetween>
               )
             }
           ]}
           empty={
             <Box textAlign="center" color="inherit">
-              <b>퀴즈가 없습니다</b>
+              <b>{t('quiz_management.empty_states.no_quizzes')}</b>
               <Box padding={{ bottom: "xs" }}>
-                선택한 과정에 대한 퀴즈가 없습니다. 새 퀴즈를 생성하세요.
+                {t('quiz_management.empty_states.create_new_quiz')}
               </Box>
             </Box>
           }
@@ -332,26 +337,31 @@ export default function QuizManagement() {
       <Modal
         visible={showAiModal}
         onDismiss={() => setShowAiModal(false)}
-        header={`AI \${quizType === 'pre' ? '사전' : '사후'} 퀴즈 자동 생성`}
+        header={t('quiz_management.modal.ai_generation', {
+          type: quizType === 'pre' ? t('quiz_management.pre_quiz') : t('quiz_management.post_quiz')
+        })}
         size="large"
       >
         {loading ? (
           <Box textAlign="center" padding="l">
             <Spinner />
-            <p>과정 자료를 분석하여 퀴즈를 생성하고 있습니다...</p>
+            <p>{t('quiz_management.modal.generating')}</p>
           </Box>
         ) : (
           <SpaceBetween size="l">
-            <p>생성된 {generatedQuestions.length}개의 질문이 있습니다. 사용할 질문을 선택하거나 수정할 수 있습니다.</p>
+            <p>{t('quiz_management.modal.generated_count', { count: generatedQuestions.length })}</p>
             
             {/* 생성된 질문 목록 표시 */}
             {generatedQuestions.map((q, index) => (
               <div key={index}>
-                <p><strong>질문 {index+1}:</strong> {q.question}</p>
+                <p>
+                  <strong>{t('quiz_management.question_number', { number: index + 1 })}:</strong> {q.question}
+                </p>
                 <ul>
                   {q.options.map((option, optIndex) => (
                     <li key={optIndex}>
-                      {option} {q.correctAnswer === option || q.correctAnswer === optIndex ? '(정답)' : ''}
+                      {option} {q.correctAnswer === option || q.correctAnswer === optIndex ? 
+                        `(\${t('quiz_management.correct_answer')})` : ''}
                     </li>
                   ))}
                 </ul>
@@ -359,7 +369,9 @@ export default function QuizManagement() {
             ))}
             
             <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-              <Button onClick={() => setShowAiModal(false)}>취소</Button>
+              <Button onClick={() => setShowAiModal(false)}>
+                {t('quiz_management.actions.cancel')}
+              </Button>
               <Button 
                 variant="primary" 
                 onClick={() => {
@@ -367,7 +379,7 @@ export default function QuizManagement() {
                   navigateToQuizCreator(generatedQuestions);
                 }}
               >
-                이 질문으로 퀴즈 만들기
+                {t('quiz_management.actions.create_with_questions')}
               </Button>
             </SpaceBetween>
           </SpaceBetween>

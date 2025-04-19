@@ -1,28 +1,38 @@
-// src/i18n.ts
+// i18n.tsx
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
+import enTranslation from './locales/en.json';
+import koTranslation from './locales/ko.json';
+
+// Initialize i18n
 i18n
   .use(Backend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    resources: {
+      en: {
+        translation: enTranslation
+      },
+      ko: {
+        translation: koTranslation
+      }
+    },
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development',
-    supportedLngs: ['en', 'ko'],
     interpolation: {
-      escapeValue: false,
+      escapeValue: false
+    },
+    detection: {
+      order: ['localStorage', 'cookie', 'navigator'],
+      caches: ['localStorage']
     },
     react: {
-      useSuspense: false,
-    },
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
-    },
-    returnObjects: false, // 객체 대신 문자열만 반환하도록 설정
-    returnEmptyString: true, // 빈 문자열을 undefined 대신 반환
+      useSuspense: false
+    }
   });
 
 export default i18n;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { handleSignUp } from '../utils/auth';
-import { useTranslation } from 'react-i18next';
+import { useTypedTranslation } from '../utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 import { 
   Form, 
@@ -37,7 +37,7 @@ const validatePassword = (password: string): { isValid: boolean; message?: strin
 };
 
 const SignUp: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTypedTranslation();
   const navigate = useNavigate();
   
   const [formState, setFormState] = useState({

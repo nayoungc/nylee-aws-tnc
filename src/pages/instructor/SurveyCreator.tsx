@@ -18,6 +18,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { post } from 'aws-amplify/api';
 import Table from "@cloudscape-design/components/table";
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 // 타입 정의
 interface Question {
@@ -47,6 +48,7 @@ export default function SurveyCreator() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState;
+  const { t, tString } = useTypedTranslation();
   
   // 상태가 없으면 리디렉션
   useEffect(() => {
@@ -57,8 +59,11 @@ export default function SurveyCreator() {
 
   // 기본값 설정
   const initialMeta: SurveyMeta = {
-    title: `\${state?.courseName || '과정'} \${state?.surveyType === 'pre' ? '사전' : '사후'} 설문조사`,
-    description: '본 설문조사는 학습 과정에서의 의견과 경험을 수집하기 위한 도구입니다.',
+    title: t('surveyCreator.default_title', {
+      course: state?.courseName || t('surveyCreator.course'),
+      type: state?.surveyType === 'pre' ? t('survey.pre') : t('survey.post')
+    }),
+    description: t('surveyCreator.default_description'),
     timeLimit: 15,
     isRequired: true,
     shuffleQuestions: false,
@@ -118,14 +123,14 @@ export default function SurveyCreator() {
     
     // 질문 유효성 검사
     if (!currentQuestion.question.trim()) {
-      alert("질문 내용을 입력해주세요.");
+      alert(t('surveyCreator.alerts.enter_question'));
       return;
     }
 
     // 유형이 선택형인 경우 옵션 검사
     if (currentQuestion.type !== 'text' && 
         currentQuestion.options.some(opt => !opt.trim())) {
-      alert("모든 보기 옵션을 입력해주세요.");
+      alert(t('surveyCreator.alerts.enter_all_options'));
       return;
     }
     
@@ -206,7 +211,7 @@ export default function SurveyCreator() {
   // 설문조사 저장
   const handleSaveSurvey = async () => {
     if (questions.length === 0) {
-      alert("최소 1개 이상의 질문이 필요합니다.");
+      alert(t('surveyCreator.alerts.min_questions'));
       return;
     }
 
@@ -231,8 +236,8 @@ export default function SurveyCreator() {
       
       setShowSaveModal(true);
     } catch (error) {
-      console.error('설문조사 저장 오류:', error);
-      setSaveError('설문조사 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error(t('surveyCreator.errors.save_error'), error);
+      setSaveError(t('surveyCreator.errors.save_error_message'));
     } finally {
       setSaving(false);
     }
@@ -256,26 +261,26 @@ export default function SurveyCreator() {
   return (
     <SpaceBetween size="l">
       {/* 설문조사 메타데이터 */}
-      <Container header={<Header variant="h2">설문조사 정보</Header>}>
+      <Container header={<Header variant="h2">{t('surveyCreator.survey_info')}</Header>}>
         <SpaceBetween size="l">
-          <FormField label="설문조사 제목">
+          <FormField label={t('surveyCreator.survey_title')}>
             <Input
               value={surveyMeta.title}
               onChange={({ detail }) => handleMetaChange('title', detail.value)}
-              placeholder="설문조사 제목을 입력하세요"
+              placeholder={tString('surveyCreator.enter_survey_title')}
             />
           </FormField>
           
-          <FormField label="설명">
+          <FormField label={t('surveyCreator.description')}>
             <Textarea
               value={surveyMeta.description}
               onChange={({ detail }) => handleMetaChange('description', detail.value)}
-              placeholder="수강생에게 보여질 설문조사 설명을 입력하세요"
+              placeholder={tString('surveyCreator.enter_survey_description')}
             />
           </FormField>
           
           <ColumnLayout columns={2} variant="text-grid">
-            <FormField label="시간 제한 (분)">
+            <FormField label={t('surveyCreator.time_limit')}>
               <Input
                 type="number"
                 value={surveyMeta.timeLimit.toString()}
@@ -293,14 +298,14 @@ export default function SurveyCreator() {
                 checked={surveyMeta.isRequired}
                 onChange={({ detail }) => detail && handleMetaChange('isRequired', detail.checked)}
               >
-                필수 응답 설문조사
+                {t('surveyCreator.required_response')}
               </Checkbox>
               
               <Checkbox
                 checked={surveyMeta.anonymous}
                 onChange={({ detail }) => detail && handleMetaChange('anonymous', detail.checked)}
               >
-                익명 응답 허용
+                {t('surveyCreator.allow_anonymous')}
               </Checkbox>
             </SpaceBetween>
           </ColumnLayout>
@@ -309,7 +314,7 @@ export default function SurveyCreator() {
             checked={surveyMeta.shuffleQuestions}
             onChange={({ detail }) => detail && handleMetaChange('shuffleQuestions', detail.checked)}
           >
-            문항 순서 섞기
+            {t('surveyCreator.shuffle_questions')}
           </Checkbox>
         </SpaceBetween>
       </Container>
@@ -321,11 +326,11 @@ export default function SurveyCreator() {
             variant="h2"
             actions={
               <Button onClick={handleAddQuestion} iconName="add-plus">
-                질문 추가
+                {t('surveyCreator.add_question')}
               </Button>
             }
           >
-            설문조사 문항 ({questions.length}개)
+            {t('surveyCreator.survey_questions', { count: questions.length })}
           </Header>
         }
       >
@@ -333,15 +338,15 @@ export default function SurveyCreator() {
           <Table
             items={questions}
             loading={false}
-            loadingText="질문을 불러오는 중..."
+            loadingText={tString('surveyCreator.loading_questions')}
             columnDefinitions={[
               {
                 id: "question",
-                header: "질문",
+                header: t('surveyCreator.columns.question'),
                 cell: (item: Question) => item.question,
                 editConfig: {
-                  ariaLabel: "질문",
-                  editIconAriaLabel: "편집 가능",
+                  ariaLabel: tString('surveyCreator.columns.question'),
+                  editIconAriaLabel: tString('surveyCreator.editable'),
                   editingCell: (item: Question, { currentValue, setValue }) => (
                     <Textarea
                       autoFocus={true}
@@ -353,21 +358,22 @@ export default function SurveyCreator() {
               },
               {
                 id: "type",
-                header: "유형",
+                header: t('surveyCreator.columns.type'),
                 cell: (item: Question) => 
-                  item.type === 'single' ? '단일 선택' : 
-                  item.type === 'multiple' ? '다중 선택' : '주관식',
+                  item.type === 'single' ? t('survey.question_types.single') : 
+                  item.type === 'multiple' ? t('survey.question_types.multiple') : 
+                  t('survey.question_types.text'),
                 editConfig: {
-                  ariaLabel: "유형",
-                  editIconAriaLabel: "편집 가능",
+                  ariaLabel: tString('surveyCreator.columns.type'),
+                  editIconAriaLabel: tString('surveyCreator.editable'),
                   editingCell: (item: Question, { currentValue, setValue }) => (
                     <Select
                       autoFocus={true}
                       selectedOption={
                         [
-                          { label: "단일 선택", value: "single" },
-                          { label: "다중 선택", value: "multiple" },
-                          { label: "주관식", value: "text" }
+                          { label: t('survey.question_types.single'), value: "single" },
+                          { label: t('survey.question_types.multiple'), value: "multiple" },
+                          { label: t('survey.question_types.text'), value: "text" }
                         ].find(option => 
                           option.value === (currentValue || item.type)
                         ) || null
@@ -392,9 +398,9 @@ export default function SurveyCreator() {
                         }
                       }}
                       options={[
-                        { label: "단일 선택", value: "single" },
-                        { label: "다중 선택", value: "multiple" },
-                        { label: "주관식", value: "text" }
+                        { label: tString('survey.question_types.single'), value: "single" },
+                        { label: tString('survey.question_types.multiple'), value: "multiple" },
+                        { label: tString('survey.question_types.text'), value: "text" }
                       ]}
                     />
                   )
@@ -402,17 +408,17 @@ export default function SurveyCreator() {
               },
               {
                 id: "options",
-                header: "보기 옵션",
+                header: t('surveyCreator.columns.options'),
                 cell: (item: Question) => 
                   item.type === 'text' ? 
-                  "주관식 응답" : 
+                  t('surveyCreator.text_response') : 
                   item.options.join(", "),
                 editConfig: {
-                  ariaLabel: "보기 옵션",
-                  editIconAriaLabel: "편집 가능",
+                  ariaLabel: t('surveyCreator.columns.options'),
+                  editIconAriaLabel: t('surveyCreator.editable'),
                   disabledReason: (item: Question) => {
                     if (item.type === "text") {
-                      return "주관식 질문은 보기 옵션이 필요하지 않습니다.";
+                      return t('surveyCreator.text_no_options');
                     }
                     return undefined;
                   },
@@ -420,7 +426,7 @@ export default function SurveyCreator() {
                     <Textarea
                       autoFocus={true}
                       value={currentValue ?? item.options.join("\n")}
-                      placeholder="각 보기를 새 줄에 입력하세요"
+                      placeholder={t('surveyCreator.enter_options_per_line')}
                       onChange={event => event.detail && setValue(event.detail.value)}
                       
                       onBlur={event => {
@@ -446,20 +452,20 @@ export default function SurveyCreator() {
               },
               {
                 id: "actions",
-                header: "작업",
+                header: t('surveyCreator.columns.actions'),
                 cell: (item: Question) => (
                   <SpaceBetween direction="horizontal" size="xs">
                     <Button 
                       iconName="edit"
                       onClick={() => handleEditQuestion(questions.indexOf(item))}
                     >
-                      상세 편집
+                      {t('surveyCreator.actions.detailed_edit')}
                     </Button>
                     <Button 
                       iconName="remove"
                       onClick={() => handleDeleteQuestion(questions.indexOf(item))}
                     >
-                      삭제
+                      {t('common.delete')}
                     </Button>
                   </SpaceBetween>
                 )
@@ -467,25 +473,25 @@ export default function SurveyCreator() {
             ]}
             empty={
               <Box textAlign="center" color="inherit">
-                <b>질문이 없습니다</b>
+                <b>{t('surveyCreator.no_questions')}</b>
                 <Box padding={{ bottom: "s" }}>
-                  '질문 추가' 버튼을 눌러 설문조사 문항을 추가하세요.
+                  {t('surveyCreator.add_question_prompt')}
                 </Box>
                 <Button onClick={handleAddQuestion} iconName="add-plus">
-                  질문 추가
+                  {t('surveyCreator.add_question')}
                 </Button>
               </Box>
             }
-            header={<Header>설문조사 문항 목록</Header>}
+            header={<Header>{t('surveyCreator.question_list')}</Header>}
           />
         ) : (
           <Box textAlign="center" color="inherit">
-            <b>질문이 없습니다</b>
+            <b>{t('surveyCreator.no_questions')}</b>
             <Box padding={{ bottom: "s" }}>
-              '질문 추가' 버튼을 눌러 설문조사 문항을 추가하세요.
+              {t('surveyCreator.add_question_prompt')}
             </Box>
             <Button onClick={handleAddQuestion} iconName="add-plus">
-              질문 추가
+              {t('surveyCreator.add_question')}
             </Button>
           </Box>
         )}
@@ -494,14 +500,14 @@ export default function SurveyCreator() {
       {/* 하단 버튼 */}
       <SpaceBetween direction="horizontal" size="xs" alignItems="center">
         <Button onClick={handleReturn} variant="link">
-          취소 및 돌아가기
+          {t('surveyCreator.cancel_and_return')}
         </Button>
         <Button 
           onClick={handleSaveSurvey}
           variant="primary"
           loading={saving}
         >
-          설문조사 저장
+          {t('surveyCreator.save_survey')}
         </Button>
       </SpaceBetween>
       
@@ -511,12 +517,12 @@ export default function SurveyCreator() {
       <Modal
         visible={isEditingQuestion}
         onDismiss={handleCancelEdit}
-        header={editingIndex >= 0 ? '질문 수정' : '새 질문 추가'}
+        header={editingIndex >= 0 ? t('surveyCreator.edit_question') : t('surveyCreator.add_new_question')}
         size="large"
       >
         {currentQuestion && (
           <SpaceBetween size="l">
-            <FormField label="질문">
+            <FormField label={t('surveyCreator.question')}>
               <Textarea
                 value={currentQuestion.question}
                 onChange={({ detail }) => detail && 
@@ -525,16 +531,16 @@ export default function SurveyCreator() {
                     question: detail.value
                   })
                 }
-                placeholder="질문 내용을 입력하세요"
+                placeholder={t('surveyCreator.enter_question_content')}
               />
             </FormField>
             
-            <FormField label="질문 유형">
+            <FormField label={t('surveyCreator.question_type')}>
               <RadioGroup
                 items={[
-                  { value: 'single', label: '단일 선택' },
-                  { value: 'multiple', label: '다중 선택' },
-                  { value: 'text', label: '주관식' }
+                  { value: 'single', label: t('survey.question_types.single') },
+                  { value: 'multiple', label: t('survey.question_types.multiple') },
+                  { value: 'text', label: t('survey.question_types.text') }
                 ]}
                 value={currentQuestion.type}
                 onChange={({ detail }) => detail && 
@@ -544,14 +550,14 @@ export default function SurveyCreator() {
             </FormField>
             
             {currentQuestion.type !== 'text' && (
-              <FormField label="보기 옵션">
+              <FormField label={t('surveyCreator.option_choices')}>
                 <SpaceBetween size="xs">
                   {currentQuestion.options.map((option, index) => (
                     <SpaceBetween direction="horizontal" size="xs" key={index}>
                       <Input
                         value={option}
                         onChange={({ detail }) => detail && handleOptionChange(index, detail.value)}
-                        placeholder={`보기 \${index + 1}`}
+                        placeholder={t('surveyCreator.option_placeholder', { number: index + 1 })}
                       />
                       
                       <Button 
@@ -568,7 +574,7 @@ export default function SurveyCreator() {
                     onClick={handleAddOption}
                     disabled={currentQuestion.options.length >= 10}
                   >
-                    보기 추가
+                    {t('surveyCreator.add_option')}
                   </Button>
                 </SpaceBetween>
               </FormField>
@@ -576,10 +582,10 @@ export default function SurveyCreator() {
             
             <SpaceBetween direction="horizontal" size="xs" alignItems="center">
               <Button onClick={handleCancelEdit} variant="link">
-                취소
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleSaveQuestion} variant="primary">
-                {editingIndex >= 0 ? '질문 저장' : '질문 추가'}
+                {editingIndex >= 0 ? t('surveyCreator.save_question') : t('surveyCreator.add_question')}
               </Button>
             </SpaceBetween>
           </SpaceBetween>
@@ -593,18 +599,18 @@ export default function SurveyCreator() {
           setShowSaveModal(false);
           handleReturn();
         }}
-        header="설문조사 저장 완료"
+        header={t('surveyCreator.save_complete')}
         footer={
           <Box float="right">
             <SpaceBetween direction="horizontal" size="xs">
               <Button onClick={handleReturn} variant="primary">
-                설문조사 관리로 돌아가기
+                {t('surveyCreator.return_to_management')}
               </Button>
             </SpaceBetween>
           </Box>
         }
       >
-        <p>설문조사가 성공적으로 저장되었습니다.</p>
+        <p>{t('surveyCreator.save_success_message')}</p>
       </Modal>
     </SpaceBetween>
   );
