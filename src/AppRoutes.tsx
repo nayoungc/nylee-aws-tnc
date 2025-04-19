@@ -1,11 +1,11 @@
 // src/AppRoutes.tsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  fetchAuthSession, 
-  getCurrentUser, 
+import {
+  fetchAuthSession,
+  getCurrentUser,
   fetchUserAttributes,
-  signOut 
+  signOut
 } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +50,7 @@ const AppRoutes: React.FC = () => {
     try {
       // 현재 사용자 가져오기
       const user = await getCurrentUser();
-      
+
       try {
         // Amplify Gen 2 방식으로 사용자 속성 가져오기
         const attributes = await fetchUserAttributes();
@@ -58,19 +58,19 @@ const AppRoutes: React.FC = () => {
       } catch (attrError) {
         console.warn('속성 가져오기 실패:', attrError);
       }
-      
+
       // 세션 가져오기
       const session = await fetchAuthSession();
       if (!session.tokens) {
         throw new Error('No valid tokens');
       }
-      
+
       setAuthenticated(true);
     } catch (error) {
       console.log('사용자 미인증:', error);
       setAuthenticated(false);
       setUserAttributes(null);
-      
+
       // 보호된 경로에 있다면 로그인으로 리디렉션
       const publicPaths = ['/signin', '/signup', '/confirm-signup', '/forgot-password', '/new-password', '/courses'];
       if (!publicPaths.some(path => location.pathname.startsWith(path))) {
@@ -90,7 +90,7 @@ const AppRoutes: React.FC = () => {
   useEffect(() => {
     const listener = Hub.listen('auth', ({ payload }) => {
       console.log('Auth 이벤트:', payload.event);
-      
+
       switch (payload.event) {
         case 'signedIn':
           checkAuthState();
@@ -103,13 +103,13 @@ const AppRoutes: React.FC = () => {
         case 'tokenRefresh_failure':
           setAuthenticated(false);
           setUserAttributes(null);
-          navigate('/signin', { 
-            state: { message: t('auth.session_expired') || '세션이 만료되었습니다.' } 
+          navigate('/signin', {
+            state: { message: t('auth.session_expired') || '세션이 만료되었습니다.' }
           });
           break;
       }
     });
-    
+
     return () => listener();
   }, [checkAuthState, navigate, t]);
 
@@ -122,25 +122,25 @@ const AppRoutes: React.FC = () => {
     <Routes>
       {/* 인증 페이지 라우트 - 별도 레이아웃 */}
       <Route element={<AuthLayout />}>
-        <Route 
-          path="/signin" 
-          element={authenticated ? <Navigate to="/" /> : <SignIn />} 
+        <Route
+          path="/signin"
+          element={authenticated ? <Navigate to="/" /> : <SignIn />}
         />
-        <Route 
-          path="/signup" 
-          element={authenticated ? <Navigate to="/" /> : <SignUp />} 
+        <Route
+          path="/signup"
+          element={authenticated ? <Navigate to="/" /> : <SignUp />}
         />
-        <Route 
-          path="/confirm-signup" 
-          element={authenticated ? <Navigate to="/" /> : <ConfirmSignUp />} 
+        <Route
+          path="/confirm-signup"
+          element={authenticated ? <Navigate to="/" /> : <ConfirmSignUp />}
         />
-        <Route 
-          path="/forgot-password" 
-          element={authenticated ? <Navigate to="/" /> : <ForgotPassword />} 
+        <Route
+          path="/forgot-password"
+          element={authenticated ? <Navigate to="/" /> : <ForgotPassword />}
         />
-        <Route 
-          path="/new-password" 
-          element={authenticated ? <Navigate to="/" /> : <NewPassword />} 
+        <Route
+          path="/new-password"
+          element={authenticated ? <Navigate to="/" /> : <NewPassword />}
         />
       </Route>
 
@@ -152,12 +152,12 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
           >
-            {userAttributes?.profile === 'instructor' ? 
-              <Navigate to="/dashboard" /> : 
+            {userAttributes?.profile === 'instructor' ?
+              <Navigate to="/dashboard" /> :
               <Navigate to="/courses" />}
           </ProtectedRoute>
         }
@@ -167,144 +167,126 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <Dashboard />
-            </MainLayout>
+            <Dashboard />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/courses/catalog"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <CourseCatalog />
-            </MainLayout>
+            <CourseCatalog />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/courses/my-courses"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <MyCourses />
-            </MainLayout>
+            <MyCourses />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/courses/sessions"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <SessionManagement />
-            </MainLayout>
+            <SessionManagement />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/assessments/pre-quiz"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <PreQuizManagement />
-            </MainLayout>
+            <PreQuizManagement />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/assessments/post-quiz"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <PostQuizManagement />
-            </MainLayout>
+            <PostQuizManagement />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/assessments/survey"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <SurveyManagement />
-            </MainLayout>
+            <SurveyManagement />
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/assessments/ai-generator"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="instructor"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <AiGenerator />
-            </MainLayout>
+            <AiGenerator />
           </ProtectedRoute>
         }
       />
-      
+
       {/* 관리자 라우트 */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             redirectPath="/signin"
             requiredRole="admin"
             userAttributes={userAttributes}
           >
-            <MainLayout>
-              <AdminPage />
-            </MainLayout>
+            <AdminPage />
           </ProtectedRoute>
         }
       />
