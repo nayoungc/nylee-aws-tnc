@@ -1,0 +1,53 @@
+{
+    "app": {
+      "title": "AWS Training & Certification"
+    },
+    "auth": {
+      "sign_in": "Sign In",
+      "sign_up": "Sign Up",
+      "sign_out": "Sign Out",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "confirm_password": "Confirm Password",
+      "confirmation_code": "Confirmation Code",
+      "enter_confirmation_code": "Enter confirmation code",
+      "confirm_signup": "Confirm Registration",
+      "confirmation_code_sent": "Confirmation code was sent to {{email}}",
+      "confirm": "Confirm",
+      "no_account": "Don't have an account?",
+      "have_account": "Already have an account?",
+      "login_error_generic": "Login failed. Please check your credentials.",
+      "user_not_exist": "User does not exist.",
+      "password_mismatch": "Passwords do not match",
+      "signup_error": "Registration failed. Please try again.",
+      "confirm_error": "Confirmation failed. Please try again."
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "courses": "Courses",
+      "catalog": "Course Catalog",
+      "my_courses": "My Courses",
+      "sessions": "Sessions",
+      "assessments": "Assessments",
+      "pre_quiz": "Pre Quiz",
+      "post_quiz": "Post Quiz",
+      "survey": "Survey",
+      "ai_generator": "AI Generator"
+    },
+    "user": {
+      "preferred_language": "Preferred Language",
+      "level": "Level"
+    },
+    "language": {
+      "english": "English",
+      "korean": "Korean"
+    },
+    "conversation": {
+      "difficulty": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      }
+    }
+  }

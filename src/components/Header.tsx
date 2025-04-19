@@ -1,97 +1,76 @@
-import React from 'react';
-import { TopNavigation } from '@cloudscape-design/components';
-// 이벤트 타입 임포트 추가
-import { TopNavigationProps } from '@cloudscape-design/components';
-import { useAuth } from '../hooks/useAuth';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { TopNavigation } from '@cloudscape-design/components';
+import { signOut, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { useTranslation } from 'react-i18next'; // react-i18next 가져오기
 
 const Header: React.FC = () => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(); // i18n 객체 가져오기
+  const [username, setUsername] = useState<string>('');
+  
+  useEffect(() => {
+    async function loadUserInfo() {
+      try {
+        const currentUser = await getCurrentUser();
+        const attributes = await fetchUserAttributes();
+        setUsername(attributes.email || currentUser.username);
+      } catch (error) {
+        console.error('사용자 정보 로드 오류:', error);
+      }
+    }
+    
+    loadUserInfo();
+  }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/signin');
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+    }
   };
 
-  // 사용자 역할에 따른 다른 유틸리티
-  const getUtilities = () => {
-    // 기본 유틸리티 항목
-    const baseUtilities = [
-      {
-        type: 'button' as const,
-        text: 'Documentation',
-        href: '/help',
-        external: false,
-        externalIconAriaLabel: ' (opens in a new tab)'
-      },
-      {
-        type: 'menu-dropdown' as const,
-        text: user?.name || user?.email || 'User',
-        description: user?.['custom:role'] || 'User',
-        items: [
-          { id: 'profile', text: 'Profile' },
-          { id: 'preferences', text: 'Preferences' },
-          { id: 'signout', text: 'Sign out' }
-        ],
-        // 파라미터에 타입 지정
-        onItemClick: (e: CustomEvent<{ id: string }>) => {
-          if (e.detail.id === 'signout') {
-            handleLogout();
-          } else if (e.detail.id === 'profile') {
-            navigate('/settings/account');
-          } else if (e.detail.id === 'preferences') {
-            navigate('/settings/preferences');
-          }
-        }
-      }
-    ];
-
-    // 강사인 경우 추가 유틸리티
-    if (user?.['custom:role'] === 'instructor') {
-      baseUtilities.unshift({
-        type: 'menu-dropdown' as const,
-        text: 'Create',
-        description: 'Create new resources',
-        items: [
-          { id: 'create-session', text: 'Create Session' },
-          { id: 'create-course', text: 'Create Course' },
-          { id: 'create-quiz', text: 'Create Quiz' }
-        ],
-        // 파라미터에 타입 지정
-        onItemClick: (e: CustomEvent<{ id: string }>) => {
-          switch (e.detail.id) {
-            case 'create-session':
-              navigate('/courses/sessions/create');
-              break;
-            case 'create-course':
-              navigate('/courses/create');
-              break;
-            case 'create-quiz':
-              navigate('/assessments/create');
-              break;
-          }
-        }
-      });
-    }
-
-    return baseUtilities;
+  // 언어 변경 핸들러
+  const changeLanguage = (languageCode: string) => {
+    i18n.changeLanguage(languageCode);
   };
 
   return (
-    <div id="header">
-      <TopNavigation
-        identity={{
-          href: '/',
-          title: 'AWS Training & Certification',
-          logo: {
-            src: '/assets/logo.svg',
-            alt: 'TnC'
+    <TopNavigation
+      identity={{
+        href: '/',
+        title: t('app.title'),
+        logo: {
+          src: '/logo.png',
+          alt: t('app.title')
+        }
+      }}
+      utilities={[
+        {
+          type: 'menu-dropdown',
+          text: i18n.language === 'ko' ? '한국어' : 'English',
+          iconName: 'globe',
+          items: [
+            { id: 'en', text: 'English' },
+            { id: 'ko', text: '한국어' }
+          ],
+          onItemClick: ({ detail }) => changeLanguage(detail.id)
+        },
+        {
+          type: 'menu-dropdown',
+          text: username,
+          iconName: 'user-profile',
+          items: [
+            { id: 'signout', text: t('auth.sign_out') }
+          ],
+          onItemClick: ({ detail }) => {
+            if (detail.id === 'signout') handleSignOut();
           }
-        }}
-        utilities={getUtilities()}
-      />
-    </div>
+        }
+      ]}
+    />
   );
 };
 
