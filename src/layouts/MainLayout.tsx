@@ -5,18 +5,13 @@ import {
   SideNavigation,
   TopNavigation,
   Spinner,
-  SelectProps,
   BreadcrumbGroup,
   BreadcrumbGroupProps,
   Box
 } from '@cloudscape-design/components';
 import { SideNavigationProps } from '@cloudscape-design/components';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  fetchAuthSession,
-  fetchUserAttributes,
-  signOut
-} from 'aws-amplify/auth';
+import { getCurrentUser, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 import { useTypedTranslation } from '../utils/i18n-utils';
 import { changeLanguage, getCurrentLanguage } from '../utils/i18n-utils';
@@ -32,13 +27,12 @@ type SideNavigationItem = SideNavigationProps.Item;
 const MenuSkeleton = () => (
   <Box padding="s">
     {Array(5).fill(0).map((_, i) => (
-      <div style={{
+      <div key={i} style={{
         animation: "pulse 1.5s infinite ease-in-out",
-        background:"light",
-        height:"20px"
+        background: "light",
+        height: "20px"
       }}>
         <Box 
-          key={i}
           padding="s" 
           margin="s" 
         />
@@ -54,105 +48,85 @@ const MenuSkeleton = () => (
   </Box>
 );
 
-
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, tString } = useTypedTranslation();
   
   // 인증/사용자 상태 관리
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null); // null은 "아직 확인 안 됨"을 의미
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [userAttributes, setUserAttributes] = useState<any>(null);
   const [userName, setUserName] = useState<string>('');
   
   // UI 상태 관리
   const [activeHref, setActiveHref] = useState<string>(location.pathname);
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbGroupProps.Item[]>([]);
-  const [menuLoading, setMenuLoading] = useState<boolean>(true); // 메뉴 로딩 상태 별도 관리
+  const [menuLoading, setMenuLoading] = useState<boolean>(true);
 
-  // 인증 상태 및 사용자 속성 확인 - 최적화
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // 이미 세션 스토리지에 캐시된 사용자 정보가 있는지 확인
-    const cachedAuthState = sessionStorage.getItem('authenticatedState');
-    const cachedData = sessionStorage.getItem('userAttributes');
-    const timestamp = sessionStorage.getItem('userAttributesTimestamp');
-    const CACHE_TTL = 15 * 60 * 1000; // 15분
-    
-    if (cachedAuthState && cachedData && timestamp && 
-        (Date.now() - parseInt(timestamp) < CACHE_TTL)) {
-      try {
-        const parsedData = JSON.parse(cachedData);
-        const isAuth = cachedAuthState === 'true';
-        
-        // 캐시된 데이터로 상태 빠르게 설정
-        setAuthenticated(isAuth);
-        if (isAuth) {
-          setUserAttributes(parsedData);
-          setUserName(parsedData.name || parsedData.email || '');
-        }
-        
-        // 메뉴 로딩 상태 해제
-        setMenuLoading(false);
-        
-        // 그러나 백그라운드에서 최신 정보 확인
-        checkAuthStateAsync();
-        return;
-      } catch (e) {
-        console.error('캐시 데이터 파싱 오류:', e);
-      }
-    }
-    
-    // 캐시된 데이터가 없는 경우 즉시 확인
-    checkAuthStateAsync();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  
-  // 비동기적으로 인증 상태 확인 (백그라운드 작업으로 처리)
-  const checkAuthStateAsync = async () => {
+  // 비동기적으로 인증 상태 확인
+  const checkAuthStateAsync = useCallback(async () => {
     try {
-      const session = await fetchAuthSession();
-      const isAuthenticated = !!session.tokens;
+      const cachedAuthState = sessionStorage.getItem('authenticatedState');
+      const cachedData = sessionStorage.getItem('userAttributes');
+      const timestamp = sessionStorage.getItem('userAttributesTimestamp');
+      const CACHE_TTL = 15 * 60 * 1000; // 15분
       
-      // 인증 상태 캐싱
-      sessionStorage.setItem('authenticatedState', String(isAuthenticated));
-      setAuthenticated(isAuthenticated);
-      
-      if (isAuthenticated) {
+      if (cachedAuthState && cachedData && timestamp && 
+          (Date.now() - parseInt(timestamp) < CACHE_TTL)) {
         try {
-          // 사용자 속성 불러오기
-          const attributes = await fetchUserAttributes();
-          setUserAttributes(attributes);
-          setUserName(attributes.name || attributes.email || '');
+          const parsedData = JSON.parse(cachedData);
+          const isAuth = cachedAuthState === 'true';
           
-          // 캐싱
-          sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
-          sessionStorage.setItem('userAttributesTimestamp', Date.now().toString());
-        } catch (error) {
-          console.error('사용자 속성 로드 실패:', error);
+          setAuthenticated(isAuth);
+          if (isAuth) {
+            setUserAttributes(parsedData);
+            setUserName(parsedData.name || parsedData.email || '');
+          }
+          
+          setMenuLoading(false);
+        } catch (e) {
+          console.error('캐시 데이터 파싱 오류:', e);
         }
-      } else {
-        setUserAttributes(null);
-        setUserName('');
       }
+
+      // Amplify Gen 2 방식으로 현재 사용자 가져오기
+      const currentUser = await getCurrentUser();
+      setAuthenticated(true);
+      
+      // 사용자 속성 가져오기
+      const attributes = {
+        name: currentUser.username,
+        email: currentUser.signInDetails?.loginId || '',
+        profile: currentUser.userId.includes('admin') ? 'admin' : 
+                 currentUser.userId.includes('instructor') ? 'instructor' : 'student'
+      };
+      
+      setUserAttributes(attributes);
+      setUserName(attributes.name || attributes.email || '');
+      
+      // 캐싱
+      sessionStorage.setItem('authenticatedState', 'true');
+      sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
+      sessionStorage.setItem('userAttributesTimestamp', Date.now().toString());
+      
     } catch (error) {
-      console.error('인증 확인 오류:', error);
+      // 인증되지 않은 경우
       setAuthenticated(false);
       setUserAttributes(null);
+      setUserName('');
+      sessionStorage.setItem('authenticatedState', 'false');
     } finally {
       setMenuLoading(false);
     }
-  };
+  }, []);
 
-  // 경로 변경 감지 및 활성 항목 설정
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // 인증 상태 및 사용자 속성 확인
   useEffect(() => {
-    setActiveHref(location.pathname);
-    generateBreadcrumbs(location.pathname);
-  }, [location]);
+    checkAuthStateAsync();
+  }, [checkAuthStateAsync]);
   
-  // Auth 이벤트 리스너
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  
+  // Auth 이벤트 리스너 설정
   useEffect(() => {
     const listener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
@@ -170,7 +144,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     });
     
     return () => listener();
-  }, []);
+  }, [checkAuthStateAsync]);
   
   // 로그아웃 함수
   const handleSignOut = useCallback(async () => {
@@ -188,10 +162,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, [navigate]);
   
   // 현재 선택된 언어 가져오기
-  const getCurrentLanguageText = (): string => {
-    const currentLang = getCurrentLanguage().substring(0, 2); // 'ko-KR'에서 'ko'만 추출
+  const getCurrentLanguageText = useCallback((): string => {
+    const currentLang = getCurrentLanguage().substring(0, 2);
     return currentLang === 'ko' ? tString('language.korean') : tString('language.english');
-  };
+  }, [tString]);
 
   // 경로에서 빵 부스러기(breadcrumbs) 생성
   const generateBreadcrumbs = useCallback((path: string) => {
@@ -205,7 +179,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     pathSegments.forEach((segment, index) => {
       currentPath += `/\${segment}`;
       
-      // 특수 경로의 경우 의미 있는 이름 사용
       let text = '';
       
       switch (segment) {
@@ -213,12 +186,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           text = t('nav.courses');
           break;
         case 'course':
-          // 다음 세그먼트가 있으면 그것이 courseId
-          if (pathSegments[index + 1]) {
-            text = t('nav.course_details');
-          } else {
-            text = t('nav.courses');
-          }
+          text = pathSegments[index + 1] ? t('nav.course_details') : t('nav.courses');
           break;
         case 'instructor':
           text = t('nav.instructor');
@@ -251,7 +219,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           text = t('nav.admin');
           break;
         default:
-          // UUID 같은 ID로 추정되는 경우 표시 안함
           if (segment.length > 10 && segment.includes('-')) {
             return;
           }
@@ -263,13 +230,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     
     setBreadcrumbs(breadcrumbItems);
   }, [t]);
+
+  // 경로 변경 감지 및 활성 항목 설정
+  useEffect(() => {
+    setActiveHref(location.pathname);
+    generateBreadcrumbs(location.pathname);
+  }, [location, generateBreadcrumbs]);
   
-  // 교육생용 기본 메뉴 아이템 - useMemo로 메모이제이션
+  
+  // 교육생용 기본 메뉴 아이템
   const studentItems = useMemo((): SideNavigationItem[] => [
     { type: 'link', text: t('nav.courses'), href: '/courses' },
   ], [t]);
   
-  // 강사용 메뉴 아이템 - useMemo로 메모이제이션
+  // 강사용 메뉴 아이템
   const instructorItems = useMemo((): SideNavigationItem[] => [
     {
       type: 'section',
@@ -308,7 +282,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   ], [t, tString]);
   
-  // 관리자용 메뉴 아이템 - useMemo로 메모이제이션
+  // 관리자용 메뉴 아이템
   const adminItems = useMemo((): SideNavigationItem[] => [
     {
       type: 'section',
@@ -319,16 +293,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   ], [t]);
   
-  // 역할에 따른 메뉴 구성 - useMemo로 메모이제이션
+  // 역할에 따른 메뉴 구성
   const navigationItems = useMemo((): SideNavigationItem[] => {
-    // 기본 메뉴 (모든 사용자)
     let items: SideNavigationItem[] = [...studentItems];
     
     if (!authenticated) {
       return items;
     }
     
-    // 로그인한 사용자의 역할에 따라 메뉴 추가
     const userRole = userAttributes?.profile;
     
     if (userRole === 'instructor') {
@@ -342,7 +314,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     return items;
   }, [authenticated, userAttributes, studentItems, instructorItems, adminItems]);
 
-  // 네비게이션 링크 이벤트 핸들러 메모이제이션
+  // 네비게이션 링크 이벤트 핸들러
   const handleNavigationFollow = useCallback((event: CustomEvent<{ href: string, external?: boolean }>) => {
     if (!event.detail.external) {
       event.preventDefault();
@@ -350,7 +322,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   }, [navigate]);
   
-  // 사이드 네비게이션 컴포넌트 메모이제이션
+  // 사이드 네비게이션 컴포넌트
   const sideNavigation = useMemo(() => {
     if (menuLoading) {
       return <MenuSkeleton />;
@@ -366,7 +338,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     );
   }, [activeHref, navigationItems, handleNavigationFollow, menuLoading, tString]);
 
-  // breadcrumbs 컴포넌트 메모이제이션
+  // breadcrumbs 컴포넌트
   const breadcrumbsComponent = useMemo(() => (
     <BreadcrumbGroup
       items={breadcrumbs}
@@ -375,7 +347,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     />
   ), [breadcrumbs, handleNavigationFollow]);
 
-  // 상단 네비게이션 메모이제이션 
+  // 상단 네비게이션
   const topNav = useMemo(() => (
     <TopNavigation
       identity={{
@@ -404,7 +376,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             },
             {
               id: "divider",
-              text: "─────────────"  // Divider를 텍스트로 표현
+              text: "─────────────"
             },
             {
               id: authenticated ? "signout" : "signin",
@@ -440,11 +412,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     />
   ), [tString, userName, authenticated, navigate, handleSignOut]);
 
-  // 아직 인증 상태 확인 중이면 빈 레이아웃만 표시
   if (authenticated === null) {
     return (
       <div>
-        {/* 최소한의 UI만 표시 */}
         <div id="header">
           {topNav}
         </div>
@@ -457,12 +427,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* 상단 네비게이션 */}
       <div id="header" style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
         {topNav}
       </div>
       
-      {/* AppLayout */}
       <AppLayout
         contentType="default"
         navigation={sideNavigation}
@@ -474,12 +442,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         stickyNotifications
         navigationHide={false}
         contentHeader={<div />}
-        // 중요: 초기 화면 깜빡임 최소화를 위해 로딩 상태일 때 렌더링 지연
         navigationOpen={menuLoading ? undefined : undefined}
       />
     </div>
   );
 };
 
-// 컴포넌트 자체도 메모이제이션하여 상위 컴포넌트 리렌더링 시 불필요한 재계산 방지
 export default React.memo(MainLayout);
