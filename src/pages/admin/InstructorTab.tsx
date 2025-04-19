@@ -20,9 +20,11 @@ import { generateClient } from 'aws-amplify/api';
 import { listInstructors } from '../../graphql/queries';
 import { createInstructor, updateInstructor, deleteInstructor } from '../../graphql/mutations';
 import { Instructor } from '../../models/Instructor';
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 // API 클라이언트 생성
 const client = generateClient();
+
 
 // 사용자 정의 GraphQL 응답 타입
 interface GraphQLResponse<T> {
@@ -53,6 +55,8 @@ interface DeleteInstructorResponse {
 }
 
 const InstructorTab: React.FC = () => {
+    const { tString, t } = useTypedTranslation();
+    
     // 상태 관리
     const [instructors, setInstructors] = useState<Instructor[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -77,7 +81,7 @@ const InstructorTab: React.FC = () => {
                 variables: { limit: 20 }
             }) as GraphQLResponse<ListInstructorsResponse>;
 
-            console.log('강사 목록 결과:', result);
+            console.log(t('admin.instructors.log.load_result'), result);
 
             // 응답에서 items 추출
             const items = result.data?.listInstructors?.items;
@@ -85,8 +89,8 @@ const InstructorTab: React.FC = () => {
                 setInstructors(items);
             }
         } catch (err: any) {
-            console.error('강사 목록 불러오기 오류:', err);
-            setError('강사 목록을 불러오는 중 오류가 발생했습니다.');
+            console.error(t('admin.instructors.error_loading'), err);
+            setError(t('admin.instructors.error_loading'));
         } finally {
             setLoading(false);
         }
@@ -103,29 +107,29 @@ const InstructorTab: React.FC = () => {
                     Username: 'user1',
                     Attributes: [
                         { Name: 'email', Value: 'instructor1@example.com' },
-                        { Name: 'name', Value: '강사1' }
+                        { Name: 'name', Value: t('admin.instructors.dummy_data.instructor1') }
                     ]
                 },
                 {
                     Username: 'user2',
                     Attributes: [
                         { Name: 'email', Value: 'instructor2@example.com' },
-                        { Name: 'name', Value: '강사2' }
+                        { Name: 'name', Value: t('admin.instructors.dummy_data.instructor2') }
                     ]
                 },
                 {
                     Username: 'user3',
                     Attributes: [
                         { Name: 'email', Value: 'instructor3@example.com' },
-                        { Name: 'name', Value: '강사3' }
+                        { Name: 'name', Value: t('admin.instructors.dummy_data.instructor3') }
                     ]
                 }
             ];
 
             setCognitoUsers(dummyUsers);
         } catch (err) {
-            console.error('Cognito 사용자 불러오기 오류:', err);
-            setError('Cognito 사용자를 불러오는 중 오류가 발생했습니다.');
+            console.error(t('admin.instructors.error_loading_cognito'), err);
+            setError(t('admin.instructors.error_loading_cognito'));
         } finally {
             setLoadingCognitoUsers(false);
         }
@@ -211,7 +215,7 @@ const InstructorTab: React.FC = () => {
                     variables: { input: updateInput }
                 }) as GraphQLResponse<UpdateInstructorResponse>;
 
-                console.log('강사 수정 결과:', result);
+                console.log(t('admin.instructors.log.update_result'), result);
 
                 // 수정된 강사로 상태 업데이트
                 const updatedInstructor = result.data?.updateInstructor;
@@ -238,7 +242,7 @@ const InstructorTab: React.FC = () => {
                     variables: { input: createInput }
                 }) as GraphQLResponse<CreateInstructorResponse>;
 
-                console.log('강사 생성 결과:', result);
+                console.log(t('admin.instructors.log.create_result'), result);
                 
                 // 생성된 강사 추가
                 const newInstructor = result.data?.createInstructor;
@@ -251,8 +255,8 @@ const InstructorTab: React.FC = () => {
             setIsModalVisible(false);
             setCurrentInstructor(null);
         } catch (err) {
-            console.error('강사 저장 오류:', err);
-            setError('강사 정보 저장 중 오류가 발생했습니다.');
+            console.error(t('admin.instructors.error_saving'), err);
+            setError(t('admin.instructors.error_saving'));
         } finally {
             setLoading(false);
         }
@@ -272,7 +276,7 @@ const InstructorTab: React.FC = () => {
                 variables: { input: { id: currentInstructor.id } }
             }) as GraphQLResponse<DeleteInstructorResponse>;
 
-            console.log('강사 삭제 결과:', result);
+            console.log(t('admin.instructors.log.delete_result'), result);
 
             // 삭제 확인 후 UI 업데이트
             const deletedId = result.data?.deleteInstructor?.id;
@@ -286,8 +290,8 @@ const InstructorTab: React.FC = () => {
             setIsDeleteModalVisible(false);
             setCurrentInstructor(null);
         } catch (err) {
-            console.error('강사 삭제 오류:', err);
-            setError('강사 삭제 중 오류가 발생했습니다.');
+            console.error(t('admin.instructors.error_deleting'), err);
+            setError(t('admin.instructors.error_deleting'));
         } finally {
             setLoading(false);
         }
@@ -313,17 +317,17 @@ const InstructorTab: React.FC = () => {
                                     onClick={handleCreateInstructor}
                                     iconName="add-plus"
                                 >
-                                    강사 추가
+                                    {t('admin.instructors.add_instructor')}
                                 </Button>
                             }
                         >
-                            강사 관리
+                            {t('admin.instructors.instructor_management')}
                         </Header>
 
                         <TextFilter
                             filteringText={filterText}
-                            filteringPlaceholder="강사 검색..."
-                            filteringAriaLabel="강사 검색"
+                            filteringPlaceholder={tString('admin.instructors.search_placeholder')}
+                            filteringAriaLabel={tString('admin.instructors.search_aria_label')}
                             onChange={({ detail }) => setFilterText(detail.filteringText)}
                         />
                     </SpaceBetween>
@@ -336,51 +340,51 @@ const InstructorTab: React.FC = () => {
                     columnDefinitions={[
                         {
                             id: "name",
-                            header: "이름",
+                            header: t('admin.instructors.column.name'),
                             cell: item => item.name,
                             sortingField: "name"
                         },
                         {
                             id: "email",
-                            header: "이메일",
+                            header: t('admin.instructors.column.email'),
                             cell: item => item.email || "-"
                         },
                         {
                             id: "phone",
-                            header: "전화번호",
+                            header: t('admin.instructors.column.phone'),
                             cell: item => item.phone || "-"
                         },
                         {
                             id: "specialization",
-                            header: "전문 분야",
+                            header: t('admin.instructors.column.specialization'),
                             cell: item => item.specialization || "-"
                         },
                         {
                             id: "status",
-                            header: "상태",
-                            cell: item => item.status === 'ACTIVE' ? "활성" : "비활성"
+                            header: t('admin.instructors.column.status'),
+                            cell: item => item.status === 'ACTIVE' ? t('admin.common.active') : t('admin.common.inactive')
                         },
                         {
                             id: "joinDate",
-                            header: "가입일",
+                            header: t('admin.instructors.column.join_date'),
                             cell: item => item.joinDate || "-"
                         },
                         {
                             id: "actions",
-                            header: "작업",
+                            header: t('admin.common.actions'),
                             cell: item => (
                                 <SpaceBetween direction="horizontal" size="xs">
                                     <Button
                                         variant="normal"
                                         onClick={() => handleEditInstructor(item)}
                                     >
-                                        수정
+                                        {t('admin.common.edit')}
                                     </Button>
                                     <Button
                                         variant="link"
                                         onClick={() => handleDeleteInstructorClick(item)}
                                     >
-                                        삭제
+                                        {t('admin.common.delete')}
                                     </Button>
                                 </SpaceBetween>
                             )
@@ -388,12 +392,12 @@ const InstructorTab: React.FC = () => {
                     ]}
                     empty={
                         <Box textAlign="center" color="inherit">
-                            <b>강사가 없습니다</b>
+                            <b>{t('admin.instructors.no_instructors')}</b>
                             <Box padding={{ bottom: "s" }} variant="p" color="inherit">
-                                새 강사를 추가해주세요.
+                                {t('admin.instructors.add_new_instructor_desc')}
                             </Box>
                             <Button onClick={handleCreateInstructor}>
-                                강사 추가
+                                {t('admin.instructors.add_instructor')}
                             </Button>
                         </Box>
                     }
@@ -413,10 +417,10 @@ const InstructorTab: React.FC = () => {
                                 Math.ceil(filteredItems.length / PAGE_SIZE)
                             )}
                             ariaLabels={{
-                                nextPageLabel: '다음 페이지',
-                                previousPageLabel: '이전 페이지',
+                                nextPageLabel: tString('admin.common.pagination.next'),
+                                previousPageLabel: tString('admin.common.pagination.previous'),
                                 pageLabel: pageNumber =>
-                                    `\${pageNumber} 페이지로 이동`
+                                    t('admin.common.pagination.page_label', { pageNumber })
                             }}
                         />
                     }
@@ -427,15 +431,15 @@ const InstructorTab: React.FC = () => {
             <Modal
                 visible={isModalVisible}
                 onDismiss={() => setIsModalVisible(false)}
-                header={currentInstructor?.id ? "강사 수정" : "새 강사 추가"}
+                header={currentInstructor?.id ? t('admin.instructors.edit_instructor') : t('admin.instructors.add_new_instructor')}
                 footer={
                     <Box float="right">
                         <SpaceBetween direction="horizontal" size="xs">
                             <Button variant="link" onClick={() => setIsModalVisible(false)}>
-                                취소
+                                {t('admin.common.cancel')}
                             </Button>
                             <Button variant="primary" onClick={handleSaveInstructor}>
-                                저장
+                                {t('admin.common.save')}
                             </Button>
                         </SpaceBetween>
                     </Box>
@@ -443,9 +447,8 @@ const InstructorTab: React.FC = () => {
             >
                 {currentInstructor && (
                     <SpaceBetween size="l">
-                        {/* 모달 내용은 동일하게 유지 */}
                         {!currentInstructor.id && (
-                            <FormField label="Cognito 사용자">
+                            <FormField label={t('admin.instructors.form.cognito_user')}>
                                 <Select
                                     selectedOption={
                                         currentInstructor.cognitoId ?
@@ -471,15 +474,15 @@ const InstructorTab: React.FC = () => {
                                         value: user.Username,
                                         label: `\${getAttributeValue(user, 'name')} (\${getAttributeValue(user, 'email')})`
                                     }))}
-                                    placeholder="Cognito 사용자 선택"
-                                    loadingText="사용자 로딩 중..."
+                                    placeholder={tString('admin.instructors.form.select_user')}
+                                    loadingText={tString('admin.instructors.form.loading_users')}
                                     statusType={loadingCognitoUsers ? "loading" : "finished"}
-                                    empty="사용 가능한 Cognito 사용자가 없습니다"
+                                    empty={t('admin.instructors.form.no_users')}
                                 />
                             </FormField>
                         )}
 
-                        <FormField label="이름">
+                        <FormField label={t('admin.instructors.form.name')}>
                             <Input
                                 value={currentInstructor.name}
                                 onChange={({ detail }) =>
@@ -488,7 +491,7 @@ const InstructorTab: React.FC = () => {
                             />
                         </FormField>
 
-                        <FormField label="이메일">
+                        <FormField label={t('admin.instructors.form.email')}>
                             <Input
                                 type="email"
                                 value={currentInstructor.email}
@@ -498,7 +501,7 @@ const InstructorTab: React.FC = () => {
                             />
                         </FormField>
 
-                        <FormField label="전화번호">
+                        <FormField label={t('admin.instructors.form.phone')}>
                             <Input
                                 type="text"
                                 inputMode="tel"
@@ -506,11 +509,11 @@ const InstructorTab: React.FC = () => {
                                 onChange={({ detail }) =>
                                     setCurrentInstructor(prev => prev ? ({ ...prev, phone: detail.value }) : null)
                                 }
-                                placeholder="+82-10-1234-5678"
+                                placeholder={tString('admin.instructors.form.phone_placeholder')}
                             />
                         </FormField>
 
-                        <FormField label="전문 분야">
+                        <FormField label={t('admin.instructors.form.specialization')}>
                             <Input
                                 value={currentInstructor.specialization || ''}
                                 onChange={({ detail }) =>
@@ -519,7 +522,7 @@ const InstructorTab: React.FC = () => {
                             />
                         </FormField>
 
-                        <FormField label="자기소개">
+                        <FormField label={t('admin.instructors.form.bio')}>
                             <Textarea
                                 value={currentInstructor.bio || ''}
                                 onChange={({ detail }) =>
@@ -529,25 +532,25 @@ const InstructorTab: React.FC = () => {
                             />
                         </FormField>
 
-                        <FormField label="상태">
-                            <Select
-                                selectedOption={
-                                    {
-                                        label: currentInstructor.status === 'ACTIVE' ? '활성' : '비활성',
-                                        value: currentInstructor.status || 'ACTIVE'
-                                    }
+                        <FormField label={t('admin.instructors.form.status')}>
+                        <Select
+                            selectedOption={
+                                {
+                                    label: currentInstructor.status === 'ACTIVE' ? tString('admin.common.active') : tString('admin.common.inactive'),
+                                    value: currentInstructor.status || 'ACTIVE'
                                 }
-                                onChange={({ detail }) =>
-                                    setCurrentInstructor(prev => prev ? ({ ...prev, status: detail.selectedOption.value }) : null)
-                                }
-                                options={[
-                                    { label: '활성', value: 'ACTIVE' },
-                                    { label: '비활성', value: 'INACTIVE' }
-                                ]}
-                            />
+                            }
+                            onChange={({ detail }) =>
+                                setCurrentInstructor(prev => prev ? ({ ...prev, status: detail.selectedOption.value }) : null)
+                            }
+                            options={[
+                                { label: tString('admin.common.active'), value: 'ACTIVE' },
+                                { label: tString('admin.common.inactive'), value: 'INACTIVE' }
+                            ]}
+                        />
                         </FormField>
 
-                        <FormField label="가입일">
+                        <FormField label={t('admin.instructors.form.join_date')}>
                             <DatePicker
                                 value={currentInstructor.joinDate || ''} 
                                 onChange={({ detail }) =>
@@ -563,23 +566,22 @@ const InstructorTab: React.FC = () => {
             <Modal
                 visible={isDeleteModalVisible}
                 onDismiss={() => setIsDeleteModalVisible(false)}
-                header="강사 삭제"
+                header={t('admin.instructors.delete_instructor')}
                 footer={
                     <Box float="right">
                         <SpaceBetween direction="horizontal" size="xs">
                             <Button variant="link" onClick={() => setIsDeleteModalVisible(false)}>
-                                취소
+                                {t('admin.common.cancel')}
                             </Button>
                             <Button variant="primary" onClick={handleDeleteInstructor}>
-                                삭제
+                                {t('admin.common.delete')}
                             </Button>
                         </SpaceBetween>
                     </Box>
                 }
             >
                 <Box variant="p">
-                    정말 "{currentInstructor?.name}" 강사를 삭제하시겠습니까?
-                    이 작업은 되돌릴 수 없습니다.
+                    {t('admin.instructors.delete_confirm', { name: currentInstructor?.name })}
                 </Box>
             </Modal>
         </Box>

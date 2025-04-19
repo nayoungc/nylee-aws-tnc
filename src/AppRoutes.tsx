@@ -300,29 +300,34 @@ const AppRoutes: React.FC = () => {
       />
 
       {/* 교육생용 라우트 */}
+      {/* 학생용 공개 페이지 - 인증 불필요 */}
       <Route
-        path="/student"
+        path="/courses"
         element={
-          <ProtectedRoute
-            authenticated={authenticated}
-            userAttributes={userAttributes}
-          >
-            <MainLayout title={t('nav.student_home') || 'Student Home'}>
-              <StudentHome />
-            </MainLayout>
-          </ProtectedRoute>
+          <MainLayout title={t('nav.available_courses') || '수강 가능한 과정'}>
+            <StudentHome />
+          </MainLayout>
         }
       />
 
       <Route
         path="/course/:courseId"
         element={
-          <ProtectedRoute
-            authenticated={authenticated}
-            userAttributes={userAttributes}
-          >
+          <MainLayout title={t('nav.course_detail') || '과정 상세'}>
             <CourseDetailPage />
-          </ProtectedRoute>
+          </MainLayout>
+        }
+      />
+
+      {/* 홈 라우트 수정 - 인증 여부에 따라 다르게 리디렉션 */}
+      <Route
+        path="/"
+        element={
+          !authenticated ?
+            <Navigate to="/courses" /> :
+            (userAttributes?.profile === 'instructor' ?
+              <Navigate to="/dashboard" /> :
+              <Navigate to="/courses" />)
         }
       />
 
