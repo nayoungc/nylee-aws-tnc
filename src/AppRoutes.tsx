@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 // 인증 관련 컴포넌트
@@ -6,6 +6,7 @@ import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import ConfirmSignUp from './components/ConfirmSignUp';
 import ProtectedRoute from './components/ProtectedRoute';
+import ForgotPassword from './components/ForgotPassword'; // ForgotPassword 컴포넌트 추가 권장
 
 // 레이아웃 컴포넌트
 import MainLayout from './components/MainLayout';
@@ -25,6 +26,7 @@ import AiGenerator from './pages/instructor/AiGenerator';
 
 // Amplify Gen 2 임포트
 import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { Hub } from 'aws-amplify/utils'; // Hub 추가하여 인증 이벤트 감지
 
 // 다국어 지원
 import { useTranslation } from 'react-i18next';
@@ -37,39 +39,92 @@ const AppRoutes: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
 
-  // 인증 상태 확인
-  useEffect(() => {
-    async function checkAuthState() {
-      try {
-        const user = await getCurrentUser();
-        const attributes = await fetchUserAttributes();
-        
-        console.log('인증된 사용자:', attributes);
-        setAuthenticated(true);
-        setUserAttributes(attributes);
-      } catch (error) {
-        console.log('사용자 미인증:', error);
-        setAuthenticated(false);
-        setUserAttributes(null);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  // 인증 상태 확인 함수 - 재사용을 위해 useCallback으로 래핑
+  const checkAuthState = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const user = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
 
+      console.log('인증된 사용자:', attributes);
+      setAuthenticated(true);
+      setUserAttributes(attributes);
+    } catch (error) {
+      console.log('사용자 미인증:', error);
+      setAuthenticated(false);
+      setUserAttributes(null);
+
+      // 인증이 필요한 페이지에 있으면 로그인으로 리다이렉트
+      if (location.pathname !== '/signin' &&
+        location.pathname !== '/signup' &&
+        location.pathname !== '/confirm-signup' &&
+        location.pathname !== '/forgot-password') {
+        navigate('/signin');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigate, location.pathname]);
+
+  // 초기 인증 상태 확인
+  useEffect(() => {
     checkAuthState();
-  }, []);
+  }, [checkAuthState]);
+
+  // Hub 이벤트 리스너 설정 - 로그인/로그아웃 이벤트 감지
+  useEffect(() => {
+    const listener = Hub.listen('auth', (data) => {
+      const { payload } = data;
+      console.log('Auth 이벤트:', payload.event);
+  
+      switch (payload.event) {
+        case 'signedIn':
+          checkAuthState();
+          break;
+        case 'signedOut':
+          setAuthenticated(false);
+          setUserAttributes(null);
+          navigate('/signin');
+          break;
+        case 'tokenRefresh_failure':
+          // 세션 만료 처리
+          setAuthenticated(false);
+          setUserAttributes(null);
+          navigate('/signin', {
+            state: { message: t('auth.session_expired') || '세션이 만료되었습니다. 다시 로그인해주세요.' }
+          });
+          break;
+      }
+    });
+  
+    // 컴포넌트 언마운트 시 리스너 제거 - 함수 직접 호출
+    return () => {
+      listener(); // .remove() 메서드 대신 함수 자체를 호출
+    };
+  }, [checkAuthState, navigate, t]);
+
+  
 
   // 로그인 상태에 따라 리다이렉션
   useEffect(() => {
-    if (authenticated && (location.pathname === '/signin' || location.pathname === '/login')) {
+    const authPaths = ['/signin', '/login', '/signup', '/confirm-signup', '/forgot-password'];
+    if (authenticated && authPaths.includes(location.pathname)) {
       navigate('/');
     }
   }, [authenticated, location.pathname, navigate]);
 
-  // 로딩 중 표시
+  // 로딩 중 표시 - Cloudscape 스타일로 개선 가능
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        <div className="loading-spinner"></div> {/* CSS로 스피너 스타일 추가 */}
         <div>{t('common.loading') || '로딩 중...'}</div>
       </div>
     );
@@ -78,37 +133,42 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* 인증 관련 라우트 */}
-      <Route 
-        path="/signin" 
-        element={authenticated ? <Navigate to="/" /> : <SignIn />} 
+      <Route
+        path="/signin"
+        element={authenticated ? <Navigate to="/" /> : <SignIn />}
       />
-      <Route 
-        path="/signup" 
-        element={authenticated ? <Navigate to="/" /> : <SignUp />} 
+      <Route
+        path="/signup"
+        element={authenticated ? <Navigate to="/" /> : <SignUp />}
       />
-      <Route 
-        path="/confirm-signup" 
-        element={authenticated ? <Navigate to="/" /> : <ConfirmSignUp />} 
+      <Route
+        path="/confirm-signup"
+        element={authenticated ? <Navigate to="/" /> : <ConfirmSignUp />}
       />
-      
+      {/* 비밀번호 찾기 라우트 추가 */}
+      <Route
+        path="/forgot-password"
+        element={authenticated ? <Navigate to="/" /> : <ForgotPassword />}
+      />
+
       {/* 홈 라우트 - 역할에 따라 리디렉션 */}
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
-          !authenticated ? 
-            <Navigate to="/signin" /> : 
-            (userAttributes?.profile === 'instructor' ? 
-              <Navigate to="/dashboard" /> : 
+          !authenticated ?
+            <Navigate to="/signin" /> :
+            (userAttributes?.profile === 'instructor' ?
+              <Navigate to="/dashboard" /> :
               <Navigate to="/student" />)
-        } 
+        }
       />
 
       {/* 강사용 라우트 */}
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -118,12 +178,13 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      
-      <Route 
-        path="/courses/catalog" 
+
+      {/* 나머지 강사용 라우트들 */}
+      <Route
+        path="/courses/catalog"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -133,13 +194,12 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      
-      {/* 나머지 라우트들 - 동일하게 유지 */}
-      <Route 
-        path="/courses/my-courses" 
+
+      <Route
+        path="/courses/my-courses"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -149,12 +209,12 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      
-      <Route 
-        path="/courses/sessions" 
+
+      <Route
+        path="/courses/sessions"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -165,11 +225,11 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      <Route 
-        path="/assessments/pre-quiz" 
+      <Route
+        path="/assessments/pre-quiz"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -180,11 +240,11 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      <Route 
-        path="/assessments/post-quiz" 
+      <Route
+        path="/assessments/post-quiz"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -195,11 +255,11 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      <Route 
-        path="/assessments/survey" 
+      <Route
+        path="/assessments/survey"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -210,11 +270,11 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      <Route 
-        path="/assessments/ai-generator" 
+      <Route
+        path="/assessments/ai-generator"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
             requiredRole="instructor"
           >
@@ -224,13 +284,13 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      
+
       {/* 교육생용 라우트 */}
-      <Route 
-        path="/student" 
+      <Route
+        path="/student"
         element={
-          <ProtectedRoute 
-            authenticated={authenticated} 
+          <ProtectedRoute
+            authenticated={authenticated}
             userAttributes={userAttributes}
           >
             <MainLayout title={t('nav.student_home') || 'Student Home'}>

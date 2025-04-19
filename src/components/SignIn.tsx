@@ -60,28 +60,34 @@ const SignIn: React.FC = () => {
           state: { username: formState.username } 
         });
       } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
-        // 임시 비밀번호 변경 필요 - 전체 result 객체 전달
+        // 임시 비밀번호 변경 필요
         navigate('/new-password', { 
           state: { 
-            username: formState.username, 
-            challengeResult: result // 전체 결과 객체 전달
+            username: formState.username,
+            challengeName: 'NEW_PASSWORD_REQUIRED'
           } 
         });
+      } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE') {
+        // 커스텀 챌린지 처리 필요 (필요한 경우)
+        console.log('커스텀 챌린지 필요:', result.nextStep);
+        setError(t('auth.custom_challenge') || '추가 인증이 필요합니다. 관리자에게 문의하세요.');
       }
     } catch (err: any) {
       console.error('로그인 오류:', err);
       
-      // 오류 유형에 따른 메시지 표시
-      if (err.name === 'UserNotFoundException') {
+      // Gen 2 오류 형식에 맞춰 에러 처리 업데이트
+      if (err.name === 'UserNotFoundException' || err.message?.includes('user') && err.message?.includes('exist')) {
         setError(t('auth.user_not_exist') || '사용자가 존재하지 않습니다');
-      } else if (err.name === 'NotAuthorizedException') {
+      } else if (err.name === 'NotAuthorizedException' || err.message?.includes('password') && err.message?.includes('incorrect')) {
         setError(t('auth.incorrect_password') || '잘못된 비밀번호입니다');
-      } else if (err.name === 'UserNotConfirmedException') {
+      } else if (err.name === 'UserNotConfirmedException' || err.message?.includes('confirm')) {
         setError(t('auth.account_not_verified') || '계정이 확인되지 않았습니다');
         // 인증 페이지로 이동 옵션 추가
         setTimeout(() => {
           navigate('/confirm-signup', { state: { username: formState.username } });
         }, 2000);
+      } else if (err.name === 'LimitExceededException' || err.message?.includes('limit')) {
+        setError(t('auth.attempt_limit') || '로그인 시도 횟수가 초과되었습니다. 잠시 후 다시 시도해주세요.');
       } else {
         setError(err.message || t('auth.login_error_generic') || '로그인 중 오류가 발생했습니다');
       }
@@ -119,11 +125,18 @@ const SignIn: React.FC = () => {
             >
               {String(t('auth.sign_in'))}
             </Button>
+
             
-            <Box textAlign="center" padding={{ top: 's' }}>
-              {String(t('auth.no_account'))} <Link to="/signup">{String(t('auth.sign_up'))}</Link>
-            </Box>
+            <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+              <Box padding={{ top: 's' }}>
+                {String(t('auth.no_account'))} <Link to="/signup">{String(t('auth.sign_up'))}</Link>
+              </Box>
+              <Box padding={{ top: 's' }}>
+                <Link to="/forgot-password">{String(t('auth.forgot_password') || '비밀번호 찾기')}</Link>
+              </Box>
+            </SpaceBetween>
           </SpaceBetween>
+          
         }
       >
         <SpaceBetween size="l">
@@ -138,6 +151,7 @@ const SignIn: React.FC = () => {
                   if (passwordInput) (passwordInput as HTMLElement).focus();
                 }
               }}
+              autoFocus
             />
           </FormField>
           

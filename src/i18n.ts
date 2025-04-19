@@ -10,12 +10,16 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    debug: true,
+    debug: process.env.NODE_ENV === 'development',
     supportedLngs: ['en', 'ko'],
     interpolation: {
       escapeValue: false,
     },
+    react: {
+      useSuspense: false,
+    },
     backend: {
+      // 경로를 public 폴더 기준으로 수정
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     }
   });
