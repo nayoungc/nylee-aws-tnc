@@ -20,22 +20,6 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     const documentsBucket = s3.Bucket.fromBucketName(
       this, 'ExistingDocsBucket', 'nylee-aws-docs-rag'
     );
-
-    // // 기존 S3 버킷 참조
-    // const accountId = this.account;
-    // const region = this.region;
-
-    // const reportsBucket = s3.Bucket.fromBucketName(
-    //   this, 'ExistingReportsBucket', `tnc-reports-\${accountId}-\${region}`
-    // );
-
-    // const courseMaterialsBucket = s3.Bucket.fromBucketName(
-    //   this, 'ExistingMaterialsBucket', `tnc-course-materials-\${accountId}-\${region}`
-    // );
-    
-    // const documentsBucket = s3.Bucket.fromBucketName(
-    //   this, 'ExistingDocsBucket', 'nylee-aws-docs-rag'
-    // );
     
     // IAM 역할 생성
     const bedrockRole = new iam.Role(this, 'BedrockRole', {
