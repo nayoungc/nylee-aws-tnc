@@ -27,6 +27,7 @@ import QuizManagement from './pages/instructor/QuizManagement';
 import QuizCreator from './pages/instructor/QuizCreator';
 import SurveyManagement from './pages/instructor/SurveyManagement';
 import SurveyCreator from './pages/instructor/SurveyCreator';
+import ReportGenerator from './pages/instructor/ReportGenerator';
 import AdminPage from './pages/admin/AdminPage';
 import CourseCatalog from './pages/admin/CourseCatalogTab'; 
 
@@ -347,11 +348,8 @@ const AppRoutes: React.FC = () => {
               <div>사전/사후 비교 분석</div>
             </InstructorRoute>
           } />
-          <Route path="reports" element={
-            <InstructorRoute>
-              <div>보고서 생성</div>
-            </InstructorRoute>
-          } />
+          <Route path="/instructor/analytics/reports" element={<ReportGenerator />} />
+
           <Route path="insights" element={
             <InstructorRoute>
               <div>과정별 인사이트</div>
