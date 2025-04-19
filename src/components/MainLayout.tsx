@@ -1,269 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  AppLayout,
-  SideNavigation,
-  SideNavigationProps,
-  BreadcrumbGroup,
-  Flashbar,
-  FlashbarProps,
-  Spinner
-} from '@cloudscape-design/components';
-import { fetchUserAttributes, signOut } from 'aws-amplify/auth';
+import React from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { AppLayout, BreadcrumbGroup } from '@cloudscape-design/components';
+import SideNavigation, { SideNavigationProps } from '@cloudscape-design/components/side-navigation';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-  title?: string;
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
-  // Amplify Gen 2 방식으로 사용자 정보 관리
-  const [user, setUser] = useState<Record<string, any> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
+const MainLayout: React.FC = () => {
   const location = useLocation();
-  const [notifications, setNotifications] = useState<FlashbarProps.MessageDefinition[]>([]);
-  const [activeHref, setActiveHref] = useState(location.pathname);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  // Amplify Gen 2 방식으로 사용자 정보 로드
-  useEffect(() => {
-    async function loadUserAttributes() {
-      setLoading(true);
-      try {
-        const attributes = await fetchUserAttributes();
-        setUser(attributes);
-      } catch (error) {
-        console.error('사용자 정보를 불러올 수 없습니다:', error);
-        setUser(null);
-        navigate('/signin');
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    loadUserAttributes();
-  }, [navigate]);
-
-  // 현재 경로에서 빵부스러기(breadcrumbs) 생성
-  const pathSegments = location.pathname.split('/').filter(segment => segment);
-  const breadcrumbs = [
-    { text: 'Home', href: '/' },
-    ...pathSegments.map((segment, index) => ({
-      text: segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' '),
-      href: `/\${pathSegments.slice(0, index + 1).join('/')}` 
-    }))
-  ];
-
-  // Amplify Gen 2 방식으로 로그아웃 처리
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/signin');
-    } catch (error) {
-      console.error('로그아웃 처리 중 오류가 발생했습니다:', error);
-      setNotifications([
-        ...notifications,
-        {
-          type: 'error',
-          content: '로그아웃 처리 중 오류가 발생했습니다.',
-          dismissible: true,
-          id: `error-\${Date.now()}`
-        }
-      ]);
-    }
-  };
-
-  // 사용자 역할에 따른 네비게이션 항목
-  const getNavigationItems = (): SideNavigationProps.Item[] => {
-    // 기본값은 학생용
-    let navItems: SideNavigationProps.Item[] = [
-      { type: 'link', text: 'Home', href: '/student' },
-      { type: 'link', text: 'Active Assessments', href: '/student/assessments' },
-      { type: 'link', text: 'Resources', href: '/student/resources' },
-      { type: 'link', text: 'Help', href: '/student/help' }
-    ];
-
-    // 강사인 경우 (Amplify Gen 2에서는 속성 접근 방식이 변경됨)
-    const isInstructor = user?.profile === 'instructor' || false;
-    
-    if (isInstructor) {
-      navItems = [
-        { type: 'link', text: 'Dashboard', href: '/dashboard' },
-        {
-          type: 'section',
-          text: 'Course Management',
-          items: [
-            { type: 'link', text: 'Course Catalog', href: '/courses/catalog' },
-            { type: 'link', text: 'My Courses', href: '/courses/my-courses' },
-            { type: 'link', text: 'Session Management', href: '/courses/sessions' },
-          ]
-        },
-        {
-          type: 'section',
-          text: 'Assessment Tools',
-          items: [
-            { type: 'link', text: 'Pre-Quiz Management', href: '/assessments/pre-quiz' },
-            { type: 'link', text: 'Post-Quiz Management', href: '/assessments/post-quiz' },
-            { type: 'link', text: 'Survey Management', href: '/assessments/survey' },
-            { type: 'link', text: 'AI Question Generator', href: '/assessments/ai-generator' },
-          ]
-        },
-        {
-          type: 'section',
-          text: 'Session Control',
-          items: [
-            { type: 'link', text: 'Active Sessions', href: '/sessions/active' },
-            { type: 'link', text: 'Participant Monitoring', href: '/sessions/monitoring' },
-            { type: 'link', text: 'Assessment Controls', href: '/sessions/controls' },
-          ]
-        },
-        {
-          type: 'section',
-          text: 'Analytics',
-          items: [
-            { type: 'link', text: 'Results Dashboard', href: '/analytics/dashboard' },
-            { type: 'link', text: 'Pre/Post Comparison', href: '/analytics/comparison' },
-            { type: 'link', text: 'Participant Analysis', href: '/analytics/participants' },
-            { type: 'link', text: 'Reports', href: '/analytics/reports' },
-          ]
-        },
-        {
-          type: 'section',
-          text: 'Settings',
-          items: [
-            { type: 'link', text: 'Account Settings', href: '/settings/account' },
-            { type: 'link', text: 'Notification Settings', href: '/settings/notifications' },
-            { type: 'link', text: 'Integration Management', href: '/settings/integrations' },
-          ]
-        }
-      ];
-    }
-
-    return navItems;
-  };
-
-  const navigationItems = getNavigationItems();
-
-  const handleNavigate = (evt: CustomEvent) => {
-    evt.preventDefault();
-    const href = evt.detail.href;
-    setActiveHref(href);
-    navigate(href);
-  };
-
-  // 사용자가 로그인하지 않았거나 로딩 중일 때 로딩 인디케이터 표시
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spinner size="large" />
-      </div>
-    );
-  }
-
-  // 사용자 정보가 없으면 로그인 페이지로 리디렉션
-  if (!user) {
-    navigate('/signin');
-    return null;
-  }
-
-  // 상단 네비게이션 유틸리티 아이템 설정
-  const utilities = [
-    {
-      type: 'menu-dropdown' as const,
-      text: user.email || user.username || '사용자',
-      iconName: 'user-profile' as const,
+  const navigationItems: SideNavigationProps.Item[] = [
+    { type: "link", text: t('nav.dashboard') || 'Dashboard', href: '/dashboard' },
+    { 
+      type: "expandable-link-group",
+      text: t('nav.course_management') || 'Course Management',
+      href: '/courses/catalog', // 그룹의 기본 href 추가
       items: [
-        { id: 'profile', text: String(t('nav.profile') || 'Profile') },
-        { id: 'settings', text: String(t('nav.settings') || 'Settings') },
-        { id: 'signout', text: String(t('auth.sign_out') || 'Sign out') }
-      ],
-      onItemClick: (e: any) => {
-        if (e.detail.id === 'signout') {
-          handleLogout();
-        } else if (e.detail.id === 'settings') {
-          navigate('/settings/account');
-        } else if (e.detail.id === 'profile') {
-          navigate('/profile');
-        }
-      }
-    }
+        { type: "link", text: t('nav.course_catalog') || 'Course Catalog', href: '/courses/catalog' },
+        { type: "link", text: t('nav.my_courses') || 'My Courses', href: '/courses/my-courses' },
+        { type: "link", text: t('nav.session_management') || 'Session Management', href: '/courses/sessions' },
+      ]
+    },
+    {
+      type: "expandable-link-group",
+      text: t('nav.assessment_tools') || 'Assessment Tools',
+      href: '/assessments/pre-quiz', // 그룹의 기본 href 추가
+      items: [
+        { type: "link", text: t('nav.pre_quiz') || 'Pre-Quiz Management', href: '/assessments/pre-quiz' },
+        { type: "link", text: t('nav.post_quiz') || 'Post-Quiz Management', href: '/assessments/post-quiz' },
+        { type: "link", text: t('nav.survey') || 'Survey Management', href: '/assessments/survey' },
+        { type: "link", text: t('nav.ai_generator') || 'AI Question Generator', href: '/assessments/ai-generator' },
+      ]
+    },
+    { type: "divider" },
+    { type: "link", text: t('nav.courses') || 'Available Courses', href: '/courses' }
   ];
 
-  // 언어 전환 드롭다운 추가 (i18next 통합)
-  //if (t) {
-  // useTranslation에서 i18n 객체도 가져와서 사용해야 합니다
-  //const { t, i18n } = useTranslation(); // 파일 상단에서 i18n도 가져오도록 수정 필요
-  
-  utilities.unshift({
-    type: 'menu-dropdown' as const,
-    text: i18n.language === 'ko' ? '한국어' : 'English',
-    iconName: 'settings' as any,
-    items: [
-      { id: 'en', text: 'English' },
-      { id: 'ko', text: '한국어' }
-    ],
-    onItemClick: (e: any) => {
-      const { id } = e.detail;
-      if (id === 'en' || id === 'ko') {
-        // 언어 변경
-        i18n.changeLanguage(id);
-        
-        // 선택 사항: 언어 설정을 로컬 스토리지에 저장
-        localStorage.setItem('i18nextLng', id);
-        
-        // 선택 사항: 변경된 언어로 페이지 새로고침 (필요한 경우)
-        // window.location.reload();
-        
-        // 언어 변경 알림 표시 (선택 사항)
-        setNotifications(prev => [
-          ...prev,
-          {
-            type: 'success',
-            content: id === 'en' ? 'Language changed to English' : '언어가 한국어로 변경되었습니다',
-            dismissible: true,
-            id: `language-change-\${Date.now()}`,
-            onDismiss: () => {
-              setNotifications(notifications => 
-                notifications.filter(item => item.id !== `language-change-\${Date.now()}`)
-              );
-            }
-          }
-        ]);
-      }
-    }
-  });
-  
+  // 브레드크럼 아이템 생성 - 기존 코드와 동일
+  const breadcrumbItems = [
+    { text: 'Home', href: '/' },
+    ...location.pathname.split('/').filter(Boolean).map((part, index, parts) => {
+      const href = `/\${parts.slice(0, index + 1).join('/')}`;
+      return { text: part.charAt(0).toUpperCase() + part.slice(1), href };
+    })
+  ];
 
   return (
     <AppLayout
       navigation={
         <SideNavigation
-          activeHref={activeHref}
           header={{ text: 'TnC Assessment System', href: '/' }}
           items={navigationItems}
-          onFollow={handleNavigate}
+          activeHref={location.pathname}
+          onFollow={e => {
+            e.preventDefault();
+            navigate(e.detail.href);
+          }}
         />
-      }
-      toolsHide={true}
-      content={
-        <div style={{ padding: '20px' }}>
-          {notifications.length > 0 && <Flashbar items={notifications} />}
-          {title && <h1>{title}</h1>}
-          {children}
-        </div>
       }
       breadcrumbs={
         <BreadcrumbGroup
-          items={breadcrumbs}
-          onFollow={handleNavigate}
+          items={breadcrumbItems}
+          ariaLabel="Breadcrumbs"
+          onFollow={e => {
+            e.preventDefault();
+            navigate(e.detail.href);
+          }}
         />
       }
-      notifications={<Flashbar items={notifications} />}
+      content={<Outlet />}
+      toolsHide={true}
       contentType="default"
       navigationWidth={300}
-      headerSelector="#header"
     />
   );
 };
