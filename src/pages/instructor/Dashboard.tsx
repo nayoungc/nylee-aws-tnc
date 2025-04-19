@@ -9,11 +9,9 @@ import {
   Button,
   ColumnLayout
 } from '@cloudscape-design/components';
-import MainLayout from '../../components/MainLayout';
 
 const Dashboard: React.FC = () => {
   return (
-    <MainLayout title="Instructor Dashboard">
       <SpaceBetween size="l">
         <Container
           header={
@@ -103,7 +101,6 @@ const Dashboard: React.FC = () => {
           </Container>
         </ColumnLayout>
       </SpaceBetween>
-    </MainLayout>
   );
 };
 

@@ -1,579 +1,410 @@
-// src/pages/instructor/CourseCreation.tsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  FormField,
-  Input,
-  Textarea,
-  DatePicker,
-  Select,
-  SpaceBetween,
-  Button,
+import {
   Container,
   Header,
-  Form,
-  Box,
-  Alert,
-  Modal,
+  SpaceBetween,
+  FormField,
+  Select,
+  DatePicker,
+  Input,
   Checkbox,
-  TagEditor,
-  Multiselect
+  Button,
+  Box,
+  ColumnLayout,
+  Alert,
+  Spinner
 } from '@cloudscape-design/components';
+import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
-import { fetchUserAttributes } from 'aws-amplify/auth';
-import { GraphQLQuery } from 'aws-amplify/api';
-// 상대 경로로 수정 - 프로젝트 구조에 맞게 조정 필요
-import { createCourse, createAnnouncement, createAssessment } from '../../graphql/mutations';
-import { listUserProfiles } from '../../graphql/queries';
-import MainLayout from '../../components/MainLayout';
+import { v4 as uuidv4 } from 'uuid';
 
-// 클라이언트 생성
-const client = generateClient();
-
-// 인터페이스 정의
-interface FormData {
-  title: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  location: string;
-  maxStudents: string;
-  tags: string[];
-  isOnline: boolean;
-  announcements: {
-    title: string;
-    content: string;
-  }[];
-  assessments: {
-    name: string;
-    type: string;
-    dueDate: string;
-  }[];
-}
-
-interface UserProfile {
+interface CourseTemplate {
   id: string;
-  email: string;
+  title: string;
+  description?: string;
+  level?: string;
+}
+
+interface Instructor {
+  id: string;
   name: string;
+  email: string;
 }
 
-// 쿼리/뮤테이션 결과 타입 정의
-interface CreateCourseResult {
-  createCourse: {
-    id: string;
-    title: string;
-    [key: string]: any;
-  };
-}
+// GraphQL 쿼리와 뮤테이션 정의
+const listCourseTemplates = /* GraphQL */ `
+  query ListCourseTemplates(
+    \$filter: ModelCourseCatalogFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        title
+        description
+        level
+        status
+      }
+      nextToken
+    }
+  }
+`;
 
-interface ListUserProfilesResult {
-  listUserProfiles: {
-    items: UserProfile[];
-    nextToken?: string;
-  };
-}
+const listInstructors = /* GraphQL */ `
+  query ListInstructors(
+    \$filter: ModelInstructorFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listInstructors(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        name
+        email
+        status
+      }
+      nextToken
+    }
+  }
+`;
+
+const createCourse = /* GraphQL */ `
+  mutation CreateCourse(\$input: CreateCourseInput!) {
+    createCourse(input: \$input) {
+      id
+      title
+      instructorId
+      startDate
+      endDate
+      duration
+      status
+      createdAt
+      updatedAt
+    }
+  }
+`;
 
 const CourseCreation: React.FC = () => {
   const navigate = useNavigate();
 
   // 상태 관리
-  const [formData, setFormData] = useState<FormData>({
-    title: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-    location: '',
-    maxStudents: '30',
-    tags: [],
-    isOnline: false,
-    announcements: [{ title: '환영합니다!', content: '과정에 오신 것을 환영합니다!' }],
-    assessments: []
-  });
-
-  const [loading, setLoading] = useState<boolean>(false);
+  const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [loadingInstructors, setLoadingInstructors] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
-  const [courseUrl, setCourseUrl] = useState<string>('');
-  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
-  const [students, setStudents] = useState<UserProfile[]>([]);
-  const [selectedStudents, setSelectedStudents] = useState<UserProfile[]>([]);
-  const [currentInstructor, setCurrentInstructor] = useState<UserProfile | null>(null);
-  const [activeTab, setActiveTab] = useState('basic-info');
+  const [success, setSuccess] = useState(false);
 
-  // 현재 로그인한 사용자(강사) 정보 가져오기
+  // 폼 상태
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [selectedInstructor, setSelectedInstructor] = useState<any>(null);
+  const [startDate, setStartDate] = useState<string>('');
+  const [duration, setDuration] = useState<string>('1');
+  const [includePreQuiz, setIncludePreQuiz] = useState(true);
+  const [includePostQuiz, setIncludePostQuiz] = useState(true);
+  const [includeSurvey, setIncludeSurvey] = useState(true);
+
+  // 페이지 로드 시 데이터 가져오기
   useEffect(() => {
-    async function fetchCurrentUser() {
-      try {
-        const attributes = await fetchUserAttributes();
-        setCurrentInstructor({
-          id: attributes.sub || '',
-          email: attributes.email || '',
-          name: attributes.name || attributes.email || '강사'
-        });
-      } catch (err) {
-        console.error('사용자 정보 가져오기 실패:', err);
-        setError('사용자 정보를 가져오는데 실패했습니다.');
-      }
-    }
-
-    async function fetchStudents() {
-      try {
-        // 실제 API에서는 학생 역할을 가진 사용자만 필터링해야 함
-        const { data } = await client.graphql<GraphQLQuery<ListUserProfilesResult>>({
-          query: listUserProfiles,
-          variables: {
-            filter: {
-              role: { eq: 'student' }
-            },
-            limit: 1000
-          }
-        });
-
-        if (data?.listUserProfiles?.items) {
-          setStudents(data.listUserProfiles.items);
-        }
-      } catch (err) {
-        console.error('학생 목록 가져오기 실패:', err);
-      }
-    }
-
-    fetchCurrentUser();
-    fetchStudents();
+    fetchCourseTemplates();
+    fetchInstructors();
   }, []);
 
-  // 입력 필드 변경 핸들러
-  const handleChange = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  // GraphQL을 사용하여 과정 템플릿 가져오기
+  const fetchCourseTemplates = async () => {
+    setLoadingTemplates(true);
+
+    try {
+      const client = generateClient();
+
+      const response = await client.graphql({
+        query: listCourseTemplates,
+        variables: {
+          limit: 100,
+          filter: {
+            status: { eq: "ACTIVE" }
+          }
+        }
+      });
+
+      const responseAny: any = response;
+      const templateItems = responseAny.data?.listCourseCatalogs?.items || [];
+
+      if (templateItems.length > 0) {
+        setCourseTemplates(templateItems);
+      } else {
+        // 샘플 데이터
+        setCourseTemplates([
+          { id: 'template-1', title: 'AWS Cloud Practitioner', level: 'Foundational' },
+          { id: 'template-2', title: 'AWS Solutions Architect Associate', level: 'Associate' },
+          { id: 'template-3', title: 'AWS Developer Associate', level: 'Associate' }
+        ]);
+      }
+    } catch (error) {
+      console.error('과정 템플릿 로드 오류:', error);
+      setError('과정 템플릿 목록을 불러오는데 실패했습니다');
+
+      // 샘플 데이터
+      setCourseTemplates([
+        { id: 'template-1', title: 'AWS Cloud Practitioner', level: 'Foundational' },
+        { id: 'template-2', title: 'AWS Solutions Architect Associate', level: 'Associate' },
+        { id: 'template-3', title: 'AWS Developer Associate', level: 'Associate' }
+      ]);
+    } finally {
+      setLoadingTemplates(false);
+    }
   };
 
-  // 공지사항 변경 핸들러
-  const handleAnnouncementChange = (index: number, field: string, value: string) => {
-    const updatedAnnouncements = [...formData.announcements];
-    updatedAnnouncements[index] = {
-      ...updatedAnnouncements[index],
-      [field]: value
-    };
+  // GraphQL을 사용하여 강사 목록 가져오기
+  const fetchInstructors = async () => {
+    setLoadingInstructors(true);
 
-    setFormData(prev => ({
-      ...prev,
-      announcements: updatedAnnouncements
-    }));
+    try {
+      const client = generateClient();
+
+      const response = await client.graphql({
+        query: listInstructors,
+        variables: {
+          limit: 100,
+          filter: {
+            status: { eq: "ACTIVE" }
+          }
+        }
+      });
+
+      const responseAny: any = response;
+      const instructorItems = responseAny.data?.listInstructors?.items || [];
+
+      if (instructorItems.length > 0) {
+        setInstructors(instructorItems);
+      } else {
+        // 샘플 데이터
+        setInstructors([
+          { id: 'inst-1', name: 'John Doe', email: 'john@example.com' },
+          { id: 'inst-2', name: 'Jane Smith', email: 'jane@example.com' }
+        ]);
+      }
+    } catch (error) {
+      console.error('강사 로드 오류:', error);
+
+      // 샘플 데이터
+      setInstructors([
+        { id: 'inst-1', name: 'John Doe', email: 'john@example.com' },
+        { id: 'inst-2', name: 'Jane Smith', email: 'jane@example.com' }
+      ]);
+    } finally {
+      setLoadingInstructors(false);
+    }
   };
 
-  // 공지사항 추가
-  const addAnnouncement = () => {
-    setFormData(prev => ({
-      ...prev,
-      announcements: [
-        ...prev.announcements,
-        { title: '', content: '' }
-      ]
-    }));
-  };
-
-  // 공지사항 삭제
-  const removeAnnouncement = (index: number) => {
-    const filteredAnnouncements = formData.announcements.filter((_, i) => i !== index);
-    setFormData(prev => ({
-      ...prev,
-      announcements: filteredAnnouncements
-    }));
-  };
-
-  // 평가 변경 핸들러
-  const handleAssessmentChange = (index: number, field: string, value: any) => {
-    const updatedAssessments = [...formData.assessments];
-    updatedAssessments[index] = {
-      ...updatedAssessments[index],
-      [field]: value
-    };
-
-    setFormData(prev => ({
-      ...prev,
-      assessments: updatedAssessments
-    }));
-  };
-
-  // 평가 추가
-  const addAssessment = () => {
-    setFormData(prev => ({
-      ...prev,
-      assessments: [
-        ...prev.assessments,
-        { name: '', type: 'PRE_QUIZ', dueDate: '' }
-      ]
-    }));
-  };
-
-  // 평가 삭제
-  const removeAssessment = (index: number) => {
-    const filteredAssessments = formData.assessments.filter((_, i) => i !== index);
-    setFormData(prev => ({
-      ...prev,
-      assessments: filteredAssessments
-    }));
-  };
-
-  // 폼 제출 및 과정 생성
-  const handleSubmit = async () => {
-    // 기본 유효성 검사
-    if (!formData.title || !formData.startDate || !formData.endDate) {
-      setError('과정 제목, 시작일, 종료일은 필수 항목입니다.');
+  // GraphQL 뮤테이션을 사용하여 과정 생성
+  const handleCreateCourse = async () => {
+    if (!selectedTemplate || !startDate || !duration) {
+      setError('필수 항목을 모두 입력해주세요.');
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
 
     try {
-      // 1. Course 생성
+      const client = generateClient();
+
+      // 시작일 기반으로 종료일 계산
+      const start = new Date(startDate);
+      const end = new Date(start);
+      end.setDate(end.getDate() + parseInt(duration) - 1);
+
+      // 새 과정 생성을 위한 입력 데이터
       const courseInput = {
-        title: formData.title,
-        description: formData.description,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        location: formData.location,
-        isOnline: formData.isOnline,
-        maxStudents: parseInt(formData.maxStudents),
-        instructorID: currentInstructor?.id,
-        instructorName: currentInstructor?.name,
-        tags: formData.tags
+        id: uuidv4(),
+        courseTemplateId: selectedTemplate.value,
+        title: selectedTemplate.label,
+        instructorId: selectedInstructor?.value || null,
+        startDate: startDate,
+        endDate: end.toISOString().split('T')[0],
+        duration: parseInt(duration),
+        includePreQuiz,
+        includePostQuiz,
+        includeSurvey,
+        status: 'Active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      // Gen 2 방식으로 그래프QL 호출
-      const { data } = await client.graphql<GraphQLQuery<CreateCourseResult>>({
+      // GraphQL 뮤테이션 실행
+      await client.graphql({
         query: createCourse,
-        variables: { input: courseInput }
+        variables: {
+          input: courseInput
+        }
       });
 
-      // 생성된 과정 ID 가져오기
-      const newCourseId = data.createCourse.id;
-
-      // 2. Announcements 생성
-      const announcementPromises = formData.announcements.filter(
-        a => a.title && a.content
-      ).map(announcement =>
-        client.graphql({
-          query: createAnnouncement,
-          variables: {
-            input: {
-              title: announcement.title,
-              content: announcement.content,
-              courseID: newCourseId
-            }
-          }
-        })
-      );
-
-      // 3. Assessments 생성
-      const assessmentPromises = formData.assessments.filter(
-        a => a.name && a.type
-      ).map(assessment =>
-        client.graphql({
-          query: createAssessment,
-          variables: {
-            input: {
-              name: assessment.name,
-              type: assessment.type,
-              status: 'COMING_SOON',
-              dueDate: assessment.dueDate,
-              courseID: newCourseId
-            }
-          }
-        })
-      );
-
-      // 병렬로 모든 관련 데이터 생성
-      await Promise.all([
-        ...announcementPromises,
-        ...assessmentPromises
-      ]);
-
-      // 4. 학생 등록 (실제 구현은 enrollStudents 함수에서)
-      if (selectedStudents.length > 0) {
-        await enrollStudents(newCourseId, selectedStudents);
-      }
-
-      // 성공 처리
       setSuccess(true);
-      setCourseUrl(`\${window.location.origin}/course/\${newCourseId}`);
-      setShowSuccessModal(true);
 
-    } catch (err: any) {
-      console.error('과정 생성 오류:', err);
-      setError(err.message || '과정 생성 중 오류가 발생했습니다.');
+      // 잠시 후 목록 페이지로 이동
+      setTimeout(() => {
+        navigate('/instructor/courses');
+      }, 2000);
+
+    } catch (error) {
+      console.error('과정 생성 오류:', error);
+      setError('과정 생성에 실패했습니다. 다시 시도해 주세요.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  // 학생 등록 함수
-  const enrollStudents = async (courseId: string, students: UserProfile[]) => {
-    // 실제 구현에서는 백엔드를 통해 학생들에게 초대 이메일을 보내고
-    // 데이터베이스에 등록 상태를 저장하는 로직 추가
-    console.log(`\${students.length}명의 학생을 \${courseId} 과정에 등록`);
-
-    // 샘플 코드만 제공 (실제 구현은 추가 개발 필요)
-    return Promise.resolve();
-  };
-
-  // URL 복사 함수
-  const copyUrl = () => {
-    navigator.clipboard.writeText(courseUrl)
-      .then(() => {
-        alert('과정 URL이 클립보드에 복사되었습니다!');
-      })
-      .catch(err => {
-        console.error('URL 복사 실패:', err);
-      });
-  };
-
   return (
-    <MainLayout title="새 과정 생성">
-      <Container>
-        <SpaceBetween size="l">
-          {error && (
-            <Alert type="error" dismissible onDismiss={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
-
-          {/* 탭 네비게이션 */}
-          <div className="course-tabs">
+    <Container
+      header={
+        <Header
+          variant="h2"
+          description="새로운 교육 과정을 개설합니다"
+          actions={
             <SpaceBetween direction="horizontal" size="xs">
-              <Button
-                variant={activeTab === 'basic-info' ? 'primary' : 'link'}
-                onClick={() => setActiveTab('basic-info')}
-              >
-                과정 기본 정보
+              <Button onClick={() => navigate('/instructor/courses')}>
+                취소
               </Button>
               <Button
-                variant={activeTab === 'announcements' ? 'primary' : 'link'}
-                onClick={() => setActiveTab('announcements')}
+                variant="primary"
+                onClick={handleCreateCourse}
+                loading={submitting}
+                disabled={submitting || !selectedTemplate || !startDate || !duration}
               >
-                공지사항
-              </Button>
-              <Button
-                variant={activeTab === 'assessments' ? 'primary' : 'link'}
-                onClick={() => setActiveTab('assessments')}
-              >
-                평가
-              </Button>
-              <Button
-                variant={activeTab === 'students' ? 'primary' : 'link'}
-                onClick={() => setActiveTab('students')}
-              >
-                학생 관리
+                과정 생성
               </Button>
             </SpaceBetween>
-          </div>
-
-          <Form
-            actions={
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button
-                  variant="link"
-                  onClick={() => navigate('/courses/my-courses')}
-                >
-                  취소
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleSubmit}
-                  loading={loading}
-                >
-                  과정 생성
-                </Button>
-              </SpaceBetween>
-            }
-          >
-            {/* 과정 기본 정보 */}
-            {activeTab === 'basic-info' && (
-              <Container header={<Header variant="h2">기본 정보</Header>}>
-                <SpaceBetween size="l">
-                  <FormField label="과정 제목" description="학생들에게 표시될 과정 이름입니다.">
-                    <Input
-                      value={formData.title}
-                      onChange={({ detail }) => handleChange('title', detail.value)}
-                    />
-                  </FormField>
-
-                  <FormField label="과정 설명">
-                    <Textarea
-                      value={formData.description}
-                      onChange={({ detail }) => handleChange('description', detail.value)}
-                      rows={5}
-                    />
-                  </FormField>
-
-                  <SpaceBetween direction="horizontal" size="xs">
-                    <FormField label="시작일">
-                      <DatePicker
-                        value={formData.startDate}
-                        onChange={({ detail }) => handleChange('startDate', detail.value)}
-                      />
-                    </FormField>
-
-                    <FormField label="종료일">
-                      <DatePicker
-                        value={formData.endDate}
-                        onChange={({ detail }) => handleChange('endDate', detail.value)}
-                      />
-                    </FormField>
-                  </SpaceBetween>
-
-                  <FormField label="위치/장소">
-                    <Input
-                      value={formData.location}
-                      onChange={({ detail }) => handleChange('location', detail.value)}
-                      placeholder="강의실 또는 온라인 미팅 링크"
-                    />
-                  </FormField>
-
-                  <FormField label="최대 학생 수">
-                    <Input
-                      type="number"
-                      value={formData.maxStudents}
-                      onChange={({ detail }) => handleChange('maxStudents', detail.value)}
-                    />
-                  </FormField>
-
-                  <FormField label="태그">
-                    <TagEditor
-                      tags={formData.tags.map(tag => ({
-                        key: tag,
-                        value: "",
-                        label: tag,
-                        existing: false
-                      }))}
-                      onChange={({ detail }) =>
-                        handleChange('tags', detail.tags.map(t => t.key))
-                      }
-                      i18nStrings={{
-                        keyPlaceholder: '태그 입력 후 Enter',
-                        valuePlaceholder: '값 (선택사항)',
-                        addButton: '태그 추가',
-                        removeButton: '제거',
-                        undoButton: '실행 취소',
-                        undoPrompt: '이 태그는 저장 시 제거됩니다'
-                      }}
-                    />
-                  </FormField>
-
-                  <Checkbox
-                    checked={formData.isOnline}
-                    onChange={({ detail }) => handleChange('isOnline', detail.checked)}
-                  >
-                    온라인 과정
-                  </Checkbox>
-                </SpaceBetween>
-              </Container>
-            )}
-
-            {/* 공지사항 */}
-            {activeTab === 'announcements' && (
-              <Container
-                header={
-                  <Header
-                    variant="h2"
-                    actions={
-                      <Button
-                        iconName="add-plus"
-                        onClick={addAnnouncement}
-                      >
-                        공지사항 추가
-                      </Button>
-                    }
-                  >
-                    공지사항
-                  </Header>
-                }
-              >
-                <SpaceBetween size="l">
-                  {formData.announcements.map((announcement, index) => (
-                    <Container
-                      key={index}
-                      header={
-                        <Header
-                          actions={
-                            <Button
-                              iconName="remove"
-                              variant="link"
-                              onClick={() => removeAnnouncement(index)}
-                            >
-                              삭제
-                            </Button>
-                          }
-                        >
-                          공지사항 #{index + 1}
-                        </Header>
-                      }
-                    >
-                      <SpaceBetween size="l">
-                        <FormField label="제목">
-                          <Input
-                            value={announcement.title}
-                            onChange={({ detail }) =>
-                              handleAnnouncementChange(index, 'title', detail.value)
-                            }
-                          />
-                        </FormField>
-
-                        <FormField label="내용">
-                          <Textarea
-                            value={announcement.content}
-                            onChange={({ detail }) =>
-                              handleAnnouncementChange(index, 'content', detail.value)
-                            }
-                            rows={4}
-                          />
-                        </FormField>
-                      </SpaceBetween>
-                    </Container>
-                  ))}
-                </SpaceBetween>
-              </Container>
-            )}
-
-            {/* 나머지 탭 내용 ... */}
-
-          </Form>
-        </SpaceBetween>
-      </Container>
-
-      {/* 과정 생성 성공 모달 */}
-      <Modal
-        visible={showSuccessModal}
-        onDismiss={() => setShowSuccessModal(false)}
-        header="과정 생성 완료"
-        footer={
-          <Box float="right">
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button onClick={() => setShowSuccessModal(false)}>닫기</Button>
-              <Button onClick={() => navigate('/courses/my-courses')}>내 과정으로 이동</Button>
-              <Button variant="primary" onClick={copyUrl}>URL 복사</Button>
-            </SpaceBetween>
-          </Box>
-        }
-      >
-        <SpaceBetween size="m">
-          <Box variant="p">
-            과정이 성공적으로 생성되었습니다! 아래 URL을 통해 학생들이 과정에 접근할 수 있습니다.
-          </Box>
-
-          <Alert type="success">
-            <Box fontWeight="bold">과정 URL:</Box>
-            <Box padding={{ top: 'xs' }} fontSize="body-m">
-              {courseUrl}
-            </Box>
+          }
+        >
+          새 과정 개설
+        </Header>
+      }
+    >
+      <SpaceBetween size="l">
+        {success && (
+          <Alert type="success" header="과정이 성공적으로 생성되었습니다">
+            과정 목록 페이지로 이동합니다...
           </Alert>
+        )}
 
-          <Box variant="p">
-            선택한 {selectedStudents.length}명의 학생에게 초대 이메일이 발송되었습니다.
-          </Box>
-        </SpaceBetween>
-      </Modal>
-    </MainLayout>
+        {error && (
+          <Alert type="error" header="오류">
+            {error}
+          </Alert>
+        )}
+
+        <ColumnLayout columns={2}>
+          <SpaceBetween size="l">
+            <FormField
+              label="과정 선택"
+              description="개설할 교육 과정을 선택하세요"
+              constraintText="필수 항목"
+            >
+              <Select
+                placeholder="과정 선택"
+                loadingText="과정 목록을 불러오는 중..."
+                statusType={loadingTemplates ? "loading" : "finished"}
+                options={courseTemplates.map(template => ({
+                  label: template.title,
+                  value: template.id,
+                  description: template.level
+                }))}
+                selectedOption={selectedTemplate}
+                onChange={({ detail }) => setSelectedTemplate(detail.selectedOption)}
+              />
+            </FormField>
+
+            <FormField
+              label="강사 선택"
+              description="과정을 담당할 강사를 선택하세요"
+            >
+              <Select
+                placeholder="강사 선택"
+                loadingText="강사 목록을 불러오는 중..."
+                statusType={loadingInstructors ? "loading" : "finished"}
+                options={instructors.map(instructor => ({
+                  label: instructor.name,
+                  value: instructor.id,
+                  description: instructor.email
+                }))}
+                selectedOption={selectedInstructor}
+                onChange={({ detail }) => setSelectedInstructor(detail.selectedOption)}
+              />
+            </FormField>
+          </SpaceBetween>
+
+          <SpaceBetween size="l">
+          <FormField 
+            label="시작일" 
+            description="과정의 시작일을 선택하세요"
+            constraintText="필수 항목"
+          >
+            <DatePicker
+              onChange={({ detail }) => setStartDate(detail.value)}
+              value={startDate}
+              // 타입이 지정된 함수로 제공
+              openCalendarAriaLabel={(selectedDate: string | null) => {
+                return selectedDate 
+                  ? `날짜 선택, 선택된 날짜: \${selectedDate}` 
+                  : '날짜 선택';
+              }}
+              placeholder="YYYY/MM/DD"
+              // 대신 i18nStrings 사용
+              i18nStrings={{
+                previousMonthAriaLabel: '이전 달',
+                nextMonthAriaLabel: '다음 달',
+                todayAriaLabel: '오늘'
+              }}
+            />
+          </FormField>
+
+            // 교육 일수 FormField
+            <FormField
+              label="교육 일수"
+              description="교육이 진행되는 일수를 입력하세요"
+              constraintText="1 이상의 숫자 (필수)"
+            >
+              <Input
+                type="number"
+                value={duration}
+                onChange={({ detail }) => setDuration(detail.value)}
+                placeholder="1"
+              // min 속성 제거 (CloudScape Input에 지원되지 않음)
+              // 대신 입력 검증 로직 추가
+              />
+            </FormField>
+          </SpaceBetween>
+        </ColumnLayout>
+
+        <Container header={<Header variant="h3">평가 옵션</Header>}>
+          <SpaceBetween size="m">
+            <Checkbox
+              checked={includePreQuiz}
+              onChange={({ detail }) => setIncludePreQuiz(detail.checked)}
+            >
+              사전 퀴즈 포함
+            </Checkbox>
+
+            <Checkbox
+              checked={includePostQuiz}
+              onChange={({ detail }) => setIncludePostQuiz(detail.checked)}
+            >
+              사후 퀴즈 포함
+            </Checkbox>
+
+            <Checkbox
+              checked={includeSurvey}
+              onChange={({ detail }) => setIncludeSurvey(detail.checked)}
+            >
+              사전 설문조사 포함
+            </Checkbox>
+          </SpaceBetween>
+        </Container>
+      </SpaceBetween>
+    </Container>
   );
 };
 
