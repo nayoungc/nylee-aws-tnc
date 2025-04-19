@@ -14,6 +14,28 @@ import {
   Checkbox
 } from '@cloudscape-design/components';
 
+// 비밀번호 강도 검증 함수 (선택사항)
+const validatePassword = (password: string): { isValid: boolean; message?: string } => {
+  if (password.length < 8) {
+    return { isValid: false, message: '비밀번호는 최소 8자 이상이어야 합니다.' };
+  }
+  
+  // 대문자, 소문자, 숫자, 특수문자 포함 검증
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  
+  if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+    return { 
+      isValid: false, 
+      message: '비밀번호는 대문자, 소문자, 숫자, 특수문자를 모두 포함해야 합니다.' 
+    };
+  }
+  
+  return { isValid: true };
+};
+
 const SignUp: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -32,6 +54,8 @@ const SignUp: React.FC = () => {
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormState({ ...formState, [field]: value });
+    // 에러 메시지 초기화
+    if (error) setError(null);
   };
 
   const handleSignUpClick = async () => {
@@ -51,6 +75,13 @@ const SignUp: React.FC = () => {
       return;
     }
     
+    // 비밀번호 강도 검증 (선택적으로 사용)
+    // const passwordValidation = validatePassword(formState.password);
+    // if (!passwordValidation.isValid) {
+    //   setError(String(t('auth.password_requirements') || passwordValidation.message));
+    //   return;
+    // }
+    
     if (formState.password !== formState.confirmPassword) {
       setError(String(t('auth.password_mismatch') || '비밀번호가 일치하지 않습니다'));
       return;
@@ -65,15 +96,22 @@ const SignUp: React.FC = () => {
     setError(null);
     
     try {
-      // 회원가입 시도
-      const result = await handleSignUp(
-        formState.username,
-        formState.password,
-        formState.email,
-        formState.usePhoneNumber ? formState.phoneNumber : undefined,
-        // 여기에 추가 속성 전달 가능 (예: profile: 'instructor')
-        { profile: 'instructor' }
-      );
+      // Gen 2 방식으로 회원가입 시도
+      const result = await handleSignUp({
+        username: formState.username,
+        password: formState.password,
+        email: formState.email,
+        phone: formState.usePhoneNumber ? formState.phoneNumber : undefined,
+        options: {
+          userAttributes: {
+            // 추가 속성 전달
+            profile: 'instructor',
+            // 필요한 경우 다른 속성 추가
+            // given_name: '',
+            // family_name: '',
+          }
+        }
+      });
       
       console.log('회원가입 결과:', result);
       
@@ -88,7 +126,7 @@ const SignUp: React.FC = () => {
         });
       } 
       // 회원가입 완료
-      else if (result.nextStep?.signUpStep === 'DONE') {
+      else if (result.isSignUpComplete) {
         navigate('/signin', {
           state: { 
             username: formState.username,
@@ -99,12 +137,24 @@ const SignUp: React.FC = () => {
     } catch (err: any) {
       console.error('회원가입 오류:', err);
       
-      if (err.name === 'UsernameExistsException') {
+      // Gen 2 오류 처리 개선
+      const errorMessage = err.message || '';
+      
+      if (err.name === 'UsernameExistsException' || errorMessage.includes('already exists')) {
         setError(String(t('auth.username_exists') || '이미 사용 중인 사용자 이름입니다'));
-      } else if (err.name === 'InvalidPasswordException') {
-        setError(String(t('auth.invalid_password') || '비밀번호가 요구사항을 충족하지 않습니다'));
+      } else if (err.name === 'InvalidPasswordException' || errorMessage.includes('password')) {
+        setError(String(t('auth.invalid_password') || 
+          '비밀번호가 요구사항을 충족하지 않습니다. 대문자, 소문자, 숫자, 특수문자를 포함한 8자 이상이어야 합니다.'));
+      } else if (err.name === 'InvalidParameterException') {
+        if (errorMessage.includes('phone')) {
+          setError(String(t('auth.invalid_phone') || '올바른 형식의 전화번호를 입력하세요 (+국가코드포함)'));
+        } else if (errorMessage.includes('email')) {
+          setError(String(t('auth.invalid_email') || '올바른 이메일 형식이 아닙니다'));
+        } else {
+          setError(errorMessage || String(t('auth.invalid_parameter') || '입력값이 올바르지 않습니다'));
+        }
       } else {
-        setError(err.message || String(t('auth.signup_error') || '회원가입 중 오류가 발생했습니다'));
+        setError(errorMessage || String(t('auth.signup_error') || '회원가입 중 오류가 발생했습니다'));
       }
     } finally {
       setLoading(false);
@@ -148,6 +198,7 @@ const SignUp: React.FC = () => {
               type="text"
               value={formState.username}
               onChange={({ detail }) => handleChange('username', detail.value)}
+              autoFocus
             />
           </FormField>
           
@@ -172,8 +223,8 @@ const SignUp: React.FC = () => {
               description={String(t('auth.phone_format') || '국제 형식으로 입력: +82101234567')}
             >
               <Input
-                type="text"  // "tel" 대신 "text" 사용
-                inputMode="tel"  // HTML5 inputMode 속성으로 모바일에서 전화번호 키패드 표시
+                type="text"
+                inputMode="tel"
                 value={formState.phoneNumber}
                 onChange={({ detail }) => handleChange('phoneNumber', detail.value)}
                 placeholder="+82101234567"
@@ -181,7 +232,10 @@ const SignUp: React.FC = () => {
             </FormField>
           )}
           
-          <FormField label={String(t('auth.password') || '비밀번호')}>
+          <FormField 
+            label={String(t('auth.password') || '비밀번호')}
+            description={String(t('auth.password_hint') || '8자 이상의 대문자, 소문자, 숫자, 특수문자 조합')}
+          >
             <Input
               type="password"
               value={formState.password}

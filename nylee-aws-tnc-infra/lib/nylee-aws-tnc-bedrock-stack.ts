@@ -8,10 +8,6 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // 계정 ID와 리전을 변수로 추출
-    const accountId = this.account;
-    const region = this.region;
-    
     // 기존 S3 버킷들 참조
     const reportsBucket = s3.Bucket.fromBucketName(
       this, 'ExistingReportsBucket', 'tnc-reports-598393186022-us-east-1'
@@ -25,22 +21,16 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       this, 'ExistingDocsBucket', 'nylee-aws-docs-rag'
     );
     
-    // Knowledge Base용 버킷 생성 - 문자열 연결로 변경
-    const kbBucket = new s3.Bucket(this, 'KnowledgeBaseBucket', {
-      bucketName: 'tnc-kb-' + accountId + '-' + region,
-      removalPolicy: cdk.RemovalPolicy.RETAIN
-    });
-    
     // IAM 역할 생성
     const bedrockRole = new iam.Role(this, 'BedrockRole', {
       assumedBy: new iam.ServicePrincipal('bedrock.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess')
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonOpenSearchServerlessFullAccess')
       ]
     });
 
     // S3 버킷에 대한 권한 명시적 추가
-    kbBucket.grantReadWrite(bedrockRole);
     reportsBucket.grantRead(bedrockRole);
     courseMaterialsBucket.grantRead(bedrockRole);
     documentsBucket.grantRead(bedrockRole);
@@ -52,130 +42,134 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     // Amazon Titan Embeddings V2는 1024 차원
     const titanEmbeddingDimensions = 1024;
 
-    // CfnKnowledgeBase 직접 생성 - 모든 속성을 직접 설정
-    const reportsKB = new cdk.CfnResource(this, 'ReportsKnowledgeBase', {
-      type: 'AWS::Bedrock::KnowledgeBase',
-      properties: {
-        Name: 'TnC-Reports-Knowledge',
-        Description: 'Knowledge base for course reports and analytics',
-        RoleArn: bedrockRole.roleArn,
-        KnowledgeBaseConfiguration: {
-          Type: 'VECTOR',
-          VectorKnowledgeBaseConfiguration: {
-            EmbeddingModelArn: embeddingModelArn,
-            EmbeddingModelConfiguration: {
-              BedrockEmbeddingModelConfiguration: {
-                Dimensions: titanEmbeddingDimensions
-              }
+    // OpenSearch Serverless 컬렉션 ARN 참조 (콘솔에서 미리 생성 필요)
+    const opensearchCollectionArn = 'arn:aws:aoss:us-east-1:598393186022:collection/tnc-vector-store';
+
+    // CfnKnowledgeBase 생성 - OpenSearch Serverless 구성 사용
+    const reportsKB = new bedrock.CfnKnowledgeBase(this, 'ReportsKnowledgeBase', {
+      name: 'TnC-Reports-Knowledge',
+      description: 'Knowledge base for course reports and analytics',
+      roleArn: bedrockRole.roleArn,
+      knowledgeBaseConfiguration: {
+        type: 'VECTOR',
+        vectorKnowledgeBaseConfiguration: {
+          embeddingModelArn: embeddingModelArn,
+          embeddingModelConfiguration: {
+            bedrockEmbeddingModelConfiguration: {
+              dimensions: titanEmbeddingDimensions
             }
           }
-        },
-        StorageConfiguration: {
-          Type: 'S3',
-          S3Configuration: {
-            BucketArn: kbBucket.bucketArn
+        }
+      },
+      storageConfiguration: {
+        type: 'OPENSEARCH_SERVERLESS',
+        opensearchServerlessConfiguration: {
+          collectionArn: opensearchCollectionArn,
+          vectorIndexName: 'tnc-vector-index',
+          fieldMapping: {
+            vectorField: 'vector_field',
+            textField: 'text_content',
+            metadataField: 'metadata'
           }
         }
       }
     });
     
-    const materialsKB = new cdk.CfnResource(this, 'MaterialsKnowledgeBase', {
-      type: 'AWS::Bedrock::KnowledgeBase',
-      properties: {
-        Name: 'TnC-Materials-Knowledge',
-        Description: 'Knowledge base for course materials',
-        RoleArn: bedrockRole.roleArn,
-        KnowledgeBaseConfiguration: {
-          Type: 'VECTOR',
-          VectorKnowledgeBaseConfiguration: {
-            EmbeddingModelArn: embeddingModelArn,
-            EmbeddingModelConfiguration: {
-              BedrockEmbeddingModelConfiguration: {
-                Dimensions: titanEmbeddingDimensions
-              }
+    const materialsKB = new bedrock.CfnKnowledgeBase(this, 'MaterialsKnowledgeBase', {
+      name: 'TnC-Materials-Knowledge',
+      description: 'Knowledge base for course materials',
+      roleArn: bedrockRole.roleArn,
+      knowledgeBaseConfiguration: {
+        type: 'VECTOR',
+        vectorKnowledgeBaseConfiguration: {
+          embeddingModelArn: embeddingModelArn,
+          embeddingModelConfiguration: {
+            bedrockEmbeddingModelConfiguration: {
+              dimensions: titanEmbeddingDimensions
             }
           }
-        },
-        StorageConfiguration: {
-          Type: 'S3',
-          S3Configuration: {
-            BucketArn: kbBucket.bucketArn
+        }
+      },
+      storageConfiguration: {
+        type: 'OPENSEARCH_SERVERLESS',
+        opensearchServerlessConfiguration: {
+          collectionArn: opensearchCollectionArn,
+          vectorIndexName: 'tnc-materials-index',
+          fieldMapping: {
+            vectorField: 'vector_field',
+            textField: 'text_content',
+            metadataField: 'metadata'
           }
         }
       }
     });
     
-    const docsKB = new cdk.CfnResource(this, 'DocsKnowledgeBase', {
-      type: 'AWS::Bedrock::KnowledgeBase',
-      properties: {
-        Name: 'TnC-Documentation-Knowledge',
-        Description: 'Knowledge base for AWS documentation',
-        RoleArn: bedrockRole.roleArn,
-        KnowledgeBaseConfiguration: {
-          Type: 'VECTOR',
-          VectorKnowledgeBaseConfiguration: {
-            EmbeddingModelArn: embeddingModelArn,
-            EmbeddingModelConfiguration: {
-              BedrockEmbeddingModelConfiguration: {
-                Dimensions: titanEmbeddingDimensions
-              }
+    const docsKB = new bedrock.CfnKnowledgeBase(this, 'DocsKnowledgeBase', {
+      name: 'TnC-Documentation-Knowledge',
+      description: 'Knowledge base for AWS documentation',
+      roleArn: bedrockRole.roleArn,
+      knowledgeBaseConfiguration: {
+        type: 'VECTOR',
+        vectorKnowledgeBaseConfiguration: {
+          embeddingModelArn: embeddingModelArn,
+          embeddingModelConfiguration: {
+            bedrockEmbeddingModelConfiguration: {
+              dimensions: titanEmbeddingDimensions
             }
           }
-        },
-        StorageConfiguration: {
-          Type: 'S3',
-          S3Configuration: {
-            BucketArn: kbBucket.bucketArn
+        }
+      },
+      storageConfiguration: {
+        type: 'OPENSEARCH_SERVERLESS',
+        opensearchServerlessConfiguration: {
+          collectionArn: opensearchCollectionArn,
+          vectorIndexName: 'tnc-docs-index',
+          fieldMapping: {
+            vectorField: 'vector_field',
+            textField: 'text_content',
+            metadataField: 'metadata'
           }
         }
       }
     });
     
-    // Agent 생성 (CfnResource 직접 사용)
-    const agent = new cdk.CfnResource(this, 'EducationAgent', {
-      type: 'AWS::Bedrock::Agent',
-      properties: {
-        AgentName: 'TnC-Education-Assistant',
-        Description: 'Assistant for educational content creation',
-        AgentResourceRoleArn: bedrockRole.roleArn,
-        FoundationModel: foundationModelArn,
-        IdleSessionTtlInSeconds: 1800,
-        KnowledgeBases: [
-          {
-            Description: 'Reports knowledge base',
-            KnowledgeBaseId: reportsKB.getAtt('KnowledgeBaseId').toString()
-          },
-          {
-            Description: 'Course materials knowledge base',
-            KnowledgeBaseId: materialsKB.getAtt('KnowledgeBaseId').toString()
-          },
-          {
-            Description: 'AWS documentation knowledge base',
-            KnowledgeBaseId: docsKB.getAtt('KnowledgeBaseId').toString()
-          }
-        ]
-      }
+    // Agent 생성
+    const agent = new bedrock.CfnAgent(this, 'EducationAgent', {
+      agentName: 'TnC-Education-Assistant',
+      description: 'Assistant for educational content creation',
+      agentResourceRoleArn: bedrockRole.roleArn,
+      foundationModel: foundationModelArn,
+      knowledgeBases: [
+        {
+          description: 'Reports knowledge base',
+          knowledgeBaseId: reportsKB.attrKnowledgeBaseId
+        },
+        {
+          description: 'Course materials knowledge base',
+          knowledgeBaseId: materialsKB.attrKnowledgeBaseId
+        },
+        {
+          description: 'AWS documentation knowledge base',
+          knowledgeBaseId: docsKB.attrKnowledgeBaseId
+        }
+      ]
     });
     
     // 출력값
-    new cdk.CfnOutput(this, 'ReportsKnowledgeBaseId', { 
-      value: reportsKB.getAtt('KnowledgeBaseId').toString()
+    new cdk.CfnOutput(this, 'ReportsKnowledgeBaseIdOutput', {
+      value: reportsKB.attrKnowledgeBaseId
     });
     
-    new cdk.CfnOutput(this, 'MaterialsKnowledgeBaseId', { 
-      value: materialsKB.getAtt('KnowledgeBaseId').toString()
+    new cdk.CfnOutput(this, 'MaterialsKnowledgeBaseIdOutput', {
+      value: materialsKB.attrKnowledgeBaseId
     });
     
-    new cdk.CfnOutput(this, 'DocsKnowledgeBaseId', { 
-      value: docsKB.getAtt('KnowledgeBaseId').toString()
+    new cdk.CfnOutput(this, 'DocsKnowledgeBaseIdOutput', {
+      value: docsKB.attrKnowledgeBaseId
     });
     
-    new cdk.CfnOutput(this, 'EducationAgentId', { 
-      value: agent.getAtt('AgentId').toString()
-    });
-    
-    new cdk.CfnOutput(this, 'KnowledgeBaseBucket', { 
-      value: kbBucket.bucketName
+    new cdk.CfnOutput(this, 'EducationAgentIdOutput', {
+      value: agent.attrAgentId
     });
   }
 }

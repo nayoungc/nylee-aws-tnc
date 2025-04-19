@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { handleConfirmSignUp } from '../utils/auth';
+import { handleConfirmSignUp, handleResendConfirmationCode } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from './AuthLayout';
 import { 
@@ -21,7 +21,9 @@ const ConfirmSignUp: React.FC = () => {
   
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const handleConfirmClick = async () => {
     if (!username) {
@@ -42,7 +44,7 @@ const ConfirmSignUp: React.FC = () => {
       console.log('인증 결과:', confirmResult);
       
       // 자동 로그인이 성공적으로 완료된 경우
-      if (confirmResult.autoSignIn?.nextStep?.signInStep === 'DONE') {
+      if (confirmResult.autoSignIn?.isSignedIn) {
         navigate('/');
       } 
       // 자동 로그인이 불필요하거나 실패한 경우
@@ -55,9 +57,11 @@ const ConfirmSignUp: React.FC = () => {
         });
       }
     } catch (err: any) {
-      if (err.name === 'CodeMismatchException') {
+      console.error('확인 오류:', err);
+      
+      if (err.name === 'CodeMismatchException' || err.message?.includes('confirmation code')) {
         setError(t('auth.code_mismatch') || '잘못된 인증 코드입니다');
-      } else if (err.name === 'ExpiredCodeException') {
+      } else if (err.name === 'ExpiredCodeException' || err.message?.includes('expired')) {
         setError(t('auth.code_expired') || '인증 코드가 만료되었습니다');
       } else {
         setError(err.message || t('auth.confirm_error') || '인증에 실패했습니다');
@@ -67,10 +71,39 @@ const ConfirmSignUp: React.FC = () => {
     }
   };
 
-  const handleResendCode = () => {
-    // 인증 코드 재전송 로직 구현 필요
-    // 아직 미구현
-    alert('코드 재전송 기능은 아직 구현되지 않았습니다');
+  const handleResendCode = async () => {
+    if (!username) {
+      setError(t('auth.username_required') || '사용자 이름이 필요합니다');
+      return;
+    }
+    
+    setResendLoading(true);
+    setError(null);
+    
+    try {
+      const resendResult = await handleResendConfirmationCode(username);
+      console.log('코드 재전송 결과:', resendResult);
+      
+      setResendMessage(
+        t('auth.code_resent') || 
+        `인증 코드가 \${resendResult.destination || '등록된 연락처'}로 재전송되었습니다`
+      );
+      
+      // 성공 메시지 3초 후 자동 제거
+      setTimeout(() => {
+        setResendMessage(null);
+      }, 3000);
+    } catch (err: any) {
+      console.error('재전송 오류:', err);
+      
+      if (err.name === 'LimitExceededException' || err.message?.includes('limit')) {
+        setError(t('auth.code_limit_exceeded') || '코드 재전송 횟수 제한을 초과했습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        setError(err.message || t('auth.resend_error') || '코드 재전송에 실패했습니다');
+      }
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   return (
@@ -87,8 +120,14 @@ const ConfirmSignUp: React.FC = () => {
       </Box>
       
       {error && (
-        <Alert type="error" dismissible>
+        <Alert type="error" dismissible onDismiss={() => setError(null)}>
           {error}
+        </Alert>
+      )}
+      
+      {resendMessage && (
+        <Alert type="success" dismissible onDismiss={() => setResendMessage(null)}>
+          {resendMessage}
         </Alert>
       )}
       
@@ -105,9 +144,14 @@ const ConfirmSignUp: React.FC = () => {
             </Button>
             
             <Box textAlign="center" padding={{ top: 's' }}>
-              <Link to="#" onClick={(e) => { e.preventDefault(); handleResendCode(); }}>
+              <Button
+                variant="link"
+                loading={resendLoading}
+                onClick={handleResendCode}
+                disabled={resendLoading}
+              >
                 {t('auth.resend_code') || '인증 코드 재전송'}
-              </Link>
+              </Button>
             </Box>
           </SpaceBetween>
         }
@@ -121,6 +165,9 @@ const ConfirmSignUp: React.FC = () => {
             value={code}
             onChange={({ detail }) => setCode(detail.value)}
             placeholder="123456"
+            onKeyDown={({ detail }) => {
+              if (detail.key === 'Enter') handleConfirmClick();
+            }}
           />
         </FormField>
       </Form>

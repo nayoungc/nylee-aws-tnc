@@ -1,0 +1,62 @@
+{
+  "app": {
+    "title": "AWS Training & Certification"
+  },
+  "auth": {
+    "sign_in": "Sign In",
+    "sign_up": "Sign Up",
+    "sign_out": "Sign Out",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "confirmation_code": "Confirmation Code",
+    "enter_confirmation_code": "Enter confirmation code",
+    "confirm_signup": "Confirm Registration",
+    "confirmation_code_sent": "Confirmation code was sent to {{email}}",
+    "confirm": "Confirm",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "login_error_generic": "Login failed. Please check your credentials.",
+    "user_not_exist": "User does not exist.",
+    "password_mismatch": "Passwords do not match",
+    "signup_error": "Registration failed. Please try again.",
+    "confirm_error": "Confirmation failed. Please try again.",
+    "fields_required": "All fields are required",
+    "incorrect_password": "Incorrect password",
+    "account_not_verified": "Account needs verification"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "catalog": "Course Catalog",
+    "course_catalog": "Course Catalog",
+    "my_courses": "My Courses",
+    "sessions": "Sessions",
+    "session_management": "Session Management",
+    "assessments": "Assessments",
+    "pre_quiz": "Pre Quiz",
+    "post_quiz": "Post Quiz",
+    "survey": "Survey",
+    "ai_generator": "AI Generator",
+    "student_home": "Student Home"
+  },
+  "user": {
+    "preferred_language": "Preferred Language",
+    "level": "Level"
+  },
+  "language": {
+    "english": "English",
+    "korean": "Korean"
+  },
+  "conversation": {
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    }
+  },
+  "common": {
+    "loading": "Loading..."
+  }
+}
