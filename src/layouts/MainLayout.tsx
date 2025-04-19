@@ -1,7 +1,7 @@
 // src/layouts/MainLayout.tsx
 import React, { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AppLayout, BreadcrumbGroup } from '@cloudscape-design/components';
+import { AppLayout, BreadcrumbGroup, ContentLayout, Header } from '@cloudscape-design/components';
 import SideNavigation, { SideNavigationProps } from '@cloudscape-design/components/side-navigation';
 import { useTranslation } from 'react-i18next';
 
@@ -14,8 +14,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
-
-  // 페이지 제목 매핑
+  
+  // 페이지 제목 매핑 - 기존 코드 유지
   const pageTitles: Record<string, string> = {
     '/dashboard': 'Dashboard',
     '/courses/catalog': 'Course Catalog',
@@ -29,7 +29,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     '/admin': 'Administration'
   };
 
-  // 사이드바 내비게이션 아이템
+  // 사이드바 내비게이션 아이템 - 기존 코드 유지
   const navigationItems: SideNavigationProps.Item[] = [
     { type: "link", text: t('nav.dashboard') || 'Dashboard', href: '/dashboard' },
     { 
@@ -57,14 +57,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { type: "link", text: t('nav.courses') || 'Available Courses', href: '/courses' }
   ];
 
-  // 현재 경로에서 페이지 제목 결정
+  // 현재 경로에서 페이지 제목 결정 - 기존 코드 유지
   const pathParts = location.pathname.split('/').filter(Boolean);
   const lastPathPart = pathParts.length > 0 ? pathParts[pathParts.length - 1] : '';
   const formattedLastPart = lastPathPart.charAt(0).toUpperCase() + lastPathPart.slice(1).replace(/-/g, ' ');
   
   const pageTitle = pageTitles[location.pathname] || formattedLastPart || 'Dashboard';
 
-  // 브레드크럼 아이템 생성
+  // 브레드크럼 아이템 생성 - 기존 코드 유지
   const breadcrumbItems = [
     { text: 'Home', href: '/' },
     ...pathParts.map((part, index) => {
@@ -78,9 +78,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <AppLayout
       navigation={
         <SideNavigation
-          header={{ text: 'TnC Assessment System', href: '/' }}
-          items={navigationItems}
           activeHref={location.pathname}
+          items={navigationItems}
+          header={{ text: t('app.title') || 'LMS Portal', href: '/' }}
           onFollow={e => {
             e.preventDefault();
             navigate(e.detail.href);
@@ -90,17 +90,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       breadcrumbs={
         <BreadcrumbGroup
           items={breadcrumbItems}
-          ariaLabel="Breadcrumbs"
           onFollow={e => {
             e.preventDefault();
             navigate(e.detail.href);
           }}
         />
       }
-      content={children}
+      content={
+        <ContentLayout
+          header={
+            <Header variant="h1">
+              {pageTitle}
+            </Header>
+          }
+        >
+          {children}
+        </ContentLayout>
+      }
       toolsHide={true}
-      contentType="default"
-      navigationWidth={300}
     />
   );
 };
