@@ -464,7 +464,8 @@ def extract_course_info_from_docx(file_path, course_titles):
     # 각 과정에 대해 직접 추출 방식 적용
     for title in course_titles:
         print(f"\n과정 처리 시작: {title}")
-        course = extract_module_and_labs_directly(doc, title)
+        # course_titles 매개변수 추가
+        course = extract_module_and_labs_directly(doc, title, course_titles)
         
         # 표에서 메타데이터 추출
         for table in doc.tables:
@@ -801,7 +802,7 @@ Security Engineering on AWS"""
         import traceback
         traceback.print_exc()
 
-def extract_module_and_labs_directly(doc, course_title):
+def extract_module_and_labs_directly(doc, course_title, all_course_titles):
     """문서 전체에서 직접 모듈과 실습을 찾아 추출하는 함수"""
     course = Course(title=course_title)
     current_module = None
@@ -842,7 +843,7 @@ def extract_module_and_labs_directly(doc, course_title):
             print(f"  섹션 헤더 발견: {text}")
             
         # 새로운 과정이 시작되면 검색 중단
-        if any(other_title in text for other_title in course_titles if other_title != course_title and len(other_title) > 15):
+        if any(other_title in text for other_title in all_course_titles if other_title != course_title and len(other_title) > 15):
             print(f"  다른 과정 제목 발견, 검색 종료: {text}")
             break
         

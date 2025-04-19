@@ -15,6 +15,7 @@ import {
   Spinner,
   Modal,
   Table,
+  Toggle,
   ExpandableSection,
   RadioGroup
 } from '@cloudscape-design/components';
@@ -360,14 +361,14 @@ const CourseCreation: React.FC = () => {
                 />
               </FormField>
               
-              {/* 과정 템플릿 */}
+              {/* 과정 */}
               <FormField 
-                label="과정 템플릿" 
-                description="기본 과정 템플릿을 선택하세요" 
+                label="과정명" 
+                description="과정을 선택하세요" 
                 constraintText="필수 항목"
               >
                 <Select
-                  placeholder="과정 템플릿 선택"
+                  placeholder="과정 선택"
                   loadingText="과정 목록을 불러오는 중..."
                   statusType={loadingTemplates ? "loading" : "finished"}
                   options={courseTemplates.map(template => ({
@@ -377,18 +378,6 @@ const CourseCreation: React.FC = () => {
                   }))}
                   selectedOption={selectedTemplate}
                   onChange={({ detail }) => setSelectedTemplate(detail.selectedOption)}
-                />
-              </FormField>
-              
-              {/* 과정명 */}
-              <FormField 
-                label="과정명" 
-                constraintText="필수 항목"
-              >
-                <Input
-                  value={customCourseName}
-                  onChange={({ detail }) => setCustomCourseName(detail.value)}
-                  placeholder="과정명 입력"
                 />
               </FormField>
               
@@ -418,16 +407,12 @@ const CourseCreation: React.FC = () => {
                 constraintText={useCustomCustomerName ? "직접 입력" : "목록에서 선택"}
               >
                 <SpaceBetween size="s">
-                  <RadioGroup
-                    items={[
-                      { value: "select", label: "목록에서 선택" },
-                      { value: "custom", label: "직접 입력" }
-                    ]}
-                    value={useCustomCustomerName ? "custom" : "select"}
-                    onChange={({ detail }) => 
-                      setUseCustomCustomerName(detail.value === "custom")
-                    }
-                  />
+                  <Toggle
+                    checked={useCustomCustomerName}
+                    onChange={({ detail }) => setUseCustomCustomerName(detail.checked)}
+                  >
+                    직접 입력
+                  </Toggle>
                   
                   {useCustomCustomerName ? (
                     <Input
