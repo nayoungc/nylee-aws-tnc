@@ -254,7 +254,7 @@ export default function PreQuizManagement() {
                 header: "관리",
                 cell: item => (
                   <SpaceBetween direction="horizontal" size="xs">
-                    <Button iconName="external">보기</Button>
+                    <Button iconName="search">보기</Button>
                     <Button iconName="edit">편집</Button>
                     <Button iconName="remove">삭제</Button>
                   </SpaceBetween>

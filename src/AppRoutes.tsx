@@ -47,54 +47,95 @@ const AppRoutes: React.FC = () => {
   const [userAttributes, setUserAttributes] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
+  
+  // 인증 요청 중복 방지 ref
   const authCheckInProgress = useRef(false);
+  // 인증 실패 횟수 카운터
+  const authFailCount = useRef(0);
+  // 인증 시도 사이 지연 시간
+  const authRetryDelay = useRef(1000); // 초기 1초, 실패에 따라 증가
 
   // 인증 상태 확인 함수
   const checkAuthState = useCallback(async () => {
+    // 이미 인증 체크 중이면 중복 요청 방지
+    if (authCheckInProgress.current) return;
+    
+    authCheckInProgress.current = true;
     setIsLoading(true);
+
     try {
-      // 이미 인증 확인 중이면 반복 요청 방지
-      if (authCheckInProgress.current) return;
-      authCheckInProgress.current = true;
-      
+      // 현재 사용자 가져오기
       const user = await getCurrentUser();
-      
+
       try {
-        const attributes = await fetchUserAttributes();
-        setUserAttributes(attributes);
-      } catch (attrError) {
-        // 로그만 남기고 중단하지 않음
-        console.warn('속성 가져오기 실패:', attrError);
+        // 속성 가져오기 시도
+        if (authFailCount.current < 3) { // 연속 3회 이상 실패하면 시도하지 않음
+          const attributes = await fetchUserAttributes();
+          setUserAttributes(attributes);
+          // 성공하면 카운터 초기화
+          authFailCount.current = 0;
+          authRetryDelay.current = 1000; // 지연 시간 초기화
+        }
+      } catch (error: unknown) {
+        // 속성 가져오기 실패
+        console.warn('속성 가져오기 실패:', error);
+        authFailCount.current++;
+        
+        // 지수 백오프 (실패할수록 대기 시간 증가)
+        authRetryDelay.current = Math.min(authRetryDelay.current * 2, 30000); // 최대 30초
+        
+        // 오류 메시지를 안전하게 확인하는 방법
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : String(error);
+        
+        // Rate Exceeded 오류시 추가 처리
+        if (errorMessage.includes('TooManyRequestsException')) {
+          console.log('요청 제한 초과, 잠시 후 다시 시도합니다');
+        }
       }
-  
+
+      // 세션 확인
       const session = await fetchAuthSession();
       if (!session.tokens) {
         throw new Error('No valid tokens');
       }
-  
+
       setAuthenticated(true);
     } catch (error) {
       console.log('사용자 미인증:', error);
       setAuthenticated(false);
       setUserAttributes(null);
-  
-      // 공개 경로가 아닌 경우에만 리디렉션
-      const isPublicPath = (path: string) => {
-        const publicPaths = ['/signin', '/signup', '/confirm-signup', 
-          '/forgot-password', '/new-password', '/courses'];
-        
-        const exactMatch = publicPaths.includes(path);
-        const prefixMatch = path.startsWith('/course/');
-        
-        return exactMatch || prefixMatch;
-      }
+
+      // 공개 경로 목록
+      const publicPaths = [
+        '/signin', '/signup', '/confirm-signup', '/forgot-password', 
+        '/new-password', '/courses'
+      ];
       
-      if (!isPublicPath(location.pathname)) {
-        navigate('/signin');
-      }      
+      // 공개 경로 패턴 (시작 부분만 체크)
+      const publicPathPatterns = ['/course/'];
+      
+      // 현재 경로가 공개 경로인지 체크
+      const isPublicPath = 
+        publicPaths.includes(location.pathname) || 
+        publicPathPatterns.some(pattern => location.pathname.startsWith(pattern));
+      
+      // 보호된 경로인 경우만 리디렉션
+      if (!isPublicPath) {
+        // 리디렉션 중복 방지
+        const currentPath = location.pathname;
+        if (currentPath !== '/signin') {
+          navigate('/signin');
+        }
+      }
     } finally {
       setIsLoading(false);
-      authCheckInProgress.current = false;
+      
+      // 다음 인증 체크 호출을 허용하기 전에 지연
+      setTimeout(() => {
+        authCheckInProgress.current = false;
+      }, authRetryDelay.current);
     }
   }, [navigate, location.pathname]);
 
@@ -103,11 +144,11 @@ const AppRoutes: React.FC = () => {
     checkAuthState();
   }, [checkAuthState]);
 
-  // Amplify Gen 2 Auth Hub 이벤트 리스너
+  // Amplify Auth Hub 이벤트 리스너
   useEffect(() => {
     const listener = Hub.listen('auth', ({ payload }) => {
       console.log('Auth 이벤트:', payload.event);
-  
+
       switch (payload.event) {
         case 'signedIn':
           if (!authenticated) checkAuthState();
@@ -116,7 +157,7 @@ const AppRoutes: React.FC = () => {
           setAuthenticated(false);
           setUserAttributes(null);
           // 이미 로그인 페이지가 아닌 경우에만 리디렉션
-          if (!location.pathname.startsWith('/signin')) {
+          if (location.pathname !== '/signin') {
             navigate('/signin');
           }
           break;
@@ -124,7 +165,7 @@ const AppRoutes: React.FC = () => {
           setAuthenticated(false);
           setUserAttributes(null);
           // 이미 로그인 페이지가 아닌 경우에만 리디렉션
-          if (!location.pathname.startsWith('/signin')) {
+          if (location.pathname !== '/signin') {
             navigate('/signin', {
               state: { message: t('auth.session_expired') || '세션이 만료되었습니다.' }
             });
@@ -132,12 +173,13 @@ const AppRoutes: React.FC = () => {
           break;
       }
     });
-  
+
     return () => listener();
   }, [checkAuthState, navigate, t, authenticated, location.pathname]);
 
+  // 나머지 코드는 그대로 유지...
   // 로딩 중 화면
-  if (isLoading) {
+  if (isLoading && authenticated === null) {
     return <LoadingScreen message={t('common.loading') || '로딩 중...'} />;
   }
 
