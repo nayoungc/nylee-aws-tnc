@@ -54,6 +54,7 @@ const MenuSkeleton = () => (
   </Box>
 );
 
+
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,6 +71,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [menuLoading, setMenuLoading] = useState<boolean>(true); // 메뉴 로딩 상태 별도 관리
 
   // 인증 상태 및 사용자 속성 확인 - 최적화
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // 이미 세션 스토리지에 캐시된 사용자 정보가 있는지 확인
     const cachedAuthState = sessionStorage.getItem('authenticatedState');
@@ -143,12 +145,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   // 경로 변경 감지 및 활성 항목 설정
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setActiveHref(location.pathname);
     generateBreadcrumbs(location.pathname);
   }, [location]);
   
   // Auth 이벤트 리스너
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const listener = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
