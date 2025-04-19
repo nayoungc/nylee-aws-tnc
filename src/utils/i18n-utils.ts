@@ -6,11 +6,12 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
-// Import translation resources
+// Import translation resources directly
+// 실제 프로젝트에서는 경로 조정이 필요할 수 있습니다
 import enTranslation from '../locales/en.json';
 import koTranslation from '../locales/ko.json';
 
-// Initialize i18next if not already initialized
+// Initialize i18n if not already initialized
 if (!i18n.isInitialized) {
   i18n
     .use(Backend)
@@ -74,20 +75,20 @@ export const createTString = (translationFunc: TFunction) => {
 };
 
 /**
- * Change the current language
- * @param language Language code to change to (e.g., 'en', 'ko')
+ * 현재 언어 변경
+ * @param language 변경할 언어 코드 (예: 'en', 'ko')
  */
-export const changeLanguage = (language: string): Promise<typeof i18n.t> => {
+export const changeLanguage = (language: string) => {
   return i18n.changeLanguage(language);
 };
 
 /**
- * Get the current language
- * @returns Current language code
+ * 현재 언어 코드 가져오기
+ * @returns 현재 언어 코드
  */
 export const getCurrentLanguage = (): string => {
   return i18n.language;
 };
 
-// Export the i18n instance for direct usage
+// Export i18n instance for direct usage
 export default i18n;

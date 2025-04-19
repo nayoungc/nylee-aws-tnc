@@ -414,11 +414,11 @@ export default function SurveyCreator() {
                   t('surveyCreator.text_response') : 
                   item.options.join(", "),
                 editConfig: {
-                  ariaLabel: t('surveyCreator.columns.options'),
-                  editIconAriaLabel: t('surveyCreator.editable'),
+                  ariaLabel: tString('surveyCreator.columns.options'),
+                  editIconAriaLabel: tString('surveyCreator.editable'),
                   disabledReason: (item: Question) => {
                     if (item.type === "text") {
-                      return t('surveyCreator.text_no_options');
+                      return tString('surveyCreator.text_no_options');
                     }
                     return undefined;
                   },
@@ -426,7 +426,7 @@ export default function SurveyCreator() {
                     <Textarea
                       autoFocus={true}
                       value={currentValue ?? item.options.join("\n")}
-                      placeholder={t('surveyCreator.enter_options_per_line')}
+                      placeholder={tString('surveyCreator.enter_options_per_line')}
                       onChange={event => event.detail && setValue(event.detail.value)}
                       
                       onBlur={event => {
@@ -531,7 +531,7 @@ export default function SurveyCreator() {
                     question: detail.value
                   })
                 }
-                placeholder={t('surveyCreator.enter_question_content')}
+                placeholder={tString('surveyCreator.enter_question_content')}
               />
             </FormField>
             
@@ -557,7 +557,7 @@ export default function SurveyCreator() {
                       <Input
                         value={option}
                         onChange={({ detail }) => detail && handleOptionChange(index, detail.value)}
-                        placeholder={t('surveyCreator.option_placeholder', { number: index + 1 })}
+                        placeholder={tString('surveyCreator.option_placeholder', { number: index + 1 })}
                       />
                       
                       <Button 
