@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
             }
           >
             <SpaceBetween size="m">
-                <Button iconName="add">Create New Course</Button>
+                <Button iconName="add-plus">Create New Course</Button>
                 <Button iconName="file">Generate Quiz</Button>
                 <Button iconName="download">View Reports</Button>
             </SpaceBetween>
