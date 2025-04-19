@@ -1,27 +1,22 @@
+// lib/nylee-aws-tnc-bedrock-stack.ts
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as cognito from 'aws-cdk-lib/aws-cognito';
-import * as appsync from 'aws-cdk-lib/aws-appsync';
-import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
-import * as amplify from 'aws-cdk-lib/aws-amplify';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as customResources from 'aws-cdk-lib/custom-resources';
 
+export interface NyleeAwsTncBedrockStackProps extends cdk.StackProps {
+  // 필요한 경우 메인 스택에서 값을 가져오는 속성 추가
+  // existingBucketNames?: string[];
+  // existingTableNames?: string[];
+}
+
 export class NyleeAwsTncBedrockStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: NyleeAwsTncBedrockStackProps) {
     super(scope, id, props);
 
-    // ... 기존 코드는 유지 ...
-
-    // ===============================================================
-    // Bedrock Knowledge Bases & Agent
-    // ===============================================================
-    
     // 기존 S3 버킷 참조
     const reportsBucket = s3.Bucket.fromBucketName(
       this, 
@@ -51,11 +46,15 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       ]
     });
     
-    // DynamoDB 테이블에 대한 읽기 권한 추가
-    courseTemplateTable.grantReadData(bedrockServiceRole);
-    courseSessionTable.grantReadData(bedrockServiceRole);
-    questionsTable.grantReadData(bedrockServiceRole);
-    responsesTable.grantReadData(bedrockServiceRole);
+    // DynamoDB 테이블 참조 (선택 사항)
+    // 이 부분은 메인 스택의 테이블을 참조하는 방법에 따라 달라질 수 있음
+    const tableNames = ['TnC-CourseTemplate', 'TnC-CourseSession', 'TnC-Questions', 'TnC-Responses'];
+    const tables = tableNames.map(tableName => 
+      dynamodb.Table.fromTableName(this, `Imported\${tableName}`, tableName)
+    );
+    
+    // 테이블에 대한 읽기 권한 부여
+    tables.forEach(table => table.grantReadData(bedrockServiceRole));
     
     // Knowledge Base 데이터 소스 정책
     const kbDataSourcePolicy = new iam.PolicyStatement({
@@ -76,6 +75,13 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     
     bedrockServiceRole.addToPolicy(kbDataSourcePolicy);
 
+    // Lambda 핸들러 코드 생성을 위한 경로
+    const kbHandlerPath = 'lambda/bedrock-kb-creator';
+    const agentHandlerPath = 'lambda/bedrock-agent-creator';
+
+    // 필요한 Lambda 핸들러 디렉토리가 있는지 확인하세요
+    // (실제로는 이 코드를 실행하기 전에 해당 디렉토리와 코드 파일을 생성해야 합니다)
+
     // Bedrock Knowledge Base 생성 (CloudFormation Custom Resource 사용)
     // 각 데이터 소스용 Knowledge Base 생성
     const reportsKnowledgeBase = new cdk.CustomResource(this, 'ReportsKnowledgeBase', {
@@ -83,7 +89,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         onEventHandler: new lambda.Function(this, 'ReportsKBHandler', {
           runtime: lambda.Runtime.NODEJS_18_X,
           handler: 'index.handler',
-          code: lambda.Code.fromAsset('lambda/bedrock-kb-creator'),
+          code: lambda.Code.fromAsset(kbHandlerPath),
           timeout: cdk.Duration.minutes(5),
           environment: {
             KB_NAME: 'TnC-Reports-Knowledge',
@@ -104,7 +110,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         onEventHandler: new lambda.Function(this, 'MaterialsKBHandler', {
           runtime: lambda.Runtime.NODEJS_18_X,
           handler: 'index.handler',
-          code: lambda.Code.fromAsset('lambda/bedrock-kb-creator'),
+          code: lambda.Code.fromAsset(kbHandlerPath),
           timeout: cdk.Duration.minutes(5),
           environment: {
             KB_NAME: 'TnC-Materials-Knowledge',
@@ -125,7 +131,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         onEventHandler: new lambda.Function(this, 'DocsKBHandler', {
           runtime: lambda.Runtime.NODEJS_18_X,
           handler: 'index.handler',
-          code: lambda.Code.fromAsset('lambda/bedrock-kb-creator'),
+          code: lambda.Code.fromAsset(kbHandlerPath),
           timeout: cdk.Duration.minutes(5),
           environment: {
             KB_NAME: 'TnC-Documentation-Knowledge',
@@ -147,7 +153,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         onEventHandler: new lambda.Function(this, 'AgentCreatorHandler', {
           runtime: lambda.Runtime.NODEJS_18_X,
           handler: 'index.handler',
-          code: lambda.Code.fromAsset('lambda/bedrock-agent-creator'),
+          code: lambda.Code.fromAsset(agentHandlerPath),
           timeout: cdk.Duration.minutes(10),
           environment: {
             AGENT_NAME: 'TnC-Education-Assistant',
@@ -159,12 +165,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
               cdk.Fn.ref(materialsKnowledgeBase.node.defaultChild!.node.id),
               cdk.Fn.ref(docsKnowledgeBase.node.defaultChild!.node.id)
             ]),
-            DYNAMODB_TABLES: JSON.stringify([
-              courseTemplateTable.tableName,
-              courseSessionTable.tableName,
-              questionsTable.tableName,
-              responsesTable.tableName
-            ])
+            DYNAMODB_TABLES: JSON.stringify(tableNames)
           }
         }),
       }),
@@ -173,16 +174,12 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       }
     });
 
-    // Make sure agent is created after all knowledge bases
+    // Agent가 모든 knowledge base 생성 후 생성되도록 의존성 설정
     educationAgent.node.addDependency(reportsKnowledgeBase);
     educationAgent.node.addDependency(materialsKnowledgeBase);
     educationAgent.node.addDependency(docsKnowledgeBase);
 
-    // ===============================================================
-    // 출력값 추가
-    // ===============================================================
-    
-    // 기존 출력값은 유지하고 Bedrock 관련 출력 추가
+    // 출력값
     new cdk.CfnOutput(this, 'ReportsKnowledgeBaseId', { 
       value: cdk.Fn.ref(reportsKnowledgeBase.node.defaultChild!.node.id) 
     });
