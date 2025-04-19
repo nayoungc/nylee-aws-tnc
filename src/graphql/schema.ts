@@ -35,3 +35,15 @@ export const schema = /* GraphQL */ `
     joinDate: AWSDateTime
   }
 `;
+
+type CourseCatalog @model {
+  id: ID!
+  title: String!
+  description: String
+  level: String
+  category: String
+  status: String
+  version: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}

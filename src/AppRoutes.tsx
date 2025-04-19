@@ -1,5 +1,5 @@
 // src/AppRoutes.tsx
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   fetchAuthSession,
@@ -47,41 +47,54 @@ const AppRoutes: React.FC = () => {
   const [userAttributes, setUserAttributes] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
+  const authCheckInProgress = useRef(false);
 
   // 인증 상태 확인 함수
   const checkAuthState = useCallback(async () => {
     setIsLoading(true);
     try {
+      // 이미 인증 확인 중이면 반복 요청 방지
+      if (authCheckInProgress.current) return;
+      authCheckInProgress.current = true;
+      
       const user = await getCurrentUser();
-
+      
       try {
         const attributes = await fetchUserAttributes();
         setUserAttributes(attributes);
       } catch (attrError) {
+        // 로그만 남기고 중단하지 않음
         console.warn('속성 가져오기 실패:', attrError);
       }
-
+  
       const session = await fetchAuthSession();
       if (!session.tokens) {
         throw new Error('No valid tokens');
       }
-
+  
       setAuthenticated(true);
     } catch (error) {
       console.log('사용자 미인증:', error);
       setAuthenticated(false);
       setUserAttributes(null);
-
-      // 보호된 경로에 있다면 로그인으로 리디렉션
-      const publicPaths = [
-        '/signin', '/signup', '/confirm-signup', '/forgot-password', 
-        '/new-password', '/courses', '/course/'
-      ];
-      if (!publicPaths.some(path => location.pathname.startsWith(path))) {
-        navigate('/signin');
+  
+      // 공개 경로가 아닌 경우에만 리디렉션
+      const isPublicPath = (path: string) => {
+        const publicPaths = ['/signin', '/signup', '/confirm-signup', 
+          '/forgot-password', '/new-password', '/courses'];
+        
+        const exactMatch = publicPaths.includes(path);
+        const prefixMatch = path.startsWith('/course/');
+        
+        return exactMatch || prefixMatch;
       }
+      
+      if (!isPublicPath(location.pathname)) {
+        navigate('/signin');
+      }      
     } finally {
       setIsLoading(false);
+      authCheckInProgress.current = false;
     }
   }, [navigate, location.pathname]);
 
@@ -94,28 +107,34 @@ const AppRoutes: React.FC = () => {
   useEffect(() => {
     const listener = Hub.listen('auth', ({ payload }) => {
       console.log('Auth 이벤트:', payload.event);
-
+  
       switch (payload.event) {
         case 'signedIn':
-          checkAuthState();
+          if (!authenticated) checkAuthState();
           break;
         case 'signedOut':
           setAuthenticated(false);
           setUserAttributes(null);
-          navigate('/signin');
+          // 이미 로그인 페이지가 아닌 경우에만 리디렉션
+          if (!location.pathname.startsWith('/signin')) {
+            navigate('/signin');
+          }
           break;
         case 'tokenRefresh_failure':
           setAuthenticated(false);
           setUserAttributes(null);
-          navigate('/signin', {
-            state: { message: t('auth.session_expired') || '세션이 만료되었습니다.' }
-          });
+          // 이미 로그인 페이지가 아닌 경우에만 리디렉션
+          if (!location.pathname.startsWith('/signin')) {
+            navigate('/signin', {
+              state: { message: t('auth.session_expired') || '세션이 만료되었습니다.' }
+            });
+          }
           break;
       }
     });
-
+  
     return () => listener();
-  }, [checkAuthState, navigate, t]);
+  }, [checkAuthState, navigate, t, authenticated, location.pathname]);
 
   // 로딩 중 화면
   if (isLoading) {

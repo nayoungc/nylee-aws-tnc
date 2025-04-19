@@ -165,3 +165,26 @@ export const getInstructor = /* GraphQL */ `
     }
   }
 `;
+
+export const listCourseCatalogs = /* GraphQL */ `
+  query ListCourseCatalogs(
+    \$filter: ModelCourseCatalogFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        title
+        description
+        level
+        category
+        status
+        version
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
