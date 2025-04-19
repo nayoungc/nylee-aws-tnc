@@ -1,43 +1,6 @@
-// src/utils/i18n-utils.ts
 import { useTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
-import Backend from 'i18next-http-backend';
-
-// Import translation resources directly
-// 실제 프로젝트에서는 경로 조정이 필요할 수 있습니다
-import enTranslation from '../locales/en/translation.json';
-import koTranslation from '../locales/ko/translation.json';
-
-// Initialize i18n if not already initialized
-if (!i18n.isInitialized) {
-  i18n
-    .use(Backend)
-    .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-      resources: {
-        en: {
-          translation: enTranslation
-        },
-        ko: {
-          translation: koTranslation
-        }
-      },
-      fallbackLng: 'en',
-      debug: process.env.NODE_ENV === 'development',
-      interpolation: {
-        escapeValue: false
-      },
-      detection: {
-        order: ['localStorage', 'cookie', 'navigator'],
-        lookupLocalStorage: 'language',
-        caches: ['localStorage']
-      }
-    });
-}
+import i18n from '../i18n'; // 초기화된 i18n 인스턴스 import
 
 /**
  * useTranslation 훅을 확장하여 타입 안전한 번역 기능을 제공하는 커스텀 훅
@@ -89,6 +52,3 @@ export const changeLanguage = (language: string) => {
 export const getCurrentLanguage = (): string => {
   return i18n.language;
 };
-
-// Export i18n instance for direct usage
-export default i18n;
