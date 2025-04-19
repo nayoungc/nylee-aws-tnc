@@ -1,16 +1,18 @@
 // src/layouts/MainLayout.tsx
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { signOut, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 import { 
   AppLayout, 
   BreadcrumbGroup, 
   ContentLayout, 
-  Header,
-  TopNavigation
+  Header as CloudscapeHeader
 } from '@cloudscape-design/components';
 import SideNavigation, { SideNavigationProps } from '@cloudscape-design/components/side-navigation';
 import { useTranslation } from 'react-i18next';
+
+// Header 컴포넌트 import
+import Header from '../components/Header';
 
 // 타입 정의
 interface MainLayoutProps {
@@ -20,63 +22,47 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const [username, setUsername] = useState<string>('');
+  const { t } = useTranslation();
+  const [userRole, setUserRole] = useState<string | null>(null);
   
   useEffect(() => {
-    async function loadUserInfo() {
+    async function loadUserAttributes() {
       try {
-        const currentUser = await getCurrentUser();
         const attributes = await fetchUserAttributes();
-        setUsername(attributes.email || currentUser.username);
+        setUserRole(attributes.profile || null);
       } catch (error) {
-        console.error('사용자 정보 로드 오류:', error);
+        console.error('사용자 속성 로드 오류:', error);
       }
     }
     
-    loadUserInfo();
+    loadUserAttributes();
   }, []);
-
-  // 로그아웃 핸들러
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/signin');
-    } catch (error) {
-      console.error('로그아웃 중 오류 발생:', error);
-    }
-  };
-  
-  // 언어 변경 핸들러
-  const changeLanguage = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
-  };
   
   // 페이지 제목 매핑
   const pageTitles: Record<string, string> = {
-    '/dashboard': 'Dashboard',
-    '/courses/catalog': 'Course Catalog',
-    '/courses/my-courses': 'My Courses',
-    '/courses/sessions': 'Session Management',
-    '/assessments/pre-quiz': 'Pre-Quiz Management',
-    '/assessments/post-quiz': 'Post-Quiz Management',
-    '/assessments/survey': 'Survey Management',
-    '/assessments/ai-generator': 'AI Question Generator',
-    '/courses': 'Available Courses',
+    '/dashboard': String(t('nav.dashboard')),
+    '/courses/catalog': String(t('nav.course_catalog')),
+    '/courses/my-courses': String(t('nav.my_courses')),
+    '/courses/sessions': String(t('nav.session_management')),
+    '/assessments/pre-quiz': String(t('nav.pre_quiz')),
+    '/assessments/post-quiz': String(t('nav.post_quiz')),
+    '/assessments/survey': String(t('nav.survey')),
+    '/assessments/ai-generator': String(t('nav.ai_generator')),
+    '/courses': String(t('nav.courses')),
     '/admin': 'Administration'
   };
 
   // 사이드바 내비게이션 아이템
   const navigationItems: SideNavigationProps.Item[] = [
-    { type: "link", text: t('nav.dashboard') || 'Dashboard', href: '/dashboard' },
+    { type: "link", text: t('nav.dashboard'), href: '/dashboard' },
     { 
       type: "expandable-link-group",
       text: t('nav.course_management') || 'Course Management',
       href: '/courses/catalog', 
       items: [
-        { type: "link", text: t('nav.course_catalog') || 'Course Catalog', href: '/courses/catalog' },
-        { type: "link", text: t('nav.my_courses') || 'My Courses', href: '/courses/my-courses' },
-        { type: "link", text: t('nav.session_management') || 'Session Management', href: '/courses/sessions' },
+        { type: "link", text: t('nav.course_catalog'), href: '/courses/catalog' },
+        { type: "link", text: t('nav.my_courses'), href: '/courses/my-courses' },
+        { type: "link", text: t('nav.session_management'), href: '/courses/sessions' },
       ]
     },
     {
@@ -84,14 +70,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       text: t('nav.assessment_tools') || 'Assessment Tools',
       href: '/assessments/pre-quiz',
       items: [
-        { type: "link", text: t('nav.pre_quiz') || 'Pre-Quiz Management', href: '/assessments/pre-quiz' },
-        { type: "link", text: t('nav.post_quiz') || 'Post-Quiz Management', href: '/assessments/post-quiz' },
-        { type: "link", text: t('nav.survey') || 'Survey Management', href: '/assessments/survey' },
-        { type: "link", text: t('nav.ai_generator') || 'AI Question Generator', href: '/assessments/ai-generator' },
+        { type: "link", text: t('nav.pre_quiz'), href: '/assessments/pre-quiz' },
+        { type: "link", text: t('nav.post_quiz'), href: '/assessments/post-quiz' },
+        { type: "link", text: t('nav.survey'), href: '/assessments/survey' },
+        { type: "link", text: t('nav.ai_generator'), href: '/assessments/ai-generator' },
       ]
     },
     { type: "divider" },
-    { type: "link", text: t('nav.courses') || 'Available Courses', href: '/courses' }
+    { type: "link", text: t('nav.courses'), href: '/courses' },
+    // 관리자인 경우만 Admin 메뉴 추가
+    ...(userRole === 'admin' ? [
+      { type: "divider" },
+      { type: "link", text: t('nav.admin') || 'Administration', href: '/admin' }
+    ] : [])
   ];
 
   // 현재 경로에서 페이지 제목 결정
@@ -99,7 +90,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const lastPathPart = pathParts.length > 0 ? pathParts[pathParts.length - 1] : '';
   const formattedLastPart = lastPathPart.charAt(0).toUpperCase() + lastPathPart.slice(1).replace(/-/g, ' ');
   
-  const pageTitle = pageTitles[location.pathname] || formattedLastPart || 'Dashboard';
+  const pageTitle = pageTitles[location.pathname] || formattedLastPart || t('nav.dashboard');
 
   // 브레드크럼 아이템 생성
   const breadcrumbItems = [
@@ -113,46 +104,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <>
-      <TopNavigation
-        identity={{
-          href: '/',
-          title: String(t('app.title')),
-          logo: {
-            src: '/images/aws.png',
-            alt: String(t('app.title'))
-          }
-        }}
-        utilities={[
-          {
-            type: 'menu-dropdown',
-            text: i18n.language === 'ko' ? '한국어' : 'English',
-            iconName: 'settings',
-            items: [
-              { id: 'en', text: 'English' },
-              { id: 'ko', text: '한국어' }
-            ],
-            onItemClick: ({ detail }) => changeLanguage(detail.id)
-          },
-          {
-            type: 'menu-dropdown',
-            text: username,
-            iconName: 'user-profile',
-            items: [
-              { id: 'signout', text: String(t('auth.sign_out')) }
-            ],
-            onItemClick: ({ detail }) => {
-              if (detail.id === 'signout') handleSignOut();
-            }
-          }
-        ]}
-      />
+      <Header />
       
       <AppLayout
         navigation={
           <SideNavigation
             activeHref={location.pathname}
             items={navigationItems}
-            header={{ text: t('app.title') || 'LMS Portal', href: '/' }}
+            header={{ text: t('app.title'), href: '/' }}
             onFollow={e => {
               e.preventDefault();
               navigate(e.detail.href);
@@ -171,9 +130,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         content={
           <ContentLayout
             header={
-              <Header variant="h1">
+              <CloudscapeHeader variant="h1">
                 {pageTitle}
-              </Header>
+              </CloudscapeHeader>
             }
           >
             {children}
