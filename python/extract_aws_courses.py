@@ -112,7 +112,7 @@ def delete_table_if_exists(table_name: str, region: str = 'us-east-1'):
 
 
 def create_course_catalog_table(table_name: str, region: str = 'us-east-1'):
-    """과정 카탈로그 테이블 생성"""
+    """GSI를 수정한 과정 카탈로그 테이블 생성"""
     dynamodb = boto3.client('dynamodb', region_name=region)
     
     try:
@@ -124,37 +124,13 @@ def create_course_catalog_table(table_name: str, region: str = 'us-east-1'):
             ],
             AttributeDefinitions=[
                 {'AttributeName': 'id', 'AttributeType': 'S'},
-                {'AttributeName': 'title', 'AttributeType': 'S'},
-                {'AttributeName': 'level', 'AttributeType': 'S'},
-                {'AttributeName': 'duration', 'AttributeType': 'S'}
+                {'AttributeName': 'title', 'AttributeType': 'S'}
             ],
             GlobalSecondaryIndexes=[
                 {
                     'IndexName': 'TitleIndex',
                     'KeySchema': [
                         {'AttributeName': 'title', 'KeyType': 'HASH'}
-                    ],
-                    'Projection': {'ProjectionType': 'ALL'},
-                    'ProvisionedThroughput': {
-                        'ReadCapacityUnits': 5,
-                        'WriteCapacityUnits': 5
-                    }
-                },
-                {
-                    'IndexName': 'LevelIndex',
-                    'KeySchema': [
-                        {'AttributeName': 'level', 'KeyType': 'HASH'}
-                    ],
-                    'Projection': {'ProjectionType': 'ALL'},
-                    'ProvisionedThroughput': {
-                        'ReadCapacityUnits': 5,
-                        'WriteCapacityUnits': 5
-                    }
-                },
-                {
-                    'IndexName': 'DurationIndex',
-                    'KeySchema': [
-                        {'AttributeName': 'duration', 'KeyType': 'HASH'}
                     ],
                     'Projection': {'ProjectionType': 'ALL'},
                     'ProvisionedThroughput': {
@@ -329,107 +305,105 @@ def extract_table_data(doc):
 
 
 def extract_module_info(paragraphs, start_idx, course):
-    """과정 개요 섹션에서 모듈 및 실습 정보 추출 - 더 강화된 패턴 인식"""
-    current_module = None
-    current_day = None
+    """과정 개요 섹션에서 모듈 및 실습 정보 추출 - 완전히 개선된 버전"""
     i = start_idx
+    current_module = None
     
-    # 진행 상황 계산
-    remaining_paragraphs = len(paragraphs) - start_idx
-    max_scan = min(500, remaining_paragraphs)
+    # 특정 모듈/실습 패턴
+    module_patterns = [
+        re.compile(r'^모듈\s+(\d+)[:\s]+(.+)\$'),
+        re.compile(r'^모듈\s+(\d+)[\.:]?\s*(.+)\$')
+    ]
     
-    # 강화된 패턴
-    day_pattern = re.compile(r'^(\d+)\s*일\s*차')
-    module_pattern = re.compile(r'^모듈\s+(\d+)[:\s]+(.+)\$')
-    lab_pattern = re.compile(r'^실습\s+(\d+)[:\s]+(.+)\$')
+    lab_patterns = [
+        re.compile(r'^실습\s+(\d+)[:\s]+(.+)\$'), 
+        re.compile(r'^실습\s+(\d+)[\.:]?\s*(.+)\$')
+    ]
+    
     bullet_pattern = re.compile(r'^[•·-]\s+(.+)\$')
+    
+    # 강화된 검색 - 최대 단락 수를 늘림
+    max_scan = 300
+    end_idx = min(start_idx + max_scan, len(paragraphs))
     
     print(f"  모듈 정보 추출 시작: 단락 {start_idx}부터 최대 {max_scan}개 단락 검사")
     
-    # 진행 상황 표시
-    with tqdm(total=max_scan, desc="  모듈 정보 추출 중", ncols=100) as pbar:
-        scan_count = 0
-        
-        while i < len(paragraphs) and scan_count < max_scan:
+    # 모듈 구분자 만나면 시작
+    found_module_section = False
+    
+    with tqdm(total=end_idx-start_idx, desc="  모듈 추출 중", ncols=100) as pbar:
+        while i < end_idx:
             text = paragraphs[i].text.strip()
-            scan_count += 1
             pbar.update(1)
             
             if not text:
                 i += 1
                 continue
             
-            # 일차 정보 감지
-            day_match = day_pattern.match(text)
-            if day_match:
-                current_day = text
-                pbar.set_description(f"  {text} 감지")
-                i += 1
-                continue
-            
-            # 모듈 정보 감지 - 강화된 패턴
-            module_match = module_pattern.match(text)
-            if module_match or text.startswith("모듈 "):
-                if module_match:
-                    module_num = int(module_match.group(1))
-                    module_title = module_match.group(2).strip()
-                else:
-                    # "모듈 0: Architecting on AWS 소개" 같은 패턴 처리
-                    parts = text.split(":", 1)
-                    module_prefix = parts[0].strip()  # "모듈 0"
-                    module_num = int(module_prefix.replace("모듈", "").strip())
-                    module_title = parts[1].strip() if len(parts) > 1 else ""
+            # 모듈 섹션을 찾기 위한 조건
+            if not found_module_section and (text.startswith("모듈") or text.startswith("실습") or "모듈 1:" in text):
+                found_module_section = True
+                pbar.set_description(f"  모듈 섹션 발견: {text[:30]}")
                 
+            # 모듈 인식 - 여러 패턴 시도
+            module_match = None
+            for pattern in module_patterns:
+                match = pattern.match(text)
+                if match:
+                    module_match = match
+                    break
+            
+            if module_match:
+                module_num = int(module_match.group(1))
+                module_title = module_match.group(2).strip()
                 full_title = f"모듈 {module_num}: {module_title}"
                 
-                # 모듈 추가
                 current_module = Module(title=full_title, order=module_num)
-                if current_day:
-                    current_module.topics.append(f"[{current_day}]")
-                
                 course.modules.append(current_module)
-                pbar.set_description(f"  모듈 {module_num} 감지: {module_title[:30]}...")
+                pbar.set_description(f"  모듈 {module_num} 감지: {module_title[:30]}")
                 i += 1
                 continue
             
-            # 실습 정보 감지 - 강화된 패턴
-            lab_match = lab_pattern.match(text)
-            if lab_match or text.startswith("실습 "):
-                if lab_match:
-                    lab_num = int(lab_match.group(1))
-                    lab_title = lab_match.group(2).strip()
-                else:
-                    # "실습 1: 네트워크 제어" 같은 패턴 처리
-                    parts = text.split(":", 1)
-                    lab_prefix = parts[0].strip()  # "실습 1"
-                    lab_num = int(lab_prefix.replace("실습", "").strip())
-                    lab_title = parts[1].strip() if len(parts) > 1 else ""
-                
+            # 실습 인식 - 여러 패턴 시도
+            lab_match = None
+            for pattern in lab_patterns:
+                match = pattern.match(text)
+                if match:
+                    lab_match = match
+                    break
+            
+            if lab_match:
+                lab_num = int(lab_match.group(1))
+                lab_title = lab_match.group(2).strip()
                 full_lab_title = f"실습 {lab_num}: {lab_title}"
                 
-                # 실습 추가
                 lab = Lab(
                     title=full_lab_title, 
                     order=lab_num,
                     related_module=current_module.title if current_module else ""
                 )
                 course.labs.append(lab)
-                pbar.set_description(f"  실습 {lab_num} 감지: {lab_title[:30]}...")
+                pbar.set_description(f"  실습 {lab_num} 감지: {lab_title[:30]}")
                 i += 1
                 continue
             
-            # 글머리 기호 항목 처리 (모듈 토픽)
-            bullet_match = bullet_pattern.match(text)
-            if bullet_match and current_module:
-                topic = bullet_match.group(1).strip()
+            # 글머리 기호 항목을 토픽으로 처리
+            if current_module and bullet_pattern.match(text):
+                topic = bullet_pattern.match(text).group(1).strip()
                 current_module.topics.append(topic)
-                pbar.set_description(f"  토픽 추가: {topic[:30]}...")
-                
                 i += 1
                 continue
             
-            # 다른 유형의 텍스트는 그냥 넘어감
             i += 1
+    
+    # 결과 정리 - 중복 제거
+    unique_modules = []
+    seen_titles = set()
+    for module in course.modules:
+        if module.title not in seen_titles:
+            unique_modules.append(module)
+            seen_titles.add(module.title)
+    course.modules = unique_modules
     
     # 결과 요약
     print(f"  모듈 추출 완료: {len(course.modules)}개 모듈, {len(course.labs)}개 실습")
@@ -456,6 +430,7 @@ def normalize_level(level):
     else:
         return level
 
+
 def normalize_duration(duration):
     """소요 시간 값 표준화"""
     duration = duration.lower().strip()
@@ -480,140 +455,102 @@ def normalize_duration(duration):
 
 
 def extract_course_info_from_docx(file_path, course_titles):
-    """문서에서 과정 정보 추출 - 개선된 버전"""
+    """문서에서 과정 정보 추출 - 완전 개선된 버전"""
     doc = docx.Document(file_path)
-    courses_dict = {title: Course(title=title) for title in course_titles}
+    courses_dict = {}
+    
+    # 과정 객체 생성 - 중복 방지를 위해 이름 정규화
+    for title in course_titles:
+        normalized_title = title.strip()
+        courses_dict[normalized_title] = Course(title=normalized_title)
+    
     courses = list(courses_dict.values())
     
     print(f"총 {len(course_titles)}개 과정 정보 추출 시작...")
     
-    # 1. 표에서 레벨, 제공 방식, 소요 시간 추출
-    print("문서에서 표 데이터 추출 중...")
-    table_data = extract_table_data(doc)
-    
-    # 표 데이터 적용
-    for course_text, data in table_data.items():
-        # 가장 유사한 과정 제목 찾기
-        best_match = None
-        best_score = 0
-        
-        for title in course_titles:
-            if title in course_text or course_text in title:
-                score = len(title) / max(len(title), len(course_text))
-                if score > best_score:
-                    best_score = score
-                    best_match = title
-        
-        if best_match and best_score > 0.5:
-            course = courses_dict[best_match]
-            if '레벨' in data:
-                course.level = data['레벨']
-            elif 'Level' in data:
-                course.level = data['Level']
-            
-            if '제공 방식' in data:
-                course.delivery_method = data['제공 방식']
-            elif '제공 방법' in data:
-                course.delivery_method = data['제공 방법']
-            elif 'Delivery Method' in data:
-                course.delivery_method = data['Delivery Method']
-            
-            if '소요 시간' in data:
-                course.duration = data['소요 시간']
-            elif 'Duration' in data:
-                course.duration = data['Duration']
-    
-    # 2. 문서 섹션 추출을 위한 키워드 정의
-    section_keywords = {
-        "과정 설명": "description",
-        "레벨": "level", 
-        "제공 방법": "delivery_method",
-        "제공 방식": "delivery_method",
-        "소요 시간": "duration",
-        "과정 목표": "objectives",
-        "수강 대상": "audience", 
-        "수강 전 권장 사항": "prerequisites",
-        "등록": "registration_link",
-        
-        # 모듈 관련 키워드 강화
-        "과정 개요": "modules_overview",
-        "코스 개요": "modules_overview",
-        "다루는 내용": "modules_overview",
-        "학습 내용": "modules_overview",
-        "사전 평가": "modules_overview",
-        "1일 차": "modules_overview",
-        "2일 차": "modules_overview",
-        "3일 차": "modules_overview"
-    }
-    
-    # 3. 문서 분석을 위한 준비
+    # 1. 섹션별 처리를 위한 변수 설정
     current_course = None
     current_section = None
     
-    # 등록 URL 패턴
-    url_pattern = re.compile(r'www\.aws\.training|https?://\S+')
-    
-    # 4. 문서 순회하면서 과정 정보 추출
+    # 2. 문서의 단락을 순차적으로 처리
     i = 0
+    processed_courses = set()  # 이미 처리한 과정 제목 추적
+    
     while i < len(doc.paragraphs):
         para = doc.paragraphs[i]
         text = para.text.strip()
+        
         if not text:
             i += 1
             continue
-        
-        # 4.1 과정 제목 매칭 시도
-        matched_course = None
-        for title in course_titles:
-            # 완전 일치 또는 문서 앞부분의 제목이 있는지 확인
-            if title == text or text.startswith("Digital Classroom") or (title in text and len(text) < len(title) + 20):
-                matched_course = courses_dict[title]
-                current_course = matched_course
-                current_section = None
-                print(f"\n과정 제목 인식: {title}")
-                break
-
-        # 특정 키워드를 만나면 과정 개요 섹션으로 인식하는 로직 추가
-        if text == "과정 개요" or text == "사전 평가":
-            current_section = "modules_overview"
-            print(f"  섹션 인식: {text} (modules_overview)")
             
-            # 과정 개요 섹션 발견 시 모듈 및 실습 정보 추출
-            if current_course:
-                print("  과정 개요 섹션에서 모듈 및 실습 정보 추출 시작")
-                i = extract_module_info(doc.paragraphs, i+1, current_course)
-                continue
-        
-        # 4.2 섹션 헤더 인식
-        if text in section_keywords:
-            current_section = section_keywords[text]
+        # 2.1. 과정 제목 매칭 - 더 엄격한 매칭 적용
+        matched_title = None
+        for title in course_titles:
+            if title == text:  # 완전 일치만 허용
+                matched_title = title
+                break
+                
+        if matched_title and matched_title not in processed_courses:
+            current_course = courses_dict[matched_title]
+            current_section = None
+            print(f"\n과정 제목 인식: {matched_title}")
+            # processed_courses.add(matched_title)  # 중복 처리 방지 (일단 주석 처리)
+            i += 1
+            continue
+            
+        # 2.2. 섹션 헤더 인식
+        if text in ["과정 설명", "레벨", "제공 방법", "제공 방식", "소요 시간", 
+                   "과정 목표", "수강 대상", "수강 전 권장 사항", "등록", 
+                   "과정 개요", "1일 차", "2일 차", "3일 차"]:
+            # 섹션 매핑
+            if text == "과정 설명":
+                current_section = "description"
+            elif text == "레벨":
+                current_section = "level"
+            elif text in ["제공 방법", "제공 방식"]:
+                current_section = "delivery_method"
+            elif text == "소요 시간":
+                current_section = "duration"
+            elif text == "과정 목표":
+                current_section = "objectives"
+            elif text == "수강 대상":
+                current_section = "audience"
+            elif text == "수강 전 권장 사항":
+                current_section = "prerequisites"
+            elif text == "등록":
+                current_section = "registration_link"
+            elif text in ["과정 개요", "1일 차", "2일 차", "3일 차"]:
+                current_section = "modules_overview"
+                
             print(f"  섹션 인식: {text} ({current_section})")
             
-            # 과정 개요 섹션 발견 시 모듈 및 실습 정보 추출
+            # 과정 개요 섹션을 만났을 때 모듈/실습 추출
             if current_section == "modules_overview" and current_course:
-                print("  과정 개요 섹션에서 모듈 및 실습 정보 추출 시작")
+                print(f"  과정 개요 섹션에서 모듈 및 실습 정보 추출 시작")
+                # 기존 모듈과 실습 정보 초기화
+                current_course.modules = []
+                current_course.labs = []
                 i = extract_module_info(doc.paragraphs, i+1, current_course)
                 continue
                 
             i += 1
             continue
         
-        # 4.3 현재 과정과 섹션이 있을 때 내용 추가
+        # 2.3. 현재 섹션에 내용 추가
         if current_course and current_section:
-            # 기본 메타데이터 추가
             if current_section == "description":
                 current_course.description += text + " "
             elif current_section == "level" and not current_course.level:
-                current_course.level = text
+                current_course.level = normalize_level(text)
             elif current_section == "delivery_method" and not current_course.delivery_method:
                 current_course.delivery_method = text
             elif current_section == "duration" and not current_course.duration:
-                current_course.duration = text
-            elif current_section == "registration_link":
-                if url_pattern.search(text):
-                    current_course.registration_link = text
-                    
-            # 목록 항목 처리
+                current_course.duration = normalize_duration(text)
+            elif current_section == "registration_link" and text.startswith("www."):
+                current_course.registration_link = text
+            
+            # 글머리 기호 항목 처리
             elif current_section in ["objectives", "audience", "prerequisites"]:
                 if text.startswith("•") or text.startswith("·") or text.startswith("-"):
                     clean_text = text.lstrip("•·- ").strip()
@@ -626,49 +563,11 @@ def extract_course_info_from_docx(file_path, course_titles):
         
         i += 1
     
-    # 5. 결과 정리 - 빈 정보 기본값 설정 및 중복 제거
-    for course in courses:
-        if not course.description.strip():
-            course.description = f"{course.title}에 대한 과정 설명입니다."
-        if not course.level:
-            course.level = "미지정"
-        if not course.delivery_method:
-            course.delivery_method = "강의실 교육"
-        if not course.duration:
-            course.duration = "미지정"
-        
-        # 모듈 중복 제거
-        unique_modules = []
-        seen_titles = set()
-        for module in course.modules:
-            if module.title not in seen_titles:
-                unique_modules.append(module)
-                seen_titles.add(module.title)
-        course.modules = unique_modules
-        
-        # 실습 중복 제거
-        unique_labs = []
-        seen_titles = set()
-        for lab in course.labs:
-            if lab.title not in seen_titles:
-                unique_labs.append(lab)
-                seen_titles.add(lab.title)
-        course.labs = unique_labs
-    
-    # 결과 요약 출력
-    courses_with_modules = [c for c in courses if c.modules]
-    courses_with_labs = [c for c in courses if c.labs]
-    
-    print(f"\n추출 결과:")
-    print(f"- 과정 수: {len(courses)}개")
-    print(f"- 모듈 있는 과정 수: {len(courses_with_modules)}개")
-    print(f"- 실습 있는 과정 수: {len(courses_with_labs)}개")
-    
     return courses
 
 
 def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='us-east-1'):
-    """과정 정보와 모듈/실습 정보를 DynamoDB에 저장"""
+    """과정 정보와 모듈/실습 정보를 DynamoDB에 저장 - 수정된 버전"""
     dynamodb = boto3.resource('dynamodb', region_name=region)
     catalog_table_resource = dynamodb.Table(catalog_table)
     modules_table_resource = dynamodb.Table(modules_table)
@@ -682,15 +581,21 @@ def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='us-e
         course_id = generate_short_id()
         course_ids[course.title] = course_id
         
+        # 기본값 설정
+        if not course.level or course.level.strip() == "":
+            course.level = "미지정"
+        if not course.duration or course.duration.strip() == "":
+            course.duration = "미지정"
+        
         # 과정 항목 생성
         item = {
             'id': course_id,
             'title': course.title,
-            'description': course.description,
-            'level': normalize_level(course.level),
-            'deliveryMethod': course.delivery_method,
-            'duration': normalize_duration(course.duration),
-            'registrationLink': course.registration_link,
+            'description': course.description if course.description else f"{course.title}에 대한 과정 설명입니다.",
+            'level': course.level,
+            'deliveryMethod': course.delivery_method if course.delivery_method else "강의실 교육",
+            'duration': course.duration,
+            'registrationLink': course.registration_link if course.registration_link else "",
             'moduleCount': len(course.modules),
             'labCount': len(course.labs),
             'createdAt': timestamp,
