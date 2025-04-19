@@ -3,13 +3,12 @@ import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as bedrock from 'aws-cdk-lib/aws-bedrock';
-import * as opensearch from 'aws-cdk-lib/aws-opensearchserverless';
 
 export class NyleeAwsTncBedrockStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // 실제 버킷 이름을 하드코딩하여 사용 
+    // 버킷 참조
     const reportsBucket = s3.Bucket.fromBucketName(
       this, 'ExistingReportsBucket', 'tnc-reports-598393186022-us-east-1'
     );
@@ -30,7 +29,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       ]
     });
 
-    // 역할에 OpenSearch 접근 권한 추가
+    // OpenSearch 접근 권한 추가
     bedrockRole.addToPolicy(new iam.PolicyStatement({
       actions: [
         'aoss:APIAccessAll',
@@ -41,39 +40,14 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       resources: ['*']
     }));
     
-    // 올바른 임베딩 모델 ARN - Titan Embeddings V2
+    // 모델 ARN
     const embeddingModelArn = "arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0";
     const foundationModelArn = "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0";
 
-    // OpenSearch Serverless 벡터 컬렉션 생성 - 올바른 Type 값 사용
-    const vectorCollection = new opensearch.CfnCollection(this, 'TnCVectorCollection', {
-      name: 'tnc-vector-store',
-      type: 'VECTORSEARCH',  // 수정: VECTOR_SEARCH -> VECTORSEARCH
-      description: 'Vector collection for TnC Knowledge Base',
-      standbyReplicas: 'ENABLED'
-    });
+    // 수동으로 생성한 OpenSearch 컬렉션의 ARN을 직접 입력
+    // 이 ARN은 미리 콘솔에서 생성해둔 컬렉션의 것이어야 합니다
+    const collectionArn = 'arn:aws:aoss:us-east-1:598393186022:collection/tnc-vector-store';
     
-    // 벡터 컬렉션에 대한 보안 정책 설정 - 올바른 Type 값 사용
-    const vectorCollectionPolicy = new opensearch.CfnSecurityPolicy(this, 'VectorCollectionPolicy', {
-      name: 'tnc-vector-policy',
-      type: 'data',  // 다시 소문자로 변경: DATA -> data
-      policy: JSON.stringify({
-        Rules: [
-          {
-            ResourceType: 'collection',
-            Resource: ['collection/tnc-vector-store'],
-            Permission: [
-              'aoss:CreateCollectionItems',
-              'aoss:DeleteCollectionItems',
-              'aoss:UpdateCollectionItems',
-              'aoss:DescribeCollectionItems'
-            ]
-          }
-        ],
-        AWSOwnedKey: true
-      })
-    });
-
     // Knowledge Base 생성
     const reportsKB = new bedrock.CfnKnowledgeBase(this, 'ReportsKnowledgeBase', {
       name: 'TnC-Reports-Knowledge',
@@ -85,15 +59,16 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
           embeddingModelArn: embeddingModelArn,
           embeddingModelConfiguration: {
             bedrockEmbeddingModelConfiguration: {
-              dimensions: 1536
+              dimensions: 1024
             }
           }
         }
       },
+      // 수동으로 생성한 컬렉션 ARN 사용
       storageConfiguration: {
         type: 'OPENSEARCH_SERVERLESS',
         opensearchServerlessConfiguration: {
-          collectionArn: vectorCollection.attrArn,
+          collectionArn: collectionArn,
           vectorIndexName: 'tnc-vector-index',
           fieldMapping: {
             vectorField: 'vector_field',
@@ -103,10 +78,6 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         }
       }
     });
-    
-    // 컬렉션 생성 후에 Knowledge Base 생성
-    reportsKB.node.addDependency(vectorCollection);
-    reportsKB.node.addDependency(vectorCollectionPolicy);
     
     const materialsKB = new bedrock.CfnKnowledgeBase(this, 'MaterialsKnowledgeBase', {
       name: 'TnC-Materials-Knowledge',
@@ -118,7 +89,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
           embeddingModelArn: embeddingModelArn,
           embeddingModelConfiguration: {
             bedrockEmbeddingModelConfiguration: {
-              dimensions: 1536
+              dimensions: 1024
             }
           }
         }
@@ -126,7 +97,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       storageConfiguration: {
         type: 'OPENSEARCH_SERVERLESS',
         opensearchServerlessConfiguration: {
-          collectionArn: vectorCollection.attrArn,
+          collectionArn: collectionArn,
           vectorIndexName: 'tnc-materials-index',
           fieldMapping: {
             vectorField: 'vector_field',
@@ -136,9 +107,6 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         }
       }
     });
-    
-    materialsKB.addDependsOn(vectorCollection);
-    materialsKB.addDependsOn(vectorCollectionPolicy);
     
     const docsKB = new bedrock.CfnKnowledgeBase(this, 'DocsKnowledgeBase', {
       name: 'TnC-Documentation-Knowledge',
@@ -150,7 +118,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
           embeddingModelArn: embeddingModelArn,
           embeddingModelConfiguration: {
             bedrockEmbeddingModelConfiguration: {
-              dimensions: 1536
+              dimensions: 1024
             }
           }
         }
@@ -158,7 +126,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       storageConfiguration: {
         type: 'OPENSEARCH_SERVERLESS',
         opensearchServerlessConfiguration: {
-          collectionArn: vectorCollection.attrArn,
+          collectionArn: collectionArn,
           vectorIndexName: 'tnc-docs-index',
           fieldMapping: {
             vectorField: 'vector_field',
@@ -168,9 +136,6 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         }
       }
     });
-    
-    docsKB.addDependsOn(vectorCollection);
-    docsKB.addDependsOn(vectorCollectionPolicy);
     
     // Agent 생성
     const agent = new bedrock.CfnAgent(this, 'EducationAgent', {
@@ -210,10 +175,6 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     
     new cdk.CfnOutput(this, 'EducationAgentId', { 
       value: agent.attrAgentId
-    });
-    
-    new cdk.CfnOutput(this, 'OpenSearchCollectionId', { 
-      value: vectorCollection.attrId
     });
   }
 }
