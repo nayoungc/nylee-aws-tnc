@@ -2,6 +2,7 @@ import boto3
 import re
 import json
 import uuid
+import os
 import docx
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional
@@ -35,108 +36,192 @@ class Course:
     modules: List[Module] = field(default_factory=list)
     labs: List[Lab] = field(default_factory=list)
 
-def extract_text_from_docx(file_path: str) -> str:
-    """Word 문서에서 텍스트 추출"""
-    try:
-        doc = docx.Document(file_path)
-        print(f"문서 파싱 중... (총 {len(doc.paragraphs)}개 단락)")
-        full_text = []
-        
-        # 진행률 표시줄로 문서 단락 처리
-        for para in tqdm(doc.paragraphs, desc="문서 단락 처리", ncols=100):
-            full_text.append(para.text)
-            
-        return '\n'.join(full_text)
-    except Exception as e:
-        print(f"Word 문서 읽기 오류: {str(e)}")
-        return ""
+def analyze_document_structure(doc_path):
+    """문서 구조를 분석하여 패턴 파악"""
+    doc = docx.Document(doc_path)
+    print(f"문서 분석 - 총 {len(doc.paragraphs)} 단락")
+    
+    # 주요 구조 패턴 찾기
+    patterns = {
+        "과정 설명": 0,
+        "레벨": 0,
+        "제공 방법": 0,
+        "소요 시간": 0,
+        "과정 목표": 0,
+        "수강 대상": 0,
+        "수강 전 권장 사항": 0,
+        "등록": 0,
+        "과정 개요": 0
+    }
+    
+    # 단락 내용 분석
+    for i, para in enumerate(doc.paragraphs[:min(500, len(doc.paragraphs))]):
+        text = para.text.strip()
+        for pattern in patterns:
+            if text == pattern:
+                patterns[pattern] += 1
+                print(f"발견: '{pattern}' at 단락 {i}")
+                
+                # 다음 5개 단락 확인
+                context = []
+                for j in range(1, 6):
+                    if i+j < len(doc.paragraphs):
+                        next_text = doc.paragraphs[i+j].text.strip()
+                        if next_text:
+                            context.append(next_text)
+                print(f"  다음 내용: {context[:3]}...")
+    
+    print("\n주요 패턴 발견 횟수:")
+    for pattern, count in patterns.items():
+        print(f"  '{pattern}': {count}회")
+    
+    # 목차 또는 구조가 있는지 확인
+    print("\n문서 처음 20줄:")
+    for i, para in enumerate(doc.paragraphs[:20]):
+        if para.text.strip():
+            print(f"{i:3d}: {para.text}")
+    
+    return patterns
 
-def extract_courses_from_text(text: str) -> List[Course]:
-    """텍스트에서 과정 정보 추출"""
+def direct_extract_courses_from_docx(file_path):
+    """docx 파일에서 직접 과정 정보 추출"""
+    doc = docx.Document(file_path)
     courses = []
     
-    # 정규 표현식 패턴으로 과정 블록 찾기
-    course_blocks = re.findall(r'([^\n]+)\n\n과정 설명\n\n(.*?)(?=\n\n\t레벨\n\t제공 방법\n\t소요 시간|\n\n\n\n\n)', text, re.DOTALL)
-    print(f"총 {len(course_blocks)}개 과정 블록 발견")
+    # 과정 검색을 위한 조건
+    is_course_title = lambda text: (
+        text and 
+        not text.startswith("AWS ") and 
+        not text.startswith("Digital") and
+        len(text) > 5 and
+        "소개" not in text and
+        "과정" not in text and
+        "모듈" not in text and
+        "개요" not in text
+    )
     
-    # 진행률 표시줄로 과정 처리
-    for title, content_block in tqdm(course_blocks, desc="과정 정보 추출", ncols=100):
-        course = Course(title=title.strip())
+    course_blocks = []
+    current_block = []
+    current_title = None
+    
+    print("문서에서 과정 블록 찾는 중...")
+    for i, para in enumerate(tqdm(doc.paragraphs, desc="문서 스캔 중", ncols=100)):
+        text = para.text.strip()
+        
+        # 새로운 과정 시작 감지
+        if is_course_title(text) and not current_block:
+            current_title = text
+            current_block = [text]
+        # 기존 블록에 추가
+        elif current_block:
+            current_block.append(text)
+            
+            # 다음 과정의 시작 또는 문서 끝
+            if is_course_title(text) and text != current_title:
+                course_blocks.append(current_block[:-1])  # 현재 줄은 제외
+                current_title = text
+                current_block = [text]
+    
+    # 마지막 블록 추가
+    if current_block:
+        course_blocks.append(current_block)
+    
+    print(f"{len(course_blocks)}개의 과정 블록을 찾았습니다.")
+    
+    # 각 과정 블록에서 정보 추출
+    for block in tqdm(course_blocks, desc="과정 정보 추출 중", ncols=100):
+        if len(block) < 10:  # 너무 짧은 블록은 무시
+            continue
+        
+        course = Course(title=block[0])
+        
+        # 블록 내에서 텍스트 검색
+        block_text = "\n".join(block)
         
         # 설명 추출
-        description_match = re.search(r'과정 설명\n\n(.*?)(?=\n\n\t레벨)', content_block, re.DOTALL)
-        if description_match:
-            course.description = description_match.group(1).strip()
+        match = re.search(r"과정 설명\s*(.*?)(?=\s*레벨|\s*제공 방법|\s*소요 시간|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            course.description = match.group(1).strip()
         
-        # 레벨, 제공 방법, 소요 시간 추출
-        level_match = re.search(r'\t레벨\n\n\t([^\n]+)', content_block)
-        if level_match:
-            course.level = level_match.group(1).strip()
+        # 레벨 추출
+        match = re.search(r"레벨\s*(.*?)(?=\s*제공 방법|\s*소요 시간|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            course.level = match.group(1).strip()
             
-        delivery_match = re.search(r'\t제공 방법\n\n\t([^\n]+)', content_block)
-        if delivery_match:
-            course.delivery_method = delivery_match.group(1).strip()
+        # 제공 방법 추출
+        match = re.search(r"제공 방법\s*(.*?)(?=\s*소요 시간|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            course.delivery_method = match.group(1).strip()
             
-        duration_match = re.search(r'\t소요 시간\n\n\t([^\n]+)', content_block)
-        if duration_match:
-            course.duration = duration_match.group(1).strip()
+        # 소요 시간 추출
+        match = re.search(r"소요 시간\s*(.*?)(?=\s*과정 목표|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            course.duration = match.group(1).strip()
         
         # 과정 목표 추출
-        objectives_match = re.search(r'과정 목표\n\n이 과정에서 배우게 될 내용은 다음과 같습니다.\n\n(.*?)(?=\n\n수강 대상|\n\n등록)', content_block, re.DOTALL)
-        if objectives_match:
-            objectives_text = objectives_match.group(1)
-            course.objectives = [obj.strip() for obj in re.findall(r'·\s*(.*?)(?=\n·|\n\n|\$)', objectives_text, re.DOTALL)]
+        match = re.search(r"과정 목표\s*(.*?)(?=\s*수강 대상|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            objectives_text = match.group(1)
+            course.objectives = [
+                obj.strip() for obj in re.findall(r"·\s*(.*?)(?=\s*·|\s*\$)", objectives_text)
+            ]
         
         # 수강 대상 추출
-        audience_match = re.search(r'수강 대상\n\n이 과정의 대상은 다음과 같습니다.\n\n(.*?)(?=\n\n수강 전 권장 사항|\n\n등록)', content_block, re.DOTALL)
-        if audience_match:
-            audience_text = audience_match.group(1)
-            course.audience = [aud.strip() for aud in re.findall(r'·\s*(.*?)(?=\n·|\n\n|\$)', audience_text, re.DOTALL)]
+        match = re.search(r"수강 대상\s*(.*?)(?=\s*수강 전 권장 사항|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            audience_text = match.group(1)
+            course.audience = [
+                aud.strip() for aud in re.findall(r"·\s*(.*?)(?=\s*·|\s*\$)", audience_text)
+            ]
         
         # 수강 전 권장 사항 추출
-        prereq_match = re.search(r'수강 전 권장 사항\n\n이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.\n\n(.*?)(?=\n\n등록)', content_block, re.DOTALL)
-        if prereq_match:
-            prereq_text = prereq_match.group(1)
-            course.prerequisites = [pre.strip() for pre in re.findall(r'·\s*(.*?)(?=\n·|\n\n|\$)', prereq_text, re.DOTALL)]
+        match = re.search(r"수강 전 권장 사항\s*(.*?)(?=\s*등록|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            prereq_text = match.group(1)
+            course.prerequisites = [
+                pre.strip() for pre in re.findall(r"·\s*(.*?)(?=\s*·|\s*\$)", prereq_text)
+            ]
         
         # 등록 링크 추출
-        reg_match = re.search(r'등록\n\n(.*?)(?=\n\n\t과정 개요|\n\n)', content_block, re.DOTALL)
-        if reg_match:
-            course.registration_link = reg_match.group(1).strip()
+        match = re.search(r"등록\s*(.*?)(?=\s*과정 개요|\$)", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            course.registration_link = match.group(1).strip()
         
         # 과정 개요(모듈) 추출
-        modules_section_match = re.search(r'\t과정 개요\n\n(.*?)(?=\n\n\d일 차|\n\n모듈|\n\n\$)', content_block, re.DOTALL)
-        if modules_section_match:
-            modules_text = modules_section_match.group(1)
+        match = re.search(r"과정 개요\s*(.*?)\$", block_text, re.DOTALL)
+        if match and match.group(1).strip():
+            modules_text = match.group(1).strip()
             
-            # 모듈 파싱
-            module_blocks = re.findall(r'모듈 (\d+)[^:]*:\s*([^\n]+)\n\n(·[^모듈]*?)(?=모듈|\n\n\n|\$)', modules_text, re.DOTALL)
-            if module_blocks:
-                for _, title, topics_text in module_blocks:
+            # 모듈 추출 시도
+            module_matches = re.findall(r"모듈 (\d+)[^:]*:\s*([^\n]+)\n((?:·[^\n]*\n)*)", modules_text)
+            if module_matches:
+                for _, title, topics_text in module_matches:
                     module = Module(title=title.strip())
-                    topics = re.findall(r'·\s*(.*?)(?=\n·|\n\n|\$)', topics_text, re.DOTALL)
+                    topics = re.findall(r"·\s*([^\n]+)", topics_text)
                     module.topics = [topic.strip() for topic in topics]
                     course.modules.append(module)
-            else:
-                # 일 차 기준으로 모듈 추출 시도
-                day_modules = re.findall(r'(\d일 차)\n\n(.*?)(?=\n\n\d일 차|\n\n\$)', content_block, re.DOTALL)
-                for day, content in day_modules:
+            
+            # 일 차 기준 추출 시도
+            day_matches = re.findall(r"(\d일 차)\s*(.*?)(?=\s*\d일 차|\s*\$)", modules_text, re.DOTALL)
+            if day_matches and not course.modules:
+                for day, content in day_matches:
                     module = Module(title=f"{day} 강의 내용")
-                    topics = re.findall(r'·\s*(.*?)(?=\n·|\n\n|\$)|모듈 \d+[^:]*:\s*([^\n]+)', content, re.DOTALL)
-                    module.topics = [t[0] or t[1] for t in topics if t[0] or t[1]]
+                    topics = re.findall(r"·\s*([^\n]+)", content)
+                    module.topics = [topic.strip() for topic in topics]
                     course.modules.append(module)
+            
+            # 실습 추출
+            lab_matches = re.findall(r"실습 (\d+)[^:]*:\s*([^\n]+)(?:\n\n([^실습].*?))?(?=\s*실습|\s*\$)", modules_text, re.DOTALL)
+            for _, title, description in lab_matches:
+                lab = Lab(
+                    title=title.strip(),
+                    description=description.strip() if description else ""
+                )
+                course.labs.append(lab)
         
-        # 실습 추출
-        labs_match = re.findall(r'실습 (\d+)[^:]*:\s*([^\n]+)(?:\n\n([^실습].*?))?(?=\n\n실습|\n\n\n|\$)', content_block, re.DOTALL)
-        
-        for _, title, description in labs_match:
-            lab = Lab(
-                title=title.strip(),
-                description=description.strip() if description else ""
-            )
-            course.labs.append(lab)
-        
-        courses.append(course)
+        # 과정 정보가 충분한 경우에만 추가
+        if course.title and (course.description or course.level or course.modules):
+            courses.append(course)
     
     return courses
 
@@ -301,23 +386,36 @@ def save_courses_to_dynamodb(courses: List[Course], table_name: str, region: str
     timestamp = datetime.now().isoformat()
     
     total_items = 0
-    all_items = []  # 모든 항목을 저장
+    all_items = []
+    
+    # 과정 데이터가 충분한지 검사
+    valid_courses = []
+    for course in courses:
+        if course.title and course.registration_link:  # 최소한의 필수 필드 확인
+            valid_courses.append(course)
+        else:
+            print(f"데이터가 불충분한 과정 제외: {course.title}")
+    
+    if not valid_courses:
+        print("저장할 유효한 과정 데이터가 없습니다!")
+        return
+        
+    print(f"저장할 유효한 과정 데이터: {len(valid_courses)}개")
     
     # 진행률 표시줄로 과정 저장 진행 표시
-    for course in tqdm(courses, desc="과정 데이터 준비", ncols=100):
-        # 과정 ID 생성 (UUID v4)
+    for course in tqdm(valid_courses, desc="과정 데이터 준비", ncols=100):
         course_id = str(uuid.uuid4())
         
-        # 과정 메타데이터 항목
+        # 과정 메타데이터 항목 - 모든 필드에 기본값 설정
         course_item = {
             'PK': f"COURSE#{course_id}",
             'SK': f"METADATA#{course_id}",
             'id': course_id,
             'title': course.title,
-            'description': course.description,
-            'level': course.level,
-            'deliveryMethod': course.delivery_method,
-            'duration': course.duration,
+            'description': course.description if course.description else "설명 없음",
+            'level': course.level if course.level else "미지정",
+            'deliveryMethod': course.delivery_method if course.delivery_method else "미지정",
+            'duration': course.duration if course.duration else "미지정",
             'registrationLink': course.registration_link,
             'type': 'Course',
             'createdAt': timestamp,
@@ -396,26 +494,37 @@ def save_courses_to_dynamodb(courses: List[Course], table_name: str, region: str
 def main():
     # 설정값
     TABLE_NAME = 'Tnc-CourseCatalog'
-    REGION = 'ap-northeast-2'  # 필요하면 변경
+    REGION = 'ap-northeast-2'
     DOC_FILE = 'AWS TnC _ILT_DILT.docx'
     
     try:
-        # tqdm을 올바르게 설치했는지 확인
+        # 필요한 라이브러리 설치 확인
         import importlib
-        if importlib.util.find_spec("tqdm") is None:
-            print("tqdm 라이브러리 설치 중...")
-            import sys
-            import subprocess
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "tqdm"])
-            print("tqdm 설치 완료")
+        missing_libs = []
+        for lib in ["tqdm", "docx"]:
+            if importlib.util.find_spec(lib) is None:
+                missing_libs.append(lib)
         
-        # python-docx 설치 확인
-        if importlib.util.find_spec("docx") is None:
-            print("python-docx 라이브러리 설치 중...")
+        if missing_libs:
+            print(f"필요한 라이브러리 설치 중: {', '.join(missing_libs)}")
             import sys
             import subprocess
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "python-docx"])
-            print("python-docx 설치 완료")
+            if "tqdm" in missing_libs:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "tqdm"])
+            if "docx" in missing_libs:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "python-docx"])
+            print("라이브러리 설치 완료")
+        
+        # 파일 존재 확인
+        if not os.path.exists(DOC_FILE):
+            print(f"오류: 파일 '{DOC_FILE}'을 찾을 수 없습니다.")
+            print(f"현재 디렉토리: {os.getcwd()}")
+            print(f"디렉토리 내 파일: {os.listdir('.')}")
+            return
+        
+        # 문서 구조 분석
+        print(f"문서 '{DOC_FILE}' 구조 분석 중...")
+        patterns = analyze_document_structure(DOC_FILE)
         
         # 테이블 삭제 및 재생성
         delete_table_if_exists(TABLE_NAME, REGION)
@@ -423,25 +532,32 @@ def main():
             print("테이블 생성에 실패했습니다. 작업을 중단합니다.")
             return
         
-        # Word 문서에서 텍스트 추출
-        print(f"문서 '{DOC_FILE}'에서 텍스트 추출 중...")
-        text = extract_text_from_docx(DOC_FILE)
-        if not text:
-            print(f"파일 '{DOC_FILE}'에서 텍스트를 추출할 수 없습니다.")
+        # 직접 문서에서 과정 정보 추출
+        print(f"문서 '{DOC_FILE}'에서 과정 정보 직접 추출 중...")
+        courses = direct_extract_courses_from_docx(DOC_FILE)
+        
+        if not courses:
+            print("과정 정보를 추출하지 못했습니다. 작업을 중단합니다.")
             return
             
-        # 텍스트 파일로 저장 (디버깅용)
-        with open('extracted_text.txt', 'w', encoding='utf-8') as f:
-            f.write(text)
-            
-        # 과정 추출
-        print("과정 정보 추출 중...")
-        courses = extract_courses_from_text(text)
         print(f"{len(courses)}개의 과정 추출 완료")
         
         # 디버깅용 JSON 저장
         with open('extracted_courses.json', 'w', encoding='utf-8') as f:
             json.dump([asdict(course) for course in courses], f, ensure_ascii=False, indent=2)
+        
+        # 추출된 과정의 품질 확인
+        print("\n추출된 과정 정보 요약:")
+        for i, course in enumerate(courses[:5]):  # 처음 5개만 출력
+            print(f"과정 {i+1}: {course.title}")
+            print(f"  설명: {course.description[:100]}..." if course.description else "  설명: 없음")
+            print(f"  레벨: {course.level}")
+            print(f"  제공 방법: {course.delivery_method}")
+            print(f"  소요 시간: {course.duration}")
+            print(f"  목표: {len(course.objectives)}개")
+            print(f"  모듈: {len(course.modules)}개")
+            print(f"  실습: {len(course.labs)}개")
+        print(f"... 외 {len(courses)-5}개 과정")
         
         # DynamoDB에 저장
         print("DynamoDB에 데이터 저장 중...")
