@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { handleSignUp } from '../utils/auth';
+// 하나의 훅만 사용 
 import { useTranslation } from 'react-i18next';
-import { useTypedTranslation } from '../hooks/useTypedTranslation';
 import AuthLayout from './AuthLayout';
 import { 
   Form, 
@@ -39,7 +39,7 @@ const SignUp: React.FC = () => {
     
     try {
       if (formState.password !== formState.confirmPassword) {
-        throw new Error(t('auth.password_mismatch'));
+        throw new Error(String(t('auth.password_mismatch'))); // String() 추가
       }
       
       const { nextStep } = await handleSignUp(
@@ -54,7 +54,7 @@ const SignUp: React.FC = () => {
         state: { username: formState.username, email: formState.email } 
       });
     } catch (err: any) {
-      setError(err.message || t('auth.signup_error'));
+      setError(err.message || String(t('auth.signup_error'))); // String() 추가
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ const SignUp: React.FC = () => {
   return (
     <AuthLayout>
       <Box fontSize="heading-xl" fontWeight="bold">
-        {t('auth.sign_up')}
+        {String(t('auth.sign_up'))}
       </Box>
       
       {error && (
@@ -81,17 +81,17 @@ const SignUp: React.FC = () => {
               onClick={handleSignUpClick}
               data-testid="signup-button"
             >
-              {t('auth.sign_up')}
+              {String(t('auth.sign_up'))}
             </Button>
             
             <Box textAlign="center" padding={{ top: 's' }}>
-              {t('auth.have_account')} <Link to="/signin">{t('auth.sign_in')}</Link>
+              {String(t('auth.have_account'))} <Link to="/signin">{String(t('auth.sign_in'))}</Link>
             </Box>
           </SpaceBetween>
         }
       >
         <SpaceBetween size="l">
-          <FormField label={t('auth.username')}>
+          <FormField label={String(t('auth.username'))}>
             <Input
               type="text"
               value={formState.username}
@@ -99,7 +99,7 @@ const SignUp: React.FC = () => {
             />
           </FormField>
           
-          <FormField label={t('auth.email')}>
+          <FormField label={String(t('auth.email'))}>
             <Input
               type="email"
               value={formState.email}
@@ -107,7 +107,7 @@ const SignUp: React.FC = () => {
             />
           </FormField>
           
-          <FormField label={t('auth.password')}>
+          <FormField label={String(t('auth.password'))}>
             <Input
               type="password"
               value={formState.password}
@@ -115,7 +115,7 @@ const SignUp: React.FC = () => {
             />
           </FormField>
           
-          <FormField label={t('auth.confirm_password')}>
+          <FormField label={String(t('auth.confirm_password'))}>
             <Input
               type="password"
               value={formState.confirmPassword}
@@ -123,31 +123,31 @@ const SignUp: React.FC = () => {
             />
           </FormField>
           
-          <FormField label={t('user.preferred_language')}>
+          <FormField label={String(t('user.preferred_language'))}>
             <Select
               selectedOption={{ 
                 value: formState.preferredLanguage, 
-                label: formState.preferredLanguage === 'en' ? t('language.english') : t('language.korean')
+                label: String(formState.preferredLanguage === 'en' ? t('language.english') : t('language.korean'))
               }}
               onChange={({ detail }) => handleChange('preferredLanguage', detail.selectedOption.value || 'en')}
               options={[
-                { value: 'en', label: t('language.english') },
-                { value: 'ko', label: t('language.korean') }
+                { value: 'en', label: String(t('language.english')) },
+                { value: 'ko', label: String(t('language.korean')) }
               ]}
             />
           </FormField>
           
-          <FormField label={t('user.level')}>
+          <FormField label={String(t('user.level'))}>
             <Select
               selectedOption={{ 
                 value: formState.level, 
-                label: t(`conversation.difficulty.\${formState.level}`)
+                label: String(t(`conversation.difficulty.\${formState.level}`)) // 백슬래시 제거
               }}
               onChange={({ detail }) => handleChange('level', detail.selectedOption.value || 'intermediate')}
               options={[
-                { value: 'beginner', label: t('conversation.difficulty.beginner') },
-                { value: 'intermediate', label: t('conversation.difficulty.intermediate') },
-                { value: 'advanced', label: t('conversation.difficulty.advanced') }
+                { value: 'beginner', label: String(t('conversation.difficulty.beginner')) },
+                { value: 'intermediate', label: String(t('conversation.difficulty.intermediate')) },
+                { value: 'advanced', label: String(t('conversation.difficulty.advanced')) }
               ]}
             />
           </FormField>

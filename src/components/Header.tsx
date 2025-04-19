@@ -41,17 +41,17 @@ const Header: React.FC = () => {
     <TopNavigation
       identity={{
         href: '/',
-        title: t('app.title'),
+        title: String(t('app.title')),  // String() 추가
         logo: {
           src: '/logo.png',
-          alt: t('app.title')
+          alt: String(t('app.title'))   // String() 추가
         }
       }}
       utilities={[
         {
           type: 'menu-dropdown',
           text: i18n.language === 'ko' ? '한국어' : 'English',
-          iconName: 'globe',
+          iconName: 'settings',  // 'globe' → 'settings' 변경
           items: [
             { id: 'en', text: 'English' },
             { id: 'ko', text: '한국어' }
@@ -63,7 +63,7 @@ const Header: React.FC = () => {
           text: username,
           iconName: 'user-profile',
           items: [
-            { id: 'signout', text: t('auth.sign_out') }
+            { id: 'signout', text: String(t('auth.sign_out')) }  // String() 추가
           ],
           onItemClick: ({ detail }) => {
             if (detail.id === 'signout') handleSignOut();

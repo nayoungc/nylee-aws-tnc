@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Select } from '@cloudscape-design/components';
 
 const LanguageSwitcher: React.FC = () => {
-  const { i18n, t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -22,7 +22,7 @@ const LanguageSwitcher: React.FC = () => {
         { value: 'en', label: 'English' },
         { value: 'ko', label: '한국어' }
       ]}
-      ariaLabel={t('user.preferred_language')}
+      ariaLabel={t('user.preferred_language') as string}
     />
   );
 };

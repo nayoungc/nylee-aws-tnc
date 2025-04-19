@@ -37,11 +37,13 @@ import './i18n'; // i18n 설정 파일
 import config from './amplifyconfiguration.json';
 Amplify.configure(config);
 
+
 const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [userAttributes, setUserAttributes] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
+
 
   // 앱 시작 시 인증 상태 확인
   useEffect(() => {
@@ -112,12 +114,11 @@ const App: React.FC = () => {
               userAttributes={userAttributes}
               requiredRole="instructor"
             >
-              <MainLayout title={String(t('nav.dashboard') || 'Dashboard')}>
+              <MainLayout title="Dashboard">
                 <Dashboard />
               </MainLayout>
             </ProtectedRoute>
-          }rm -rf node_modules
-          rm package-lock.json
+          }
         />
         
         <Route 
