@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { generateClient, GraphQLQuery } from 'aws-amplify/api';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import { checkCourseEnrollment } from '@/graphql/queries';
+import { checkCourseEnrollment } from '../graphql/queries';
 
 const client = generateClient();
 
