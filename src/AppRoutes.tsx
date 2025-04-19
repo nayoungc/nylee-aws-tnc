@@ -24,9 +24,9 @@ import Dashboard from './pages/instructor/Dashboard';
 import CourseCatalog from './pages/instructor/CourseCatalog';
 import CoursesManagement from './pages/instructor/CoursesManagement';
 import CourseCreation from './pages/instructor/CourseCreation';
-import PreQuizManagement from './pages/instructor/PreQuizManagement';
-import PostQuizManagement from './pages/instructor/PostQuizManagement';
-import SurveyManagement from './pages/instructor/SurveyManagement';
+import QuizManagement from './pages/instructor/QuizManagement';
+import QuizCreator from './pages/instructor/QuizCreator';
+import SurveyManagement from './pages/instructor/SurveyCreator';
 import AdminPage from './pages/admin/AdminPage';
 
 // 교육생용 페이지 컴포넌트
@@ -193,6 +193,18 @@ const AppRoutes: React.FC = () => {
     return <LoadingScreen message={t('common.loading') || '로딩 중...'} />;
   }
 
+  // 강사 전용 라우트를 위한 래퍼 컴포넌트
+  const InstructorRoute = ({ children }: { children: React.ReactNode }) => (
+    <ProtectedRoute
+      authenticated={authenticated}
+      redirectPath="/signin"
+      requiredRole="instructor"
+      userAttributes={userAttributes}
+    >
+      <MainLayout>{children}</MainLayout>
+    </ProtectedRoute>
+  );
+
   return (
     <Routes>
       {/* 인증 페이지 라우트 */}
@@ -244,158 +256,44 @@ const AppRoutes: React.FC = () => {
         <Route index element={<MainLayout><StudentCourseHome /></MainLayout>} />
         {/* 교육생 평가 페이지 */}
         <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
-        <Route path="pre-quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
+        <Route path="quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
         <Route path="post-quiz" element={<MainLayout><PostQuizPage /></MainLayout>} />
       </Route>
 
       {/* 강사용 페이지 (URL 구조 변경) */}
       <Route path="/instructor">
         {/* 대시보드 */}
-        <Route
-          path="dashboard"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              redirectPath="/signin"
-              requiredRole="instructor"
-              userAttributes={userAttributes}
-            >
-              <MainLayout>
-                <Dashboard />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="dashboard" element={<InstructorRoute><Dashboard /></InstructorRoute>} />
         
         {/* 과정 관리 */}
-        <Route
-          path="courses"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              redirectPath="/signin"
-              requiredRole="instructor"
-              userAttributes={userAttributes}
-            >
-              <MainLayout>
-                <CoursesManagement />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/instructor/courses/create"
-          element={
-            <ProtectedRoute
-              authenticated={authenticated}
-              redirectPath="/signin"
-              requiredRole="instructor"
-              userAttributes={userAttributes}
-            >
-              <MainLayout>
-                <CourseCreation />
-              </MainLayout>
-            </ProtectedRoute>
-          }
-        />
+        <Route path="courses" element={<InstructorRoute><CoursesManagement /></InstructorRoute>} />
+        <Route path="courses/create" element={<InstructorRoute><CourseCreation /></InstructorRoute>} />
+        <Route path="courses/catalog" element={<InstructorRoute><CourseCatalog /></InstructorRoute>} />
 
         {/* 평가 도구 관리 */}
         <Route path="assessments">
-          <Route
-            path="pre-quiz"
-            element={
-              <ProtectedRoute
-                authenticated={authenticated}
-                redirectPath="/signin"
-                requiredRole="instructor"
-                userAttributes={userAttributes}
-              >
-                <MainLayout>
-                  <PreQuizManagement />
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="post-quiz"
-            element={
-              <ProtectedRoute
-                authenticated={authenticated}
-                redirectPath="/signin"
-                requiredRole="instructor"
-                userAttributes={userAttributes}
-              >
-                <MainLayout>
-                  <PostQuizManagement />
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="survey"
-            element={
-              <ProtectedRoute
-                authenticated={authenticated}
-                redirectPath="/signin"
-                requiredRole="instructor"
-                userAttributes={userAttributes}
-              >
-                <MainLayout>
-                  <SurveyManagement />
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="quiz" element={<InstructorRoute><QuizManagement /></InstructorRoute>} />
+          <Route path="quiz-creator" element={<InstructorRoute><QuizCreator /></InstructorRoute>} />
+          <Route path="survey" element={<InstructorRoute><SurveyManagement /></InstructorRoute>} />
         </Route>
 
         {/* 분석 및 보고서 */}
         <Route path="analytics">
-          <Route
-            path="comparison"
-            element={
-              <ProtectedRoute
-                authenticated={authenticated}
-                redirectPath="/signin"
-                requiredRole="instructor"
-                userAttributes={userAttributes}
-              >
-                <MainLayout>
-                  <div>사전/사후 비교 분석</div>
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="reports"
-            element={
-              <ProtectedRoute
-                authenticated={authenticated}
-                redirectPath="/signin"
-                requiredRole="instructor"
-                userAttributes={userAttributes}
-              >
-                <MainLayout>
-                  <div>보고서 생성</div>
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="insights"
-            element={
-              <ProtectedRoute
-                authenticated={authenticated}
-                redirectPath="/signin"
-                requiredRole="instructor"
-                userAttributes={userAttributes}
-              >
-                <MainLayout>
-                  <div>과정별 인사이트</div>
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="comparison" element={
+            <InstructorRoute>
+              <div>사전/사후 비교 분석</div>
+            </InstructorRoute>
+          } />
+          <Route path="reports" element={
+            <InstructorRoute>
+              <div>보고서 생성</div>
+            </InstructorRoute>
+          } />
+          <Route path="insights" element={
+            <InstructorRoute>
+              <div>과정별 인사이트</div>
+            </InstructorRoute>
+          } />
         </Route>
       </Route>
 
@@ -419,8 +317,8 @@ const AppRoutes: React.FC = () => {
       {/* 이전 URL 경로 리디렉션 - 단순 경로는 직접 처리 */}
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
-      <Route path="/assessments/pre-quiz" element={<Navigate to="/instructor/assessments/pre-quiz" replace />} />
-      <Route path="/assessments/post-quiz" element={<Navigate to="/instructor/assessments/post-quiz" replace />} />
+      <Route path="/assessments/pre-quiz" element={<Navigate to="/instructor/assessments/quiz" replace />} />
+      <Route path="/assessments/post-quiz" element={<Navigate to="/instructor/assessments/quiz" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
       
       {/* 교육생 페이지 리디렉션 - 별도 컴포넌트 사용 */}
