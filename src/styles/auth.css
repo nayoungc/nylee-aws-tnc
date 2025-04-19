@@ -1,0 +1,50 @@
+.auth-layout {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f2f4f4;
+  }
+  
+  .auth-logo {
+    margin-bottom: 20px;
+  }
+  
+  .auth-container {
+    max-width: 450px;
+    width: 100%;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .auth-form {
+    width: 100%;
+  }
+  
+  .auth-button {
+    width: 100%;
+    margin-top: 20px;
+    background-color: #FF9900 !important;
+    border-color: #FF9900 !important;
+  }
+  
+  .auth-button:hover {
+    background-color: #ec8c04 !important;
+    border-color: #ec8c04 !important;
+  }
+  
+  .auth-link {
+    color: #0073bb;
+    text-decoration: none;
+  }
+  
+  .auth-error {
+    color: #d13212;
+    background-color: #fdf2f2;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    text-align: left;
+  }

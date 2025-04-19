@@ -1,0 +1,67 @@
+:root {
+    /* AWS 브랜드 색상 */
+    --aws-color-blue-dark: #232F3E;
+    --aws-color-blue: #0073bb;
+    --aws-color-orange: #FF9900;
+    --aws-color-white: #FFFFFF;
+    --aws-color-gray-light: #F2F4F4;
+    --aws-color-gray: #D5DBDB;
+    --aws-color-gray-dark: #879596;
+    
+    /* 추가 색상 */
+    --aws-color-error: #D13212;
+    --aws-color-success: #1D8102;
+    --aws-color-info: #0073bb;
+    --aws-color-warning: #cf590c;
+  }
+  
+  /* 메인 네비게이션 오버라이드 */
+  [data-amplify-theme] {
+    --amplify-colors-brand-primary-10: var(--aws-color-blue);
+    --amplify-colors-brand-primary-80: var(--aws-color-blue-dark);
+    --amplify-colors-brand-primary-90: var(--aws-color-blue-dark);
+    --amplify-colors-brand-primary-100: var(--aws-color-blue-dark);
+  }
+  
+  .cs-top-navigation__title {
+    color: var(--aws-color-white);
+  }
+  
+  .cs-side-navigation {
+    background-color: var(--aws-color-blue-dark);
+  }
+  
+  .cs-side-navigation__header-link {
+    color: var(--aws-color-white) !important;
+  }
+  
+  .cs-side-navigation__link {
+    color: #d5dbdb !important;
+  }
+  
+  .cs-side-navigation__link--selected {
+    background-color: var(--aws-color-orange) !important;
+    color: var(--aws-color-blue-dark) !important;
+    font-weight: bold;
+  }
+  
+  /* 버튼 오버라이드 */
+  .cs-button--variant-primary {
+    background-color: var(--aws-color-orange) !important;
+    border-color: var(--aws-color-orange) !important;
+  }
+  
+  .cs-button--variant-primary:hover {
+    background-color: #e68a00 !important;
+    border-color: #e68a00 !important;
+  }
+  
+  /* 상단 내비게이션 */
+  .cs-top-navigation {
+    background-color: var(--aws-color-blue-dark);
+  }
+  
+  /* 전체 앱 배경색 */
+  .cs-app-layout {
+    background-color: var(--aws-color-gray-light);
+  }
