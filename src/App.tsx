@@ -116,7 +116,8 @@ const App: React.FC = () => {
                 <Dashboard />
               </MainLayout>
             </ProtectedRoute>
-          }
+          }rm -rf node_modules
+          rm package-lock.json
         />
         
         <Route 
