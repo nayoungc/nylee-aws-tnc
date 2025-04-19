@@ -9,7 +9,7 @@ import {
   StatusIndicator,
   Table
 } from '@cloudscape-design/components';
-import MainLayout from '../layouts/MainLayout';
+import MainLayout from '../components/MainLayout';
 
 // StatusIndicator의 허용된 타입 정의 추가
 type StatusIndicatorType = "success" | "warning" | "error" | "info" | "stopped" | "in-progress" | "loading";

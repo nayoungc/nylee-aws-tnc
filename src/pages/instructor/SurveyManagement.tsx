@@ -10,7 +10,7 @@ import {
   FormField,
   Tabs
 } from '@cloudscape-design/components';
-import MainLayout from '../../layouts/MainLayout';
+import MainLayout from '../../components/MainLayout';
 
 const SurveyManagement: React.FC = () => {
   return (

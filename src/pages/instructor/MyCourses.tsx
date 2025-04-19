@@ -8,7 +8,7 @@ import {
   Button,
   Badge
 } from '@cloudscape-design/components';
-import MainLayout from '../../layouts/MainLayout';
+import MainLayout from '../../components/MainLayout';
 
 const MyCourses: React.FC = () => {
   const myCourses = [
