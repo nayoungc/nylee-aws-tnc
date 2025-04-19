@@ -235,6 +235,22 @@ const AppRoutes: React.FC = () => {
       />
 
       <Route
+        path="/assessments/pre-quiz"
+        element={
+          <ProtectedRoute
+            authenticated={authenticated}
+            redirectPath="/signin"
+            requiredRole="instructor"
+            userAttributes={userAttributes}
+          >
+            <MainLayout>
+              <PreQuizManagement />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/assessments/post-quiz"
         element={
           <ProtectedRoute
