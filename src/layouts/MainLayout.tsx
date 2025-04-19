@@ -18,6 +18,7 @@ import { changeLanguage, getCurrentLanguage } from '../utils/i18n-utils';
 
 interface MainLayoutProps {
   children: ReactNode;
+  title?: string;
 }
 
 // 명시적으로 타입 지정
