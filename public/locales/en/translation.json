@@ -95,5 +95,136 @@
   },
   "common": {
     "loading": "Loading..."
+  },
+  "admin": {
+    "common": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "pagination": {
+        "next": "Next page",
+        "previous": "Previous page",
+        "page_label": "Go to page {pageNumber}"
+      }
+    },
+    "courses": {
+      "course_management": "Course Management",
+      "add_course": "Add Course",
+      "add_new_course": "Add New Course",
+      "edit_course": "Edit Course",
+      "delete_course": "Delete Course",
+      "no_courses": "No courses",
+      "add_new_course_desc": "Please add a new course.",
+      "search_placeholder": "Search courses...",
+      "search_aria_label": "Search courses",
+      "error_loading": "Error loading course list.",
+      "error_saving": "Error saving course.",
+      "error_deleting": "Error deleting course.",
+      "delete_confirm": "Are you sure you want to delete \"{title}\" course? This action cannot be undone.",
+      "currency": "won",
+      "column": {
+        "title": "Course Title",
+        "category": "Category",
+        "duration": "Duration (hours)",
+        "level": "Level",
+        "price": "Price",
+        "status": "Status"
+      },
+      "form": {
+        "title": "Course Title",
+        "category": "Category",
+        "description": "Description",
+        "duration": "Duration (hours)",
+        "level": "Level",
+        "price": "Price",
+        "published_date": "Published Date",
+        "active": "Active"
+      }
+    },
+    "customers": {
+      "customer_management": "Customer Management",
+      "add_customer": "Add Customer",
+      "add_new_customer": "Add New Customer",
+      "edit_customer": "Edit Customer",
+      "delete_customer": "Delete Customer",
+      "no_customers": "No customers",
+      "add_new_customer_desc": "Please add a new customer.",
+      "search_placeholder": "Search customers...",
+      "search_aria_label": "Search customers",
+      "error_loading": "Error loading customer list.",
+      "error_saving": "Error saving customer.",
+      "error_deleting": "Error deleting customer.",
+      "delete_confirm": "Are you sure you want to delete \"{name}\" customer? This action cannot be undone.",
+      "column": {
+        "company_name": "Company Name",
+        "contact_person": "Contact Person",
+        "email": "Email",
+        "phone": "Phone",
+        "status": "Status",
+        "join_date": "Join Date"
+      },
+      "form": {
+        "company_name": "Company Name",
+        "contact_person": "Contact Person",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "status": "Status",
+        "join_date": "Join Date"
+      }
+    },
+    "instructors": {
+      "instructor_management": "Instructor Management",
+      "add_instructor": "Add Instructor",
+      "add_new_instructor": "Add New Instructor",
+      "edit_instructor": "Edit Instructor",
+      "delete_instructor": "Delete Instructor",
+      "no_instructors": "No instructors",
+      "add_new_instructor_desc": "Please add a new instructor.",
+      "search_placeholder": "Search instructors...",
+      "search_aria_label": "Search instructors",
+      "error_loading": "Error loading instructor list.",
+      "error_loading_cognito": "Error loading Cognito users.",
+      "error_saving": "Error saving instructor.",
+      "error_deleting": "Error deleting instructor.",
+      "delete_confirm": "Are you sure you want to delete \"{name}\" instructor? This action cannot be undone.",
+      "log": {
+        "load_result": "Instructor list result:",
+        "update_result": "Instructor update result:",
+        "create_result": "Instructor create result:",
+        "delete_result": "Instructor delete result:"
+      },
+      "dummy_data": {
+        "instructor1": "Instructor 1",
+        "instructor2": "Instructor 2",
+        "instructor3": "Instructor 3"
+      },
+      "column": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "specialization": "Specialization",
+        "status": "Status",
+        "join_date": "Join Date"
+      },
+      "form": {
+        "cognito_user": "Cognito User",
+        "select_user": "Select Cognito user",
+        "loading_users": "Loading users...",
+        "no_users": "No available Cognito users",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "phone_placeholder": "+82-10-1234-5678",
+        "specialization": "Specialization",
+        "bio": "Bio",
+        "status": "Status",
+        "join_date": "Join Date"
+      }
+    }
   }
 }

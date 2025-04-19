@@ -19,9 +19,10 @@ i18n
       useSuspense: false,
     },
     backend: {
-      // 경로를 public 폴더 기준으로 수정
       loadPath: '/locales/{{lng}}/{{ns}}.json',
-    }
+    },
+    returnObjects: false, // 객체 대신 문자열만 반환하도록 설정
+    returnEmptyString: true, // 빈 문자열을 undefined 대신 반환
   });
 
 export default i18n;

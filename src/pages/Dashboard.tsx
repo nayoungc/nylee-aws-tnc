@@ -1,3 +1,4 @@
+// pages/Dashboard.tsx
 import React from 'react';
 import {
   Container,
