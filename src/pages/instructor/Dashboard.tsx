@@ -9,7 +9,7 @@ import {
   Button,
   ColumnLayout
 } from '@cloudscape-design/components';
-import MainLayout from '../components/MainLayout';
+import MainLayout from '../../components/MainLayout';
 
 const Dashboard: React.FC = () => {
   return (
