@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   AppLayout,
   SideNavigation,
   SideNavigationProps,
-  TopNavigation,
   BreadcrumbGroup,
   Flashbar,
-  FlashbarProps
+  FlashbarProps,
+  Spinner
 } from '@cloudscape-design/components';
-import { useAuth } from '../hooks/useAuth';
+import { fetchUserAttributes, signOut } from 'aws-amplify/auth';
+import { useTranslation } from 'react-i18next';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -17,11 +18,33 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
-  const { user, logout } = useAuth();
+  // Amplify Gen 2 방식으로 사용자 정보 관리
+  const [user, setUser] = useState<Record<string, any> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [notifications, setNotifications] = useState<FlashbarProps.MessageDefinition[]>([]);
   const [activeHref, setActiveHref] = useState(location.pathname);
+
+  // Amplify Gen 2 방식으로 사용자 정보 로드
+  useEffect(() => {
+    async function loadUserAttributes() {
+      setLoading(true);
+      try {
+        const attributes = await fetchUserAttributes();
+        setUser(attributes);
+      } catch (error) {
+        console.error('사용자 정보를 불러올 수 없습니다:', error);
+        setUser(null);
+        navigate('/signin');
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadUserAttributes();
+  }, [navigate]);
 
   // 현재 경로에서 빵부스러기(breadcrumbs) 생성
   const pathSegments = location.pathname.split('/').filter(segment => segment);
@@ -29,14 +52,27 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     { text: 'Home', href: '/' },
     ...pathSegments.map((segment, index) => ({
       text: segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' '),
-      href: `/\${pathSegments.slice(0, index + 1).join('/')}`
+      href: `/\${pathSegments.slice(0, index + 1).join('/')}` // 백슬래시 제거
     }))
   ];
 
-  // 로그아웃 처리 함수
+  // Amplify Gen 2 방식으로 로그아웃 처리
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      await signOut();
+      navigate('/signin');
+    } catch (error) {
+      console.error('로그아웃 처리 중 오류가 발생했습니다:', error);
+      setNotifications([
+        ...notifications,
+        {
+          type: 'error',
+          content: '로그아웃 처리 중 오류가 발생했습니다.',
+          dismissible: true,
+          id: `error-\${Date.now()}`
+        }
+      ]);
+    }
   };
 
   // 사용자 역할에 따른 네비게이션 항목
@@ -49,8 +85,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       { type: 'link', text: 'Help', href: '/student/help' }
     ];
 
-    // 강사인 경우
-    if (user?.['custom:role'] === 'instructor') {
+    // 강사인 경우 (Amplify Gen 2에서는 속성 접근 방식이 변경됨)
+    // 이메일 도메인으로 역할 확인 (custom:role이 없을 수 있음)
+    const isInstructor = user?.email?.endsWith('@amazon.com') || false;
+    
+    if (isInstructor) {
       navItems = [
         { type: 'link', text: 'Dashboard', href: '/dashboard' },
         {
@@ -114,6 +153,60 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     setActiveHref(href);
     navigate(href);
   };
+
+  // 사용자가 로그인하지 않았거나 로딩 중일 때 로딩 인디케이터 표시
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  // 사용자 정보가 없으면 로그인 페이지로 리디렉션
+  if (!user) {
+    navigate('/signin');
+    return null;
+  }
+
+  // 상단 네비게이션 유틸리티 아이템 설정
+  const utilities = [
+    {
+      type: 'menu-dropdown' as const,
+      text: user.email || user.username || '사용자',
+      iconName: 'user-profile' as const,
+      items: [
+        { id: 'profile', text: String(t('nav.profile') || 'Profile') },
+        { id: 'settings', text: String(t('nav.settings') || 'Settings') },
+        { id: 'signout', text: String(t('auth.sign_out') || 'Sign out') }
+      ],
+      onItemClick: (e: any) => {
+        if (e.detail.id === 'signout') {
+          handleLogout();
+        } else if (e.detail.id === 'settings') {
+          navigate('/settings/account');
+        } else if (e.detail.id === 'profile') {
+          navigate('/profile');
+        }
+      }
+    }
+  ];
+
+  // 언어 전환 드롭다운 추가 (i18next 통합)
+  if (t) {
+    utilities.unshift({
+      type: 'menu-dropdown' as const,
+      text: user?.locale === 'ko' ? '한국어' : 'English',
+      iconName: 'user-profile' as const,
+      items: [
+        { id: 'en', text: 'English' },
+        { id: 'ko', text: '한국어' }
+      ],
+      onItemClick: (e: any) => {
+        // 여기에 언어 전환 로직 구현
+      }
+    });
+  }
 
   return (
     <AppLayout
