@@ -1,7 +1,7 @@
 // src/layouts/MainLayout.tsx
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { signOut } from 'aws-amplify/auth';
+import { signOut, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
 import { 
   AppLayout, 
   BreadcrumbGroup, 
@@ -20,16 +20,36 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [username, setUsername] = useState<string>('');
   
+  useEffect(() => {
+    async function loadUserInfo() {
+      try {
+        const currentUser = await getCurrentUser();
+        const attributes = await fetchUserAttributes();
+        setUsername(attributes.email || currentUser.username);
+      } catch (error) {
+        console.error('사용자 정보 로드 오류:', error);
+      }
+    }
+    
+    loadUserInfo();
+  }, []);
+
   // 로그아웃 핸들러
   const handleSignOut = async () => {
     try {
       await signOut();
-      // Auth Hub가 signOut 이벤트를 감지하고 AppRoutes에서 리디렉션함
+      navigate('/signin');
     } catch (error) {
       console.error('로그아웃 중 오류 발생:', error);
     }
+  };
+  
+  // 언어 변경 핸들러
+  const changeLanguage = (languageCode: string) => {
+    i18n.changeLanguage(languageCode);
   };
   
   // 페이지 제목 매핑
@@ -95,18 +115,34 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <>
       <TopNavigation
         identity={{
-          href: "/",
-          title: t('app.title') || 'AWS Training Portal',
+          href: '/',
+          title: String(t('app.title')),
           logo: {
-            src: "/images/aws.png",
-            alt: "AWS Logo"
+            src: '/images/aws.png',
+            alt: String(t('app.title'))
           }
         }}
         utilities={[
           {
-            type: "button",
-            text: t('auth.sign_out') || '로그아웃',
-            onClick: handleSignOut
+            type: 'menu-dropdown',
+            text: i18n.language === 'ko' ? '한국어' : 'English',
+            iconName: 'settings',
+            items: [
+              { id: 'en', text: 'English' },
+              { id: 'ko', text: '한국어' }
+            ],
+            onItemClick: ({ detail }) => changeLanguage(detail.id)
+          },
+          {
+            type: 'menu-dropdown',
+            text: username,
+            iconName: 'user-profile',
+            items: [
+              { id: 'signout', text: String(t('auth.sign_out')) }
+            ],
+            onItemClick: ({ detail }) => {
+              if (detail.id === 'signout') handleSignOut();
+            }
           }
         ]}
       />

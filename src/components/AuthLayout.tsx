@@ -15,15 +15,14 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       alignItems: 'center',
       backgroundColor: '#f2f4f4'
     }}>
-      <Box 
+      {/* <Box 
         padding="l" 
         textAlign="center" 
         margin={{ bottom: "l" }}
       >
-        <img src="/logo.png" alt="AWS T&C 교육 사이트" width="120" />
-      </Box>
+      </Box> */}
       
-      <div style={{ width: '100%', maxWidth: '450px' }}>
+      <div style={{ width: '100%', maxWidth: '600px' }}>
         <Container>
           <div style={{
             backgroundColor: 'white',

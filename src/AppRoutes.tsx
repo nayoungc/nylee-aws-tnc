@@ -144,7 +144,7 @@ const AppRoutes: React.FC = () => {
         />
       </Route>
 
-      {/* 공개 페이지 라우트 */}
+      {/* 공개 페이지 라우트 - 직접 MainLayout 적용 */}
       <Route path="/courses" element={<MainLayout><StudentHome /></MainLayout>} />
       <Route path="/course/:courseId" element={<MainLayout><CourseDetailPage /></MainLayout>} />
 
@@ -163,7 +163,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* 강사용 보호된 라우트 */}
+      {/* 강사용 보호된 라우트 - ProtectedRoute에서 MainLayout 처리됨 */}
       <Route
         path="/dashboard"
         element={
