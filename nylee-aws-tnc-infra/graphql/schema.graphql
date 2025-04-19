@@ -5,11 +5,18 @@ schema {
   # subscription: Subscription  
 }
 
+type CourseEnrollmentResult {
+  hasAccess: Boolean!
+  enrollmentStatus: String
+  courseTitle: String
+}
+
 # Query 타입 정의 - 필수!
 type Query {
   # 최소한 하나 이상의 쿼리 필드가 필요합니다
   getCourseTemplate(id: ID!, version: String): CourseTemplate
   listCourseTemplates: [CourseTemplate]
+  checkCourseEnrollment(courseId: ID!, email: String!): CourseEnrollmentResult
 }
 
 # Mutation 타입 정의 - schema에 선언했다면 필수!
