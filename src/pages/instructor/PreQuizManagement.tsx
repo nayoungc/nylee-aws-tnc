@@ -12,6 +12,7 @@ import {
 } from '@cloudscape-design/components';
 import { post } from 'aws-amplify/api';
 import { SelectProps } from '@cloudscape-design/components';
+import MainLayout from '../../components/MainLayout';
 
 // API 응답 타입 정의
 interface Question {
@@ -80,6 +81,7 @@ export default function PreQuizManagement() {
   };
   
   return (
+    <MainLayout title="Pre-Quiz Management">
     <SpaceBetween size="l">
       <Container header={<Header variant="h2">사전 퀴즈 관리</Header>}>
         <FormField label="과정 선택">
@@ -132,5 +134,6 @@ export default function PreQuizManagement() {
         )}
       </Modal>
     </SpaceBetween>
+    </MainLayout>
   );
 }
