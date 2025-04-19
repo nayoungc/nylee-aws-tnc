@@ -6,7 +6,7 @@ import * as bedrock from 'aws-cdk-lib/aws-bedrock';
 
 export class NyleeAwsTncBedrockStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    super(scope: Construct, id: string, props);
 
     // 기존 S3 버킷 참조
     const reportsBucket = s3.Bucket.fromBucketName(
@@ -31,7 +31,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     
     // Knowledge Base 생성
     const reportsKB = new bedrock.CfnKnowledgeBase(this, 'ReportsKnowledgeBase', {
-      knowledgeBaseName: 'TnC-Reports-Knowledge', // name이 아닌 knowledgeBaseName 사용
+      name: 'TnC-Reports-Knowledge',
       description: 'Knowledge base for course reports and analytics',
       roleArn: bedrockRole.roleArn,
       knowledgeBaseConfiguration: {
@@ -43,7 +43,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     });
     
     const materialsKB = new bedrock.CfnKnowledgeBase(this, 'MaterialsKnowledgeBase', {
-      knowledgeBaseName: 'TnC-Materials-Knowledge', // name이 아닌 knowledgeBaseName 사용
+      name: 'TnC-Materials-Knowledge',
       description: 'Knowledge base for course materials',
       roleArn: bedrockRole.roleArn,
       knowledgeBaseConfiguration: {
@@ -55,7 +55,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     });
     
     const docsKB = new bedrock.CfnKnowledgeBase(this, 'DocsKnowledgeBase', {
-      knowledgeBaseName: 'TnC-Documentation-Knowledge', // name이 아닌 knowledgeBaseName 사용
+      name: 'TnC-Documentation-Knowledge',
       description: 'Knowledge base for AWS documentation',
       roleArn: bedrockRole.roleArn,
       knowledgeBaseConfiguration: {
@@ -68,12 +68,12 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     
     // Agent 생성
     const agent = new bedrock.CfnAgent(this, 'EducationAgent', {
-      agentName: 'TnC-Education-Assistant', // name이 아닌 agentName 사용
-      agentDescription: 'Assistant for educational content creation', // description이 아닌 agentDescription 사용
-      agentResourceRoleArn: bedrockRole.roleArn, // roleArn이 아닌 agentResourceRoleArn 사용
+      agentName: 'TnC-Education-Assistant',
+      description: 'Assistant for educational content creation',
+      agentResourceRoleArn: bedrockRole.roleArn,
       foundationModel: `arn:aws:bedrock:\${this.region}::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0`,
       idleSessionTtlInSeconds: 1800,
-      agentKnowledgeBases: [
+      knowledgeBases: [  // agentKnowledgeBases가 아닌 knowledgeBases 사용
         {
           description: 'Reports knowledge base',
           knowledgeBaseId: reportsKB.attrKnowledgeBaseId
