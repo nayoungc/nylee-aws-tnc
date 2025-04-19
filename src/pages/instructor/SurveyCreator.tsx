@@ -7,19 +7,17 @@ import {
   Input,
   Button,
   Textarea,
-  Cards,
   Box,
   RadioGroup,
   Checkbox,
   Alert,
   Modal,
   ColumnLayout,
-  Select,
-  SelectProps
+  Select
 } from '@cloudscape-design/components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { post } from 'aws-amplify/api';
-import { generateClient } from 'aws-amplify/api';
+import Table from "@cloudscape-design/components/table";
 
 // 타입 정의
 interface Question {
@@ -76,7 +74,6 @@ export default function SurveyCreator() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
 
   // 설문조사 메타데이터 업데이트
   const handleMetaChange = (key: keyof SurveyMeta, value: any) => {
@@ -246,6 +243,16 @@ export default function SurveyCreator() {
     navigate('/instructor/assessments/survey');
   };
   
+  // 테이블에서 옵션 변경 처리를 위한 함수
+  const updateQuestionOptions = (questionIndex: number, options: string[]) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex] = {
+      ...updatedQuestions[questionIndex],
+      options
+    };
+    setQuestions(updatedQuestions);
+  };
+  
   return (
     <SpaceBetween size="l">
       {/* 설문조사 메타데이터 */}
@@ -284,14 +291,14 @@ export default function SurveyCreator() {
             <SpaceBetween size="s">
               <Checkbox
                 checked={surveyMeta.isRequired}
-                onChange={({ detail }) => handleMetaChange('isRequired', detail.checked)}
+                onChange={({ detail }) => detail && handleMetaChange('isRequired', detail.checked)}
               >
                 필수 응답 설문조사
               </Checkbox>
               
               <Checkbox
                 checked={surveyMeta.anonymous}
-                onChange={({ detail }) => handleMetaChange('anonymous', detail.checked)}
+                onChange={({ detail }) => detail && handleMetaChange('anonymous', detail.checked)}
               >
                 익명 응답 허용
               </Checkbox>
@@ -300,7 +307,7 @@ export default function SurveyCreator() {
           
           <Checkbox
             checked={surveyMeta.shuffleQuestions}
-            onChange={({ detail }) => handleMetaChange('shuffleQuestions', detail.checked)}
+            onChange={({ detail }) => detail && handleMetaChange('shuffleQuestions', detail.checked)}
           >
             문항 순서 섞기
           </Checkbox>
@@ -323,79 +330,154 @@ export default function SurveyCreator() {
         }
       >
         {questions.length > 0 ? (
-          <>
-            <Cards
-              cardDefinition={{
-                header: (item: Question) => {
-                  const index = questions.findIndex(q => q === item);
-                  return `문항 \${index + 1}`;
-                },
-                sections: [
-                  {
-                    id: "question",
-                    header: "질문",
-                    content: (item: Question) => item.question
-                  },
-                  {
-                    id: "type",
-                    header: "유형",
-                    content: (item: Question) => 
-                      item.type === 'single' ? '단일 선택' : 
-                      item.type === 'multiple' ? '다중 선택' : '주관식'
-                  },
-                  {
-                    id: "options",
-                    header: "보기 옵션",
-                    content: (item: Question) => (
-                      item.type === 'text' ? 
-                      <em>주관식 응답</em> : 
-                      <ul>
-                        {item.options.map((opt, idx) => (
-                          <li key={idx}>{opt}</li>
-                        ))}
-                      </ul>
-                    )
-                  }
-                ]
-              }}
-              cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 2 }]}
-              items={questions}
-              loading={false}
-              loadingText="질문을 불러오는 중..."
-              selectionType="single"
-              selectedItems={selectedQuestion ? [selectedQuestion] : []}
-              onSelectionChange={({ detail }) => {
-                if (detail.selectedItems.length > 0) {
-                  const selected = detail.selectedItems[0];
-                  setSelectedQuestion(selected);
-                  const index = questions.findIndex(q => q === selected);
-                  if (index !== -1) {
-                    handleEditQuestion(index);
-                  }
-                  setTimeout(() => setSelectedQuestion(null), 100);
+          <Table
+            items={questions}
+            loading={false}
+            loadingText="질문을 불러오는 중..."
+            columnDefinitions={[
+              {
+                id: "question",
+                header: "질문",
+                cell: (item: Question) => item.question,
+                editConfig: {
+                  ariaLabel: "질문",
+                  editIconAriaLabel: "편집 가능",
+                  editingCell: (item: Question, { currentValue, setValue }) => (
+                    <Textarea
+                      autoFocus={true}
+                      value={currentValue ?? item.question}
+                      onChange={event => event.detail && setValue(event.detail.value)}
+                    />
+                  )
                 }
-              }}
-              trackBy="id"
-              empty={
-                <Box textAlign="center" color="inherit">
-                  <b>질문이 없습니다</b>
-                  <Box padding={{ bottom: "s" }}>
-                    '질문 추가' 버튼을 눌러 설문조사 문항을 추가하세요.
-                  </Box>
-                  <Button onClick={handleAddQuestion} iconName="add-plus">
-                    질문 추가
-                  </Button>
-                </Box>
+              },
+              {
+                id: "type",
+                header: "유형",
+                cell: (item: Question) => 
+                  item.type === 'single' ? '단일 선택' : 
+                  item.type === 'multiple' ? '다중 선택' : '주관식',
+                editConfig: {
+                  ariaLabel: "유형",
+                  editIconAriaLabel: "편집 가능",
+                  editingCell: (item: Question, { currentValue, setValue }) => (
+                    <Select
+                      autoFocus={true}
+                      selectedOption={
+                        [
+                          { label: "단일 선택", value: "single" },
+                          { label: "다중 선택", value: "multiple" },
+                          { label: "주관식", value: "text" }
+                        ].find(option => 
+                          option.value === (currentValue || item.type)
+                        ) || null
+                      }
+                      onChange={event => {
+                        if (!event.detail?.selectedOption?.value) return;
+                        
+                        const newType = event.detail.selectedOption.value as 'multiple' | 'single' | 'text';
+                        setValue(newType);
+                        
+                        // 주관식으로 변경 시 옵션 초기화
+                        if (newType === 'text') {
+                          const questionIndex = questions.findIndex(q => q === item);
+                          if (questionIndex >= 0) {
+                            const updatedQuestions = [...questions];
+                            updatedQuestions[questionIndex] = {
+                              ...updatedQuestions[questionIndex],
+                              options: []
+                            };
+                            setQuestions(updatedQuestions);
+                          }
+                        }
+                      }}
+                      options={[
+                        { label: "단일 선택", value: "single" },
+                        { label: "다중 선택", value: "multiple" },
+                        { label: "주관식", value: "text" }
+                      ]}
+                    />
+                  )
+                }
+              },
+              {
+                id: "options",
+                header: "보기 옵션",
+                cell: (item: Question) => 
+                  item.type === 'text' ? 
+                  "주관식 응답" : 
+                  item.options.join(", "),
+                editConfig: {
+                  ariaLabel: "보기 옵션",
+                  editIconAriaLabel: "편집 가능",
+                  disabledReason: (item: Question) => {
+                    if (item.type === "text") {
+                      return "주관식 질문은 보기 옵션이 필요하지 않습니다.";
+                    }
+                    return undefined;
+                  },
+                  editingCell: (item: Question, { currentValue, setValue }) => (
+                    <Textarea
+                      autoFocus={true}
+                      value={currentValue ?? item.options.join("\n")}
+                      placeholder="각 보기를 새 줄에 입력하세요"
+                      onChange={event => event.detail && setValue(event.detail.value)}
+                      
+                      onBlur={event => {
+                        if (!event.detail) return;
+                        
+                        // 타입 단언을 사용하여 detail.value가 있음을 명시
+                        const detail = event.detail as { value: string };
+                        
+                        // 옵션을 배열로 변환
+                        const options = detail.value
+                          .split("\n")
+                          .map((opt: string) => opt.trim())
+                          .filter((opt: string) => opt.length > 0);
+                          
+                        const questionIndex = questions.findIndex(q => q === item);
+                        if (questionIndex >= 0) {
+                          updateQuestionOptions(questionIndex, options);
+                        }
+                      }}
+                    />
+                  )
+                }
+              },
+              {
+                id: "actions",
+                header: "작업",
+                cell: (item: Question) => (
+                  <SpaceBetween direction="horizontal" size="xs">
+                    <Button 
+                      iconName="edit"
+                      onClick={() => handleEditQuestion(questions.indexOf(item))}
+                    >
+                      상세 편집
+                    </Button>
+                    <Button 
+                      iconName="remove"
+                      onClick={() => handleDeleteQuestion(questions.indexOf(item))}
+                    >
+                      삭제
+                    </Button>
+                  </SpaceBetween>
+                )
               }
-              header={<Header>질문 목록</Header>}
-              stickyHeader={true}
-            />
-            
-            {/* Cards 컴포넌트 아래에 안내 메시지 추가 */}
-            <Box textAlign="right" padding={{ top: "s" }}>
-              편집하려면 카드를 클릭하세요
-            </Box>
-          </>
+            ]}
+            empty={
+              <Box textAlign="center" color="inherit">
+                <b>질문이 없습니다</b>
+                <Box padding={{ bottom: "s" }}>
+                  '질문 추가' 버튼을 눌러 설문조사 문항을 추가하세요.
+                </Box>
+                <Button onClick={handleAddQuestion} iconName="add-plus">
+                  질문 추가
+                </Button>
+              </Box>
+            }
+            header={<Header>설문조사 문항 목록</Header>}
+          />
         ) : (
           <Box textAlign="center" color="inherit">
             <b>질문이 없습니다</b>
@@ -437,7 +519,7 @@ export default function SurveyCreator() {
             <FormField label="질문">
               <Textarea
                 value={currentQuestion.question}
-                onChange={({ detail }) => 
+                onChange={({ detail }) => detail && 
                   setCurrentQuestion({
                     ...currentQuestion,
                     question: detail.value
@@ -455,7 +537,7 @@ export default function SurveyCreator() {
                   { value: 'text', label: '주관식' }
                 ]}
                 value={currentQuestion.type}
-                onChange={({ detail }) => 
+                onChange={({ detail }) => detail && 
                   handleQuestionTypeChange(detail.value as 'multiple' | 'single' | 'text')
                 }
               />
@@ -468,7 +550,7 @@ export default function SurveyCreator() {
                     <SpaceBetween direction="horizontal" size="xs" key={index}>
                       <Input
                         value={option}
-                        onChange={({ detail }) => handleOptionChange(index, detail.value)}
+                        onChange={({ detail }) => detail && handleOptionChange(index, detail.value)}
                         placeholder={`보기 \${index + 1}`}
                       />
                       

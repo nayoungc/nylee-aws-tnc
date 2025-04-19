@@ -649,37 +649,37 @@ def main():
     
     # 과정명 목록 (요청된 과정명)
     course_titles_text = """Instuctor-led Training (ILT)
-Instructor-led Training (ILT) Overview	3
-Advanced AWS Well-Architected Best Practices	7
-Amazon SageMaker Studio for Data Scientists	10
-Architecting on AWS	13
-AWS Cloud Essentials for Business Leaders	18
-AWS Cloud Practitioner Essentials	20
-AWS Migration Essentials	24
-AWS Security Essentials	26
-AWS Technical Essentials	28
-AWS Well-Architected Best Practices	31
-AWS Well-Architected Best Practices (Custom)	33
-Building Batch Data Analytics Solutions on AWS	35
-Building Data Analytics Solutions Using Amazon Redshift	38
-Building Data Lakes on AWS	41
-Build Modern Applications with AWS NoSQL Databases	44
-Building Streaming Data Analytics Solutions on AWS	47
-Cloud Operations on AWS (구 Systems Operations on AWS)	50
-Data Warehousing on AWS	54
-Designing and Implementing Storage on AWS	57
-Developing Generative AI Applications on AWS	61
-Developing on AWS	65
-Developing Serverless Solutions on AWS	71
-DevOps Engineering on AWS	76
-Generative AI Essentials on AWS	79
-Migrating to AWS	82
-MLOps Engineering on AWS	86
-Networking Essentials for Cloud Applications on AWS	90
-Practical Data Science with Amazon SageMaker	93
-Practical IaC on AWS with Terraform	96
-Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS)	99
-Security Engineering on AWS	103"""
+Instructor-led Training (ILT) Overview
+Advanced AWS Well-Architected Best Practices
+Amazon SageMaker Studio for Data Scientists
+Architecting on AWS
+AWS Cloud Essentials for Business Leaders
+AWS Cloud Practitioner Essentials
+AWS Migration Essentials
+AWS Security Essentials
+AWS Technical Essentials
+AWS Well-Architected Best Practices
+AWS Well-Architected Best Practices (Custom)
+Building Batch Data Analytics Solutions on AWS
+Building Data Analytics Solutions Using Amazon Redshift
+Building Data Lakes on AWS
+Build Modern Applications with AWS NoSQL Databases
+Building Streaming Data Analytics Solutions on AWS
+Cloud Operations on AWS
+Data Warehousing on AWS
+Designing and Implementing Storage on AWS
+Developing Generative AI Applications on AWS
+Developing on AWS
+Developing Serverless Solutions on AWS
+DevOps Engineering on AWS
+Generative AI Essentials on AWS
+Migrating to AWS
+MLOps Engineering on AWS
+Networking Essentials for Cloud Applications on AWS
+Practical Data Science with Amazon SageMaker
+Practical IaC on AWS with Terraform
+Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS)
+Security Engineering on AWS"""
     
     try:
         # 필요한 라이브러리 확인
