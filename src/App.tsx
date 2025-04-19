@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+
 import '@cloudscape-design/global-styles/index.css';
 import '@aws-amplify/ui-react/styles.css';
 
@@ -39,33 +40,42 @@ Amplify.configure(config);
 
 
 const App: React.FC = () => {
+  const navigate = useNavigate();
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [userAttributes, setUserAttributes] = useState<any>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
+  
 
-
-  // 앱 시작 시 인증 상태 확인
+  // useEffect에 의존성 배열 추가
   useEffect(() => {
     async function checkAuthState() {
       try {
-        // 현재 사용자 정보 가져오기
         const user = await getCurrentUser();
         const attributes = await fetchUserAttributes();
         
+        console.log('인증된 사용자:', attributes);
         setAuthenticated(true);
         setUserAttributes(attributes);
+        
+        // 로그인 페이지에 있을 때 자동으로 홈으로 이동
+        if (authenticated && (window.location.pathname === '/signin' || window.location.pathname === '/login')) {
+          setIsRedirecting(true);
+          navigate('/');
+        }
+        
       } catch (error) {
-        console.log('사용자가 로그인하지 않았습니다', error);
+        console.log('사용자 미인증:', error);
         setAuthenticated(false);
-        setUserAttributes(null);
       } finally {
         setIsLoading(false);
       }
     }
 
     checkAuthState();
-  }, []);
+  }, [authenticated, navigate]);
 
   // 로딩 중 표시
   if (isLoading) {

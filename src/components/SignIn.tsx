@@ -35,24 +35,26 @@ const SignIn: React.FC = () => {
     setError(null);
     
     try {
-      const { isSignedIn, nextStep } = await handleSignIn(
+      console.log('로그인 시도:', formState.username);
+      const result = await handleSignIn(
         formState.username,
         formState.password
       );
       
-      if (isSignedIn) {
-        navigate('/');
-      } else if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
+      console.log('로그인 결과:', result);
+      
+      // 로그인 성공 조건 확인 변경
+      if (result.isSignedIn || result.nextStep?.signInStep === 'DONE') {
+        console.log('로그인 성공, 홈으로 이동');
+        window.location.href = '/'; // navigate() 대신 강제 이동
+      } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {
         navigate('/confirm-signup', { 
           state: { username: formState.username } 
         });
       }
     } catch (err: any) {
-      if (err.message === 'User does not exist.') {
-        setError(t('auth.user_not_exist'));
-      } else {
-        setError(err.message || t('auth.login_error_generic'));
-      }
+      console.error('로그인 오류:', err);
+      // 오류 처리...
     } finally {
       setLoading(false);
     }
