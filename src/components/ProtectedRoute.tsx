@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 // MainLayout import 제거
 
@@ -21,7 +21,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   
   // 인증 검사
   if (!authenticated) {
-    return <Navigate to={redirectPath} replace />;
+    // 이미 리디렉션 중인지 확인
+    const isRedirecting = useRef(false);
+    
+    if (!isRedirecting.current) {
+      isRedirecting.current = true;
+      return <Navigate to={redirectPath} replace />;
+    }
+    return null;
   }
   
   // 역할 검사 (필요한 경우)
