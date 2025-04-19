@@ -21,7 +21,7 @@ import {
 import { GraphQLQuery } from 'aws-amplify/api';
 
 // 상대 경로로 변경
-import { getCourse } from '@/graphql/queries';
+import { getCourse } from '../../graphql/queries';
 
 // 중복 선언 제거
 // const getCourse = /* GraphQL */ `...`; 
