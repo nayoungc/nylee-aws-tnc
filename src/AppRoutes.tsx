@@ -1,6 +1,6 @@
 // src/AppRoutes.tsx
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import {
   fetchAuthSession,
   getCurrentUser,
@@ -39,6 +39,17 @@ import CourseDetailPage from './pages/CourseDetailPage'; // 통합 과정 상세
 // 레이아웃 컴포넌트
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
+
+// 리디렉션을 위한 별도 컴포넌트들
+const StudentHomeRedirect = () => {
+  const { courseId } = useParams();
+  return <Navigate to={`/course/\${courseId}`} replace />;
+};
+
+const StudentPathRedirect = () => {
+  const { courseId, path } = useParams();
+  return <Navigate to={`/course/\${courseId}/\${path}`} replace />;
+};
 
 const AppRoutes: React.FC = () => {
   const navigate = useNavigate();
@@ -388,50 +399,16 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* 이전 URL 경로 리디렉션 - 동적 매개변수 올바르게 처리 */}
+      {/* 이전 URL 경로 리디렉션 - 단순 경로는 직접 처리 */}
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
       <Route path="/assessments/pre-quiz" element={<Navigate to="/instructor/assessments/pre-quiz" replace />} />
       <Route path="/assessments/post-quiz" element={<Navigate to="/instructor/assessments/post-quiz" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
       
-      {/* 교육생 페이지 리디렉션 - useParams 대신 useMatch 활용 */}
-      <Route 
-        path="/student/:courseId" 
-        element={
-          <Navigate 
-            to={location => `/course\${location.pathname.substring(8)}`} 
-            replace 
-          />
-        } 
-      />
-      <Route 
-        path="/student/:courseId/survey" 
-        element={
-          <Navigate 
-            to={location => `/course/\${location.pathname.split('/')[2]}/survey`}
-            replace 
-          />
-        } 
-      />
-      <Route 
-        path="/student/:courseId/pre-quiz" 
-        element={
-          <Navigate 
-            to={location => `/course/\${location.pathname.split('/')[2]}/pre-quiz`}
-            replace 
-          />
-        } 
-      />
-      <Route 
-        path="/student/:courseId/post-quiz" 
-        element={
-          <Navigate 
-            to={location => `/course/\${location.pathname.split('/')[2]}/post-quiz`}
-            replace 
-          />
-        } 
-      />
+      {/* 교육생 페이지 리디렉션 - 별도 컴포넌트 사용 */}
+      <Route path="/student/:courseId" element={<StudentHomeRedirect />} />
+      <Route path="/student/:courseId/:path" element={<StudentPathRedirect />} />
 
       {/* 404 라우트 */}
       <Route path="*" element={<Navigate to="/" replace />} />
