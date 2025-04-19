@@ -55,7 +55,7 @@ const Header: React.FC = () => {
           type: 'menu-dropdown',
           text: i18n.language === 'ko' ? '한국어' : 'English',
           iconName: 'settings',
-          items: [ㅌㅂ
+          items: [
             { id: 'en', text: 'English' },
             { id: 'ko', text: '한국어' }
           ],

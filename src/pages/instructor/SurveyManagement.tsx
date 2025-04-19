@@ -1,142 +1,136 @@
-import React from 'react';
-import {
-  Container,
-  Header,
+import React, { useState } from 'react';
+import { 
+  Button, 
+  Container, 
+  Header, 
+  Select, 
   SpaceBetween,
-  Table,
-  Box,
-  Button,
-  Select,
   FormField,
-  Tabs
+  Modal,
+  Spinner,
+  Box
 } from '@cloudscape-design/components';
-import MainLayout from '../../components/MainLayout';
+import { post } from 'aws-amplify/api';
+import { SelectProps } from '@cloudscape-design/components';
 
-const SurveyManagement: React.FC = () => {
+// API 응답 타입 정의
+interface Question {
+  question: string;
+  options: string[];
+  correctAnswer: string | number;
+}
+
+interface QuizGenerationResponse {
+  questions: Question[];
+}
+
+// 타입 가드 함수
+function isQuizGenerationResponse(obj: unknown): obj is QuizGenerationResponse {
   return (
-    <MainLayout title="Survey Management">
-      <Container
-        header={
-          <Header
-            variant="h2"
-            description="Create and manage pre-course surveys"
-            actions={<Button variant="primary">Create New Survey</Button>}
-          >
-            Survey Management
-          </Header>
+    typeof obj === 'object' && 
+    obj !== null && 
+    'questions' in obj && 
+    Array.isArray((obj as any).questions)
+  );
+}
+
+export default function PreQuizManagement() {
+  const [selectedCourse, setSelectedCourse] = useState<SelectProps.Option | null>(null);
+  const [courses, setCourses] = useState<SelectProps.Option[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
+  
+  // AI로 설문조사 생성하기
+  const generateQuizWithAI = async () => {
+    if (!selectedCourse) return;
+    
+    setLoading(true);
+    setShowAiModal(true);
+    
+    try {
+      const response = await post({
+        apiName: 'quizApi',
+        path: '/generate-quiz',
+        options: {
+          body: JSON.stringify({
+            courseId: selectedCourse.value,
+            quizType: 'pre',
+            questionCount: 10
+          })
         }
-      >
-        <SpaceBetween size="l">
-          <FormField label="Select Course Session">
-            <Select
-              options={[
-                { label: 'AWS Cloud Practitioner - April Cohort', value: '1' },
-                { label: 'AWS Solutions Architect - May Cohort', value: '2' }
-              ]}
-              selectedOption={null}
-              placeholder="Choose a session"
-            />
-          </FormField>
-          
-          <Tabs
-            tabs={[
-              {
-                id: 'questions',
-                label: 'Survey Questions',
-                content: (
-                  <Table
-                    columnDefinitions={[
-                      {
-                        id: "questionNumber",
-                        header: "#",
-                        cell: item => item.id
-                      },
-                      {
-                        id: "question",
-                        header: "Question",
-                        cell: item => item.question
-                      },
-                      {
-                        id: "type",
-                        header: "Type",
-                        cell: item => item.type
-                      },
-                      {
-                        id: "required",
-                        header: "Required",
-                        cell: item => item.required ? 'Yes' : 'No'
-                      },
-                      {
-                        id: "actions",
-                        header: "Actions",
-                        cell: () => (
-                          <SpaceBetween size="xs" direction="horizontal">
-                            <Button variant="link">Edit</Button>
-                            <Button variant="link">Delete</Button>
-                          </SpaceBetween>
-                        )
-                      }
-                    ]}
-                    items={[
-                      { id: '1', question: 'How many years of experience do you have with AWS?', type: 'Multiple Choice', required: true },
-                      { id: '2', question: 'Which AWS services have you used before?', type: 'Checkbox', required: true },
-                      { id: '3', question: 'What are your learning objectives for this course?', type: 'Text', required: true },
-                      { id: '4', question: 'How would you rate your current knowledge of cloud computing?', type: 'Rating', required: false }
-                    ]}
-                    loadingText="Loading survey questions"
-                    empty={
-                      <Box textAlign="center" color="inherit">
-                        <b>No survey questions found</b>
-                        <Box padding={{ bottom: "s" }} variant="p" color="inherit">
-                          Create questions to build your survey.
-                        </Box>
-                      </Box>
-                    }
-                  />
-                )
-              },
-              {
-                id: 'results',
-                label: 'Survey Results',
-                content: (
-                  <Box padding="l">
-                    <p>Select a course session to view survey results.</p>
-                  </Box>
-                )
-              },
-              {
-                id: 'settings',
-                label: 'Survey Settings',
-                content: (
-                  <SpaceBetween size="m">
-                    <FormField label="Survey Title">
-                      <input type="text" value="Pre-course Knowledge Assessment" readOnly />
-                    </FormField>
-
-                    <FormField label="Introduction Text">
-                      <textarea
-                        rows={3}
-                        value="This survey helps us understand your background and tailor the course to your needs. Your responses are confidential."
-                        readOnly
-                      />
-                    </FormField>
-
-                    <FormField label="Completion Message">
-                      <textarea
-                        rows={3}
-                        value="Thank you for completing the survey! We look forward to seeing you in class."
-                        readOnly
-                      />
-                    </FormField>
-                  </SpaceBetween>
-                )
-              }
-            ]}
+      }).response;
+      
+      // 안전한 타입 처리
+      const jsonData: unknown = await response.body.json();
+      
+      // 타입 가드로 응답 형식 검증
+      if (isQuizGenerationResponse(jsonData)) {
+        setGeneratedQuestions(jsonData.questions);
+      } else {
+        console.error('응답 데이터가 예상 형식과 일치하지 않음:', jsonData);
+        setGeneratedQuestions([]);
+      }
+    } catch (error) {
+      console.error('설문조사 생성 오류:', error);
+      setGeneratedQuestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <SpaceBetween size="l">
+      <Container header={<Header variant="h2">사전 설문조사 관리</Header>}>
+        <FormField label="과정 선택">
+          <Select
+            selectedOption={selectedCourse}
+            onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
+            options={courses}
+            placeholder="과정 선택"
           />
+        </FormField>
+        
+        <SpaceBetween direction="horizontal" size="xs">
+          <Button variant="primary">설문조사 만들기</Button>
+          <Button 
+            onClick={generateQuizWithAI}
+            iconName="add-plus"
+          >
+            AI로 자동 생성
+          </Button>
         </SpaceBetween>
       </Container>
-    </MainLayout>
+      
+      <Modal
+        visible={showAiModal}
+        onDismiss={() => setShowAiModal(false)}
+        header="AI 설문조사 자동 생성"
+        size="large"
+      >
+        {loading ? (
+          <Box textAlign="center" padding="l">
+            <Spinner />
+            <p>과정 자료를 분석하여 설문조사를 생성하고 있습니다...</p>
+          </Box>
+        ) : (
+          <SpaceBetween size="l">
+            <p>생성된 {generatedQuestions.length}개의 질문이 있습니다. 사용할 질문을 선택하거나 수정할 수 있습니다.</p>
+            
+            {/* 생성된 질문 목록 표시 */}
+            {generatedQuestions.map((q, index) => (
+              <div key={index}>
+                <p><strong>질문 {index+1}:</strong> {q.question}</p>
+              </div>
+            ))}
+            
+            <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+              <Button onClick={() => setShowAiModal(false)}>취소</Button>
+              <Button variant="primary">적용하기</Button>
+            </SpaceBetween>
+          </SpaceBetween>
+        )}
+      </Modal>
+    </SpaceBetween>
   );
-};
-
-export default SurveyManagement;
+}

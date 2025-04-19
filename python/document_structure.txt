@@ -1,0 +1,1123 @@
+0: Instuctor-led Training (ILT)
+1: Instructor-led Training (ILT) Overview	3
+2: Advanced AWS Well-Architected Best Practices	7
+3: Amazon SageMaker Studio for Data Scientists	10
+4: Architecting on AWS	13
+5: AWS Cloud Essentials for Business Leaders	18
+6: AWS Cloud Practitioner Essentials	20
+7: AWS Migration Essentials	24
+8: AWS Security Essentials	26
+9: AWS Technical Essentials	28
+10: AWS Well-Architected Best Practices	31
+11: AWS Well-Architected Best Practices (Custom)	33
+12: Building Batch Data Analytics Solutions on AWS	35
+13: Building Data Analytics Solutions Using Amazon Redshift	38
+14: Building Data Lakes on AWS	41
+15: Build Modern Applications with AWS NoSQL Databases	44
+16: Building Streaming Data Analytics Solutions on AWS	47
+17: Cloud Operations on AWS (구 Systems Operations on AWS)	50
+18: Data Warehousing on AWS	54
+19: Designing and Implementing Storage on AWS	57
+20: Developing Generative AI Applications on AWS	61
+21: Developing on AWS	65
+22: Developing Serverless Solutions on AWS	71
+23: DevOps Engineering on AWS	76
+24: Generative AI Essentials on AWS	79
+25: Migrating to AWS	82
+26: MLOps Engineering on AWS	86
+27: Networking Essentials for Cloud Applications on AWS	90
+28: Practical Data Science with Amazon SageMaker	93
+29: Practical IaC on AWS with Terraform	96
+30: Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS)	99
+31: Security Engineering on AWS	103
+32: Digital Classroom
+33: Digital Classroom Overview	107
+34: Digital Classroom – Architecting on AWS	109
+35: Digital Classroom - AWS Security Best Practices	116
+36: Digital Classroom – AWS Security Essentials	119
+37: Digital Classroom - AWS Well-Architected Best Practices	122
+38: Digital Classroom – AWS Cloud Technical Essentials	125
+39: Digital Classroom – Cloud Operations on AWS	130
+40: Digital Classroom - Developing Generative AI Applications on AWS	137
+41: Digital Classroom – Developing on AWS	141
+42: Digital Classroom - Developing Serverless Solutions on AWS (제공 예정 – 2025년)	148
+43: Digital Classroom – DevOps Engineering on AWS	149
+44: Digital Classroom - Generative AI for Executives (제공 예정 – 2025년)	155
+45: Digital Classroom - Planning and Designing Databases on AWS	157
+46: Digital Classroom - Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS) (제공 예정 – 2025년)	163
+47: Digital Classroom - Security Engineering on AWS	164
+48: Digital Classroom – The Machine Learning Pipeline on AWS (제공 예정 – 2025년)	169
+50: Instructor-led Training (ILT) Overview
+51: 실습 환경에서 팀으로부터 수요가 많은 클라우드 기술을 가르치는 강사에게 오프라인 및 가상 교육을 받을 수 있습니다.
+52: 강의실 교육은 프레젠테이션, 동료와의 토론 및 대화형 실습을 혼합하여 새로운 클라우드 기술을 직접 경험할 수 있는 기회를 팀에게 제공합니다. 또한 AWS에서는 귀사의 팀이 원하는 시기에 원하는 장소에서 새로운 클라우드 기술을 구축하고 최신 서비스에 대해 배울 수 있도록 수백 개의 디지털 교육 과정도 제공합니다.
+55: Advanced AWS Well-Architected Best Practices
+56: [SECTION] 과정 설명
+57: 실무 위주의 본 고급 기술 수준 강사 주도형 교육에서는 효과적이고 효율적인 AWS Well-Architected Framework 검토를 실시하는 데 도움이 되는 Amazon Web Services(AWS) 모범 사례를 심층적으로 분석합니다. 이 과정에서는 검토를 준비하는 방법, 검토를 실행하는 방법, 검토 후 지침을 받는 방법을 포함하여 각 검토 단계를 다룹니다. 이 과정은 AWS 고객 및 파트너를 위해 설계되었습니다. 참가자는 이 과정에 대한 200 레벨 중급 선행 과정에서 다루는 AWS 개념, 용어, 서비스 및 도구에 익숙해야 합니다.
+58: 이 과정은 위험 요소의 우선순위 파악 및 솔루션 제시에 관한 AWS Well-Architected Framework 검토 시뮬레이션과 강사 주도형 그룹 연습/토론을 제공합니다. 과정의 콘텐츠는AWS Well-Architected Tool을 사용하여 고위험 및 중위험 문제에 대한 제안을 준비하는 방법에 중점을 둡니다.
+60: [SECTION] 과정 목표
+61: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+62: 워크로드 정의 및 주요 개념
+63: AWS Well-Architected Framework 검토 단계, 프로세스, 모범 사례 및 안티 패턴
+64: 고위험 및 중위험 파악
+65: AWS Well-Architected 워크플로에 대한 개선 우선순위 지정
+66: AWS Well-Architected Framework 백서, 실습, AWS 솔루션 라이브러리의 사전 구축된 솔루션, AWS Well-Architected Independent Software Vendor(ISV) 및 AWS Well-Architected 파트너 프로그램(WAPP) 찾기 및 활용
+68: [SECTION] 수강 대상
+69: 이 과정의 대상은 다음과 같습니다.
+70: 솔루션스 아키텍트
+71: 클라우드 실무자
+72: 데이터 엔지니어
+73: 데이터 과학자
+74: 개발자
+76: [SECTION] 수강 전 권장 사항
+77: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+78: AWS Well-Architected Best Practices Intermediate - L200 과정 수강
+80: [SECTION] 등록
+81: www.aws.training/training/schedule?courseId=94643
+84: Amazon SageMaker Studio for Data Scientists
+85: [SECTION] 과정 설명
+86: Amazon SageMaker Studio는 데이터 사이언티스트가 ML 전용으로 구축된 광범위한 기능 세트를 통합하여 기계 학습(ML) 모델을 신속하게 준비, 구축, 교육, 배포 및 모니터링할 수 있도록 지원합니다. 이 교육 과정에서는 숙련된 데이터 사이언티스트가 SageMaker Studio의 일부인 도구를 사용하여 ML 라이프사이클의 모든 단계에서 생산성을 개선할 수 있는 방법을 학습합니다..
+88: [SECTION] 과정 목표
+89: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+90: Amazon SageMaker Studio를 사용하여 ML 솔루션 준비, 구축, 교육, 배포 및 모니터링 가속화
+91: [SECTION] 수강 대상
+92: 이 과정의 대상은 다음과 같습니다.
+93: ML 및 딥 러닝 기초에 능숙한 경험 많은 데이터 사이언티스트. 관련 경험으로는 ML 프레임워크 사용, Python 프로그래밍, 모델 구축, 교육, 조정 및 배포 프로세스가 포함됩니다.
+94: [SECTION] 수강 전 권장 사항
+95: 이 과정을 수강하려면 다음 AWS 과정을 완료하는 것이 좋습니다.
+96: AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)
+97: [SECTION] 등록
+98: www.aws.training/training/schedule?courseId=95049
+102: Architecting on AWS
+103: [SECTION] 과정 설명
+104: 이 과정에서는 복원력 있고 안전하며 가용성이 뛰어난 IT 솔루션을 AWS 클라우드에 구축하기 위한 서비스와 기능에 대해 배웁니다. 아키텍처 솔루션은 산업, 애플리케이션 유형, 비즈니스 규모에 따라 다릅니다. AWS 공인 강사들이 AWS Well-Architected Framework를 사용하는 모범 사례를 강조하고, 실제 시나리오를 기반으로 최적의 IT 솔루션을 설계하는 프로세스를 안내합니다. 이 모듈에서는 계정 보안, 네트워킹, 컴퓨팅, 스토리지, 데이터베이스, 모니터링, 자동화, 컨테이너, 서버리스 아키텍처, 엣지 서비스, 백업 및 복구를 중점적으로 다룹니다. 과정이 끝나면 솔루션 구축을 연습하고 배운 내용을 자신 있게 적용할 수 있습니다.
+106: [SECTION] 과정 목표
+107: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+108: AWS 아키텍팅 기본 관행을 파악합니다.
+109: 실습 환경에서 AWS 콘솔, Command Line Interface(CLI), CloudFormation 템플릿 등 AWS 관리 도구를 사용하는 방법을 살펴봅니다.
+110: 정책을 사용한 계정 보안 적용을 검토합니다.
+111: 프라이빗 서브넷과 퍼블릭 서브넷이 포함된 탄력적이고 안전한 가상 네트워크를 구축하는 요소를 파악합니다.
+112: AWS 핵심 네트워킹 인프라 구축을 연습합니다.
+113: Virtual Private Cloud(VPC) 서브넷에 대한 계층적 보안 접근 방식 전략을 결정합니다.
+114: 비즈니스 사용 사례에 따라 적절한 컴퓨팅 리소스를 선택하는 전략을 파악합니다.
+115: 실습 환경에서 VPC를 구축하고 Elastic Compute Cloud(EC2) 인스턴스를 추가하는 연습을 합니다.
+116: 생성한 VPC에 Amazon Relational Database Service(RDS) 인스턴스와 Application Load Balancer(ALB)를 설치하는 연습을 합니다.
+117: 비즈니스 시나리오를 기반으로 AWS 스토리지 제품과 서비스를 비교 및 대조합니다.
+118: 비즈니스 요구를 기준으로 다양한 AWS 데이터베이스 서비스 유형을 비교 및 대조합니다.
+119: 실습에서 가용성이 뛰어나고 자동 크기 조정되는 데이터베이스 계층을 구축하는 연습을 합니다.
+120: AWS 모니터링 솔루션의 비즈니스 가치를 살펴봅니다.
+121: 사용량 및 요구 사항을 기준으로 모니터링, 이벤트 중심 로드 밸런싱, Auto Scaling 응답의 역할을 파악합니다.
+122: 인프라 구축, 유지 관리, 발전에 도움이 되는 AWS 자동화 도구를 파악하고 논의합니다.
+123: 사용 사례를 기반으로 네트워크 피어링, VPC 엔드포인트, 게이트웨이, 라우팅 솔루션에 대해 논의합니다.
+124: 인프라를 확장하고 보호하기 위한 하이브리드 네트워킹 구성에 대해 논의합니다.
+125: 가용성이 뛰어난 애플리케이션을 대규모로 구동하기 위한 효과적인 분리 전략으로서 마이크로서비스의 이점에 대해 논의합니다.
+126: 인프라에 구애 받지 않는 휴대용 애플리케이션 환경의 신속한 구현을 위해 AWS 컨테이너 서비스를 살펴봅니다.
+127: 비즈니스 사례에 따른 AWS 서버리스 서비스의 비즈니스 및 보안 이점을 파악합니다.
+128: 실습 환경에서 서버리스 인프라 구축을 연습합니다.
+129: AWS 엣지 서비스에서 대기 시간 및 보안을 해결하는 방법에 대해 논의합니다.
+130: 실습 환경에서 S3 백엔드를 사용하여 CloudFront 배포를 구축하는 연습을 합니다.
+131: 복원력과 비즈니스 연속성을 보장하기 위한 AWS 백업, 복구 솔루션, 모범 사례를 살펴봅니다.
+132: 프로젝트를 기반으로 한 강사 주도 실습에서 비즈니스 문제에 따라 가용성이 뛰어나고 안전한 클라우드 아키텍처를 구축합니다.
+134: [SECTION] 수강 대상
+135: 이 과정의 수강 대상은 AWS 아키텍팅에 대한 이해를 높이려는 솔루션스 아키텍트, 솔루션-설계 엔지니어, 개발자 및 AWS 솔루션스 아키텍트-어소시에이트 자격증을 준비하는 개인입니다.
+136: [SECTION] 수강 전 권장 사항
+137: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+138: AWS Cloud Practitioner Essentials 또는
+139: 분산 시스템에 대한 실무 지식
+140: 일반적인 네트워킹 개념에 대한 지식
+141: IP 주소 지정에 대한 지식
+142: 멀티 티어 아키텍처에 대한 실무 지식
+143: 클라우드 컴퓨팅 개념에 대한 지식
+145: [SECTION] 등록
+146: www.aws.training/training/schedule?courseId=10002
+150: AWS Cloud Essentials for Business Leaders
+151: [SECTION] 과정 설명
+152: 이 과정은 클라우드 컴퓨팅의 기초 개념을 전반적으로 이해하고자 하는 비즈니스 리더를 위한 과정입니다. 클라우드 전략을 통해 비즈니스 목표를 충족하는 방법을 배웁니다.
+153: 이 과정에서는 비용 및 가치 영향을 평가하여 AWS에서 구축할 때의 비즈니스 가치를 이해하는 데 도움이 되는 Cloud Value Framework, 고객 사례 및 업계 추세를 통해 클라우드의 비즈니스 가치를 심층적으로 살펴봅니다.
+155: [SECTION] 과정 목표
+156: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+157: 비지니스 전환에서 조직의 정보 기술(IT)이 해야 하는 역할
+158: 산업 전반의 클라우드 사용에 대한 고객 가치 제안
+159: 클라우드 비지니스 모델
+160: 클라우드 컴퓨팅의 주요 보안 사례
+161: Cloud Value Framework를 사용하여 클라우드의 비지니스 가치 설정
+162: [SECTION] 수강 대상
+163: 이 과정의 대상은 다음과 같습니다.
+164: IT 리더
+165: 경영진
+166: 사업부 (LoB) 소유자
+167: [SECTION] 수강 전 권장 사항
+168: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+169: 특별한 사전 경험은 필요하지 않습니다.
+170: [SECTION] 등록
+171: www.aws.training/training/schedule?courseId=10004
+174: AWS Cloud Practitioner Essentials
+175: [SECTION] 과정 설명
+176: 이 기초 레벨 과정은 특정 기술 역할과 관계없이 AWS 클라우드를 전반적으로 이해하고자 하는 개인을 대상으로 합니다. AWS 클라우드에 대한 지식을 쌓을 수 있도록 AWS 클라우드 개념, AWS 서비스, 보안, 아키텍처, 요금 및 지원에 대해 배우게 됩니다.
+177: 이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.
+179: [SECTION] 과정 목표
+180: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+181: 클라우드가 무엇이고 어떻게 작동하는지 정의
+182: 클라우드 컴퓨팅과 배포 모델의 차이를 구분
+183: AWS 클라우드의 기본적인 글로벌 인프라와 6가지 장점을 설명
+184: 컴퓨팅, 네트워크, 데이터베이스, 스토리지 등 핵심 AWS 서비스의 사례를 설명
+185: Well-Architected 프레임워크를 설명
+186: 공동 책임 모델 설명
+187: AWS 클라우드를 이용한 보안 서비스 설명
+188: AWS 플랫폼의 결제, 계정 관리, 요금 모델 정의
+190: [SECTION] 수강 대상
+191: 이 과정의 대상은 다음과 같습니다.
+192: 영업 및 마케팅
+193: 법무
+194: 비즈니스 애널리스트
+195: 프로젝트 관리자
+196: AWS 아카데미 학생
+197: IT 전문가
+199: [SECTION] 수강 전 권장 사항
+200: 이 과정을 수강하기 위해서는 다음 조건이 갖춰져 있는 것이 좋습니다.
+201: 일반적인 IT 비지니스 지식
+202: 일반적인 IT 기술 지식
+204: [SECTION] 등록
+205: www.aws.training/SessionSearch?pageNumber=1&courseId=17675
+209: AWS Migration Essentials
+210: [SECTION] 과정 설명
+211: 이 과정은 솔루션스 아키텍트에게 AWS 클라우드로의 리프트 앤 시프트 마이그레이션을 성공적으로 계획하고 수행하는 데 필요한 기초 지식을 제공하기 위한 것입니다. 이 과정에서는 다양한 AWS 도구 및 서비스를 사용하여 마이그레이션을 검색, 계획, 수행 및 추적하는 방법론을 학습합니다
+213: [SECTION] 과정 목표
+214: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+215: Amazon Web Services(AWS)에서 제공하는 평가 도구 및 서비스를 사용하여 클라우드 준비 상태 및 마이그레이션 전략을 결정
+216: 마이그레이션 계획 및 활용과 관련된 주요 작업을 이해
+217: 데이터 및 데이터베이스 마이그레이션에 필요한 Amazon Web Services(AWS) 서비스, 리소스 및 도구를 개략적으로 설명
+218: 애플리케이션 마이그레이션에 필요한 Amazon Web Services(AWS) 서비스, 리소스 및 도구를 개략적으로 설명
+220: [SECTION] 수강 대상
+221: 이 과정의 대상은 다음과 같습니다.
+222: 클라우드 마이그레이션에 대한 지식이 제한적이거나 전혀 없는 기술 부문 고객(솔루션스 아키텍트, 개발자 및 관리자)
+224: [SECTION] 수강 전 권장 사항
+225: 이 과정을 수강하기 위해서는 다음 과정을 수료하는 것이 좋습니다.
+226: AWS Technical Essentials
+228: [SECTION] 등록
+229: www.aws.training/SessionSearch?pageNumber=1&courseId=123366
+231: AWS Security Essentials
+232: 교육 과정 설명
+233: 이 교육 과정에서는 AWS 액세스 제어, 데이터 암호화 방법, AWS 인프라에 대한 네트워크 액세스 보안을 유지하는 방법을 비롯하여 기본적인 AWS 클라우드 보안 개념에 대해 알아봅니다. AWS 클라우드에서의 고객의 보안 책임을 설명하고 사용 가능한 다양한 보안 지향 AWS 서비스를 간략하게 소개합니다.
+234: 교육 과정 목표
+235: 이 교육 과정에서 배우게 될 내용은 다음과 같습니다.
+236: AWS 클라우드 사용에 따른 보안 이점 및 책임 파악
+237: AWS의 액세스 제어 및 액세스 관리 기능 설명
+238: 데이터를 보호하는 다양한 방법 이해
+239: AWS 리소스에 대한 네트워크 액세스를 보호하는 방법 설명
+240: 모니터링 및 인시던트 대응에 사용할 수 있는 AWS 서비스 식별
+241: [SECTION] 수강 대상
+242: 이 교육 과정의 대상은 다음과 같습니다.
+243: 클라우드 보안 업무에 관심이 있는 IT 비즈니스 전문가
+244: AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가
+246: [SECTION] 등록
+247: https://www.aws.training/SessionSearch?pageNumber=1&courseId=44517
+250: AWS Technical Essentials
+251: [SECTION] 과정 설명
+252: AWS Technical Essentials에서는 필수 AWS 서비스와 흔히 사용되는 솔루션을 소개합니다. 이 과정에서는 컴퓨팅, 데이터베이스, 스토리지, 네트워킹, 모니터링, 보안과 관련된 기초적인 AWS 개념에 대해 다룹니다. 먼저 과정 내의 실습 환경을 통해 AWS에서 작업을 수행해 보게 됩니다. 이 과정에서는 AWS 서비스를 더욱 자세히 파악하려면 알아 두어야 하는 개념을 다룹니다. 이러한 개념을 숙지하면 적절한 정보를 토대로 하여 비즈니스 요구 사항을 충족하는 솔루션을 결정할 수 있습니다. 이 과정을 진행하면 가용성, 내결함성, 확장성, 비용 효율성이 우수한 클라우드 솔루션을 구축, 비교, 적용하는 방법 관련 정보를 파악할 수 있습니다.
+254: [SECTION] 과정 목표
+255: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+256: AWS 서비스 관련 용어와 개념의 설명
+257: AWS Management Console 사용법
+258: AWS의 보안 조치와 AWS Identity and Access Management(IAM) 관련 주요 개념의 설명
+259: Amazon Elastic Compute Cloud(Amazon EC2), AWS Lambda, Amazon Elastic Container Service(Amazon ECS), Amazon Elastic Kubernetes Service(Amazon EKS) 등의 여러 AWS 컴퓨팅 서비스 구분
+260: Amazon Relational Database Service(Amazon RDS), Amazon DynamoDB, Amazon Simple Storage Service(Amazon S3) 등의 AWS 데이터베이스 및 스토리지 서비스 파악
+261: AWS 네트워킹 서비스 살펴보기
+262: Amazon CloudWatch 모니터링 기능 액세스 및 구성
+264: [SECTION] 수강 대상
+265: 이 과정의 대상은 다음과 같습니다.
+266: 고객에게 AWS 서비스의 기술적인 이점을 설명해야 하는 직원
+267: AWS 사용을 시작하는 방법을 습득하려는 개별 사용자
+268: 시스템 운영 관리자
+269: Solutions Architect
+270: 개발자
+271: [SECTION] 수강 전 권장 사항
+272: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+273: IT 분야 근무 경험
+274: 일반적인 데이터 센터 아키텍처 및 구성 요소(서버, 네트워킹, 데이터베이스, 애플리케이션 등) 관련 기본 지식
+275: 이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨
+277: [SECTION] 등록
+278: www.aws.training/training/schedule?courseId=10012
+281: AWS Well-Architected Best Practices
+282: [SECTION] 과정 설명
+283: AWS Well-Architected Framework는 클라우드 중심으로 고객의 아키텍처에 대해 정보에 입각한 결정을 내리고 설계 결정에 따른 영향을 이해하는 데 도움이 됩니다. Well-Architected Framework를 사용하면 아키텍처에 존재하는 위험과 이를 완화하는 방법을 이해할 수 있습니다. 이 과정에서는 AWS Well-Architected Framework와 여섯 가지 핵심 요소에 대해 심층적으로 살펴봅니다. 이 과정에서는 Well-Architected Review 프로세스와 AWS Well-Architected Tool을 사용하여 검토를 완료하는 방법도 다룹니다.
+285: [SECTION] 과정 목표
+286: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+287: AWS Well-Architected Framework의 기능, 설계 원칙, 설계 핵심 요소 및 일반적인 용도 파악
+288: Well-Architected Framework의 각 핵심 요소에 설계 원칙, 주요 서비스 및 모범 사례 적용
+289: AWS Well-Architected Tool을 사용하여 Well-Architected Review 수행
+291: [SECTION] 수강 대상
+292: 이 과정의 대상은 다음과 같습니다.
+293: AWS 솔루션의 설계, 구축 및 실행에 관여하는 기술 전문가
+294: [SECTION] 수강 전 권장 사항
+295: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+296: 핵심 AWS 서비스에 대한 지식 (과정: AWS Cloud Practitioner Essentials)
+297: AWS 관리 인터페이스에 대한 지식 (과정: AWS Technical Essentials)
+298: 핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)
+300: [SECTION] 등록
+301: www.aws.training/training/schedule?courseId=83622
+303: AWS Well-Architected Best Practices (Custom)
+304: [SECTION] 과정 설명
+305: 이 교육 과정은 AWS Well-Architected Framework와 6개의 핵심 요소에 대한 심층 분석을 제공하도록 구성되었습니다. 또한 이 과정에서는 Well-Architected 검토 프로세스와 AWS Well-Architected Tool을 사용하여 검토를 완료하는 방법을 다룹니다.
+306: 이 과정은 원래 1 Day 과정이지만, 실습 중심의 과정으로 실습 시간 확대와 고객 사례를 기반으로 하는 아키텍처 모범 사례를 추가하여 2 Days 일정으로 조정한 커스텀 과정입니다.
+307: 이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.
+309: [SECTION] 과정 목표
+310: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+311: Well-Architected Framework의 특징, 설계 원칙, 설계 핵심 요소 및 일반적인 용도 파악
+312: Well-Architected Framework의 각 핵심 요소에 설계 원칙, 주요 서비스 및 모범 사례 적용
+313: Well-Architected Tool을 사용하여 Well-Architected 검토 수행
+315: [SECTION] 수강 대상
+316: 이 과정의 대상은 다음과 같습니다.
+317: AWS 솔루션의 설계, 구축 및 실행에 관여하는 기술 전문가
+318: [SECTION] 수강 전 권장 사항
+319: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+320: 핵심 AWS 서비스에 대한 지식 (과정: AWS Cloud Practitioner Essentials)
+321: AWS 관리 인터페이스에 대한 지식 (과정: AWS Technical Essentials)
+322: 핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)
+324: [SECTION] 등록
+325: www.aws.training/training/schedule?courseId=83622
+326: Building Batch Data Analytics Solutions on AWS
+327: [SECTION] 과정 설명
+328: 이 과정에서는 엔터프라이즈급 Apache Spark 및 Apache Hadoop 관리형 서비스인 Amazon EMR을 통해 배치 데이터 분석 솔루션을 빌드하는 방법을 학습합니다. Amazon EMR를 Apache Hive, Hue, HBase 등의 오픈 소스 프로젝트와 통합하는 방법, AWS Glue 및 AWS Lake Formation 등의 AWS 서비스와 통합하는 방법을 알아봅니다. 이 과정에서는 Spark 및 Hadoop의 맥락에서 데이터 수집, 흡수, 카탈로그화, 저장, 처리 구성 요소를 다룹니다. 수강생은 EMR Notebooks를 사용하여 분석 및 머신러닝 워크로드를 지원하는 방법을 배웁니다. 또한 Amazon EMR 운영에 보안, 성능, 비용 관리 모범 실무를 적용하는 방법도 배우게 됩니다.
+330: [SECTION] 과정 목표
+331: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+332: 데이터 웨어하우스, 데이터 레이크, 현대적 데이터 아키텍처의 기능 및 이점 비교
+333: 배치 데이터 분석 솔루션 설계 및 구현
+334: 압축을 포함한 적절한 기술을 파악하고 적용하여 데이터 스토리지 최적화
+335: 데이터 흡수, 변환 및 저장을 위한 적절한 옵션 선택 및 배포
+336: 특정 비즈니스 용례에 적합한 인스턴스 및 노드 유형, 클러스터, 오토스케일링 및 네트워크 토폴로지 선택
+337: 데이터 저장 및 처리가 실행 가능한 비즈니스 인사이트 획득에 필요한 분석 및 시각화 메커니즘에 미치는 영향 이해
+338: 저장 데이터 및 전송 데이터 보안
+339: 분석 워크로드를 모니터링하여 문제 파악 및 해결
+340: 비용 관리 모범 실무 적용
+341: [SECTION] 수강 대상
+342: 이 과정의 대상은 다음과 같습니다.
+343: 데이터 플랫폼 엔지니어
+344: 데이터 분석 파이프라인을 구축하고 관리하는 아키텍트 및 운영자
+345: [SECTION] 수강 전 권장 사항
+346: 본 과정은 Apache Spark 또는 Apache Hadoop 등의 오픈 소스 데이터 프레임워크를 1년 이상 관리한 경험이 있는 수강생에게 도움이 됩니다.
+347: Apache Hadoop을 다시 공부하고 싶은 분들께는 AWS Hadoop Fundamentals 과정을 권장합니다.
+349: 이 과정을 수강하기 전에 다음 조건을 갖추는 것을 권장합니다.
+350: AWS Technical Essentials 또는 Architecting on AWS 이수
+351: Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수
+353: [SECTION] 등록
+354: www.aws.training/training/schedule?courseId=91270
+357: Building Data Analytics Solutions Using Amazon Redshift
+358: [SECTION] 과정 설명
+359: 이 과정에서는 클라우드 기반 데이터 웨어하우스 서비스인 Amazon Redshift를 사용하여 데이터 분석 솔루션을 구축합니다. 이 과정에서는 분석 파이프라인의 데이터 수집, 흡수, 카탈로그화, 스토리지, 처리 구성 요소를 중점적으로 다룹니다. Amazon Redshift를 데이터 레이크와 결합하여 분석 워크로드와 머신러닝 워크로드를 모두 지원하는 방법을 배우게 됩니다. 또한 Amazon Redshift 운영에 보안, 성능, 비용 관리 모범 실무를 적용하는 방법도 배웁니다.
+361: [SECTION] 과정 목표
+362: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+363: 데이터 웨어하우스, 데이터 레이크, 현대적 데이터 아키텍처의 기능 및 이점 비교
+364: 데이터 웨어하우스 분석 솔루션 설계 및 구현
+365: 압축을 포함한 적절한 기술을 식별하고 적용하여 데이터 스토리지 최적화
+366: 데이터 흡수, 변환 및 저장을 위한 적절한 옵션 선택 및 배포
+367: 특정 비즈니스 용례에 적합한 인스턴스 및 노드 유형, 클러스터, 오토 스케일링 및 네트워크 토폴로지 선택
+368: 데이터 스토리지 및 처리가 실행 가능한 비즈니스 인사이트 획득에 필요한 분석 및 시각화 메커니즘에 미치는 영향 이해
+369: 저장 데이터 및 전송 데이터 보안
+370: 분석 워크로드를 모니터링하여 문제 식별 및 해결
+371: 비용 관리 모범 실무 적용
+372: [SECTION] 수강 대상
+373: 이 과정의 대상은 다음과 같습니다.
+374: 데이터 웨어하우스 엔지니어
+375: 데이터 플랫폼 엔지니어
+376: 데이터 분석 파이프라인을 구축하고 관리하는 아키텍트 및 운영자
+378: [SECTION] 수강 전 권장 사항
+379: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+380: AWS Technical Essentials 또는 Architecting on AWS 이수
+381: Building Data Lakes on AWS 이수
+383: [SECTION] 등록
+384: https://www.aws.training/SessionSearch?pageNumber=1&courseId=80716
+387: Building Data Lakes on AWS
+388: [SECTION] 과정 설명
+389: 이 과정에서는 정형 데이터와 비정형 데이터 분석을 모두 지원하는 운영 데이터 레이크를 구축하는 방법에 대해 알아봅니다. 데이터 레이크 생성 관련 서비스의 구성 요소와 기능에 대해 배우게 됩니다. AWS Lake Formation을 이용해 데이터 레이크를 구축하고 AWS Glue를 이용해 데이터 카탈로그를 만들며 Amazon Athena를 이용해 데이터를 분석합니다. 강의와 실습을 통해 여러 일반적인 데이터 레이크 아키텍처를 살펴보면서 지식을 심화합니다.
+391: [SECTION] 과정 목표
+392: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+393: 데이터 레이크 계획 및 설계에 데이터 레이크 방법론 적용
+394: AWS 데이터 레이크 구축에 필요한 구성 요소 및 서비스 설명
+395: 적절한 권한을 바탕으로 데이터 레이크 보호
+396: 데이터 레이크에 있는 데이터 수집, 저장, 변환
+397: 데이터 레이크 내의 데이터 쿼리, 분석, 시각화
+398: [SECTION] 수강 대상
+399: 이 과정의 대상은 다음과 같습니다.
+400: 데이터 플랫폼 엔지니어
+401: 솔루션스 아키텍트
+402: IT 전문가
+403: [SECTION] 수강 전 권장 사항
+404: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+405: AWS Technical Essentials 강의실 교육 과정 수료
+406: 데이터 분석 파이프라인 구축 경험 1년 이상 또는 Data Analytics Fundamentals 디지털 교육 과정 수료
+408: [SECTION] 등록
+409: https://www.aws.training/SessionSearch?pageNumber=1&courseId=65039
+412: Build Modern Applications with AWS NoSQL Databases
+413: [SECTION] 과정 설명
+414: 이 과정의 대상은 데이터 특징이 복합적이고 데이터베이스에 밀리초 성능이 필요한 애플리케이션을 개발하려는 개발자, 아키텍트 및 데이터베이스 엔지니어입니다. 이 과정에서는 AWS 목적별 데이터베이스를 사용하여 다양한 액세스 패턴과 실시간 크기 조정이 가능한 대표적인 현대적 애플리케이션을 빌드합니다. 강좌를 마치면 Amazon DynamoDB, Amazon DocumentDB(Mongo 호환) 및 Amazon ElastiCache for Redis의 고급 기능을 설명할 수 있습니다.
+416: [SECTION] 과정 목표
+417: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+418: AWS 목적별 NoSQL 데이터베이스를 사용하여 클라우드를 위한 현대적 애플리케이션 빌드
+419: 키-값, 문서 및 메모리 내 데이터 범주를 처리하는 AWS 목적별 데이터베이스를 사용하는 솔루션 설명
+420: 비즈니스 사용 사례를 분석하고 Amazon DynamoDB의 고급 기능을 적용하여 확장 가능 솔루션 구현
+421: 비즈니스 사용 사례를 분석하고 Amazon ElastiCache의 고급 기능을 적용하여 확장 가능 솔루션 구현
+422: 비즈니스 사용 사례를 분석하고 Amazon DocumentDB의 고급 기능을 적용하여 확장 가능 솔루션 구현
+423: 변경 스트림 및 AWS Lambda를 사용하여 이벤트 중심 아키텍처 구현
+424: Amazon CodeWhisperer를 사용하여 더 빠르게 솔루션을 빌드하는 방법 알아보기
+425: [SECTION] 수강 대상
+426: 이 과정의 대상은 다음과 같습니다.
+427: 데이터베이스 개발자
+428: Solutions Architect
+429: 데이터베이스 엔지니어
+430: [SECTION] 수강 전 권장 사항
+431: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+432: 클라우드 컴퓨팅 개념에 대한 지식
+433: 관계형 또는 NoSQL 데이터베이스의 데이터 모델링에 대한 지식
+434: Amazon DynamoDB 테이블 디자인 실무 경험
+435: Amazon DocumentDB 테이블 디자인 실무 경험
+436: ElastiCache for Redis 실무 경험
+437: AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식
+438: Python 스크립팅에 대한 지식
+440: [SECTION] 등록
+441: https://www.aws.training/SessionSearch?pageNumber=1&courseId=143472
+444: Building Streaming Data Analytics Solutions on AWS
+445: [SECTION] 과정 설명
+446: 이 과정에서는 Amazon Kinesis와 Amazon Managed Streaming for Apache Kafka(Amazon MSK)를 포함한 AWS 서비스를 사용하여 스트리밍 데이터 분석 솔루션을 구축하는 방법을 배웁니다. Amazon Kinesis는 확장성이 뛰어나고 내구성이 있는 실시간 데이터 스트리밍 서비스입니다. Amazon MSK는 안전하고 가용성이 뛰어난 완전관리형 Apache Kafka 서비스를 제공합니다. Kinesis와 Amazon MSK가 AWS Glue와 AWS Lambda 같은 AWS 서비스와 어떻게 통합되는지 알아봅니다. 이 과정에서는 데이터 분석 파이프라인의 스트리밍 데이터 수집, 스트림 스토리지, 스트림 처리 구성 요소를 다룹니다. 또한 보안, 성능, 비용 관리 모범 사례를 Kinesis 및 Amazon MSK 운영에 적용하는 방법도 알아봅니다.
+448: [SECTION] 과정 목표
+449: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+450: 현대적 데이터 아키텍처의 기능과 이점을 이해하고 AWS 스트리밍 서비스가 현대적 데이터 아키텍처에 어떻게 부합하는지 학습
+451: 스트리밍 데이터 분석 솔루션 설계 및 구현
+452: 압축, 샤딩, 파티셔닝 등 적절한 기법을 식별하고 적용하여 데이터 스토리지 최적화
+453: 실시간 및 준실시간 데이터 수집, 변환, 저장에 적합한 옵션 선택 및 배포
+454: 특정 비즈니스 사용 사례에 적합한 스트림, 클러스터, 주제, 크기 조정 방법, 네트워크 토폴로지 선택
+455: 데이터 스토리지 및 처리가 실행 가능한 비즈니스 인사이트 획득에 필요한 분석 및 시각화 메커니즘에 미치는 영향 이해
+456: 저장 스트리밍 데이터 및 전송 스트리밍 데이터 보호
+457: 분석 워크로드를 모니터링하여 문제 식별 및 해결
+458: 비용 관리 모범 사례 적용
+460: [SECTION] 수강 대상
+461: 이 과정의 대상은 다음과 같습니다.
+462: 데이터 엔지니어 및 아키텍트
+463: 실시간 애플리케이션과 스트리밍 데이터 분석 솔루션을 구축하고 관리하려는 개발자
+464: [SECTION] 수강 전 권장 사항
+465: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+466: 1년 이상의 데이터 분석 경험 또는 실시간 애플리케이션이나 스트리밍 분석 솔루션을 직접 구축한 경험. 스트리밍 개념 복습이 필요한 수강생에게는 Streaming Data Solutions on AWS 백서를 추천합니다.
+467: Architecting on AWS 또는 Data Analytics Fundamentals 이수
+468: Building Data Lakes on AWS 이수
+470: [SECTION] 등록
+471: https://www.aws.training/SessionSearch?pageNumber=1&courseId=111638
+474: Cloud Operations on AWS (구 Systems Operations on AWS)
+475: [SECTION] 과정 설명
+476: 이 과정에서는 클라우드 운영자와 클라우드 운영 기능을 수행하는 사용자를 대상으로 AWS에서 네트워크와 클라우드의 자동화 및 반복 가능한 배포를 관리하고 운영하는 방법을 학습합니다. 관련 서비스, 네트워크, 클라우드 설치, 구성, 자동화, 모니터링, 보안, 유지 관리, 문제 해결 등 클라우드 운영 기능에 대해 배우게 됩니다. 또한 이러한 기능과 관련된 특정 AWS 기능, 도구, 모범 사례도 다룹니다.
+477: [SECTION] 과정 목표
+478: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+479: Well-Architected Framework의 핵심 요소인 운영 우수성의 여러 단계를 지원하는 AWS 서비스 파악
+480: AWS 계정 및 조직과 AWS Identity and Access Management(IAM)를 사용하여 AWS 리소스에 대한 액세스 관리
+481: AWS Systems Manager, AWS CloudTrail, AWS Config 등 AWS 서비스를 사용하여 사용 중인 AWS 리소스의 인벤토리 유지 관리
+482: 메타데이터 태그, Amazon Machine Image(AMI), AWS Control Tower를 사용하여 AWS 클라우드 환경을 배포 및 유지 관리하는 리소스 배포 전략 개발
+483: AWS CloudFormation과 AWS Service Catalog 등 AWS 서비스를 사용하여 리소스 배포 자동화
+484: AWS 서비스를 사용하여 배포 및 패치 등 클라우드 운영 수명 주기 프로세스를 통해 AWS 리소스 관리
+485: Amazon Route 53과 Elastic Load Balancing 등 AWS 서비스를 사용한 트래픽 라우팅으로 대기 시간과 성능을 최적화하는 고가용성 클라우드 환경 구성
+486: AWS Auto Scaling 및 Amazon EC2 Auto Scaling을 구성하여 수요에 따라 클라우드 환경 확장
+487: Amazon CloudWatch 및 관련 기능(예: 경보, 대시보드, 위젯)을 사용하여 클라우드 환경 모니터링
+488: AWS CloudTrail 및 AWS Config 등 AWS 서비스를 사용하여 클라우드 환경에서 권한 관리 및 활동 추적
+489: Amazon Virtual Private Cloud(Amazon VPC)에 리소스를 배포하고, 필요한 Amazon VPC 연결을 설정하고, 서비스 중단으로부터 리소스 보호
+490: AWS 클라우드 환경에서 탑재 가능한 스토리지의 용도, 이점, 적절한 사용 사례 명시
+491: Amazon Simple Storage Service(Amazon S3)와 Amazon S3 Glacier 등 AWS 클라우드 객체 스토리지의 운영 특징 설명
+492: AWS Cost Explorer와 AWS Cost & Usage Report 같은 서비스를 사용하여 클라우드 비용을 수집, 최적화, 예측하는 데 도움이 되는 종합적 비용 모델 구축
+494: [SECTION] 수강 대상
+495: 이 과정의 대상은 다음과 같습니다.
+496: AWS 클라우드에서 작업하는 클라우드 관리자 및 운영자
+497: 클라우드 운영에 대한 지식을 쌓고 싶은 IT 업계 종사자
+498: [SECTION] 수강 전 권장 사항
+499: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+500: AWS Technical Essentials 과정을 성공적으로 이수
+501: 소프트웨어 개발 또는 시스템 관리와 관련된 경력
+502: 명령어에서 운영 체제를 능숙하게 유지 관리하는 능력(예: Linux 환경 또는 Windows의 cmd/PowerShell에서의 셸 스크립팅)
+503: 네트워킹 프로토콜(TCP/IP, HTTP)에 대한 기본 지식
+505: [SECTION] 등록
+506: www.aws.training/training/schedule?courseId=10020
+510: Data Warehousing on AWS
+511: [SECTION] 과정 설명
+512: AWS 기반 데이터 웨어하우징 과정에서는 AWS의 페타바이트 규모 데이터 웨어하우스인 Amazon Redshift를 사용하여 클라우드 기반 데이터 웨어하우징을 설계하기 위한 개념, 전략 및 모범 사례를 소개합니다. 본 과정에서는 Amazon DynamoDB, Amazon EMR, Amazon Kinesis, Amazon S3 같은 다른 AWS 서비스를 사용하여 데이터 웨어하우스를 위한 데이터를 수집, 저장, 준비하는 방법을 보여줍니다. 또한, 본 과정은 Amazon QuickSight를 사용하여 데이터에 대한 분석을 수행하는 방법도 보여줍니다.
+514: [SECTION] 과정 목표
+515: 이 과정의 교육 목표는 다음과 같습니다.
+516: 데이터 웨어하우징의 핵심 개념을 논의합니다.
+517: 데이터 웨어하우징과 빅 데이터 솔루션 간의 교차를 논의합니다.
+518: Amazon Redshift 클러스터를 시작하고 구성 요소, 기능을 사용해 클라우드에서 데이터 웨어하우스를 구현합니다.
+519: 다른 AWS 데이터 및 분석 서비스(예: Amazon DynamoDB, Amazon EMR, Amazon Kinesis, Amazon S3)를 사용하여 데이터 웨어하우징 솔루션에 기여합니다.
+520: 데이터 웨어하우스 설계의 접근 방식과 방법을 평가합니다.
+521: 데이터 원본을 식별하고 데이터 액세스를 위한 요구 사항을 확인합니다.
+522: 데이터 웨어하우스를 설계합니다.
+523: COPY, UNLOAD, VACUUM 같은 중요한 명령을 사용해 데이터 웨어하우스의 데이터를 관리합니다.
+524: 성능 문제를 식별하고, 쿼리를 최적화하고, 성능 개선을 위해 데이터베이스를 튜닝합니다.
+525: Amazon Redshift Spectrum을 사용하여 Amazon S3 버킷의 데이터를 직접 분석합니다.
+526: Amazon Redshift 데이터베이스 감사, Amazon CloudWatch, Amazon CloudTrail, Amazon Simple Notification Service (SNS) 같은 기능 및 서비스를 사용하여 데이터 웨어하우스를 모니터링하고 감사합니다.
+527: Amazon QuickSight를 사용하여 데이터 웨어하우스에 대한 데이터 분석 및 시각화 작업을 수행합니다.
+529: 학습 대상
+530: 본 교육 과정의 대상은 다음과 같습니다.
+531: 데이터베이스 아키텍트
+532: 데이터베이스 관리자
+533: 데이터베이스 개발자
+534: 데이터베이스 분석가 및 과학자
+535: 사전 조건
+536: 이 과정을 수강하려면 다음 사전 조건을 갖추는 것이 좋습니다.
+537: 이수 과정: AWS 기술 에센셜(또는 동등한 수준의 AWS 경험 보유)
+538: 관계형 데이터베이스 및 데이터베이스 설계 개념에 대한 이해
+539: [SECTION] 제공 방법
+540: 본 과정은 다음 형태로 제공됩니다.
+541: 강의식 교육(ILT)
+542: 실습
+543: 실습 활동
+544: 이 과정에서는 다양한 실습을 통해 새로운 기술을 테스트하고 지식을 실무 환경에 적용해 봅니다.
+545: 기간
+546: 3일
+547: [SECTION] 과정 개요
+548: 이 과정에서는 다음 개념을 다룹니다.
+551: Designing and Implementing Storage on AWS
+552: [SECTION] 과정 설명
+553: AWS는 데이터를 저장하고 액세스하고 보호하는 다양한 기능을 갖춘 스토리지 서비스 및 솔루션 옵션으로 구성된 광범위한 포트폴리오를 제공합니다. 이 과정에서는 이러한 다양한 서비스 제품을 언제, 어디에서, 어떻게 활용할 수 있는지 알아봅니다. 데이터 스토리지 문제를 해결하려는 경우 고려해야 할 서비스에 대해 알아봅니다. 사용 사례 및 비즈니스 요구 사항에 맞는 적절한 AWS 스토리지 서비스를 선택할 때 옵션을 가장 잘 평가하는 방법을 알아봅니다. 또한 클라우드에서 데이터를 저장하고 관리하고 보호하는 방법도 더 잘 이해하게 될 것입니다. AWS 플랫폼의 편리함과 강점을 보여 주는 일련의 핸즈온 실습을 통해 강력한 스토리지 솔루션을 몇 분 안에 빠르게 프로비저닝하는 방법을 배울 수 있습니다.
+556: [SECTION] 과정 목표
+557: 이 과정의 교육 목표는 다음과 같습니다.
+558: 핵심 AWS 스토리지 서비스의 이점을 설명하고 일부 주요 사용 사례 식별
+559: 애플리케이션 및 비즈니스 요구 사항에 따라 적절한 스토리지 솔루션 선택 및 설계
+560: 광범위한 AWS 서비스 제품 배열을 사용하도록 스토리지 리소스 구성
+561: 온프레미스 워크로드와 AWS 클라우드 간에 데이터를 이동하는 적절한 방법 선택
+562: 저장 및 전송 데이터 보호
+563: 클라우드 스토리지의 모니터링 및 관측 기능을 설정하여 액세스 패턴, 사용률, 효율에 대한 인사이트 확보
+564: 비용, 확장성 및 성능 요구 사항에 따라 스토리지 솔루션 설계 및 최적화
+566: 학습 대상
+567: 본 교육 과정의 대상은 다음과 같습니다.
+568: 솔루션 아키텍트
+569: 클라우드 스토리지 엔지니어
+570: 클라우드 운영 전문가
+571: DevOps 엔지니어
+572: 사전 조건
+573: 이 과정을 수강하려면 다음 사전 조건을 갖추는 것이 좋습니다.
+574: AWS Cloud Practitioner Essentials, AWS Technical Essentials 이수(또는 이에 상응하는 실무 경험)
+575: [SECTION] 등록
+576: https://www.aws.training/SessionSearch?pageNumber=1&courseId=135511
+577: [SECTION] 제공 방법
+578: 본 과정은 다음 형태로 제공됩니다.
+579: 강의식 교육(ILT)
+580: 실습
+581: 실습 활동
+582: 이 과정에서는 다양한 실습을 통해 새로운 기술을 테스트하고 지식을 실무 환경에 적용해 봅니다.
+583: 기간
+584: 3일
+585: [SECTION] 과정 개요
+586: 이 과정에서는 다음 개념을 다룹니다.
+588: Developing Generative AI Applications on AWS
+589: [SECTION] 과정 설명
+590: 이 과정은 파인 튜닝 없이 대규모 언어 모델을 활용하는 데 관심이 있는 소프트웨어 개발자에게 생성형 AI를 소개하기 위해 고안되었습니다. 이 과정에서는 생성형 AI, 생성형 AI 프로젝트 계획, Amazon Bedrock 시작하기, 프롬프트 엔지니어링의 기초, Amazon Bedrock 및 LangChain을 사용하여 생성형 AI 애플리케이션을 구축하기 위한 아키텍처 패턴의 개요를 제공합니다.
+592: [SECTION] 과정 목표
+593: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+594: 생성형 AI와 생성형 AI가 기계 학습과 연계되는 방식 설명
+595: 생성형 AI의 중요성을 정의하고 잠재적인 위험과 이점 설명
+596: 생성형 AI 사용 사례에서 비즈니스 가치 식별
+597: 생성형 AI와 관련된 기술적 기본 사항 및 용어 논의
+598: 생성형 AI 프로젝트를 계획하는 단계 설명
+599: 생성형 AI 사용에 따른 위험과 완화 방안 파악
+600: Amazon Bedrock의 작동 방식 이해
+601: Amazon Bedrock의 기본 개념 숙지
+602: Amazon Bedrock의 이점 이해
+603: Amazon Bedrock의 일반적인 사용 사례 나열
+604: Amazon Bedrock 솔루션과 관련된 일반적인 아키텍처 설명
+605: Amazon Bedrock의 비용 구조 이해
+606: AWS 관리 콘솔에서 Amazon Bedrock 데모 구현
+607: 프롬프트 엔지니어링 정의 및 FM과의 상호 작용 시 일반적인 모범 사례 적용
+608: zero-shot 및 few-shot 학습을 비롯한 기본적인 프롬프트 기법 유형 식별
+609: 사용 사례에 필요한 경우 고급 프롬프트 기법 적용
+610: 특정 모델에 가장 적합한 프롬프트 기법 파악
+611: 잠재적인 프롬프트 사용 오류 식별
+612: FM 응답의 잠재적인 편향을 분석하고 이러한 편향을 완화하는 프롬프트 설계
+613: 생성형 AI 애플리케이션의 구성 요소와 파운데이션 모델(FM)을 사용자 지정하는 방법 파악
+614: Amazon Bedrock 파운데이션 모델, 추론 파라미터, 주요 Amazon Bedrock API에 대해 설명
+615: Amazon Bedrock 애플리케이션의 모니터링, 보안, 거버넌스에 도움이 되는 Amazon Web Services(AWS) 서비스 파악
+616: LangChain을 대규모 언어 모델(LLM), 프롬프트 템플릿, 체인, 채팅 모델, 텍스트 임베딩 모델, 문서 로더, 검색기, Amazon Bedrock용 에이전트와 통합하는 방법에 대해 설명
+617: 생성형 AI 애플리케이션을 빌드하기 위해 Amazon Bedrock으로 구현할 수 있는 아키텍처 패턴에 대해 설명
+618: 개념을 적용하여 다양한 Amazon Bedrock 모델, LangChain, 검색-증강 생성(RAG) 접근 방식을 활용하는 샘플 사용 사례 구축 및 테스트
+620: [SECTION] 수강 대상
+621: 이 과정의 대상은 다음과 같습니다.
+622: 파인 튜닝 없이 대규모 언어 모델을 활용하는 데 관심이 있는 소프트웨어 개발자
+623: [SECTION] 수강 전 권장 사항
+624: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+625: AWS Technical Essentials
+626: Python에 대한 중간 수준의 숙련도
+628: [SECTION] 등록
+629: http://www.aws.training/training/schedule?courseId=145545
+632: Developing on AWS
+633: [SECTION] 과정 설명
+634: 이 과정은 숙련된 개발자에게 프로그래밍 방식으로 AWS 서비스와 상호 작용하여 웹 솔루션을 구축하는 방법을 가르칩니다. 리소스 선택에 관한 상위 수준 아키텍처 논의를 통해 진행하고, AWS 소프트웨어 개발 키트(AWS SDK)와 Command Line Interface(AWS CLI)를 사용하여 클라우드 애플리케이션을 구축하고 배포하는 방법을 심층 탐색합니다. 여러분은 샘플 애플리케이션을 구축하면서 개발 환경에 대한 권한을 설정하는 방법을 배우고, AWS 핵심 서비스를 사용하여 데이터를 처리하고, 사용자 인증을 구성하고, AWS 클라우드에 배포하고, 디버깅을 통해 애플리케이션 문제를 해결하는 비즈니스 로직을 추가합니다. 이 과정에서 설명한 설계 패턴 및 솔루션을 구현하는 데 도움이 되는 코드 예제가 포함되어 있습니다. 이러한 실습은 주요 과정 콘텐츠를 보강하며, Python, .NET, Java용 AWS SDK, AWS CLI, AWS Management Console을 사용하여 솔루션을 구현하는 데 도움이 됩니다.
+636: [SECTION] 과정 목표
+637: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+638: AWS 소프트웨어 개발 키트(AWS SDK), Command Line Interface(AWS CLI) 및 IDE를 사용하여 간단한 엔드투엔드 클라우드 애플리케이션 구축
+639: 개발 환경을 지원하도록 AWS Identity and Access Management(IAM) 권한 구성
+640: 애플리케이션에서 여러 프로그래밍 패턴을 사용하여 AWS 서비스에 액세스
+641: AWS SDK를 사용하여 Amazon Simple Storage Service(Amazon S3) 및 Amazon DynamoDB 리소스에서 CRUD(생성, 읽기, 업데이트, 삭제) 작업 수행
+642: 웹 애플리케이션을 위한 다른 서비스 통합을 사용하여 AWS Lambda 함수 구축
+643: 마이크로서비스 아키텍처 및 서버리스 애플리케이션의 설계상 이점 이해
+644: API Gateway 구성 요소를 개발하고 다른 AWS 서비스와 통합
+645: Amazon Cognito가 AWS 리소스에 대한 사용자 액세스를 제어하는 방법 설명
+646: Cognito를 사용하여 사용자 액세스를 제공 및 제어하는 웹 애플리케이션 구축
+647: DevOps 방법론을 사용하여 기존 애플리케이션 릴리스와 관련된 위험을 줄이고 DevOps 방식 구현에 도움이 되는 AWS 서비스를 파악
+648: AWS Serverless Application Model(AWS SAM)을 사용하여 애플리케이션 배포
+649: Amazon X-Ray를 사용하여 애플리케이션 구축 관찰
+651: [SECTION] 수강 대상
+652: 이 과정의 대상은 다음과 같습니다.
+653: 숙련된 소프트웨어 개발자
+654: 숙련된 솔루션스 아키텍트
+655: AWS 서비스를 사용하여 개발 역량을 높이려는 숙련된 IT 전문가
+656: [SECTION] 수강 전 권장 사항
+657: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+658: AWS Technical Essentials 이수
+659: AWS 핵심 서비스에 대한 실무 지식
+660: 다음 언어 중 하나를 사용한 프로그래밍 경험
+661: Python
+662: .NET
+663: Java
+665: [SECTION] 등록
+666: www.aws.training/training/schedule?courseId=10017
+672: Developing Serverless Solutions on AWS
+673: [SECTION] 과정 설명
+674: 이 과정에서는 개발자가 AWS Lambda 및 AWS 서버리스 플랫폼의 다른 서비스를 사용하여 서버리스 애플리케이션을 구축하는 모범 사례를 살펴보고 연습할 수 있습니다. 간단한 주제에서 좀 더 복잡한 주제로 진행되는 실습에서 AWS 프레임워크를 사용하여 직접 서버리스 애플리케이션을 배포하게 됩니다. 본 과정 내내 AWS 설명서를 사용하여 강의실을 넘어 진정한 학습 및 문제 해결 방법을 알아봅니다.
+677: [SECTION] 과정 목표
+678: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+679: 적절한 AWS 서비스를 사용하여 서버리스 애플리케이션 설계에 이벤트 중심의 모범 사례를 적용합니다.
+680: 서버리스 개발로 전환하는 데 따른 당면 과제와 절충점을 파악하고 개발 조직 및 환경에 적합한 권장 사항을 제시합니다.
+681: AWS Managed Services를 서로 연결하는 패턴을 사용하여 서버리스 애플리케이션을 구축하고, 서비스 할당량, 사용 가능한 통합, 호출 모델, 오류 처리, 이벤트 소스 페이로드를 비롯한 서비스 특성을 고려합니다.
+682: AWS CloudFormation, AWS Amplify, AWS Serverless Application Model(AWS SAM) 및 AWS Cloud Development Kit(AWS CDK)를 비롯하여 Infrastructure as Code를 작성하는 데 사용할 수 있는 옵션을 비교 및 대조합니다.
+683: 오류 처리, 로깅, 환경 재사용, 계층 사용, 상태 비저장, 멱등성, 동시성 및 메모리 구성을 비롯한 모범 사례를 Lambda 함수 작성에 적용합니다.
+684: 서버리스 애플리케이션에 관찰 가능성 및 모니터링을 구축하기 위한 모범 사례를 적용합니다.
+685: 서버리스 애플리케이션에 보안 모범 사례를 적용합니다.
+686: 서버리스 애플리케이션에서 규모 조정을 위한 주요 고려 사항을 식별하고, 각 고려 사항을 이를 관리하기 위한 메서드, 도구 또는 모범 사례와 연결합니다.
+687: AWS SAM, AWS CDK 및 AWS 개발자 도구를 사용하여 CI/CD 워크플로를 구성하고 서버리스 애플리케이션의 배포를 자동화합니다.
+688: 지속적인 서버리스 개발 및 서버리스 커뮤니티 참여에 도움이 되는 서버리스 리소스 목록을 만들고 적극적으로 유지 관리합니다.
+690: [SECTION] 수강 대상
+691: 이 과정의 대상은 다음과 같습니다.
+692: 서버리스에 어느 정도 익숙하고 AWS 클라우드에서 개발한 경험이 있는 개발자
+694: [SECTION] 수강 전 권장 사항
+695: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+696: AWS 클라우드 아키텍처의 기본 사항에 대한 지식
+697: ‘Developing on AWS’ 강의실 교육 과정 이수에 상응하는 AWS 기반 애플리케이션 개발에 대한 이해
+698: ‘AWS Lambda Foundations’ 및 ‘Amazon API Gateway for Serverless Applications’ 서버리스 디지털 교육 과정 이수에 상응하는 지식
+699: [SECTION] 등록
+700: https://www.aws.training/SessionSearch?pageNumber=1&courseId=53785
+703: DevOps Engineering on AWS
+704: [SECTION] 과정 설명
+705: DevOps Engineering on AWS 과정에서는 가장 일반적인 DevOps 패턴을 사용하여 AWS에서 애플리케이션을 개발, 배포 및 유지 관리하는 방법을 설명합니다. 이 과정에서는 DevOps 방법론의 핵심 원리를 설명하고 스타트업, 중소기업 및 대기업 개발 시나리오에 적용할 수 있는 여러 사용 사례를 살펴봅니다.
+706: [SECTION] 과정 목표
+707: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+708: 1개 이상의 DevOps 개발 프로젝트를 지원하는 AWS 기반 인프라를 설계 및 구현
+709: AWS에 Git을 설정하고 AWS 클라우드에서 지속적 통합 환경을 구현하기 위한 다양한 옵션을 이해
+710: 지속적 통합 및 지속적 배포의 핵심 원리 사용
+711: AWS 클라우드에서 제공하는 다양한 애플리케이션 배포 기술(AWS CodeDeploy, AWS OpsWorks, AWS Elastic Beanstalk, Amazon EC2 Container Service 등)을 구분하고 주어진 시나리오에 가장 적합한 기술을 결정
+712: AWS에 배포하는 애플리케이션을 세부적으로 튜닝하여 성능을 높이고, 잠재적 문제를 찾기 위해 AWS 도구 및 기술을 사용하여 애플리케이션 및 환경을 모니터링
+713: [SECTION] 수강 대상
+714: 이 과정의 대상은 다음과 같습니다.
+715: 소프트웨어 개발자 및 시스템 관리자
+716: [SECTION] 수강 전 권장 사항
+717: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+718: System Operations on AWS 또는 Developing on AWS 강의실 교육 과정 수강
+719: 1개 이상의 고급 프로그래밍 언어(C#, Java, PHP, Ruby, Python 등)에 대한 실무 지식
+720: 명령줄 수준에서 Linux 또는 Windows 시스템을 관리할 수 있는 중급 수준의 지식
+721: AWS Management Console 및 AWS 명령줄 인터페이스(AWS CLI)를 사용한 AWS 실무 경험
+722: [SECTION] 등록
+723: www.aws.training/training/schedule?courseId=10018
+727: Generative AI Essentials on AWS
+728: [SECTION] 과정 설명
+729: 이 과정에서는 생성형 AI를 사용하기 위한 기본 개념, 방법 및 전략에 대해 배웁니다. 생성형 AI가 솔루션을 제공하고 비즈니스 요구 사항을 해결할 수 있는 사용 사례를 확실하게 이해할 수 있습니다. 또한 생성형 AI와 관련된 기술에 대한 실용적인 인사이트와 이러한 기술을 사용하여 실제 문제를 해결하는 방법을 배우게 됩니다. 교육 과정을 마치면 프로젝트 계획과 조직 내 생성형 AI 구현에 대해 논의하는 방법을 살펴보게 됩니다.
+730: [SECTION] 과정 목표
+731: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+732: 생성형 AI의 개념, 방법, 전략 요약
+733: 생성형 AI 및 기계 학습과 해당 기술의 적절한 사용에 대한 논의
+734: 생성형 AI를 책임감 있고 안전하게 사용하는 방법 설명
+735: 특정 사용 사례를 통해 생성형 AI 솔루션의 유형 파악
+736: 조직에 생성형 AI의 구현 및 프로젝트 계획 설명
+738: [SECTION] 수강 대상
+739: 이 과정은 AWS 클라우드에서 Generative AI용 애플리케이션을 구축하려고 하고자 하는 책임 담당자로, 다음 역할을 대상으로 합니다.
+740: 비즈니스 분석가
+741: IT 지원가
+742: 마케팅 전문가
+743: 제품 또는 프로젝트 관리자
+744: 사업부 또는 IT 관리자
+745: 영업 전문가
+749: Migrating to AWS
+750: [SECTION] 과정 설명
+751: 이 과정은 기존 워크로드를 계획하고 AWS 클라우드로 마이그레이션하는 방법을 이해하고자 하는 개인을 대상으로 합니다. 포트폴리오 검색, 애플리케이션 마이그레이션 계획 및 설계, 마이그레이션 실행, 마이그레이션 후 검증 및 애플리케이션 최적화 등 다양한 클라우드 마이그레이션 전략과 마이그레이션 프로세스의 단계별 적용 방법을 배웁니다. 조직에서 마이그레이션 작업을 완료하는 데 필요한 이해와 기초를 제공하고 학습을 강화하도록 설계된 실습이 포함되어 있습니다.
+753: [SECTION] 과정 목표
+754: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+755: 클라우드 마이그레이션의 일반적인 비즈니스 동인 및 기술적 동인 이해
+756: 마이그레이션의 3단계 및 각 단계의 관련 목표, 작업, 이해 관계자 요약
+757: AWS 아키텍처, 도구, 마이그레이션 모범 사례 설명
+758: 다양한 클라우드 마이그레이션 전략을 구분하고 가장 적합한 전략을 찾는 방법 설명
+759: 조직의 애플리케이션 마이그레이션 준비 상태 확인
+760: 포트폴리오 검색 및 마이그레이션에 필요한 데이터 수집
+761: 애플리케이션 마이그레이션 전략 계획 및 설계
+762: 클라우드로 애플리케이션 마이그레이션 수행 및 검증
+763: 클라우드로 마이그레이션한 후 애플리케이션 및 운영 최적화
+764: [SECTION] 수강 대상
+765: 이 과정의 대상은 다음과 같습니다.
+766: 솔루션스 아키텍트
+767: 소프트웨어 엔지니어
+768: IT 프로젝트 관리자
+769: 운영 책임자
+770: 마이그레이션 프로젝트의 계획 및 실행에 관여하는 기타 개인
+771: [SECTION] 수강 전 권장 사항
+772: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+773: 엔터프라이즈 IT 인프라(하드웨어 및 소프트웨어)에 대한 기본 지식
+774: AWS Technical Essentials 또는 Architecting on AWS 강의실 교육 이수
+775: AWS 공인 솔루션스 아키텍트 - 어소시에이트 자격증 취득(선택 사항)
+776: [SECTION] 등록
+777: https://www.aws.training/SessionSearch?pageNumber=1&courseId=10026
+782: MLOps Engineering on AWS
+783: [SECTION] 과정 설명
+784: 이 과정은 기계 학습 모델을 구축, 훈련 및 배포하기 위해 소프트웨어 개발에서 널리 사용되는 DevOps 방식을 기반으로 확장됩니다. 이 과정에서는 성공적인 기계 학습 배포를 위해 데이터, 모델 및 코드의 중요성을 강조합니다. 데이터 엔지니어, 데이터 사이언티스트, 소프트웨어 개발자, 운영 간의 이관과 관련된 과제들을 해결하는 데 도구, 자동화, 프로세스, 팀워크를 사용하는 방법을 보여줍니다. 또한 이 과정에서는 프로덕션에서 모델 예측이 합의된 핵심 성과 지표를 벗어나기 시작하는지 모니터링하고 조치를 취하기 위한 도구 및 프로세스의 사용에 대해서도 논의합니다.
+786: [SECTION] 과정 목표
+787: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+788: 기계 학습 운영을 설명
+789: DevOps와 MLOps의 주요 차이점 이해
+790: 기계 학습 워크플로 설명
+791: MLOps에서 커뮤니케이션의 중요성 논의
+792: 기계 학습 워크플로 자동화를 위한 엔드 투 엔드 옵션 설명
+793: MLOps 자동화를 위한 주요 Amazon SageMaker 기능 나열
+794: 모델을 빌드, 훈련, 테스트 및 배포하는 자동화된 기계 학습 프로세스 구축
+795: 모델 코드 변경에 따라 모델을 다시 훈련시키는 자동화된 기계 학습 프로세스 구축
+796: 배포 프로세스의 요소 및 중요 단계를 파악
+797: 모델 패키지에 포함할 수 있는 항목과 훈련 또는 추론 시 이 항목의 사용법을 설명
+798: 기계 학습 프레임워크 및 기본 제공 알고리즘 또는 자체 모델에 대한 지원을 포함한 배포용 모델 선택을 위한 Amazon SageMaker 옵션을 파악
+799: 기계 학습의 확장과 다른 애플리케이션의 확장을 구별
+800: 추론에 대한 다양한 접근 방식을 사용해야 하는 시기를 결정
+801: 배포 전략, 이점, 과제 및 일반적인 사용 사례를 논의
+802: 엣지 디바이스에 기계 학습을 배포할 때의 과제를 설명
+803: 배포 및 추론과 관련된 중요한 Amazon SageMaker 기능을 인식
+804: 모니터링이 중요한 이유를 설명
+805: 기본 입력 데이터에서 데이터 드리프트를 감지
+806: 기계 학습 모델에서 편향을 모니터링하는 방법을 시연
+807: 모델 리소스 소비 및 대기 시간을 모니터링하는 방법을 설명
+808: 프로덕션에서 모델 결과에 대한 HITL(Human-in-the-Loop) 검토를 통합하는 방법을 논의
+809: [SECTION] 수강 대상
+810: 이 과정의 대상은 다음과 같습니다.
+811: DevOps 엔지니어
+812: 기계 학습 엔지니어
+813: 기계 학습 모델 운영을 담당하는 개발자/운영자
+814: [SECTION] 수강 전 권장 사항
+815: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+816: AWS Technical Essentials 과정(강의식 또는 디지털) 이수 또는 이와 동등한 경험
+817: DevOps Engineering on AWS 과정 이수 또는 이와 동등한 경험
+818: The Elements of Data Science(디지털 과정) 과정 이수 또는 이와 동등한 경험
+819: Machine Learning Terminology and Process(디지털 과정) 과정 이수 또는 이와 동등한 경험
+821: [SECTION] 등록
+822: https://www.aws.training/SessionSearch?pageNumber=1&courseId=74343
+825: Networking Essentials for Cloud Applications on AWS
+826: [SECTION] 과정 설명
+827: 이 과정을 통해 Amazon Web Services(AWS) 클라우드 환경 내의 네트워킹 개념과 서비스를 포괄적으로 이해할 수 있습니다. 초보 및 숙련된 네트워킹 엔지니어를 위해 설계된 이 과정에서는 필수 주제, 모범 사례, 실습을 다룹니다. 이 과정의 목적은 수강생이 AWS에서 네트워크 인프라를 설계, 구성, 최적화하는 데 필요한 지식과 기술을 갖추도록 하는 것입니다.
+829: [SECTION] 과정 목표
+830: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+831: 네트워킹 서비스 간의 설계 장단점을 고려하여 확장 가능한 프로덕션 애플리케이션을 위한 네트워킹 인프라 설계
+832: 가용성이 뛰어나고 탄력적이며 확장 가능한 애플리케이션을 위한 네트워킹 서비스 구성
+833: 변화하는 비즈니스 요구 사항에 따라 네트워킹 인프라 구현
+834: AWS Well-Architected Framework에 맞게 조정하도록 네트워킹 모범 사례 구현
+836: [SECTION] 수강 대상
+837: 이 과정의 수강 대상은 다음과 같습니다.
+838: 새로 입사한 클라우드 엔지니어
+839: 온프레미스 IT 엔지니어
+840: 클라우드 아키텍트
+841: 클라우드 엔지니어
+842: 네트워크 엔지니어
+844: [SECTION] 수강 전 권장 사항
+845: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+846: 네트워킹 개념에 대한 기본 지식
+847: AWS 서비스에 대한 기본 지식
+848: AWS Technical Essentials 또는 Cloud Practioner Essentials 과정 수강
+853: Practical Data Science with Amazon SageMaker
+854: [SECTION] 과정 설명
+855: 기계 학습(ML)으로 실제 문제를 해결하고 Amazon SageMaker의 사용에 대해서 학습합니다. 이 과정에서는 데이터 집합 분석 및 시각화부터 데이터 준비, 피쳐 엔지니어링에 이르기까지 기계 학습의 일반적인 데이터 과학 프로세스의 단계를  다룹니다. 또한 Amazon SageMaker를 사용하여 모델 구축, 교육, 튜닝 및 배포에 대한 실용적인 측면을 배우게 됩니다. 과정에서 다루게 되는 예제는 휴대폰 통신사의 고객 이탈 예측 문제 입니다.
+856: [SECTION] 과정 목표
+857: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+858: 학습을 위한 데이터 집합 준비
+859: 기계 학습 모델 훈련 및 평가
+860: 기계 학습 모델 자동 튜닝
+861: 프로덕션을 위한 기계 학습 모델 준비
+862: 기계 학습 모델 결과에 대해 비판적으로 생각하기
+864: [SECTION] 수강 대상
+865: 본 교육 과정의 대상은 다음과 같습니다.
+866: 개발자
+867: 데이터 사이언티스트
+869: [SECTION] 수강 전 권장 사항
+870: 본 과정을 수강하기 전에 다음 조건을 갖추는 것을 권장합니다.
+871: Python 프로그래밍 언어에 익숙
+872: 기계 학습(ML)에 대한 기본 이해
+873: [SECTION] 등록
+874: https://www.aws.training/SessionSearch?pageNumber=1&courseId=40748
+877: Practical IaC on AWS with Terraform
+878: [SECTION] 과정 설명
+879: Terraform 은 전세계에서 가장 널리 쓰이는 IaC 도구 중 하나 입니다. 이 교육 과정에서는 AWS Solutions Architect 가 IaC 도구인 Terraform 을 활용해 AWS 아키텍처를 설계, 프로비저닝 하는 방법과 모범사례를 학습합니다.
+880: [SECTION] 과정 목표
+881: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+882: IaC 에 대한 이해
+883: Terraform 을 활용하여 AWS 아키텍처를 모델링, 구축, 배포 및 자동화 방법 확인
+884: 공동 작업을 위한 설정에 대한 이해
+885: 코드 관리 및 재활용 기법에 대한 소개
+887: [SECTION] 수강 대상
+888: 본 교육 과정의 대상은 다음과 같습니다.
+889: Terraform 기술을 활용해 IaC 를 도입하고자 하는 IT 관련 업무 종사자
+890: AWS 아카데미 학생
+892: [SECTION] 수강 전 권장 사항
+893: 본 과정을 수강하기 전에 다음 조건을 갖추는 것을 권장합니다.
+894: Architecting on AWS
+895: AWS Technical Essentials
+896: [SECTION] 등록
+897: https://www.aws.training/SessionSearch?pageNumber=1&courseId=150103
+901: Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS)
+902: [SECTION] 과정 설명
+903: 이 과정에서는 Amazon EKS를 사용하여 Kubernetes로 컨테이너를 관리하고 오케스트레이션하는 방법을 알아봅니다. Amazon EKS를 사용하면 자체 Kubernetes 제어 영역을 설치, 운영, 유지 관리할 필요 없이 AWS에서 Kubernetes를 실행할 수 있습니다. Amazon Elastic Container Registry(Amazon ECR)를 사용하여 컨테이너 이미지를 관리하고 애플리케이션 배포를 자동화하는 방법을 배우게 됩니다. 지속적 통합(CI) 및 지속적 전달(CD) 도구를 사용하여 애플리케이션을 배포합니다. 지표, 기록, 추적, 수평적 및 수직적 크기 조정을 이용하여 환경을 모니터링하고 크기를 조정하는 방법을 배우게 됩니다. 또한 컨테이너식 애플리케이션의 스토리지를 관리하고, 클러스터를 지원하도록 AWS 네트워킹 서비스를 구성하고, Amazon EKS 환경을 보호하는 방법을 배우게 됩니다.
+905: [SECTION] 과정 목표
+906: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+907: Kubernetes API의 핵심 객체 및 주요 구성 요소를 포함하여 Kubernetes의 기본 구성 요소에 관해 설명합니다.
+908: Amazon EKS가 Kubernetes 제어 영역과 데이터 영역의 일부를 관리하는 방법을 설명합니다.
+909: Amazon EKS 클러스터를 구축하고 유지 관리합니다.
+910: Amazon EKS 클러스터에 애플리케이션을 배포합니다.
+911: 엔터프라이즈 규모 Amazon EKS 클러스터에서 실행되는 애플리케이션을 관리합니다.
+912: 클러스터 내부에서 그리고 외부 서비스와 효율적이고 안전한 통신을 구성합니다.
+913: Amazon EKS 클러스터에서 관찰 기능을 구성합니다.
+914: Amazon EKS에서 실행되는 애플리케이션을 위한 스토리지를 프로비저닝합니다.
+915: Amazon EKS 클러스터를 보호합니다.
+916: [SECTION] 수강 대상
+917: 이 과정의 대상은 다음과 같습니다.
+918: 클라우드 아키텍트
+919: DevOps 엔지니어
+920: 시스템 관리자
+921: [SECTION] 수강 전 권장 사항
+922: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+923: Introduction to Containers 이수
+924: Amazon EKS Primer 이수
+925: AWS Cloud Practitioner Essentials 이수(또는 이에 상응하는 실제 경험 보유)
+926: 기본적인 Linux 관리 경험
+927: 기본적인 네트워크 관리 경험
+929: [SECTION] 등록
+930: www.aws.training/training/schedule?courseId=53846
+935: Security Engineering on AWS
+936: [SECTION] 과정 설명
+937: AWS 보안 서비스를 사용하여 AWS 클라우드에서 보안을 유지하는 방법을 배웁니다. AWS에서 권장하는 보안 사례를 통해 클라우드에서 데이터 및 시스템 보안을 강화합니다. 이 과정에서는 컴퓨팅, 스토리지, 네트워킹, 데이터베이스 서비스 등 AWS 주요 서비스의 보안 기능을 살펴봅니다. 또한 자동화, 지속적 모니터링 및 로깅, 보안 인시던트에 대한 대응에 사용되는 AWS 서비스 및 도구의 사용 방법도 알아봅니다.
+939: [SECTION] 과정 목표
+940: 이 과정에서 배우게 될 내용은 다음과 같습니다.
+941: AWS 공동 보안 책임 모델 사용
+942: 가장 일반적인 보안 위협으로부터 보호할 수 있는 AWS 애플리케이션 인프라의 아키텍처 설계 및 구축
+943: 암호화를 사용하여 저장 및 전송 데이터 보호
+944: 자동화되고 재현 가능한 방식으로 보안 검사 및 분석 적용
+945: AWS 클라우드의 리소스 및 애플리케이션에 대한 인증 구성
+946: 로그 수집, 모니터링, 처리 및 분석을 통해 이벤트에 대한 인사이트 확보
+947: 애플리케이션과 데이터에 대한 외부 유입 위협 식별 및 완화
+948: 공통 취약점에 대한 패치를 배포하고 보안 모범 사례를 적용하기 위한 보안 평가 수행
+949: [SECTION] 수강 대상
+950: 이 과정의 대상은 다음과 같습니다.
+951: 보안 엔지니어
+952: 보안 아키텍트
+953: 정보 보안 전문가
+954: [SECTION] 수강 전 권장 사항
+955: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+956: IT 보안 사례 및 인프라 개념에 대한 실무 지식
+957: 클라우드 컴퓨팅 개념에 대한 이해
+958: AWS Cloud Practitioner Essentials(Second Edition) free digital 과정 또는 classroom 과정, AWS Security Fundamentals 디지털 교육 및 Architecting on AWS 강의실 교육 이수
+960: [SECTION] 등록
+961: www.aws.training/training/schedule?courseId=10021
+965: Digital Classroom Overview
+966: 실습 환경에서 팀으로부터 수요가 많은 클라우드 기술을 가르치는 강사에게 디지털 교육을 받을 수 있습니다.
+967: 디지털 강의실 교육은 프레젠테이션, 대화형 실습을 혼합하여 새로운 클라우드 기술을 직접 경험할 수 있는 기회를 팀에게 제공합니다. 또한 AWS에서는 귀사의 팀이 원하는 시기에 원하는 장소에서 새로운 클라우드 기술을 구축하고 최신 서비스에 대해 배울 수 있도록 수백 개의 디지털 교육 과정도 제공합니다.
+970: Digital Classroom – Architecting on AWS
+971: [SECTION] 과정 설명
+972: Architecting on AWS의 수강 대상은 AWS 아키텍팅에 대한 이해를 높이고자 하는 솔루션스 아키텍트, 솔루션-설계 엔지니어 및 개발자입니다. 이 교육 과정에서는 복원력 있고, 안전하며, 가용성이 뛰어난 IT 솔루션을 AWS 클라우드에 구축하기 위한 서비스와 기능에 대해 배웁니다.
+974: 아키텍처 솔루션은 산업, 애플리케이션 유형, 비즈니스 규모에 따라 다릅니다. AWS 공인 강사들이 AWS Well-Architected Framework를 사용하는 모범 사례를 강조하고, 실제 시나리오를 기반으로 최적의 IT 솔루션을 설계하는 프로세스를 안내합니다. 이 모듈에서는 계정 보안, 네트워킹, 컴퓨팅, 스토리지, 데이터베이스, 모니터링, 자동화, 컨테이너, 서버리스 아키텍처, 엣지 서비스, 백업 및 복구를 중점적으로 다룹니다. 교육 과정이 끝나면 솔루션 구축을 연습하고 배운 내용을 적용할 수 있습니다.
+975: [SECTION] 과정 목표
+976: 이 과정에서 학습할 내용은 다음과 같습니다.
+977: AWS 아키텍팅 기본 관행 파악
+978: 계정 보안의 기본 사항
+979: 프라이빗 서브넷과 퍼블릭 서브넷이 포함된 안전한 가상 네트워크를 구축하는 전략 파악
+980: AWS에서 멀티 티어 아키텍처 구축 연습
+981: 비즈니스 사용 사례에 따라 적절한 컴퓨팅 리소스를 선택하는 전략 파악
+982: 비즈니스 시나리오를 기반으로 AWS 스토리지 제품과 서비스 비교 및 대조
+983: 비즈니스 요구를 기준으로 AWS 데이터베이스 서비스 비교 및 대조
+984: 비즈니스 요구를 기준으로 모니터링, 로드 밸런싱, Auto Scaling 응답의 역할 파악
+985: 인프라 구축, 유지 관리, 발전에 도움이 되는 AWS 자동화 도구 파악 및 논의
+986: 하이브리드 네트워킹, 네트워크 피어링, 그리고 인프라 확장과 보호에 사용할 게이트웨이 및 라우팅 솔루션 관련 논의
+987: 인프라에 구애 받지 않는 휴대용 애플리케이션 환경의 신속한 구현에 사용 가능한 AWS 컨테이너 서비스 살펴보기
+988: 비즈니스 사례에 따른 AWS 서버리스 서비스의 비즈니스 및 보안 이점 파악
+989: AWS 엣지 서비스에서 지연 시간 및 보안을 해결하는 방법 논의
+990: 복원력과 비즈니스 연속성을 보장하기 위한 AWS 백업, 복구 솔루션, 모범 사례 살펴보기
+992: [SECTION] 수강 대상
+993: 이 과정의 수강 대상은 다음과 같습니다.
+994: 솔루션 아키텍트
+995: 솔루션 디자인 엔지니어
+996: AWS 아키텍팅에 대해 파악하려는 개발자
+997: AWS Solutions Architect-Associate 자격증을 취득하려는 개인 사용자
+999: [SECTION] 수강 전 권장 사항
+1000: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1001: AWS Cloud Practitioner Essentials 또는 AWS Technical Essentials 수료
+1002: 분산 시스템에 대한 실무 지식
+1003: 일반적인 네트워킹 개념에 대한 지식
+1004: IP 주소 지정에 대한 지식
+1005: 멀티 티어 아키텍처에 대한 실무 지식
+1006: 클라우드 컴퓨팅 개념 이해
+1007: [SECTION] 등록
+1008: https://explore.skillbuilder.aws/learn/course/external/view/elearning/19186/digital-classroom-architecting-on-aws-amazon-korean
+1013: Digital Classroom - AWS Security Best Practices
+1014: [SECTION] 과정 설명
+1015: AWS Best Practices는 AWS 보안 및 제어 유형을 사용하기 위한 업계 모범 사례에 대한 개요를 제공합니다. 이 과정은 워크로드를 안전하게 유지하는 방법에 대한 중요한 지침을 제공하는 동시에 자신의 책임을 이해하는 데 도움이 됩니다. 양질의 설계 옵션으로 네트워크 인프라를 보호하는 방법을 배우게 됩니다. 또한 컴퓨팅 리소스를 강화하고 안전하게 관리하는 방법에 대해서도 알아봅니다. 마지막으로, AWS 모니터링 및 알림을 이해함으로써 의심스러운 이벤트를 감지하고 경고하여 손상 발생 가능성이 있을 때 신속하게 대응 프로세스를 시작할 수 있습니다.
+1017: [SECTION] 과정 목표
+1018: 이 과정에서 학습할 내용은 다음과 같습니다.
+1019: 보안 네트워크 인프라 설계 및 구현
+1020: 컴퓨팅 보안 설계 및 구현
+1021: 로깅 솔루션 설계 및 구현
+1023: [SECTION] 수강 대상
+1024: 이 과정의 수강 대상은 다음과 같습니다.
+1025: 솔루션 아키텍트 및 보안 엔지니어
+1027: [SECTION] 수강 전 권장 사항
+1028: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1029: 보안 기초 습득
+1030: Security Essentials 습득
+1031: 네트워킹, 운영 체제, 데이터 암호화 및 운영 제어 분야의 정보 보안 개념, 기술 및 패러다임에 대한 충분한 배경 지식
+1033: [SECTION] 등록
+1034: https://explore.skillbuilder.aws/learn/course/external/view/elearning/21624/digital-classroom-aws-security-best-practices-korean-hangug-eo-gang-ui
+1037: Digital Classroom – AWS Security Essentials
+1038: [SECTION] 과정 설명
+1039: 이 과정에서는 AWS 액세스 제어, 데이터 암호화 방법, AWS 인프라에 대한 네트워크 액세스 보안을 유지하는 방법을 비롯하여 기본적인 AWS 클라우드 보안 개념에 대해 알아봅니다. AWS 공동 보안 모델을 기반으로 고객이 구현할 책임이 있는 AWS 클라우드에서의 보안은 무엇이고, 고객에게 제공되는 보안 지향 서비스에는 어떤 것이 있으며, 이러한 보안 서비스가 조직의 보안 요구 사항을 충족하는 데 도움이 되는 이유 및 방법을 알아봅니다.
+1040: [SECTION] 과정 목표
+1041: 이 과정에서 학습할 내용은 다음과 같습니다.
+1042: AWS 클라우드 사용에 따른 보안 이점 및 책임 파악
+1043: AWS의 액세스 제어 및 액세스 관리 기능 설명
+1044: AWS에 데이터 저장 시 전송 데이터 및 저장 데이터 암호화를 제공하는 데 사용할 수 있는 방법 설명
+1045: AWS 리소스에 대한 네트워크 액세스를 보호하는 방법 설명
+1046: 모니터링 및 인시던트 대응에 사용할 수 있는 AWS 서비스 식별
+1048: [SECTION] 수강 대상
+1049: 이 과정의 수강 대상은 다음과 같습니다.
+1050: 클라우드 보안 업무에 관심이 있는 보안 IT 비즈니스 전문가
+1051: AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가
+1053: [SECTION] 수강 전 권장 사항
+1054: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1055: IT 보안 사례 및 인프라 개념에 대한 실무 지식, 클라우드 컴퓨팅 개념에 대한 이해
+1056: [SECTION] 등록
+1057: https://explore.skillbuilder.aws/learn/course/external/view/elearning/19774/digital-classroom-aws-security-essentials-amazon-korean
+1059: Digital Classroom - AWS Well-Architected Best Practices
+1060: [SECTION] 과정 설명
+1061: AWS Well-Architected Framework는 클라우드 중심으로 고객의 아키텍처에 대해 정보에 입각한 결정을 내리고 설계 결정에 따른 영향을 이해하는 데 도움이 됩니다. Well-Architected Framework를 사용하면 아키텍처에 존재하는 위험과 이를 완화하는 방법을 이해할 수 있습니다. 이 과정에서는 AWS Well-Architected Framework와 여섯 가지 핵심 요소에 대해 심층적으로 살펴봅니다. 이 과정에서는 Well-Architected Review 프로세스와 AWS Well-Architected Tool을 사용하여 검토를 완료하는 방법도 다룹니다.
+1063: [SECTION] 과정 목표
+1064: 이 과정에서 학습할 내용은 다음과 같습니다.
+1065: Well-Architected Framework의 기능, 설계 원칙, 설계 핵심 요소, 일반적인 용도 파악
+1066: Well-Architected Framework의 각 핵심 요소에 설계 원칙, 주요 서비스 및 모범 사례 적용
+1067: Well-Architected Tool을 사용하여 Well-Architected 검토 수행
+1069: [SECTION] 수강 대상
+1070: 이 과정의 수강 대상은 다음과 같습니다.
+1071: AWS 솔루션 설계, 구축, 운영에 관련된 기술 전문가
+1073: [SECTION] 수강 전 권장 사항
+1074: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1075: AWS 관리 인터페이스에 대한 지식(과정명: AWS Technical Essentials)
+1076: 핵심 AWS 설계 및 아키텍처에 대한 지식(과정명: Architecting on AWS)
+1078: [SECTION] 등록
+1079: https://explore.skillbuilder.aws/learn/course/external/view/elearning/21853/digital-classroom-aws-well-architected-best-practices-korean-hangug-eo-gang-ui
+1084: Digital Classroom – AWS Cloud Technical Essentials
+1085: [SECTION] 과정 설명
+1086: AWS Technical Essentials에서는 필수 Amazon Web Services 및 일반적인 솔루션을 소개합니다. 이 과정에서는 컴퓨팅, 데이터베이스, 스토리지, 네트워킹, 모니터링, 보안과 관련된 기초적인 AWS 개념에 대해 다룹니다. 먼저 과정 내의 실습 환경을 통해 AWS에서 작업을 수행해 봅니다. 이 과정에서는 AWS 서비스를 더욱 자세히 파악하려면 알아 두어야 하는 개념을 다룹니다. 이러한 개념을 숙지하면 적절한 정보를 토대로 하여 비즈니스 요구 사항을 충족하는 솔루션을 결정할 수 있습니다. 이 과정을 진행하면 가용성, 내결함성, 확장성, 비용 효율성이 우수한 클라우드 솔루션을 구축, 비교, 적용하는 방법에 관한 정보를 파악할 수 있습니다.
+1087: [SECTION] 과정 목표
+1088: 이 과정에서 학습할 내용은 다음과 같습니다.
+1089: AWS 서비스 관련 용어와 개념을 알아봅니다.
+1090: AWS Management Console을 탐색합니다.
+1091: AWS의 보안 조치와 AWS Identity and Access Management(AWS IAM) 관련 주요 개념을 파악합니다.
+1092: Amazon Elastic Compute Cloud(Amazon EC2), AWS Lambda, Amazon Elastic Container Service(Amazon ECS), Amazon Elastic Kubernetes Service(Amazon EKS) 등 몇 가지 AWS 컴퓨팅 서비스의 특징을 알아봅니다.
+1093: Amazon Relational Database Service(RDS), Amazon DynamoDB, Amazon Simple Storage Service(S3) 등의 AWS 데이터베이스 및 스토리지 서비스를 파악합니다.
+1094: AWS 네트워킹 서비스를 살펴봅니다.
+1095: Amazon CloudWatch 모니터링 기능 액세스 및 구성을 이해합니다.
+1097: [SECTION] 수강 대상
+1098: 이 과정의 수강 대상은 다음과 같습니다.
+1099: 고객에게 AWS 서비스의 기술적인 이점에 대한 소개를 담당하고 있는 직원
+1100: AWS 사용을 시작하는 방법을 습득하려는 개별 사용자
+1101: 시스템 운영 관리자, 솔루션스 아키텍트, 개발자
+1103: [SECTION] 수강 전 권장 사항
+1104: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1105: IT 분야 관련 경험
+1106: 일반적인 데이터 센터 아키텍처 및 구성 요소 관련 기본 지식(서버, 네트워킹, 데이터베이스, 애플리케이션)
+1107: 클라우드 컴퓨팅 또는 AWS 사용 경험이 없어도 무방함
+1108: [SECTION] 등록
+1109: https://explore.skillbuilder.aws/learn/course/external/view/elearning/18977/digital-classroom-aws-cloud-technical-essentials-amazon-korean-na-hangug-eo-gang-ui
+1113: Digital Classroom – Cloud Operations on AWS
+1114: [SECTION] 과정 설명
+1115: 이 과정에서는 시스템 운영자와 시스템 운영 기능을 수행하는 사용자를 대상으로 AWS에서 네트워크와 시스템의 자동화 및 반복 가능한 배포를 관리하고 운영하는 방법을 학습합니다. 관련 서비스, 네트워크, 시스템의 설치, 구성, 자동화, 모니터링, 보안, 유지 관리, 문제 해결 등 시스템 운영 기능에 대해 배우게 됩니다. 그 밖에 해당 실무와 관련된 AWS 기능, 도구 및 모범 사례에 대해서도 구체적으로 알아보겠습니다.
+1116: [SECTION] 과정 목표
+1117: 이 과정에서 학습할 내용은 다음과 같습니다.
+1118: Well-Architected Framework의 핵심 요소인 운영 우수성의 여러 단계를 지원하는 AWS 서비스 파악
+1119: AWS 계정 및 조직과 AWS Identity and Access Management(IAM)를 사용해 AWS 리소스에 대한 액세스 관리
+1120: AWS Systems Manager, AWS CloudTrail, AWS Config 등 AWS 서비스를 사용하여 사용 중인 AWS 리소스의 인벤토리 유지 관리
+1121: 메타데이터 태그, Amazon Machine Image(AMI), AWS Control Tower를 사용하여 AWS 클라우드 환경을 배포 및 유지 관리하는 리소스 배포 전략 개발
+1122: AWS CloudFormation, AWS Service Catalog 같은 AWS 서비스를 사용해 리소스 배포 자동화
+1123: AWS 서비스를 사용해 배포, 패치 같은 CloudOps 수명 주기 프로세스를 통한 AWS 리소스 관리
+1124: Amazon Route 53, Elastic Load Balancing과 같은 AWS 서비스를 사용해 지연 시간과 성능을 최적화하여 트래픽을 라우팅할 수 있는 고가용성 클라우드 환경 구성
+1125: AWS Auto Scaling 및 Amazon EC2 Auto Scaling 구성을 통한 수요 기반 클라우드 환경 확장
+1126: Amazon CloudWatch를 비롯한 관련 기능(경보, 대시보드, 위젯 등)을 사용한 클라우드 환경 모니터링
+1127: AWS CloudTrail 및 AWS Config 등 AWS 서비스를 사용하여 클라우드 환경에서 권한 관리 및 활동 추적
+1128: Amazon Virtual Private Cloud(Amazon VPC)에 대한 리소스 배포, Amazon VPC에 대해 필요한 연결 구성, 서비스 중단에서 리소스 보호
+1129: AWS 클라우드 환경에서 탑재 가능한 스토리지의 용도, 이점, 적절한 사용 사례 명시
+1130: Amazon Simple Storage Service(Amazon S3), Amazon S3 Glacier를 포함해 AWS 클라우드의 객체 스토리지에 대한 운영 특성 설명
+1131: AWS Cost Explorer, AWS Cost and Usage Report 같은 서비스를 사용해 클라우드 비용을 수집하고, 최적화하고, 예측할 수 있는 포괄적 비용 모델 구축
+1133: [SECTION] 수강 대상
+1134: 이 과정의 수강 대상은 다음과 같습니다.
+1135: AWS 클라우드에서 작업하는 시스템 관리자 및 운영자
+1136: 시스템 운영에 대한 지식을 쌓고 싶은 IT 업계 종사자
+1138: [SECTION] 수강 전 권장 사항
+1139: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1140: AWS Technical Essentials 과정을 성공적으로 이수
+1141: 소프트웨어 개발 또는 시스템 관리와 관련된 경력
+1142: Linux 환경의 셸 스크립팅, Windows의 cmd/PowerShell 같은 명령줄에서 운영 체제를 유지 관리할 수 있는 능력
+1143: 네트워킹 프로토콜(TCP/IP, HTTP)에 대한 기본 지식
+1144: [SECTION] 등록
+1146: https://explore.skillbuilder.aws/learn/course/external/view/elearning/19084/digital-classroom-cloud-operations-on-aws-amazon-korean
+1149: Digital Classroom - Developing Generative AI Applications on AWS
+1150: [SECTION] 과정 설명
+1151: 이 과정은 파인 튜닝 없이 대규모 언어 모델을 활용하는 데 관심이 있는 소프트웨어 개발자에게 생성형 AI를 소개하기 위해 고안되었습니다. 이 과정에서는 생성형 AI, 생성형 AI 프로젝트 계획, Amazon Bedrock 시작하기, 프롬프트 엔지니어링의 기초, Amazon Bedrock 및 LangChain을 사용하여 생성형 AI 애플리케이션을 구축하기 위한 아키텍처 패턴의 개요를 제공합니다.
+1155: [SECTION] 과정 목표
+1156: 이 과정에서 학습할 내용은 다음과 같습니다.
+1157: 생성형 AI의 중요성을 정의하고 잠재적인 위험과 이점을 설명합니다.
+1158: 생성형 AI와 관련된 기술적 기본 사항 및 용어에 대해 설명합니다.
+1159: Amazon Bedrock의 이점과 사용 사례를 인식합니다.
+1160: 파운데이션 모델의 기본 기능, 유형 및 다양한 사용 사례에 대해 설명합니다.
+1161: 프롬프트 엔지니어링을 정의하고 FM과의 상호 작용 시 일반적인 모범 사례를 적용합니다.
+1162: Amazon Bedrock 파운데이션 모델, 추론 파라미터, 주요 Amazon Bedrock API에 대해 설명합니다.
+1163: 유용한 생성형 AI 애플리케이션을 구축하는 데 사용되는 Amazon Bedrock으로 구현할 수 있는 아키텍처 패턴을 설명합니다.
+1164: LangChain을 대규모 언어 모델(LLM), 프롬프트 템플릿, 체인, 채팅 모델, 텍스트 임베딩 모델, 문서 로더, 검색기, Amazon Bedrock용 에이전트와 통합하는 방법을 설명합니다.
+1165: 다양한 Amazon Bedrock 모델, LangChain 및 검색 증강 생성(RAG) 접근 방식을 사용하는 샘플 사용 사례를 구축하고 테스트합니다.
+1168: [SECTION] 수강 대상
+1169: 이 과정의 수강 대상은 다음과 같습니다.
+1170: 미세 조정 없이 대규모 언어 모델을 활용하는 데 관심이 있는 소프트웨어 개발자
+1172: [SECTION] 수강 전 권장 사항
+1173: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1174: AWS Technical Essentials 과정 이수
+1175: Python에 대한 중간 수준의 숙련도
+1177: [SECTION] 등록
+1178: https://explore.skillbuilder.aws/learn/course/external/view/elearning/21296/digital-classroom-developing-generative-ai-applications-on-aws-korean-hangug-eo-gang-ui
+1182: Digital Classroom – Developing on AWS
+1183: [SECTION] 과정 설명
+1184: 이 과정은 숙련된 개발자에게 프로그래밍 방식으로 AWS 서비스와 상호 작용하여 웹 솔루션을 구축하는 방법을 가르칩니다. 리소스 선택에 관한 상위 수준 아키텍처 논의를 통해 진행하고, AWS 소프트웨어 개발 키트(AWS SDK)와 Command Line Interface(AWS CLI)를 사용하여 클라우드 애플리케이션을 구축하고 배포하는 방법을 심층 탐색합니다. 여러분은 샘플 애플리케이션을 구축하면서 개발 환경에 대한 권한을 설정하는 방법을 배우고, AWS 핵심 서비스를 사용하여 데이터를 처리하고, 사용자 인증을 구성하고, AWS 클라우드에 배포하고, 디버깅을 통해 애플리케이션 문제를 해결하는 비즈니스 로직을 추가합니다. 이 과정에서 설명한 설계 패턴 및 솔루션을 구현하는 데 도움이 되는 코드 예제가 포함되어 있습니다. 이러한 실습은 주요 과정 콘텐츠를 보강하며, Python, .NET, Java용 AWS SDK, AWS CLI, AWS Management Console을 사용하여 솔루션을 구현하는 데 도움이 됩니다.
+1185: [SECTION] 과정 목표
+1186: 이 과정에서 학습할 내용은 다음과 같습니다.
+1187: 개발 환경을 지원하도록 IAM 권한 구성
+1188: AWS SDK를 사용한 클라우드 네이티브 애플리케이션 설계, 다이어그램, 구축, 배포
+1189: AWS 리소스를 사용하여 애플리케이션 모니터링 및 유지 관리
+1191: [SECTION] 수강 대상
+1192: 이 과정의 수강 대상은 다음과 같습니다.
+1193: 소프트웨어 개발자
+1194: 솔루션스 아키텍트
+1195: AWS 서비스를 사용하여 개발 역량을 높이려는 숙련된 기술 전문가
+1197: [SECTION] 수강 전 권장 사항
+1198: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1199: 핵심 AWS 서비스에 대한 지식(과정: AWS Cloud Practitioner Essentials)
+1200: AWS Technical Essentials
+1201: 최상위 프로그래밍 언어에 대한 지식: Java, Python 및 .NET
+1202: [SECTION] 등록
+1204: https://explore.skillbuilder.aws/learn/course/external/view/elearning/19452/digital-classroom-developing-on-aws-amazon-korean
+1207: Digital Classroom - Developing Serverless Solutions on AWS (제공 예정 – 2025년)
+1208: [SECTION] 과정 설명
+1209: 이 과정에서는 개발자가 AWS Lambda 및 AWS 서버리스 플랫폼의 다른 서비스를 사용하여 서버리스 애플리케이션을 구축하는 방법을 연습할 수 있습니다. 간단한 주제에서 좀 더 복잡한 주제로 진행되는 실습에서 AWS 프레임워크를 사용하여 직접 서버리스 애플리케이션을 배포하게 됩니다. 본 과정 내내 AWS 설명서를 사용하여 강의실을 넘어 진정한 학습 및 문제 해결 방법을 습득하게 됩니다.
+1219: Digital Classroom – DevOps Engineering on AWS
+1220: [SECTION] 과정 설명
+1221: DevOps Engineering on AWS에서는 DevOps의 도구, 사례, 문화 철학을 조합하여 AWS에서 애플리케이션과 서비스를 빠르게 개발, 제공, 유지 관리하는 조직의 능력을 개선하는 방법을 설명합니다. 이 과정에서는 지속적 통합(CI), 지속적 전달(CD), 마이크로서비스, 코드형 인프라, 모니터링 및 로깅, 커뮤니케이션 및 협업을 다룹니다.
+1222: [SECTION] 과정 목표
+1223: 이 과정에서 학습할 내용은 다음과 같습니다.
+1224: 소규모 DevOps 팀의 장점 나열
+1225: 일반적인 소규모 DevOps 팀 구성원의 역할과 책임 나열
+1226: AWS Cloud9을 활용하여 코드를 작성, 실행, 디버깅하고 클라우드 기반 IDE를 개발 팀과 공유
+1227: 테스트 및 보안을 포함한 지속적 통합/지속적 전달(CI/CD) 파이프라인 구축
+1228: Git 분기 전략을 개발하고 다양한 환경의 CI/CD 파이프라인과 통합
+1229: AWS CloudFormation을 사용하여 소프트웨어 개발 프로젝트를 위한 개발, 테스트, 프로덕션 환경 배포
+1230: AWS에서 DevOps 개발 프로젝트를 지원하는 인프라 설계 및 구현
+1231: AWS CloudFormation 템플릿용 CI/CD 파이프라인 구축
+1232: 개발 및 운영의 워크플로와 책임을 종합하여 협업 확립
+1233: AWS CodeCommit을 사용하여 안전하고 확장성이 뛰어난 프라이빗 Git 리포지토리 호스팅
+1234: Amazon Elastic Container Registry(Amazon ECR)를 활용하여 Docker 컨테이너 이미지를 안전하게 저장하고 AWS CodeBuild 및 Amazon Elastic Container Service(Amazon ECS)와 통합
+1235: AWS CodeBuild를 사용하여 코드 빌드, 테스트, 패키징 자동화
+1236: CI/CD 파이프라인 도구 및 서비스에 보안 통합
+1237: ‘한 번에 모두’, ‘롤링’, ‘블루/그린’과 같은 공통 배포 전략 구현
+1238: AWS CodeDeploy를 사용하여 Amazon Elastic Compute Cloud(Amazon EC2), 온프레미스 컴퓨팅, AWS ECS(Amazon EC2/AWS Fargate), AWS Lambda에 대한 소프트웨어 배포 자동화
+1239: AWS CodePipeline을 사용하여 릴리스 파이프라인(빌드, 테스트, 배포) 자동화
+1240: AWS 도구 및 기술을 사용하여 애플리케이션 및 환경 모니터링
+1242: [SECTION] 수강 대상
+1243: 이 과정의 수강 대상은 다음과 같습니다.
+1244: 개발자
+1245: DevOps 엔지니어
+1246: SysOps 엔지니어
+1247: DevOps 아키텍트
+1248: 시스템 관리자
+1250: [SECTION] 수강 전 권장 사항
+1251: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1252: 이전에 System Operations on AWS 또는 Developing on AWS 과정 수강
+1253: 1개 이상의 고급 프로그래밍 언어(C#, Java, PHP, Ruby, Python 등)에 대한 실무 지식
+1254: 명령줄 수준에서 Linux 또는 Windows 시스템을 관리할 수 있는 중급 수준의 지식
+1255: 2년 이상 AWS 환경을 프로비저닝, 운영 및 관리한 경험
+1256: [SECTION] 등록
+1257: https://explore.skillbuilder.aws/learn/course/external/view/elearning/19749/digital-classroom-devops-engineering-on-aws-amazon-korean
+1261: Digital Classroom - Generative AI for Executives (제공 예정 – 2025년)
+1262: [SECTION] 과정 설명
+1263: Generative AI for Executives에서는 생성형 AI의 힘을 활용하여 실질적인 비즈니스 가치를 창출하는 방법을 알려드립니다. 먼저 이러한 새로운 AI 기술의 잠재력을 인식하고 즉시 구현할 수 있는 구체적인 사용 사례를 파악하는 것부터 시작합니다. 그 다음에는 생성형 AI를 안전하고 책임감 있게 사용하기 위한 모범 사례를 살펴보고 잠재적인 함정을 피할 수 있도록 합니다. 마지막으로, 생성형 AI를 조직에 성공적으로 통합하는 데 필요한 중요한 인력, 프로세스 및 기술 고려 사항을 배우게 됩니다. 이 과정을 마치면 생성형 AI를 시작하기 위한 다음 단계를 밟기 위한 실행 계획을 세울 수 있습니다. 이러한 기술을 처음 접하는 사람이든 전문성을 심화하고자 하는 사람이든 이 교육을 통해 생성형 AI의 비즈니스 가치를 최대한 활용할 수 있는 지식과 전략을 갖추게 될 것입니다.
+1264: [SECTION] 과정 목표
+1265: 이 과정에서 학습할 내용은 다음과 같습니다.
+1266: 생성형 AI의 잠재적 비즈니스 가치 인식
+1267: 당장 구현할 수 있는 실제 사용 사례 식별
+1268: 안전하고 책임감 있게 AI 사용
+1269: 성공에 필요한 사람, 프로세스, 기술 관리
+1270: 생성형 AI를 시작하기 위해 취할 수 있는 구체적인 조치 파악
+1272: [SECTION] 수강 대상
+1273: 이 과정은 경영진과 고위 비즈니스 리더를 대상으로 합니다.
+1275: [SECTION] 등록
+1276: https://explore.skillbuilder.aws/learn/courses/20468/digital-classroom-generative-ai-for-executives
+1280: Digital Classroom - Planning and Designing Databases on AWS
+1281: [SECTION] 과정 설명
+1282: 이 교육 과정에서는 목적별 Amazon Web Services(AWS) 클라우드 데이터베이스를 사용하여 솔루션을 계획하고 설계하는 방법에 대해 배웁니다. 이 교육 과정에서는 이러한 데이터베이스 각각의 특징과 기능을 소개하고, 이를 사용할 때 고려해야 할 설계 고려 사항을 공유합니다. 이 교육 과정 수강을 통해 고유한 요구에 적합한 AWS 데이터베이스를 선택하는 데 필요한 분석 기술을 개발할 수 있습니다.
+1283: 과정이 끝날 때 비즈니스 사용 사례 분석, 워크로드 분석, 애플리케이션 요구 사항 평가를 통해 조직의 요구를 지원하기에 가장 적합한 AWS 데이터베이스 솔루션을 파악하고 설계할 수 있습니다.
+1284: [SECTION] 과정 목표
+1285: 이 과정에서 학습할 내용은 다음과 같습니다.
+1286: 데이터베이스 솔루션 설계를 위한 AWS Well-Architected Framework 요약
+1287: 주어진 워크로드에 적합한 목적별 데이터베이스 서비스 선택
+1288: 비즈니스 문제를 해결하기 위해 관계형 데이터베이스 솔루션 설계
+1289: 비즈니스 문제를 해결하기 위해 NoSQL 데이터베이스 솔루션 설계
+1290: 비즈니스 문제를 해결하기 위해 여러 데이터베이스의 데이터를 분석
+1291: 데이터베이스 솔루션의 보안 고려 사항
+1293: [SECTION] 수강 대상
+1294: 이 과정의 대상은 다음과 같습니다.
+1295: 솔루션스 아키텍트
+1296: 데이터베이스 아키텍트
+1297: 개발자
+1299: [SECTION] 수강 전 권장 사항
+1300: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1301: AWS 데이터베이스 서비스에 대한 지식
+1302: 관계형 또는 비관계형 데이터베이스의 데이터베이스 설계 개념 및/또는 데이터 모델링에 대한 이해
+1303: 클라우드 컴퓨팅 개념에 대한 지식
+1304: 일반적인 네트워킹 및 암호화 개념에 대한 지식
+1305: Introduction to Building with AWS Databases 디지털 교육 과정 이수
+1306: [SECTION] 등록
+1307: https://explore.skillbuilder.aws/learn/course/external/view/elearning/20404/digital-classroom-planning-and-designing-databases-on-aws-korean-na-hangug-eo-gang-ui
+1311: Digital Classroom - Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS) (제공 예정 – 2025년)
+1312: [SECTION] 과정 설명
+1313: Amazon EKS를 사용하면 자체 Kubernetes 컨트롤 플레인을 설치, 운영, 유지 관리할 필요 없이 AWS에서 Kubernetes를 실행할 수 있습니다. 이 과정에서는 Amazon EKS를 사용한 Kubernetes의 컨테이너 관리 및 오케스트레이션에 대해 학습합니다. 또한 Amazon EKS 클러스터를 구축하고, 환경을 구성하고, 클러스터를 배포한 후 클러스터에 애플리케이션을 추가해봅니다. Amazon Elastic Container Registry(Amazon ECR)를 사용하여 컨테이너 이미지를 관리하고 애플리케이션 배포를 자동화하는 방법을 배우게 됩니다. 지속적 통합(CI) 및 지속적 전달(CD) 도구를 사용하여 애플리케이션을 배포합니다. 지표, 기록, 추적, 수평/수직 확장을 이용하여 환경을 모니터링하고 크기를 조정하는 방법을 배우게 됩니다. 효율성, 비용, 복원력을 고려한 설계를 통해 대규모 컨테이너 환경을 설계하고 관리하는 방법을 배우게 됩니다. 또한 클러스터를 지원하도록 AWS 네트워킹 서비스를 구성하고 Amazon EKS 환경을 보호하는 방법을 배우게 됩니다.
+1315: Digital Classroom - Security Engineering on AWS
+1316: [SECTION] 과정 설명
+1317: 보안은 클라우드 고객과 클라우드 도입을 고려하는 고객 모두의 관심사입니다. 사이버 공격과 데이터 유출의 증가는 대부분의 업계 종사자들이 여전히 가장 염두에 두고 있는 문제입니다. Security Engineering on AWS 과정은 이러한 걱정을 다룰 수 있도록 안전한 방식으로 Amazon Web Services(AWS)와 상호 작용하고 구축하는 방법을 더 잘 이해하실 수 있도록 도와드립니다. 이 과정에서는 자격 증명 및 역할 관리, 계정 관리 및 프로비저닝, 그리고 비정상API 활동 모니터링에 대해 알아봅니다. 또한 AWS에 저장된 데이터를 보호하는 방법에 대해서도 배우게 됩니다. 이 과정에서는 보안 인시던트를 파악하는 데 도움이 되는 로그를 생성, 수집 및 모니터링하는 방법을 살펴봅니다. 마지막으로, AWS 서비스를 통한 보안 인시던트의 탐지 및 조사를 검토할 것입니다.
+1321: [SECTION] 과정 목표
+1322: 이 과정에서 학습할 내용은 다음과 같습니다.
+1323: CIA(기밀성, 무결성 및 가용성) 3요소를 기반으로 AWS 클라우드 보안을 이해합니다.
+1324: AWS Identity and Access Management(AWS IAM)로 인증 및 권한 부여를 생성 및 분석합니다.
+1325: 적절한 AWS 서비스와 함께 AWS에서 계정을 관리하고 프로비저닝합니다.
+1326: AWS 서비스를 사용하여 비밀을 관리하는 방법을 파악합니다.
+1327: 암호화 및 액세스 제어를 통해 민감한 정보를 모니터링하고 데이터를 보호합니다.
+1328: 외부 소스의 공격에 대처하는 AWS 서비스를 파악합니다.
+1329: 로그를 모니터링, 생성 및 수집합니다.
+1330: 보안 인시던트의 지표를 식별합니다.
+1331: 서비스를 사용하여 위협을 조사하고 완화하는 방법을 파악합니다.
+1333: [SECTION] 수강 대상
+1334: 이 과정의 대상은 다음과 같습니다.
+1335: 보안 엔지니어
+1336: 보안 아키텍트
+1337: 클라우드 아키텍트
+1339: [SECTION] 수강 전 권장 사항
+1340: 이 과정을 수강하려면 다음 조건을 갖추는 것이 좋습니다.
+1341: 다음 과정 수료:
+1342: AWS Security Essentials 또는 AWS Security Fundamentals, 제2판
+1343: Architecting on AWS
+1344: IT 보안 사례 및 인프라 개념에 대한 실무 지식
+1345: AWS 클라우드에 대한 지식
+1347: [SECTION] 등록
+1348: https://explore.skillbuilder.aws/learn/course/external/view/elearning/20864/digital-classroom-security-engineering-on-aws-korean
+1350: Digital Classroom – The Machine Learning Pipeline on AWS (제공 예정 – 2025년)
+1351: [SECTION] 과정 설명
+1352: 이 과정에서는 프로젝트 기반 학습 환경에서 머신러닝(ML) 파이프라인을 사용하여 실제 비즈니스 문제를 해결하는 방법을 살펴봅니다. 수강생은 강사의 프레젠테이션과 데모를 통해 파이프라인의 각 단계에 대해 학습한 다음 해당 지식을 적용하여 사기 탐지 또는 항공편 지연이라는 두 가지 비즈니스 문제 중 하나를 해결하는 프로젝트를 완료합니다. 과정을 마치면 수강생은 선택한 비즈니스 문제를 해결하는 Amazon SageMaker를 사용하여 ML 모델을 성공적으로 구축, 교육, 평가, 조정 및 배포할 수 있게 됩니다. 머신 러닝 경험이나 지식이 거의 또는 전혀 없는 학습자도 이 과정을 통해 이점을 얻을 수 있습니다. 통계와 Python에 대한 기본 지식이 있으면 도움이 됩니다.
