@@ -20,7 +20,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         textAlign="center" 
         margin={{ bottom: "l" }}
       >
-        <img src="/logo.png" alt="AWS English Practice" width="120" />
+        <img src="/logo.png" alt="AWS T&C 교육 사이트" width="120" />
       </Box>
       
       <div style={{ width: '100%', maxWidth: '450px' }}>
