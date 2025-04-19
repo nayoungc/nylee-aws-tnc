@@ -22,7 +22,8 @@ import LoadingScreen from './components/LoadingScreen';
 // 강사용 페이지 컴포넌트
 import Dashboard from './pages/instructor/Dashboard';
 import CourseCatalog from './pages/instructor/CourseCatalog';
-import MyCourses from './pages/instructor/MyCourses';
+import CoursesManagement from './pages/instructor/CoursesManagement';
+import CourseCreation from './pages/instructor/CourseCreation';
 import PreQuizManagement from './pages/instructor/PreQuizManagement';
 import PostQuizManagement from './pages/instructor/PostQuizManagement';
 import SurveyManagement from './pages/instructor/SurveyManagement';
@@ -277,7 +278,23 @@ const AppRoutes: React.FC = () => {
               userAttributes={userAttributes}
             >
               <MainLayout>
-                <MyCourses />
+                <CoursesManagement />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/instructor/courses/create"
+          element={
+            <ProtectedRoute
+              authenticated={authenticated}
+              redirectPath="/signin"
+              requiredRole="instructor"
+              userAttributes={userAttributes}
+            >
+              <MainLayout>
+                <CourseCreation />
               </MainLayout>
             </ProtectedRoute>
           }
