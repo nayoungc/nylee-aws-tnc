@@ -32,6 +32,12 @@ import AiGenerator from './pages/instructor/AiGenerator';
 import CourseDetailPage from './pages/instructor/CourseDetailPage';
 import AdminPage from './pages/admin/AdminPage';
 
+// AppRoutes.tsx의 관련 부분 업데이트
+import StudentCourseHome from './pages/student/StudentCourseHome';
+import SurveyPage from './pages/student/SurveyPage';
+import PreQuizPage from './pages/student/PreQuizPage';
+import PostQuizPage from './pages/student/PostQuizPage';
+
 // 레이아웃 컴포넌트
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
@@ -147,6 +153,11 @@ const AppRoutes: React.FC = () => {
       {/* 공개 페이지 라우트 - 직접 MainLayout 적용 */}
       <Route path="/courses" element={<MainLayout><StudentHome /></MainLayout>} />
       <Route path="/course/:courseId" element={<MainLayout><CourseDetailPage /></MainLayout>} />
+      {/* 교육생용 라우트 (공개) */}
+      <Route path="/student/:courseId" element={<StudentCourseHome />} />
+      <Route path="/student/:courseId/survey" element={<SurveyPage />} />
+      <Route path="/student/:courseId/pre-quiz" element={<PreQuizPage />} />
+      <Route path="/student/:courseId/post-quiz" element={<PostQuizPage />} />
 
       {/* 보호된 라우트 - 인증 필요 */}
       <Route
