@@ -84,95 +84,139 @@ def analyze_document_structure(doc_path):
     return patterns
 
 def direct_extract_courses_from_docx(file_path):
-    """docx 파일에서 직접 과정 정보 추출 - 수정된 버전"""
+    """docx 파일에서 직접 과정 정보 추출 - 모듈 및 실습 추출 개선"""
     doc = docx.Document(file_path)
     courses = []
     
-    # 페이지 번호 패턴
-    page_number_pattern = re.compile(r'^\d+\$')
-    
-    # AWS 과정 제목을 인식하는 조건으로 수정
-    is_course_title = lambda text: (
-        text and 
-        len(text) > 5 and
-        not text.isdigit() and
-        not page_number_pattern.match(text) and
-        not text.startswith("Instuctor-led") and
-        not text.startswith("Instructor-led") and
-        not text.startswith("Digital") and
-        "모듈" not in text and
-        "목차" not in text and
-        "Overview" not in text and
-        "www." not in text and
-        "http" not in text
-    )
-    
-    # 과정 정보를 담을 구조
-    course_data = []
-    current_course = None
-    
-    # 이전에 과정 제목으로 식별된 텍스트 패턴 저장
+    # 목차에서 과정 제목 식별
     known_titles = []
+    for i, para in enumerate(doc.paragraphs[:50]):
+        text = para.text.strip()
+        if text and len(text) > 5 and not text.isdigit() and not text.startswith('Instructor') and not text.startswith('Digital'):
+            # 페이지 번호와 제목 분리 패턴
+            match = re.match(r'(.*?)\s+(\d+)\$', text)
+            if match:
+                title = match.group(1).strip()
+                if len(title) > 5 and "Overview" not in title:
+                    known_titles.append(title)
     
-    # 과정 정보 섹션 패턴
-    section_patterns = {
+    if not known_titles:
+        print("목차에서 과정 제목을 찾을 수 없습니다. 다른 방법으로 시도합니다.")
+    else:
+        print(f"목차에서 {len(known_titles)}개 과정 제목 식별")
+        print(f"예시: {known_titles[:3]}")
+    
+    # 섹션 키워드 패턴 (정확한 매칭을 위해 수정)
+    section_keywords = {
         "과정 설명": "description",
         "레벨": "level", 
         "제공 방법": "delivery_method",
         "소요 시간": "duration",
         "과정 목표": "objectives",
-        "수강 대상": "audience",
+        "수강 대상": "audience", 
         "수강 전 권장 사항": "prerequisites",
         "등록": "registration_link",
-        "과정 개요": "modules_overview"
+        "과정 개요": "modules_overview",
+        "코스 개요": "modules_overview",
+        "다루는 내용": "modules_overview"
     }
     
-    # 1단계: 문서의 모든 텍스트 추출
-    all_paragraphs = [p.text.strip() for p in doc.paragraphs]
-    
-    # 2단계: 목차에서 과정 제목 후보군 식별
-    for i, text in enumerate(all_paragraphs[:50]):  # 앞부분 50줄 검사
-        # 숫자와 텍스트로 된 목차 항목 패턴 (예: "4. AWS Cloud Essentials")
-        if re.match(r'^[\d\.]+\s+\w+.*', text) or is_course_title(text):
-            title = re.sub(r'^[\d\.]+\s+', '', text)  # 앞의 숫자 제거
-            if is_course_title(title):
-                known_titles.append(title)
-    
-    print(f"목차에서 찾은 과정 제목 후보군: {len(known_titles)}개")
-    if known_titles:
-        print(f"예시: {known_titles[:3]}")
-    
-    # 3단계: 문서를 순회하면서 과정 정보 추출
-    current_section = None
     current_course = None
+    current_section = None
+    courses_data = []
     
-    for i, para in tqdm(enumerate(doc.paragraphs), desc="문서 분석 중", total=len(doc.paragraphs), ncols=100):
+    # 문서 전체 구조를 저장해서 디버깅
+    doc_structure = []
+    
+    # 사전 처리: 전체 문서 구조 파악
+    for i, para in enumerate(doc.paragraphs):
+        text = para.text.strip()
+        if text:
+            doc_structure.append((i, text))
+            
+            # 과정 경계 표시(예: 제목 뒤 숫자로 페이지 번호 표시된 경우)
+            if re.match(r'^[\w\s\-]+\s+\d+\$', text) and not text.startswith("모듈") and not text.startswith("실습"):
+                match = re.match(r'(.*?)\s+(\d+)\$', text)
+                if match and len(match.group(1).strip()) > 5:
+                    doc_structure[-1] = (i, f"[POSSIBLE_TITLE] {text}")
+            
+            # 섹션 경계 강조
+            for keyword in section_keywords:
+                if text == keyword:
+                    doc_structure[-1] = (i, f"[SECTION] {text}")
+    
+    # 디버깅을 위해 문서 구조 저장
+    with open('document_structure.txt', 'w', encoding='utf-8') as f:
+        for idx, text in doc_structure:
+            f.write(f"{idx}: {text}\n")
+    
+    print(f"문서 구조 분석: 총 {len(doc_structure)}개 텍스트 줄 발견")
+    
+    # 과정 제목이자 섹션 시작 감지 함수
+    def is_course_title(text):
+        # 기본 과정 제목 조건
+        if len(text) < 6 or text.isdigit():
+            return False
+            
+        # 제외할 패턴
+        exclude_patterns = ["Overview", "모듈", "실습", "일차", "www.", "http"]
+        for pattern in exclude_patterns:
+            if pattern in text:
+                return False
+                
+        # 알려진 제목과 매칭
+        for known in known_titles:
+            if text.startswith(known) or known in text:
+                return True
+                
+        # 페이지 번호가 있는 제목 형식
+        if re.match(r'^[\w\s\-]+\s+\d+\$', text):
+            title_part = text.rsplit(' ', 1)[0]
+            if len(title_part) > 5:
+                return True
+                
+        return False
+    
+    # 새로운 접근법: 단락 분석 및 구조화된 정보 추출
+    current_course = None
+    current_section = None
+    current_module = None
+    current_lab = None
+    found_courses = []
+    
+    # 실제 문서 내용 추출
+    for i, para in enumerate(tqdm(doc.paragraphs, desc="과정 정보 추출 중", ncols=100)):
         text = para.text.strip()
         if not text:
             continue
             
-        # 과정 제목 감지
-        is_title = False
-        for title in known_titles:
-            if title in text:
-                is_title = True
-                current_course = Course(title=title)
-                current_section = None
+        # 1. 과정 제목 인식
+        if is_course_title(text) and (current_course is None or len(current_course.title) < len(text)):
+            # 이전 과정 저장
+            if current_course and current_course.title and (current_course.description or current_course.level):
+                found_courses.append(current_course)
+                
+            # 새 과정 시작
+            title = text.split(' ', 1)[0] if text.endswith(tuple('0123456789')) else text
+            current_course = Course(title=title)
+            current_section = None
+            print(f"과정 제목 감지: {title}")
+        
+        # 2. 섹션 헤더 인식
+        is_section = False
+        for keyword, section_id in section_keywords.items():
+            if text == keyword or text.startswith(f"{keyword}:"):
+                current_section = section_id
+                is_section = True
+                print(f"  섹션 감지: {keyword}")
                 break
                 
-        if not is_title and current_course is None:
-            # 알려진 제목이 아니라면 휴리스틱 검사
-            if is_course_title(text) and len(text) < 100:
-                current_course = Course(title=text)
-                current_section = None
-                
-        # 섹션 헤더 감지
-        if text in section_patterns:
-            current_section = section_patterns[text]
+        if is_section:
             continue
             
-        # 현재 섹션에 내용 추가
-        if current_course and current_section and text:
+        # 3. 현재 섹션에 내용 추가
+        if current_course and current_section:
+            # 기본 메타데이터 추가
             if current_section == "description":
                 current_course.description += text + " "
             elif current_section == "level":
@@ -182,74 +226,98 @@ def direct_extract_courses_from_docx(file_path):
             elif current_section == "duration":
                 current_course.duration = text
             elif current_section == "registration_link":
-                # URL 형식만 저장
-                if "www." in text or "http" in text:
+                if "aws.training" in text or "http" in text:
                     current_course.registration_link = text
-            elif current_section == "objectives":
-                if text.startswith("·"):
-                    current_course.objectives.append(text[1:].strip())
-            elif current_section == "audience":
-                if text.startswith("·"):
-                    current_course.audience.append(text[1:].strip())
-            elif current_section == "prerequisites":
-                if text.startswith("·"):
-                    current_course.prerequisites.append(text[1:].strip())
-            elif current_section == "modules_overview":
-                # 모듈 정보 처리
-                if text.startswith("모듈") or text.startswith("일 차"):
-                    module_match = re.match(r'모듈\s+\d+[^:]*:\s*(.+)', text)
-                    day_match = re.match(r'\d일\s*차[^:]*:\s*(.+)', text)
                     
-                    if module_match:
-                        module_title = module_match.group(1).strip()
-                        current_module = Module(title=module_title)
-                        current_course.modules.append(current_module)
-                    elif day_match:
-                        day_title = day_match.group(1).strip()
-                        current_module = Module(title=f"{text.split(':')[0]} - {day_title}")
-                        current_course.modules.append(current_module)
-                # 실습 정보 처리
+            # 목록 데이터 (글머리 기호로 시작하는 항목)
+            elif current_section in ["objectives", "audience", "prerequisites"]:
+                if text.startswith("•") or text.startswith("·") or text.startswith("-"):
+                    clean_text = text.lstrip("•·-").strip()
+                    if current_section == "objectives":
+                        current_course.objectives.append(clean_text)
+                    elif current_section == "audience":
+                        current_course.audience.append(clean_text)
+                    elif current_section == "prerequisites":
+                        current_course.prerequisites.append(clean_text)
+                        
+            # 모듈 및 실습 정보 추출 (개선된 로직)
+            elif current_section == "modules_overview":
+                # 새 모듈 시작
+                module_pattern = re.match(r'모듈\s*(\d+)[:\s]*(.+)', text)
+                day_pattern = re.match(r'(\d+)일\s*차[:\s]*(.+)', text)
+                
+                if module_pattern:
+                    module_num = module_pattern.group(1)
+                    module_title = module_pattern.group(2).strip()
+                    current_module = Module(title=f"모듈 {module_num}: {module_title}")
+                    current_course.modules.append(current_module)
+                    print(f"    모듈 감지: {current_module.title}")
+                    
+                elif day_pattern:
+                    day_num = day_pattern.group(1)
+                    day_title = day_pattern.group(2).strip() if day_pattern.group(2) else f"{day_num}일차"
+                    current_module = Module(title=f"{day_num}일차: {day_title}")
+                    current_course.modules.append(current_module)
+                    print(f"    일차 감지: {current_module.title}")
+                    
+                # 새 실습 시작
                 elif text.startswith("실습"):
-                    lab_match = re.match(r'실습\s+\d+[^:]*:\s*(.+)', text)
-                    if lab_match:
-                        lab_title = lab_match.group(1).strip()
-                        current_lab = Lab(title=lab_title)
+                    lab_pattern = re.match(r'실습\s*(\d+)[:\s]*(.+)', text)
+                    if lab_pattern:
+                        lab_num = lab_pattern.group(1)
+                        lab_title = lab_pattern.group(2).strip()
+                        current_lab = Lab(title=f"실습 {lab_num}: {lab_title}")
                         current_course.labs.append(current_lab)
-                # 모듈/실습의 세부 항목
-                elif text.startswith("·") and current_course.modules:
-                    current_course.modules[-1].topics.append(text[1:].strip())
-        
-        # 새로운 과정 시작 감지 또는 과정 종료
-        if (current_course and (
-                (i+1 < len(doc.paragraphs) and is_course_title(doc.paragraphs[i+1].text.strip())) or
-                (text.startswith("등록") and current_section == "registration_link")
-            )):
-            if current_course.title and (
-                   current_course.description or 
-                   current_course.level or 
-                   current_course.delivery_method or
-                   current_course.objectives
-                ):
-                courses.append(current_course)
-                current_course = None
+                        print(f"    실습 감지: {current_lab.title}")
+                        
+                # 모듈/실습 내용 추가
+                elif (text.startswith("•") or text.startswith("·") or text.startswith("-")) and current_module:
+                    clean_text = text.lstrip("•·-").strip()
+                    current_module.topics.append(clean_text)
+                    
+                # 그 외 내용은 현재 모듈이나 실습의 설명으로 처리
+                elif current_lab and not current_lab.description and not text.startswith("모듈") and not text.startswith("일"):
+                    current_lab.description += text + " "
     
     # 마지막 과정 추가
     if current_course and current_course.title:
-        courses.append(current_course)
+        found_courses.append(current_course)
     
-    # 결과 필터링 및 정리
-    filtered_courses = []
-    for course in courses:
-        # 최소 기준: 제목과 하나 이상의 추가 정보가 있어야 함
-        if course.title and (course.description or course.level or course.objectives):
-            # 중복 제거
-            if not any(c.title == course.title for c in filtered_courses):
-                # URL이 제목인 경우 제외
-                if not course.title.startswith("www.") and not course.title.startswith("http"):
-                    filtered_courses.append(course)
+    # 중복 제거 및 정리
+    unique_courses = []
+    seen_titles = set()
     
-    print(f"총 {len(filtered_courses)}개의 유효한 과정 추출")
-    return filtered_courses
+    for course in found_courses:
+        if course.title not in seen_titles:
+            # 미처리 필드 기본값 설정
+            if not course.description:
+                course.description = "설명 없음"
+            if not course.level:
+                course.level = "미지정"
+            if not course.delivery_method:
+                course.delivery_method = "미지정"
+            if not course.duration:
+                course.duration = "미지정"
+            
+            unique_courses.append(course)
+            seen_titles.add(course.title)
+    
+    # 디버그용 정보 출력
+    print(f"\n추출된 과정 정보: {len(unique_courses)}개 과정")
+    print("\n과정별 모듈 및 실습 현황:")
+    for i, course in enumerate(unique_courses[:min(10, len(unique_courses))]):
+        print(f"{i+1}. {course.title}")
+        print(f"   - 모듈: {len(course.modules)}개")
+        print(f"   - 실습: {len(course.labs)}개")
+    
+    if len(unique_courses) > 10:
+        print(f"   ... 외 {len(unique_courses) - 10}개 과정")
+    
+    # 상세 정보를 JSON 파일로 저장 (디버깅용)
+    with open('extracted_courses_debug.json', 'w', encoding='utf-8') as f:
+        json.dump([asdict(course) for course in unique_courses], f, ensure_ascii=False, indent=2)
+    
+    return unique_courses
 
 def wait_with_progress(check_function, max_attempts=30, delay=2, desc="작업 진행 중"):
     """진행률 표시줄과 함께 작업이 완료될 때까지 대기"""
