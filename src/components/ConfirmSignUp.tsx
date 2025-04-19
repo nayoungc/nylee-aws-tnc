@@ -77,7 +77,7 @@ const ConfirmSignUp: React.FC = () => {
             type="text"
             value={code}
             onChange={({ detail }) => setCode(detail.value)}
-            placeholder={t('auth.enter_confirmation_code')}
+            placeholder={t('auth.enter_confirmation_code') as string}
           />
         </FormField>
       </Form>

@@ -6,20 +6,36 @@ import * as bedrock from 'aws-cdk-lib/aws-bedrock';
 
 export class NyleeAwsTncBedrockStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope: Construct, id: string, props);
+    super(scope, id, props);  // 올바른 super() 호출 문법
 
-    // 기존 S3 버킷 참조
+    // 실제 버킷 이름을 하드코딩하여 사용 
     const reportsBucket = s3.Bucket.fromBucketName(
-      this, 'ExistingReportsBucket', `tnc-reports-\${this.account}-\${this.region}`
+      this, 'ExistingReportsBucket', 'tnc-reports-598393186022-us-east-1'
     );
     
     const courseMaterialsBucket = s3.Bucket.fromBucketName(
-      this, 'ExistingMaterialsBucket', `tnc-course-materials-\${this.account}-\${this.region}`
+      this, 'ExistingMaterialsBucket', 'tnc-course-materials-598393186022-us-east-1'
     );
     
     const documentsBucket = s3.Bucket.fromBucketName(
       this, 'ExistingDocsBucket', 'nylee-aws-docs-rag'
     );
+
+    // // 기존 S3 버킷 참조
+    // const accountId = this.account;
+    // const region = this.region;
+
+    // const reportsBucket = s3.Bucket.fromBucketName(
+    //   this, 'ExistingReportsBucket', `tnc-reports-\${accountId}-\${region}`
+    // );
+
+    // const courseMaterialsBucket = s3.Bucket.fromBucketName(
+    //   this, 'ExistingMaterialsBucket', `tnc-course-materials-\${accountId}-\${region}`
+    // );
+    
+    // const documentsBucket = s3.Bucket.fromBucketName(
+    //   this, 'ExistingDocsBucket', 'nylee-aws-docs-rag'
+    // );
     
     // IAM 역할 생성
     const bedrockRole = new iam.Role(this, 'BedrockRole', {
@@ -73,7 +89,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
       agentResourceRoleArn: bedrockRole.roleArn,
       foundationModel: `arn:aws:bedrock:\${this.region}::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0`,
       idleSessionTtlInSeconds: 1800,
-      knowledgeBases: [  // agentKnowledgeBases가 아닌 knowledgeBases 사용
+      knowledgeBases: [
         {
           description: 'Reports knowledge base',
           knowledgeBaseId: reportsKB.attrKnowledgeBaseId

@@ -21,7 +21,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   // Amplify Gen 2 방식으로 사용자 정보 관리
   const [user, setUser] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [notifications, setNotifications] = useState<FlashbarProps.MessageDefinition[]>([]);
@@ -52,7 +52,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     { text: 'Home', href: '/' },
     ...pathSegments.map((segment, index) => ({
       text: segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' '),
-      href: `/\${pathSegments.slice(0, index + 1).join('/')}` // 백슬래시 제거
+      href: `/\${pathSegments.slice(0, index + 1).join('/')}` 
     }))
   ];
 
@@ -192,20 +192,49 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   ];
 
   // 언어 전환 드롭다운 추가 (i18next 통합)
-  if (t) {
-    utilities.unshift({
-      type: 'menu-dropdown' as const,
-      text: user?.locale === 'ko' ? '한국어' : 'English',
-      iconName: 'user-profile' as const,
-      items: [
-        { id: 'en', text: 'English' },
-        { id: 'ko', text: '한국어' }
-      ],
-      onItemClick: (e: any) => {
-        // 여기에 언어 전환 로직 구현
+  //if (t) {
+  // useTranslation에서 i18n 객체도 가져와서 사용해야 합니다
+  //const { t, i18n } = useTranslation(); // 파일 상단에서 i18n도 가져오도록 수정 필요
+  
+  utilities.unshift({
+    type: 'menu-dropdown' as const,
+    text: i18n.language === 'ko' ? '한국어' : 'English',
+    iconName: 'settings' as any,
+    items: [
+      { id: 'en', text: 'English' },
+      { id: 'ko', text: '한국어' }
+    ],
+    onItemClick: (e: any) => {
+      const { id } = e.detail;
+      if (id === 'en' || id === 'ko') {
+        // 언어 변경
+        i18n.changeLanguage(id);
+        
+        // 선택 사항: 언어 설정을 로컬 스토리지에 저장
+        localStorage.setItem('i18nextLng', id);
+        
+        // 선택 사항: 변경된 언어로 페이지 새로고침 (필요한 경우)
+        // window.location.reload();
+        
+        // 언어 변경 알림 표시 (선택 사항)
+        setNotifications(prev => [
+          ...prev,
+          {
+            type: 'success',
+            content: id === 'en' ? 'Language changed to English' : '언어가 한국어로 변경되었습니다',
+            dismissible: true,
+            id: `language-change-\${Date.now()}`,
+            onDismiss: () => {
+              setNotifications(notifications => 
+                notifications.filter(item => item.id !== `language-change-\${Date.now()}`)
+              );
+            }
+          }
+        ]);
       }
-    });
-  }
+    }
+  });
+  
 
   return (
     <AppLayout
