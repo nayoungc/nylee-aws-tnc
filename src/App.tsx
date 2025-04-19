@@ -1,6 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Authenticator } from '@aws-amplify/ui-react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import '@aws-amplify/ui-react/styles.css';
 import '@cloudscape-design/global-styles/index.css';
 
@@ -24,7 +23,36 @@ import AiGenerator from './pages/instructor/AiGenerator';
 // Hooks
 import { useAuth } from './hooks/useAuth';
 
-// 권한 검사 컴포넌트
+// 로그인 라우트 컴포넌트
+const LoginRoute = () => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+  
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <div>인증 상태 확인 중...</div>
+      </div>
+    );
+  }
+  
+  if (user) {
+    if (from !== '/login') {
+      return <Navigate to={from} replace />;
+    } else {
+      // 이메일 도메인으로 역할 확인
+      const isInstructor = user.email?.endsWith('@amazon.com') || false;
+      return isInstructor 
+        ? <Navigate to="/dashboard" replace /> 
+        : <Navigate to="/student" replace />;
+    }
+  }
+  
+  return <Login />;
+};
+
+// 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ 
   children, 
   requiredRole = null
@@ -33,16 +61,24 @@ const ProtectedRoute = ({
   requiredRole?: string | null 
 }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <div>인증 상태 확인 중...</div>
+      </div>
+    );
   }
   
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  if (requiredRole && user['custom:role'] !== requiredRole) {
+  // 이메일 도메인으로 역할 확인
+  const isInstructor = user.email?.endsWith('@amazon.com') || false;
+  
+  if (requiredRole === 'instructor' && !isInstructor) {
     return <Navigate to="/" replace />;
   }
   
@@ -50,21 +86,29 @@ const ProtectedRoute = ({
 };
 
 const App: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <Router>
       <Header />
       <Routes>
-        <Route path="/login" element={<Login />} />
+        {/* 로그인 페이지 */}
+        <Route path="/login" element={<LoginRoute />} />
         
         {/* 홈 페이지 - 역할에 따라 다른 대시보드 */}
         <Route path="/" element={
-          user ? (
-            user['custom:role'] === 'instructor' 
-              ? <Navigate to="/dashboard" replace /> 
-              : <Navigate to="/student" replace />
-          ) : <Navigate to="/login" replace />
+          loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+              <div>인증 상태 확인 중...</div>
+            </div>
+          ) : (
+            user ? (
+              // 이메일 도메인으로 역할 확인
+              user.email?.endsWith('@amazon.com') 
+                ? <Navigate to="/dashboard" replace /> 
+                : <Navigate to="/student" replace />
+            ) : <Navigate to="/login" replace />
+          )
         } />
 
         {/* 강사용 라우트 */}
