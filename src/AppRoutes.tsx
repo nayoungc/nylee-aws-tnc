@@ -176,7 +176,6 @@ const AppRoutes: React.FC = () => {
     return () => listener();
   }, [checkAuthState, navigate, t, authenticated, location.pathname]);
 
-  // 나머지 코드는 그대로 유지...
   // 로딩 중 화면
   if (isLoading && authenticated === null) {
     return <LoadingScreen message={t('common.loading') || '로딩 중...'} />;
@@ -223,6 +222,9 @@ const AppRoutes: React.FC = () => {
           )
         }
       />
+      
+      {/* 공개 접근 가능한 과정 페이지 */}
+      <Route path="/courses" element={<MainLayout><StudentHome /></MainLayout>} />
       
       {/* 통합된 과정 경로 - 상세 및 교육생 기능 */}
       <Route path="/course/:courseId">
@@ -319,9 +321,53 @@ const AppRoutes: React.FC = () => {
           />
         </Route>
 
-        {/* 분석 및 보고서 (필요한 경우 추가) */}
+        {/* 분석 및 보고서 */}
         <Route path="analytics">
-          {/* 추가 분석 라우트 */}
+          <Route
+            path="comparison"
+            element={
+              <ProtectedRoute
+                authenticated={authenticated}
+                redirectPath="/signin"
+                requiredRole="instructor"
+                userAttributes={userAttributes}
+              >
+                <MainLayout>
+                  <div>사전/사후 비교 분석</div>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="reports"
+            element={
+              <ProtectedRoute
+                authenticated={authenticated}
+                redirectPath="/signin"
+                requiredRole="instructor"
+                userAttributes={userAttributes}
+              >
+                <MainLayout>
+                  <div>보고서 생성</div>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="insights"
+            element={
+              <ProtectedRoute
+                authenticated={authenticated}
+                redirectPath="/signin"
+                requiredRole="instructor"
+                userAttributes={userAttributes}
+              >
+                <MainLayout>
+                  <div>과정별 인사이트</div>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
         </Route>
       </Route>
 
@@ -342,20 +388,50 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* 이전 URL 경로 리디렉션 */}
-      {/* 강사 페이지 리디렉션 */}
+      {/* 이전 URL 경로 리디렉션 - 동적 매개변수 올바르게 처리 */}
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
       <Route path="/assessments/pre-quiz" element={<Navigate to="/instructor/assessments/pre-quiz" replace />} />
       <Route path="/assessments/post-quiz" element={<Navigate to="/instructor/assessments/post-quiz" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
       
-      {/* 교육생 페이지 리디렉션 */}
-      <Route path="/student/:courseId" element={<Navigate to="/course/:courseId" replace />} />
-      <Route path="/student/:courseId/survey" element={<Navigate to="/course/:courseId/survey" replace />} />
-      <Route path="/student/:courseId/pre-quiz" element={<Navigate to="/course/:courseId/pre-quiz" replace />} />
-      <Route path="/student/:courseId/post-quiz" element={<Navigate to="/course/:courseId/post-quiz" replace />} />
-     
+      {/* 교육생 페이지 리디렉션 - useParams 대신 useMatch 활용 */}
+      <Route 
+        path="/student/:courseId" 
+        element={
+          <Navigate 
+            to={location => `/course\${location.pathname.substring(8)}`} 
+            replace 
+          />
+        } 
+      />
+      <Route 
+        path="/student/:courseId/survey" 
+        element={
+          <Navigate 
+            to={location => `/course/\${location.pathname.split('/')[2]}/survey`}
+            replace 
+          />
+        } 
+      />
+      <Route 
+        path="/student/:courseId/pre-quiz" 
+        element={
+          <Navigate 
+            to={location => `/course/\${location.pathname.split('/')[2]}/pre-quiz`}
+            replace 
+          />
+        } 
+      />
+      <Route 
+        path="/student/:courseId/post-quiz" 
+        element={
+          <Navigate 
+            to={location => `/course/\${location.pathname.split('/')[2]}/post-quiz`}
+            replace 
+          />
+        } 
+      />
 
       {/* 404 라우트 */}
       <Route path="*" element={<Navigate to="/" replace />} />
