@@ -42,7 +42,7 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
     // Amazon Titan Embeddings V2는 1024 차원
     const titanEmbeddingDimensions = 1024;
 
-    // OpenSearch Serverless 컬렉션 ARN 참조 (콘솔에서 미리 생성 필요)
+    // OpenSearch Serverless 컬렉션 ARN 참조
     const opensearchCollectionArn = 'arn:aws:aoss:us-east-1:598393186022:collection/tnc-vector-store';
 
     // CfnKnowledgeBase 생성 - OpenSearch Serverless 구성 사용

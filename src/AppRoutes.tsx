@@ -7,6 +7,7 @@ import SignUp from './components/SignUp';
 import ConfirmSignUp from './components/ConfirmSignUp';
 import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPassword from './components/ForgotPassword'; // ForgotPassword 컴포넌트 추가 권장
+import NewPassword from './components/NewPassword';
 
 // 레이아웃 컴포넌트
 import MainLayout from './components/MainLayout';
@@ -17,12 +18,14 @@ import StudentHome from './pages/StudentHome';
 
 // 강사용 페이지
 import CourseCatalog from './pages/instructor/CourseCatalog';
+
 import MyCourses from './pages/instructor/MyCourses';
 import SessionManagement from './pages/instructor/SessionManagement';
 import PreQuizManagement from './pages/instructor/PreQuizManagement';
 import PostQuizManagement from './pages/instructor/PostQuizManagement';
 import SurveyManagement from './pages/instructor/SurveyManagement';
 import AiGenerator from './pages/instructor/AiGenerator';
+import CourseDetailPage from './pages/instructor/CourseDetailPage';
 
 // Amplify Gen 2 임포트
 import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
@@ -44,21 +47,28 @@ const AppRoutes: React.FC = () => {
     setIsLoading(true);
     try {
       const user = await getCurrentUser();
-      const attributes = await fetchUserAttributes();
-
-      console.log('인증된 사용자:', attributes);
+      
+      try {
+        const attributes = await fetchUserAttributes();
+        console.log('인증된 사용자:', attributes);
+        setUserAttributes(attributes);
+      } catch (attrError) {
+        console.warn('속성 가져오기 실패, 기본 인증은 유지:', attrError);
+      }
+      
+      // 사용자 객체가 있으면 인증된 것으로 간주
       setAuthenticated(true);
-      setUserAttributes(attributes);
     } catch (error) {
       console.log('사용자 미인증:', error);
       setAuthenticated(false);
       setUserAttributes(null);
-
+      
       // 인증이 필요한 페이지에 있으면 로그인으로 리다이렉트
       if (location.pathname !== '/signin' &&
-        location.pathname !== '/signup' &&
-        location.pathname !== '/confirm-signup' &&
-        location.pathname !== '/forgot-password') {
+          location.pathname !== '/signup' &&
+          location.pathname !== '/confirm-signup' &&
+          location.pathname !== '/forgot-password' &&
+          location.pathname !== '/new-password') {
         navigate('/signin');
       }
     } finally {
@@ -298,6 +308,23 @@ const AppRoutes: React.FC = () => {
             </MainLayout>
           </ProtectedRoute>
         }
+      />
+
+      <Route
+        path="/course/:courseId"
+        element={
+          <ProtectedRoute
+            authenticated={authenticated}
+            userAttributes={userAttributes}
+          >
+            <CourseDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/new-password"
+        element={authenticated ? <Navigate to="/" /> : <NewPassword />}
       />
 
       {/* 404 페이지 - 찾을 수 없는 페이지 */}
