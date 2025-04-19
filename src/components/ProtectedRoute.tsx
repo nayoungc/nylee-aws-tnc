@@ -1,55 +1,38 @@
 // src/components/ProtectedRoute.tsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string | null;
+  authenticated: boolean | null;
+  userAttributes: any;
+  requiredRole?: string;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  requiredRole = null 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  authenticated,
+  userAttributes,
+  requiredRole
 }) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  if (authenticated === false) {
+    return <Navigate to="/signin" replace />;
+  }
 
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const currentUser = await getCurrentUser();
-        const attributes = await fetchUserAttributes();
-        setUser({ ...currentUser, attributes });
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    checkAuth();
-  }, []);
-  
-  if (loading) {
+  if (authenticated === null) {
+    // 로딩 상태
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <div>인증 상태 확인 중...</div>
       </div>
     );
   }
-  
-  if (!user) {
-    return <Navigate to="/signin" replace />;
-  }
-  
-  // 이메일 도메인으로 역할 확인
-  const isInstructor = user.attributes?.email?.endsWith('@amazon.com') || false;
-  
-  if (requiredRole === 'instructor' && !isInstructor) {
+
+  // 역할이 필요한 경우 확인
+  if (requiredRole === 'instructor' && userAttributes?.profile !== 'instructor') {
     return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 };
 

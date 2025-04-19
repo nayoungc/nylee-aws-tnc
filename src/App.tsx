@@ -3,16 +3,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import '@cloudscape-design/global-styles/index.css';
 import '@aws-amplify/ui-react/styles.css';
 
-// 레이아웃
-import Header from './components/Header';
-
-// 인증 컴포넌트
+// 인증 관련 컴포넌트
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import ConfirmSignUp from './components/ConfirmSignUp';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// 페이지
+// 레이아웃 컴포넌트
+import MainLayout from './components/MainLayout';
+
+// 페이지 컴포넌트
 import Dashboard from './pages/Dashboard';
 import StudentHome from './pages/StudentHome';
 
@@ -29,12 +29,21 @@ import AiGenerator from './pages/instructor/AiGenerator';
 import { Amplify } from 'aws-amplify';
 import { getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
 
+// 다국어 지원
+import { useTranslation } from 'react-i18next';
+import './i18n'; // i18n 설정 파일
+
+// Amplify 설정 
+import config from './amplifyconfiguration.json';
+Amplify.configure(config);
+
 const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [userAttributes, setUserAttributes] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
-  // 인증 상태 확인
+  // 앱 시작 시 인증 상태 확인
   useEffect(() => {
     async function checkAuthState() {
       try {
@@ -47,6 +56,7 @@ const App: React.FC = () => {
       } catch (error) {
         console.log('사용자가 로그인하지 않았습니다', error);
         setAuthenticated(false);
+        setUserAttributes(null);
       } finally {
         setIsLoading(false);
       }
@@ -59,16 +69,13 @@ const App: React.FC = () => {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <div>로딩 중...</div>
+        <div>{String(t('common.loading') || '로딩 중...')}</div>
       </div>
     );
   }
 
   return (
     <Router>
-      {/* 로그인한 경우에만 헤더 표시 */}
-      {authenticated && <Header />}
-      
       <Routes>
         {/* 인증 관련 라우트 */}
         <Route 
@@ -90,7 +97,7 @@ const App: React.FC = () => {
           element={
             !authenticated ? 
               <Navigate to="/signin" /> : 
-              (userAttributes?.email?.endsWith('@amazon.com') ? 
+              (userAttributes?.profile === 'instructor' ? 
                 <Navigate to="/dashboard" /> : 
                 <Navigate to="/student" />)
           } 
@@ -100,26 +107,44 @@ const App: React.FC = () => {
         <Route 
           path="/dashboard" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <Dashboard />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.dashboard') || 'Dashboard')}>
+                <Dashboard />
+              </MainLayout>
             </ProtectedRoute>
-          } 
+          }
         />
         
         <Route 
           path="/courses/catalog" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <CourseCatalog />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.course_catalog') || 'Course Catalog')}>
+                <CourseCatalog />
+              </MainLayout>
             </ProtectedRoute>
-          } 
+          }
         />
         
         <Route 
           path="/courses/my-courses" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <MyCourses />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.my_courses') || 'My Courses')}>
+                <MyCourses />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -127,8 +152,14 @@ const App: React.FC = () => {
         <Route 
           path="/courses/sessions" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <SessionManagement />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.session_management') || 'Session Management')}>
+                <SessionManagement />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -136,8 +167,14 @@ const App: React.FC = () => {
         <Route 
           path="/assessments/pre-quiz" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <PreQuizManagement />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.pre_quiz') || 'Pre-Quiz Management')}>
+                <PreQuizManagement />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -145,8 +182,14 @@ const App: React.FC = () => {
         <Route 
           path="/assessments/post-quiz" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <PostQuizManagement />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.post_quiz') || 'Post-Quiz Management')}>
+                <PostQuizManagement />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -154,8 +197,14 @@ const App: React.FC = () => {
         <Route 
           path="/assessments/survey" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <SurveyManagement />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.survey') || 'Survey Management')}>
+                <SurveyManagement />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -163,8 +212,14 @@ const App: React.FC = () => {
         <Route 
           path="/assessments/ai-generator" 
           element={
-            <ProtectedRoute requiredRole="instructor">
-              <AiGenerator />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+              requiredRole="instructor"
+            >
+              <MainLayout title={String(t('nav.ai_generator') || 'AI Question Generator')}>
+                <AiGenerator />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -173,13 +228,18 @@ const App: React.FC = () => {
         <Route 
           path="/student" 
           element={
-            <ProtectedRoute>
-              <StudentHome />
+            <ProtectedRoute 
+              authenticated={authenticated} 
+              userAttributes={userAttributes}
+            >
+              <MainLayout title={String(t('nav.student_home') || 'Student Home')}>
+                <StudentHome />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
 
-        {/* 404 페이지 */}
+        {/* 404 페이지 - 찾을 수 없는 페이지 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

@@ -86,8 +86,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     ];
 
     // 강사인 경우 (Amplify Gen 2에서는 속성 접근 방식이 변경됨)
-    // 이메일 도메인으로 역할 확인 (custom:role이 없을 수 있음)
-    const isInstructor = user?.email?.endsWith('@amazon.com') || false;
+    const isInstructor = user?.profile === 'instructor' || false;
     
     if (isInstructor) {
       navItems = [

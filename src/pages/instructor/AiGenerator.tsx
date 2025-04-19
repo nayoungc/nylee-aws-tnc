@@ -14,7 +14,7 @@ import {
   Spinner,
   Alert
 } from '@cloudscape-design/components';
-import MainLayout from '../../layouts/MainLayout';
+import MainLayout from '../../components/MainLayout';
 
 const AiGenerator: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
