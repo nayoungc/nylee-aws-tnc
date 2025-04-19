@@ -21,13 +21,15 @@ import LoadingScreen from './components/LoadingScreen';
 
 // 강사용 페이지 컴포넌트
 import Dashboard from './pages/instructor/Dashboard';
-import CourseCatalog from './pages/instructor/CourseCatalog';
 import CoursesManagement from './pages/instructor/CoursesManagement';
 import CourseCreation from './pages/instructor/CourseCreation';
 import QuizManagement from './pages/instructor/QuizManagement';
 import QuizCreator from './pages/instructor/QuizCreator';
-import SurveyManagement from './pages/instructor/SurveyCreator';
+import SurveyManagement from './pages/instructor/SurveyManagement';
+import SurveyCreator from './pages/instructor/SurveyCreator';
 import AdminPage from './pages/admin/AdminPage';
+import CourseCatalog from './pages/admin/CourseCatalogTab'; 
+
 
 // 교육생용 페이지 컴포넌트
 import StudentHome from './pages/StudentHome';
@@ -35,7 +37,6 @@ import StudentCourseHome from './pages/student/StudentCourseHome';
 import SurveyPage from './pages/student/SurveyPage';
 import PreQuizPage from './pages/student/PreQuizPage';
 import PostQuizPage from './pages/student/PostQuizPage';
-import CourseDetailPage from './pages/CourseDetailPage'; // 통합 과정 상세 페이지
 
 // 레이아웃 컴포넌트
 import AuthLayout from './layouts/AuthLayout';
@@ -66,11 +67,49 @@ const AppRoutes: React.FC = () => {
   const authFailCount = useRef(0);
   // 인증 시도 사이 지연 시간
   const authRetryDelay = useRef(1000); // 초기 1초, 실패에 따라 증가
+  // 마지막 성공적인 속성 가져오기 시간
+  const lastSuccessfulFetch = useRef(0);
+  // 캐시 수명 (15분)
+  const CACHE_TTL = 15 * 60 * 1000;
 
   // 인증 상태 확인 함수
   const checkAuthState = useCallback(async () => {
     // 이미 인증 체크 중이면 중복 요청 방지
     if (authCheckInProgress.current) return;
+    
+    // 세션 스토리지에서 사용자 속성 확인
+    const cachedData = sessionStorage.getItem('userAttributes');
+    const timestamp = sessionStorage.getItem('userAttributesTimestamp');
+    
+    // 캐시가 유효한 경우 사용
+    if (cachedData && timestamp && (Date.now() - parseInt(timestamp) < CACHE_TTL)) {
+      try {
+        const parsedData = JSON.parse(cachedData);
+        setUserAttributes(parsedData);
+        setAuthenticated(true);
+        setIsLoading(false);
+        return;
+      } catch (e) {
+        // 캐시 데이터 파싱 오류는 무시하고 계속 진행
+      }
+    }
+    
+    // 재시도 블록 확인
+    const retryBlock = sessionStorage.getItem('userAttributesRetryBlock');
+    if (retryBlock && parseInt(retryBlock) > Date.now()) {
+      console.log('재시도 블록 활성화 중. 요청을 건너뜁니다.');
+      // 인증 상태만 확인하고, 속성 가져오기는 건너뜀
+      try {
+        const session = await fetchAuthSession();
+        if (session.tokens) {
+          setAuthenticated(true);
+        }
+      } catch (error) {
+        setAuthenticated(false);
+      }
+      setIsLoading(false);
+      return;
+    }
     
     authCheckInProgress.current = true;
     setIsLoading(true);
@@ -80,11 +119,20 @@ const AppRoutes: React.FC = () => {
       const user = await getCurrentUser();
 
       try {
-        // 속성 가져오기 시도
-        if (authFailCount.current < 3) { // 연속 3회 이상 실패하면 시도하지 않음
+        // 속성 가져오기 시도 (마지막 성공 후 15분 경과 시만)
+        if ((Date.now() - lastSuccessfulFetch.current > CACHE_TTL) && 
+            authFailCount.current < 3) { // 연속 3회 이상 실패하면 시도하지 않음
+          
           const attributes = await fetchUserAttributes();
           setUserAttributes(attributes);
-          // 성공하면 카운터 초기화
+          
+          // 성공하면 저장 및 카운터 초기화
+          sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
+          sessionStorage.setItem('userAttributesTimestamp', Date.now().toString());
+          sessionStorage.removeItem('userAttributesFailCount');
+          
+          // 성공 기록
+          lastSuccessfulFetch.current = Date.now();
           authFailCount.current = 0;
           authRetryDelay.current = 1000; // 지연 시간 초기화
         }
@@ -93,6 +141,17 @@ const AppRoutes: React.FC = () => {
         const err = error as Error;
         console.warn('속성 가져오기 실패:', err);
         authFailCount.current++;
+        
+        // 실패 횟수 저장
+        const failCount = parseInt(sessionStorage.getItem('userAttributesFailCount') || '0') + 1;
+        sessionStorage.setItem('userAttributesFailCount', failCount.toString());
+        
+        // 3회 이상 실패 시 30분 동안 재시도 차단
+        if (failCount >= 3) {
+          const blockUntil = Date.now() + 30 * 60 * 1000; // 30분
+          sessionStorage.setItem('userAttributesRetryBlock', blockUntil.toString());
+          console.log(`최대 재시도 횟수 초과. \${new Date(blockUntil).toLocaleTimeString()}까지 재시도하지 않습니다.`);
+        }
         
         // 지수 백오프 (실패할수록 대기 시간 증가)
         authRetryDelay.current = Math.min(authRetryDelay.current * 2, 30000); // 최대 30초
@@ -150,7 +209,7 @@ const AppRoutes: React.FC = () => {
     }
   }, [navigate, location.pathname]);
 
-  // 초기 인증 상태 확인
+  // 초기 인증 상태 확인 - 의존성 배열에서 location.pathname 제거
   useEffect(() => {
     checkAuthState();
   }, [checkAuthState]);
@@ -167,6 +226,8 @@ const AppRoutes: React.FC = () => {
         case 'signedOut':
           setAuthenticated(false);
           setUserAttributes(null);
+          sessionStorage.removeItem('userAttributes');
+          sessionStorage.removeItem('userAttributesTimestamp');
           // 이미 로그인 페이지가 아닌 경우에만 리디렉션
           if (location.pathname !== '/signin') {
             navigate('/signin');
@@ -175,6 +236,7 @@ const AppRoutes: React.FC = () => {
         case 'tokenRefresh_failure':
           setAuthenticated(false);
           setUserAttributes(null);
+          sessionStorage.removeItem('userAttributes');
           // 이미 로그인 페이지가 아닌 경우에만 리디렉션
           if (location.pathname !== '/signin') {
             navigate('/signin', {
@@ -207,6 +269,7 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
+      {/* 여기서부터는 수정없이 그대로 */}
       {/* 인증 페이지 라우트 */}
       <Route element={<AuthLayout />}>
         <Route
@@ -317,9 +380,10 @@ const AppRoutes: React.FC = () => {
       {/* 이전 URL 경로 리디렉션 - 단순 경로는 직접 처리 */}
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
-      <Route path="/assessments/pre-quiz" element={<Navigate to="/instructor/assessments/quiz" replace />} />
-      <Route path="/assessments/post-quiz" element={<Navigate to="/instructor/assessments/quiz" replace />} />
+
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
+      <Route path="/instructor/assessments/survey" element={<SurveyManagement />} />
+      <Route path="/instructor/assessments/survey-creator" element={<SurveyCreator />} />
       
       {/* 교육생 페이지 리디렉션 - 별도 컴포넌트 사용 */}
       <Route path="/student/:courseId" element={<StudentHomeRedirect />} />

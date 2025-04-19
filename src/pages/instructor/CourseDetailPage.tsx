@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
 import { useTranslation } from 'react-i18next';
 // 상대 경로로 변경
-import MainLayout from '../../components/MainLayout';
+import MainLayout from '../../layouts/MainLayout';
 import { 
   Container, 
   Header, 
