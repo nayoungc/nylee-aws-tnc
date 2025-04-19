@@ -83,9 +83,12 @@ export class NyleeAwsTncBedrockStack extends cdk.Stack {
         type: 'VECTOR',
         vectorKnowledgeBaseConfiguration: {
           embeddingModelArn: embeddingModelArn,
-          // Titan Embeddings V2는 1,536 차원
-          dimensions: 1536,
-          // OpenSearch Serverless 연결
+          // 올바른 구조로 dimensions 속성 설정
+          embeddingModelConfiguration: {
+            bedrockEmbeddingModelConfiguration: {
+              dimensions: 1536  // Titan Embeddings V2의 차원 수
+            }
+          },
           vectorStore: {
             opensearchServerlessConfiguration: {
               collectionArn: vectorCollection.attrArn,
