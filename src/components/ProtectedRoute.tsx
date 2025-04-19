@@ -1,7 +1,6 @@
-// src/components/ProtectedRoute.tsx
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom'; // useLocation 추가
-import MainLayout from '../layouts/MainLayout';
+import { Navigate, useLocation } from 'react-router-dom';
+// MainLayout import 제거
 
 interface ProtectedRouteProps {
   authenticated: boolean | null;
@@ -18,7 +17,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   userAttributes
 }) => {
-  const location = useLocation(); // 위치 정보 가져오기 추가
+  const location = useLocation();
   
   // 인증 검사
   if (!authenticated) {
@@ -37,13 +36,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }
   
-  // /admin 경로는 MainLayout을 적용하지 않음
-  if (location.pathname === '/admin') {
-    return <>{children}</>;
-  }
-  
-  // 다른 모든 보호된 경로에 MainLayout 적용
-  return <MainLayout>{children}</MainLayout>;
+  // MainLayout을 제거하고 자식 컴포넌트만 반환
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
