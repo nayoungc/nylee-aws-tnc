@@ -403,6 +403,55 @@ export default function SurveyManagement() {
   const viewSurveyResults = (surveyId: string) => {
     navigate(`/instructor/analytics/survey-results/\${surveyId}`);
   };
+
+  const createFromTemplate = () => {
+    if (!selectedCourse) return;
+    
+    // 기본 템플릿 설문조사 문항 생성
+    const templateQuestions: Question[] = [
+      {
+        question: `\${surveyType === 'pre' ? '교육 시작 전' : '교육 수료 후'} 본 과정에 대한 전반적인 만족도는 어떠신가요?`,
+        options: ["매우 불만족", "불만족", "보통", "만족", "매우 만족"],
+        type: "single"
+      },
+      {
+        question: `\${selectedCourse.label} 과정에서 가장 기대되는(\${surveyType === 'post' ? '유익했던' : ''}) 부분은 무엇인가요?`,
+        options: [],
+        type: "text"
+      },
+      {
+        question: `본 교육에 \${surveyType === 'pre' ? '참여하시는' : '참여하신'} 주된 목적은 무엇인가요? (해당하는 항목 모두 선택)`,
+        options: ["업무 역량 강화", "자기 개발", "자격증 취득 준비", "승진/이직 준비", "팀 내 지식 공유", "기타"],
+        type: "multiple"
+      },
+      {
+        question: "교육과 관련하여 추가 의견이나 요청사항이 있으시면 기재해 주세요.",
+        options: [],
+        type: "text"
+      }
+    ];
+    
+    // 과정 유형에 따라 추가 질문 생성
+    const courseLabel = selectedCourse?.label || '';
+    if (courseLabel.includes("AWS") || courseLabel.includes("Cloud")) {
+      templateQuestions.push({
+        question: "클라우드 기술 사용 경험은 어느 정도인가요?",
+        options: ["전혀 없음", "초보 수준", "중급 수준", "고급 수준", "전문가 수준"],
+        type: "single"
+      });
+    }
+    
+    if (surveyType === 'post') {
+      templateQuestions.push({
+        question: "교육을 통해 실무 역량이 향상되었다고 생각하시나요?",
+        options: ["전혀 그렇지 않다", "그렇지 않다", "보통이다", "그렇다", "매우 그렇다"],
+        type: "single"
+      });
+    }
+    
+    // 설문조사 생성 페이지로 이동하며 템플릿 문항 전달
+    navigateToSurveyCreator(templateQuestions);
+  };
   
   return (
     <SpaceBetween size="l">
@@ -463,6 +512,14 @@ export default function SurveyManagement() {
               disabled={!selectedCourse || (surveyType === 'post' && syncSurveys)}
             >
               AI로 자동 생성
+            </Button>
+            {/* 템플릿으로 생성 버튼 추가 */}
+            <Button 
+              onClick={createFromTemplate}
+              iconName="file"
+              disabled={!selectedCourse || (surveyType === 'post' && syncSurveys)}
+            >
+              기본 템플릿으로 생성
             </Button>
             {surveyType === 'post' && syncSurveys && existingSurveys.length > 0 && (
               <Button 

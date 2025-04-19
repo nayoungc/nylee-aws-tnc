@@ -51,8 +51,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ title: propTitle, children }) =
       text: t('nav.assessment_tools') || 'Assessment Tools',
       href: '/instructor/assessments/pre-quiz',
       items: [
-        { type: "link", text: t('nav.pre_quiz') || 'Pre-Quiz', href: '/instructor/assessments/pre-quiz' },
-        { type: "link", text: t('nav.post_quiz') || 'Post-Quiz', href: '/instructor/assessments/post-quiz' },
+        { type: "link", text: t('nav.quiz') || 'Quiz', href: '/instructor/assessments/quiz' },
         { type: "link", text: t('nav.survey') || 'Survey', href: '/instructor/assessments/survey' },
       ]
     },
