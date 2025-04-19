@@ -76,7 +76,9 @@
     "post_quiz": "Post Quiz",
     "survey": "Survey",
     "ai_generator": "AI Generator",
-    "student_home": "Student Home"
+    "student_home": "Student Home",
+    "all_courses": "All Courses",
+    "admin": "Administration"
   },
   "user": {
     "preferred_language": "Preferred Language",
