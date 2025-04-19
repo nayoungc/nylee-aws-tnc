@@ -24,6 +24,7 @@ class Lab:
     title: str
     description: str = ""
     order: int = 0
+    related_module: str = ""  # 실습이 속한 모듈 제목
 
 @dataclass
 class Course:
@@ -80,7 +81,7 @@ def wait_with_progress(check_function, max_attempts=30, delay=2, desc="작업 �
     return False
 
 
-def delete_table_if_exists(table_name: str, region: str = 'ap-northeast-2'):
+def delete_table_if_exists(table_name: str, region: str = 'us-east-1'):
     """테이블이 존재하면 삭제"""
     dynamodb = boto3.client('dynamodb', region_name=region)
     
@@ -110,7 +111,7 @@ def delete_table_if_exists(table_name: str, region: str = 'ap-northeast-2'):
             raise e
 
 
-def create_course_catalog_table(table_name: str, region: str = 'ap-northeast-2'):
+def create_course_catalog_table(table_name: str, region: str = 'us-east-1'):
     """과정 카탈로그 테이블 생성"""
     dynamodb = boto3.client('dynamodb', region_name=region)
     
@@ -187,7 +188,7 @@ def create_course_catalog_table(table_name: str, region: str = 'ap-northeast-2')
         return False
 
 
-def create_modules_table(table_name: str, region: str = 'ap-northeast-2'):
+def create_modules_table(table_name: str, region: str = 'us-east-1'):
     """모듈 및 실습 정보 테이블 생성"""
     dynamodb = boto3.client('dynamodb', region_name=region)
     
@@ -305,6 +306,99 @@ def extract_table_data(doc):
     return course_table_data
 
 
+def extract_module_info(paragraphs, start_idx, course):
+    """과정 개요 섹션에서 모듈 및 실습 정보 추출"""
+    current_day = None
+    current_module = None
+    i = start_idx
+    
+    # 모듈과 실습을 감지하기 위한 패턴
+    day_pattern = re.compile(r'^(\d+)\s*일\s*차')
+    module_pattern = re.compile(r'^모듈\s+(\d+)[:\s]*(.+)')
+    lab_pattern = re.compile(r'실습\s+(\d+)[:\s]*(.+)')
+    bullet_pattern = re.compile(r'^[•·-]\s+(.+)')
+    
+    while i < len(paragraphs):
+        text = paragraphs[i].text.strip()
+        if not text:
+            i += 1
+            continue
+        
+        # 일차 정보 감지
+        day_match = day_pattern.match(text)
+        if day_match:
+            current_day = text
+            print(f"  일차 감지: {text}")
+            i += 1
+            continue
+        
+        # 모듈 정보 감지
+        module_match = module_pattern.match(text)
+        if module_match:
+            module_num = int(module_match.group(1))
+            module_title = module_match.group(2).strip()
+            full_title = f"모듈 {module_num}: {module_title}"
+            
+            # 모듈 추가
+            current_module = Module(title=full_title, order=module_num)
+            course.modules.append(current_module)
+            print(f"  모듈 감지: {full_title}")
+            i += 1
+            continue
+        
+        # 일반적인 줄에서 실습 정보 감지
+        lab_match = lab_pattern.search(text)
+        if lab_match:
+            lab_num = int(lab_match.group(1))
+            lab_title = lab_match.group(2).strip()
+            full_lab_title = f"실습 {lab_num}: {lab_title}"
+            
+            # 실습 추가
+            lab = Lab(
+                title=full_lab_title, 
+                order=lab_num,
+                related_module=current_module.title if current_module else ""
+            )
+            course.labs.append(lab)
+            print(f"  실습 감지: {full_lab_title}")
+            i += 1
+            continue
+        
+        # 글머리 기호 항목 처리 (모듈 토픽)
+        bullet_match = bullet_pattern.match(text)
+        if bullet_match and current_module:
+            topic = bullet_match.group(1).strip()
+            current_module.topics.append(topic)
+            
+            # 토픽 내에 실습 언급이 있는지 확인
+            lab_in_topic_match = lab_pattern.search(topic)
+            if lab_in_topic_match:
+                lab_num = int(lab_in_topic_match.group(1))
+                lab_title = lab_in_topic_match.group(2).strip()
+                full_lab_title = f"실습 {lab_num}: {lab_title}"
+                
+                # 실습 추가
+                lab = Lab(
+                    title=full_lab_title, 
+                    order=lab_num,
+                    related_module=current_module.title
+                )
+                course.labs.append(lab)
+                print(f"  토픽 내 실습 감지: {full_lab_title}")
+            
+            i += 1
+            continue
+        
+        # 새로운 섹션 시작 감지
+        if text in ["과정 설명", "레벨", "제공 방법", "제공 방식", "소요 시간", "과정 목표", "수강 대상", "수강 전 권장 사항", "등록"]:
+            print(f"  다른 섹션 감지됨: {text} - 모듈 추출 종료")
+            break
+        
+        i += 1
+    
+    return i
+
+
 def extract_course_info_from_docx(file_path, course_titles):
     """문서에서 과정 정보 추출 - 개선된 버전"""
     doc = docx.Document(file_path)
@@ -369,18 +463,17 @@ def extract_course_info_from_docx(file_path, course_titles):
     # 3. 문서 분석을 위한 준비
     current_course = None
     current_section = None
-    current_module = None
     
     # 등록 URL 패턴
     url_pattern = re.compile(r'www\.aws\.training|https?://\S+')
     
-    # 디버깅을 위한 섹션별 내용 저장
-    section_contents = {}
-    
     # 4. 문서 순회하면서 과정 정보 추출
-    for i, para in enumerate(tqdm(doc.paragraphs, desc="문서 분석 중", ncols=100)):
+    i = 0
+    while i < len(doc.paragraphs):
+        para = doc.paragraphs[i]
         text = para.text.strip()
         if not text:
+            i += 1
             continue
         
         # 4.1 과정 제목 매칭 시도
@@ -391,27 +484,29 @@ def extract_course_info_from_docx(file_path, course_titles):
                 matched_course = courses_dict[title]
                 current_course = matched_course
                 current_section = None
-                current_module = None
                 print(f"\n과정 제목 인식: {title}")
                 break
         
         if matched_course:
+            i += 1
             continue
         
         # 4.2 섹션 헤더 인식
         if text in section_keywords:
             current_section = section_keywords[text]
-            if current_section not in section_contents:
-                section_contents[current_section] = []
             print(f"  섹션 인식: {text} ({current_section})")
+            
+            # 과정 개요 섹션 발견 시 모듈 및 실습 정보 추출
+            if current_section == "modules_overview" and current_course:
+                print("  과정 개요 섹션에서 모듈 및 실습 정보 추출 시작")
+                i = extract_module_info(doc.paragraphs, i+1, current_course)
+                continue
+                
+            i += 1
             continue
         
         # 4.3 현재 과정과 섹션이 있을 때 내용 추가
         if current_course and current_section:
-            # 섹션 내용 저장 (디버깅용)
-            if current_section in section_contents:
-                section_contents[current_section].append(text)
-            
             # 기본 메타데이터 추가
             if current_section == "description":
                 current_course.description += text + " "
@@ -435,96 +530,10 @@ def extract_course_info_from_docx(file_path, course_titles):
                         current_course.audience.append(clean_text)
                     elif current_section == "prerequisites":
                         current_course.prerequisites.append(clean_text)
-            
-            # 모듈 및 실습 정보 추출 (개선된 패턴 매칭)
-            elif current_section == "modules_overview":
-                # 모듈 패턴 매칭 - 다양한 형태 지원
-                module_match_patterns = [
-                    re.compile(r'^모듈\s+(\d+)[:\s]*(.+)\$'),
-                    re.compile(r'^(\d+)\s*일\s*차[:\s]*(.+)\$'),
-                    re.compile(r'^일\s*차\s*(\d+)[:\s]*(.+)\$'),
-                    re.compile(r'^모듈\s+(\d+)\$')  # 제목이 없는 경우
-                ]
-                
-                # 각 패턴 시도
-                module_matched = False
-                for pattern in module_match_patterns:
-                    match = pattern.match(text)
-                    if match:
-                        module_num = int(match.group(1))
-                        module_title = match.group(2).strip() if len(match.groups()) > 1 and match.group(2) else f"모듈 {module_num}"
-                        module = Module(title=f"모듈 {module_num}: {module_title}", order=module_num)
-                        current_course.modules.append(module)
-                        current_module = module
-                        module_matched = True
-                        print(f"    모듈 추출: {module.title}")
-                        break
-                
-                # 실습 패턴 매칭
-                if not module_matched:
-                    lab_match = re.match(r'^실습\s+(\d+)[:\s]*(.+)\$', text)
-                    if lab_match:
-                        lab_num = int(lab_match.group(1))
-                        lab_title = lab_match.group(2).strip() if lab_match.group(2) else f"실습 {lab_num}"
-                        lab = Lab(title=f"실습 {lab_num}: {lab_title}", order=lab_num)
-                        current_course.labs.append(lab)
-                        print(f"    실습 추출: {lab.title}")
-                
-                # 토픽 추가 (글머리 기호로 시작하는 항목)
-                elif (text.startswith("•") or text.startswith("·") or text.startswith("-")) and current_module:
-                    topic = text.lstrip("•·- ").strip()
-                    current_module.topics.append(topic)
-                    print(f"      토픽 추가: {topic[:30]}...")
-    
-    # 5. 추가 모듈/실습 정보 추출 시도 - 목차와 내용 비교
-    if all(len(c.modules) == 0 for c in courses):
-        print("\n모듈 정보를 찾을 수 없어 추가 추출 시도 중...")
         
-        # 토픽 섹션 내용 분석
-        if "modules_overview" in section_contents:
-            content_lines = section_contents["modules_overview"]
-            current_module = None
-            current_course = None
-            
-            # 모듈과 실습 패턴
-            module_patterns = [
-                re.compile(r'모듈\s+(\d+)[:\s]*(.+)'),
-                re.compile(r'(\d+)\s*일\s*차[:\s]*(.+)'),
-                re.compile(r'일\s*차\s*(\d+)[:\s]*(.+)')
-            ]
-            lab_pattern = re.compile(r'실습\s+(\d+)[:\s]*(.+)')
-            
-            for line in content_lines:
-                # 과정 제목 매칭
-                for title in course_titles:
-                    if title in line:
-                        current_course = courses_dict[title]
-                        break
-                
-                if current_course:
-                    # 모듈 매칭
-                    module_matched = False
-                    for pattern in module_patterns:
-                        match = pattern.search(line)
-                        if match:
-                            module_num = int(match.group(1))
-                            module_title = match.group(2).strip() if len(match.groups()) > 1 and match.group(2) else f"모듈 {module_num}"
-                            module = Module(title=f"모듈 {module_num}: {module_title}", order=module_num)
-                            current_course.modules.append(module)
-                            current_module = module
-                            module_matched = True
-                            break
-                    
-                    # 실습 매칭
-                    if not module_matched:
-                        match = lab_pattern.search(line)
-                        if match:
-                            lab_num = int(match.group(1))
-                            lab_title = match.group(2).strip() if match.group(2) else f"실습 {lab_num}"
-                            lab = Lab(title=f"실습 {lab_num}: {lab_title}", order=lab_num)
-                            current_course.labs.append(lab)
+        i += 1
     
-    # 6. 결과 정리 - 빈 정보 기본값 설정 및 중복 제거
+    # 5. 결과 정리 - 빈 정보 기본값 설정 및 중복 제거
     for course in courses:
         if not course.description.strip():
             course.description = f"{course.title}에 대한 과정 설명입니다."
@@ -565,7 +574,7 @@ def extract_course_info_from_docx(file_path, course_titles):
     return courses
 
 
-def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='ap-northeast-2'):
+def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='us-east-1'):
     """과정 정보와 모듈/실습 정보를 DynamoDB에 저장"""
     dynamodb = boto3.resource('dynamodb', region_name=region)
     catalog_table_resource = dynamodb.Table(catalog_table)
@@ -589,6 +598,8 @@ def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='ap-n
             'deliveryMethod': course.delivery_method,
             'duration': course.duration,
             'registrationLink': course.registration_link,
+            'moduleCount': len(course.modules),
+            'labCount': len(course.labs),
             'createdAt': timestamp,
             'updatedAt': timestamp
         }
@@ -620,7 +631,7 @@ def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='ap-n
         
         # 모듈 저장
         for i, module in enumerate(course.modules):
-            module_id = f"MOD{i+1:03d}"
+            module_id = f"MOD{module.order:03d}" if module.order else f"MOD{i+1:03d}"
             item = {
                 'courseId': course_id,
                 'id': module_id,
@@ -642,7 +653,7 @@ def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='ap-n
         
         # 실습 저장
         for i, lab in enumerate(course.labs):
-            lab_id = f"LAB{i+1:03d}"
+            lab_id = f"LAB{lab.order:03d}" if lab.order else f"LAB{i+1:03d}"
             item = {
                 'courseId': course_id,
                 'id': lab_id,
@@ -655,6 +666,9 @@ def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='ap-n
             
             if lab.description:
                 item['description'] = lab.description
+                
+            if lab.related_module:
+                item['relatedModule'] = lab.related_module
             
             try:
                 modules_table_resource.put_item(Item=item)
@@ -682,7 +696,7 @@ def main():
     # 설정값
     COURSE_TABLE = 'Tnc-CourseCatalog'
     MODULE_TABLE = 'Tnc-CourseCatalog-Modules'
-    REGION = 'ap-northeast-2'
+    REGION = 'us-east-1'
     DOC_FILE = 'AWS TnC_ILT_DILT.docx'
     
     # 과정명 목록 (요청된 과정명)
@@ -775,17 +789,22 @@ Security Engineering on AWS	103"""
             print(f"   제공방법: {course.delivery_method}")
             print(f"   소요시간: {course.duration}")
             print(f"   모듈: {len(course.modules)}개")
-            print(f"   실습: {len(course.labs)}개")
             
             # 모듈 예시
             if course.modules:
                 print(f"   모듈 예시: {course.modules[0].title}")
                 if course.modules[0].topics:
-                    print(f"     - 토픽: {course.modules[0].topics[0][:50]}...")
+                    topics_preview = course.modules[0].topics[0]
+                    if len(topics_preview) > 50:
+                        topics_preview = topics_preview[:47] + "..."
+                    print(f"     - 토픽: {topics_preview}")
             
             # 실습 예시
+            print(f"   실습: {len(course.labs)}개")
             if course.labs:
                 print(f"   실습 예시: {course.labs[0].title}")
+                if course.labs[0].related_module:
+                    print(f"     - 연관 모듈: {course.labs[0].related_module}")
         
         # DynamoDB에 데이터 저장
         save_courses_to_dynamodb(courses, COURSE_TABLE, MODULE_TABLE, REGION)
