@@ -1,138 +1,136 @@
-import React from 'react';
-import {
-  Container,
-  Header,
+import React, { useState } from 'react';
+import { 
+  Button, 
+  Container, 
+  Header, 
+  Select, 
   SpaceBetween,
-  Table,
-  Box,
-  Button,
-  Select,
-  FormField
+  FormField,
+  Modal,
+  Spinner,
+  Box
 } from '@cloudscape-design/components';
-import MainLayout from '../../components/MainLayout';
+import { post } from 'aws-amplify/api';
+import { SelectProps } from '@cloudscape-design/components';
 
-const PreQuizManagement: React.FC = () => {
+// API 응답 타입 정의
+interface Question {
+  question: string;
+  options: string[];
+  correctAnswer: string | number;
+}
+
+interface QuizGenerationResponse {
+  questions: Question[];
+}
+
+// 타입 가드 함수
+function isQuizGenerationResponse(obj: unknown): obj is QuizGenerationResponse {
   return (
-    <MainLayout title="Pre-Quiz Management">
-      <SpaceBetween size="l">
-        <Container
-          header={
-            <Header
-              variant="h2"
-              description="Create and manage pre-course quizzes"
-              actions={<Button variant="primary">Create New Quiz</Button>}
-            >
-              Pre-Quiz Management
-            </Header>
-          }
-        >
-          <SpaceBetween size="l">
-            <FormField label="Select Course Session">
-              <Select
-                options={[
-                  { label: 'AWS Cloud Practitioner - April Cohort', value: '1' },
-                  { label: 'AWS Solutions Architect - May Cohort', value: '2' }
-                ]}
-                selectedOption={null}
-                placeholder="Choose a session"
-              />
-            </FormField>
-            
-            <Table
-              columnDefinitions={[
-                {
-                  id: "questionNumber",
-                  header: "#",
-                  cell: item => item.id 
-                },
-                {
-                  id: "question",
-                  header: "Question",
-                  cell: item => item.question
-                },
-                {
-                  id: "type",
-                  header: "Type",
-                  cell: item => item.type
-                },
-                {
-                  id: "difficulty",
-                  header: "Difficulty",
-                  cell: item => item.difficulty
-                },
-                {
-                  id: "actions",
-                  header: "Actions",
-                  cell: () => (
-                    <SpaceBetween size="xs" direction="horizontal">
-                      <Button variant="link">Edit</Button>
-                      <Button variant="link">Delete</Button>
-                    </SpaceBetween>
-                  )
-                }
-              ]}
-              items={[
-                { id: '1', question: 'What is Amazon S3?', type: 'Multiple Choice', difficulty: 'Easy' },
-                { id: '2', question: 'Explain the difference between EC2 and Lambda', type: 'Short Answer', difficulty: 'Medium' },
-                { id: '3', question: 'Which AWS service would you use for serverless computing?', type: 'Multiple Choice', difficulty: 'Easy' }
-              ]}
-              loadingText="Loading questions"
-              empty={
-                <Box textAlign="center" color="inherit">
-                  <b>No questions found</b>
-                  <Box padding={{ bottom: "s" }} variant="p" color="inherit">
-                    Select a session or create a new quiz to get started.
-                  </Box>
-                </Box>
-              }
-            />
-          </SpaceBetween>
-        </Container>
-
-        <Container
-          header={
-            <Header variant="h2">Quiz Settings</Header>
-          }
-        >
-          <SpaceBetween size="m">
-            <FormField label="Time Limit">
-              <Select
-                options={[
-                  { label: 'No time limit', value: '0' },
-                  { label: '15 minutes', value: '15' },
-                  { label: '30 minutes', value: '30' },
-                  { label: '45 minutes', value: '45' },
-                  { label: '60 minutes', value: '60' }
-                ]}
-                selectedOption={{ label: '30 minutes', value: '30' }}
-              />
-            </FormField>
-
-            <FormField label="Question Order">
-              <Select
-                options={[
-                  { label: 'Sequential', value: 'sequential' },
-                  { label: 'Random', value: 'random' }
-                ]}
-                selectedOption={{ label: 'Sequential', value: 'sequential' }}
-              />
-            </FormField>
-
-            <FormField label="Results Display">
-              <Select
-                options={[
-                  { label: 'No results shown (pre-quiz)', value: 'none' },
-                  { label: 'Show score only', value: 'score' },
-                  { label: 'Show answers and explanations', value: 'full' }
-                ]}
-                selectedOption={{ label: 'No results shown (pre-quiz)', value: 'none' }}
-              />
-            </FormField>
-          </SpaceBetween>
-        </Container>
-      </SpaceBetween>
-    </MainLayout>
+    typeof obj === 'object' && 
+    obj !== null && 
+    'questions' in obj && 
+    Array.isArray((obj as any).questions)
   );
-};
+}
 
-export default PreQuizManagement;
+export default function PreQuizManagement() {
+  const [selectedCourse, setSelectedCourse] = useState<SelectProps.Option | null>(null);
+  const [courses, setCourses] = useState<SelectProps.Option[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
+  
+  // AI로 퀴즈 생성하기
+  const generateQuizWithAI = async () => {
+    if (!selectedCourse) return;
+    
+    setLoading(true);
+    setShowAiModal(true);
+    
+    try {
+      const response = await post({
+        apiName: 'quizApi',
+        path: '/generate-quiz',
+        options: {
+          body: JSON.stringify({
+            courseId: selectedCourse.value,
+            quizType: 'pre',
+            questionCount: 10
+          })
+        }
+      }).response;
+      
+      // 안전한 타입 처리
+      const jsonData: unknown = await response.body.json();
+      
+      // 타입 가드로 응답 형식 검증
+      if (isQuizGenerationResponse(jsonData)) {
+        setGeneratedQuestions(jsonData.questions);
+      } else {
+        console.error('응답 데이터가 예상 형식과 일치하지 않음:', jsonData);
+        setGeneratedQuestions([]);
+      }
+    } catch (error) {
+      console.error('퀴즈 생성 오류:', error);
+      setGeneratedQuestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <SpaceBetween size="l">
+      <Container header={<Header variant="h2">사전 퀴즈 관리</Header>}>
+        <FormField label="과정 선택">
+          <Select
+            selectedOption={selectedCourse}
+            onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
+            options={courses}
+            placeholder="과정 선택"
+          />
+        </FormField>
+        
+        <SpaceBetween direction="horizontal" size="xs">
+          <Button variant="primary">퀴즈 만들기</Button>
+          <Button 
+            onClick={generateQuizWithAI}
+            iconName="add-plus"
+          >
+            AI로 자동 생성
+          </Button>
+        </SpaceBetween>
+      </Container>
+      
+      <Modal
+        visible={showAiModal}
+        onDismiss={() => setShowAiModal(false)}
+        header="AI 퀴즈 자동 생성"
+        size="large"
+      >
+        {loading ? (
+          <Box textAlign="center" padding="l">
+            <Spinner />
+            <p>과정 자료를 분석하여 퀴즈를 생성하고 있습니다...</p>
+          </Box>
+        ) : (
+          <SpaceBetween size="l">
+            <p>생성된 {generatedQuestions.length}개의 질문이 있습니다. 사용할 질문을 선택하거나 수정할 수 있습니다.</p>
+            
+            {/* 생성된 질문 목록 표시 */}
+            {generatedQuestions.map((q, index) => (
+              <div key={index}>
+                <p><strong>질문 {index+1}:</strong> {q.question}</p>
+              </div>
+            ))}
+            
+            <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+              <Button onClick={() => setShowAiModal(false)}>취소</Button>
+              <Button variant="primary">적용하기</Button>
+            </SpaceBetween>
+          </SpaceBetween>
+        )}
+      </Modal>
+    </SpaceBetween>
+  );
+}
