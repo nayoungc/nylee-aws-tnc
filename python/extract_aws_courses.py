@@ -919,70 +919,45 @@ def extract_module_and_labs_directly(doc, course_title, all_course_titles):
 
 def extract_course_info_from_docx(file_path, course_titles):
     """문서에서 과정 정보 추출 - 메타데이터 추출 개선"""
-    doc = docx.Document(file_path)
-    courses = []
+    # 결과를 저장할 리스트
+    courses_info = []
     
-    print(f"총 {len(course_titles)}개 과정 정보 추출 시작...")
+    # 교육 과정 블록을 찾기
+    # 일반적으로 과정 제목 다음에 표 형태의 정보가 나옴
+    course_blocks = re.findall(r'(과정 설명.*?소요 시간\s+\S+)', text, re.DOTALL)
     
-    # 각 과정에 대해 직접 추출 방식 적용
-    for title in course_titles:
-        print(f"\n과정 처리 시작: {title}")
-        # course_titles 매개변수 추가
-        course = extract_module_and_labs_directly(doc, title, course_titles)
+    for block in course_blocks:
+        # 과정 제목 추출
+        course_title_match = re.search(r'(.*?)과정 설명', block)
+        course_title = course_title_match.group(1).strip() if course_title_match else "제목 미상"
         
-        # 표에서 메타데이터 추출 개선
-        table_found = False
-        for table in doc.tables:
-            if len(table.rows) < 2:
-                continue
-                
-            header_cells = [cell.text.strip() for cell in table.rows[0].cells]
-            # 헤더 셀에 '레벨'과 '소요 시간'이 포함된 테이블 찾기
-            if "레벨" in header_cells and "소요 시간" in header_cells:
-                data_row = [cell.text.strip() for cell in table.rows[1].cells]
-                
-                # 인덱스 찾기
-                level_idx = header_cells.index("레벨") if "레벨" in header_cells else -1
-                duration_idx = header_cells.index("소요 시간") if "소요 시간" in header_cells else -1
-                delivery_idx = -1
-                
-                if "제공 방법" in header_cells:
-                    delivery_idx = header_cells.index("제공 방법")
-                elif "제공 방식" in header_cells:
-                    delivery_idx = header_cells.index("제공 방식")
-                
-                # 데이터가 충분한지 확인
-                if len(data_row) > max(level_idx, duration_idx, delivery_idx):
-                    # 데이터 적용
-                    if level_idx >= 0:
-                        course.level = normalize_level(data_row[level_idx])
-                    
-                    if duration_idx >= 0:
-                        course.duration = normalize_duration(data_row[duration_idx])
-                        
-                    if delivery_idx >= 0:
-                        course.delivery_method = data_row[delivery_idx]
-                    
-                    table_found = True
-                    print(f"  메타데이터 테이블 발견: 레벨={course.level}, 소요시간={course.duration}, 제공방법={course.delivery_method}")
-                    break  # 해당 과정의 메타데이터 테이블을 찾았으므로 더 이상 테이블을 검색하지 않음
+        # 레벨 추출 (레벨 또는 수준으로 표시될 수 있음)
+        level_match = re.search(r'(레벨|수준)\s+(\S+)', block)
+        level = level_match.group(2) if level_match else "정보 없음"
         
-        if not table_found:
-            print("  경고: 이 과정의 메타데이터 테이블을 찾을 수 없습니다.")
+        # 소요 시간 추출
+        time_match = re.search(r'소요 시간\s+(\S+일|\d+시간)', block)
+        duration = time_match.group(1) if time_match else "정보 없음"
         
-        courses.append(course)
-        print(f"과정 '{title}' 처리 완료: 레벨={course.level}, 소요시간={course.duration}, {len(course.modules)}개 모듈, {len(course.labs)}개 실습")
+        courses_info.append({
+            "과정 제목": course_title,
+            "레벨": level,
+            "소요 시간": duration
+        })
     
-    # 결과 요약
-    courses_with_modules = [c for c in courses if c.modules]
-    courses_with_labs = [c for c in courses if c.labs]
+    # Digital Classroom 과정 추출 (다른 형식을 가질 수 있음)
+    digital_courses = re.findall(r'(기초|중급|고급)\s+Digital Classroom.*?(\d+시간)', text)
     
-    print(f"\n추출 결과:")
-    print(f"- 과정 수: {len(courses)}개")
-    print(f"- 모듈 있는 과정 수: {len(courses_with_modules)}개")
-    print(f"- 실습 있는 과정 수: {len(courses_with_labs)}개")
+    for level, duration in digital_courses:
+        courses_info.append({
+            "과정 제목": "Digital Classroom 과정",
+            "레벨": level,
+            "소요 시간": duration
+        })
     
-    return courses
+    # DataFrame으로 변환
+    df = pd.DataFrame(courses_info)
+    return df
 
 
 if __name__ == "__main__":
