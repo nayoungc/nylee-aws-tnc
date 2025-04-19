@@ -602,7 +602,8 @@ def extract_course_info_from_docx(file_path, course_titles):
         for course_title in tqdm(course_titles, desc="과정 정보 추출", ncols=100):
             # 새로운 과정 객체 생성
             course = Course(title=course_title)
-            
+            print(f"course : {course}")
+
             # 표에서 추출한 메타데이터 할당
             if course_title in course_table_data:
                 table_info = course_table_data[course_title]

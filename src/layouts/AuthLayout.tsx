@@ -1,23 +1,28 @@
 // src/layouts/AuthLayout.tsx
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { Container } from '@cloudscape-design/components';
+import React, { ReactNode } from 'react';
+import { Container, SpaceBetween } from '@cloudscape-design/components';
 
-const AuthLayout: React.FC = () => {
+interface AuthLayoutProps {
+  children: ReactNode;
+}
+
+const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   return (
     <div style={{ 
+      height: '100vh',
       display: 'flex', 
+      flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: '100vh',
-      background: '#f2f3f3'
+      backgroundColor: 'var(--color-background-layout-main)'
     }}>
-      {/* maxWidth를 제거하고 CloudScape에서 지원하는 size 속성 사용 */}
-      <Container>
-        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-          <Outlet />
-        </div>
-      </Container>
+      <div style={{ width: '100%', maxWidth: '450px' }}>
+        <Container>
+          <SpaceBetween size="l">
+            {children}
+          </SpaceBetween>
+        </Container>
+      </div>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { handleConfirmSignUp, handleResendConfirmationCode } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from './AuthLayout';
+import AuthLayout from '../layouts/AuthLayout';
 import { 
   Form, 
   SpaceBetween, 

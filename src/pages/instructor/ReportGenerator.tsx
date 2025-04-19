@@ -24,6 +24,8 @@ import { SelectProps } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
 import { post } from 'aws-amplify/api';
 import { useNavigate } from 'react-router-dom';
+import { getAuthenticatedGraphQLClient } from '../../utils/amplify-utils';
+
 
 // 타입 정의
 interface CourseItem {
@@ -170,7 +172,8 @@ export default function ReportGenerator() {
           limit: 100,
           filter: {
             status: { eq: "ACTIVE" }
-          }
+          },
+          authMode: 'userPool'
         }
       });
 

@@ -12,6 +12,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
 import { Amplify } from 'aws-amplify';
+import { getCurrentUser } from 'aws-amplify/auth';
+
 
 interface Course {
   id: string;
@@ -47,6 +49,9 @@ const listCourses = /* GraphQL */ `
   }
 `;
 
+// Create Amplify GraphQL client
+const client = generateClient();
+
 const CoursesManagement: React.FC = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -57,26 +62,48 @@ const CoursesManagement: React.FC = () => {
     fetchMyCourses();
   }, []);
 
+  useEffect(() => {
+    const checkAuthAndFetchCourses = async () => {
+      try {
+        // 사용자 인증 확인
+        await getCurrentUser();
+        // 인증된 사용자만 코스 조회
+        fetchMyCourses();
+      } catch (authError) {
+        console.error('인증 오류:', authError);
+        setError('로그인이 필요합니다');
+        setLoading(false);
+        
+        // 개발 환경에서만 샘플 데이터 사용
+        if (process.env.NODE_ENV === 'development') {
+          setCourses([
+            // 샘플 데이터
+            { id: '1', title: 'AWS Cloud Practitioner Essentials', status: 'Active', sessionCount: 5 },
+            // ...
+          ]);
+        }
+      }
+    };
+    
+    checkAuthAndFetchCourses();
+  }, []);
+
+
   const fetchMyCourses = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      // Create Amplify GraphQL client
-      const client = generateClient();
-      
-      // Execute GraphQL query
+      console.log('API 호출 시작...');
       const response = await client.graphql({
         query: listCourses,
         variables: {
           limit: 100,
-          filter: {
-            // Add filter conditions if needed
-            // status: { eq: "ACTIVE" }
-          }
         },
-        authMode: 'userPool' // Specify the auth mode explicitly
+        authMode: 'userPool'
       });
+      
+      console.log('API 응답:', response); // 응답 전체 로깅
 
       // Use any type to resolve data access issues
       const responseAny: any = response;

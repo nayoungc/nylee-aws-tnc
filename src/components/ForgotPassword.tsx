@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from './AuthLayout';
+import AuthLayout from '../layouts/AuthLayout';
 import { 
   Form, 
   SpaceBetween, 

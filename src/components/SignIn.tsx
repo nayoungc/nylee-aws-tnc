@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { handleSignIn } from '../utils/auth';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from './AuthLayout';
-import { 
-  Form, 
-  SpaceBetween, 
-  Button, 
-  FormField, 
-  Input, 
+import AuthLayout from '../layouts/AuthLayout';
+import {
+  Form,
+  SpaceBetween,
+  Button,
+  FormField,
+  Input,
   Box,
   Alert,
   Container,
@@ -17,11 +17,11 @@ import {
 
 const SignIn: React.FC = () => {
   const { t } = useTranslation();
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { username: initialUsername, message } = location.state || { username: '', message: '' };
-  
+
   const [formState, setFormState] = useState({
     username: initialUsername || '',
     password: ''
@@ -40,35 +40,35 @@ const SignIn: React.FC = () => {
       setError(t('auth.fields_required') || '사용자 이름과 비밀번호를 모두 입력해주세요');
       return;
     }
-    
+
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
-    
+
     try {
       console.log('로그인 시도:', formState.username);
       const result = await handleSignIn(
         formState.username,
         formState.password
       );
-      
+
       console.log('로그인 결과:', result);
-      
+
       if (result.isSignedIn) {
         // 로그인 성공 - 홈으로 이동
         navigate('/');
       } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {
         // 계정 확인 필요
-        navigate('/confirm-signup', { 
-          state: { username: formState.username } 
+        navigate('/confirm-signup', {
+          state: { username: formState.username }
         });
       } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
         // 임시 비밀번호 변경 필요
-        navigate('/new-password', { 
-          state: { 
+        navigate('/new-password', {
+          state: {
             username: formState.username,
             challengeName: 'NEW_PASSWORD_REQUIRED'
-          } 
+          }
         });
       } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_CUSTOM_CHALLENGE') {
         // 커스텀 챌린지 처리 필요 (필요한 경우)
@@ -77,7 +77,7 @@ const SignIn: React.FC = () => {
       }
     } catch (err: any) {
       console.error('로그인 오류:', err);
-      
+
       // Gen 2 오류 형식에 맞춰 에러 처리 업데이트
       if (err.name === 'UserNotFoundException' || err.message?.includes('user') && err.message?.includes('exist')) {
         setError(t('auth.user_not_exist') || '사용자가 존재하지 않습니다');
@@ -101,102 +101,98 @@ const SignIn: React.FC = () => {
 
   return (
     <AuthLayout>
-      <Container>
-        <SpaceBetween direction="vertical" size="l">
-          {/* 로고 이미지 추가 */}
-          <Box textAlign="center" padding={{ bottom: 'l' }}>
-            <img 
-              src="/images/aws.png" 
-              alt="AWS Logo" 
-              style={{ 
-                maxWidth: '180px', 
-                marginBottom: '20px' 
-              }}
-            />
-            <Box 
-              fontSize="heading-xl" 
-              fontWeight="bold" 
-              color="text-label"
-              padding={{ top: 'm' }}
-            >
-              {String(t('auth.sign_in'))}
-            </Box>
-          </Box>
-          
-          {successMessage && (
-            <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
-              {successMessage}
-            </Alert>
-          )}
-          
-          {error && (
-            <Alert type="error" dismissible onDismiss={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
-          
-          <Form
-            actions={
-              <SpaceBetween direction="vertical" size="xs">
-                <Button
-                  variant="primary"
-                  loading={loading}
-                  onClick={handleSignInClick}
-                  data-testid="signin-button"
-                  fullWidth
-                >
-                  {String(t('auth.sign_in'))}
-                </Button>
-                
-                <Box textAlign="right" padding={{ top: 'm' }}>
-                  <Link 
-                    to="/forgot-password"
-                    style={{ 
-                      textDecoration: 'none', 
-                      color: '#0972d3',
-                      fontSize: '14px' 
-                    }}
-                  >
-                    {String(t('auth.forgot_password') || '비밀번호 찾기')}
-                  </Link>
-                </Box>
-              </SpaceBetween>
-            }
+      <SpaceBetween direction="vertical" size="l">
+        {/* 로고 이미지와 컨텐츠 */}
+        <Box textAlign="center" padding={{ bottom: 'l' }}>
+          <img
+            src="/images/aws.png"
+            alt="AWS Logo"
+            style={{ maxWidth: '180px', marginBottom: '20px' }}
+          />
+          <Box
+            fontSize="heading-xl"
+            fontWeight="bold"
+            color="text-label"
+            padding={{ top: 'm' }}
           >
-            <SpaceBetween size="l">
-              <FormField label={String(t('auth.username'))}>
-                <Input
-                  type="text"
-                  value={formState.username}
-                  onChange={({ detail }) => handleChange('username', detail.value)}
-                  onKeyDown={({ detail }) => {
-                    if (detail.key === 'Enter') {
-                      const passwordInput = document.querySelector('input[type="password"]');
-                      if (passwordInput) (passwordInput as HTMLElement).focus();
-                    }
-                  }}
-                  autoFocus
-                />
-              </FormField>
-              
-              <FormField label={String(t('auth.password'))}>
-                <Input
-                  type="password"
-                  value={formState.password}
-                  onChange={({ detail }) => handleChange('password', detail.value)}
-                  onKeyDown={({ detail }) => {
-                    if (detail.key === 'Enter') handleSignInClick();
-                  }}
-                />
-              </FormField>
-            </SpaceBetween>
-          </Form>
-          
-          <Box textAlign="center" color="text-body-secondary" fontSize="body-s">
-            &copy; {new Date().getFullYear()} Amazon Web Services, Inc. 또는 계열사
+            {String(t('auth.sign_in'))}
           </Box>
-        </SpaceBetween>
-      </Container>
+        </Box>
+
+        {/* 알림 메시지 및 폼 컨텐츠 */}
+        {successMessage && (
+          <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
+            {successMessage}
+          </Alert>
+        )}
+
+        {error && (
+          <Alert type="error" dismissible onDismiss={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        <Form
+          actions={
+            <SpaceBetween direction="vertical" size="xs">
+              <Button
+                variant="primary"
+                loading={loading}
+                onClick={handleSignInClick}
+                data-testid="signin-button"
+                fullWidth
+              >
+                {String(t('auth.sign_in'))}
+              </Button>
+
+              <Box textAlign="right" padding={{ top: 'm' }}>
+                <Link
+                  to="/forgot-password"
+                  style={{
+                    textDecoration: 'none',
+                    color: '#0972d3',
+                    fontSize: '14px'
+                  }}
+                >
+                  {String(t('auth.forgot_password') || '비밀번호 찾기')}
+                </Link>
+              </Box>
+            </SpaceBetween>
+          }
+        >
+          <SpaceBetween size="l">
+            <FormField label={String(t('auth.username'))}>
+              <Input
+                type="text"
+                value={formState.username}
+                onChange={({ detail }) => handleChange('username', detail.value)}
+                onKeyDown={({ detail }) => {
+                  if (detail.key === 'Enter') {
+                    const passwordInput = document.querySelector('input[type="password"]');
+                    if (passwordInput) (passwordInput as HTMLElement).focus();
+                  }
+                }}
+                autoFocus
+              />
+            </FormField>
+
+            <FormField label={String(t('auth.password'))}>
+              <Input
+                type="password"
+                value={formState.password}
+                onChange={({ detail }) => handleChange('password', detail.value)}
+                onKeyDown={({ detail }) => {
+                  if (detail.key === 'Enter') handleSignInClick();
+                }}
+              />
+            </FormField>
+          </SpaceBetween>
+        </Form>
+
+        <Box textAlign="center" color="text-body-secondary" fontSize="body-s">
+          &copy; {new Date().getFullYear()} Amazon Web Services, Inc. 또는 계열사
+        </Box>
+      </SpaceBetween>
     </AuthLayout>
   );
 };
