@@ -18,46 +18,146 @@ import {
     Alert
 } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
-import { listCourses, getCourse } from '../../graphql/queries';
-import { createCourse, updateCourse, deleteCourse } from '../../graphql/mutations';
-import { Course } from '../../models/Course';
+import { Amplify } from 'aws-amplify';
 import { useTypedTranslation } from '../../utils/i18n-utils';
 
-// GraphQL 응답 타입 인터페이스
+// Define Course interface based on DynamoDB schema
+interface Course {
+    id?: string;
+    title: string;
+    description?: string;
+    duration?: number;
+    level?: string;
+    price?: number;
+    category?: string;
+    publishedDate?: string;
+    isActive?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+// GraphQL operations for Tnc-CourseCatalog table
+const listCourses = /* GraphQL */ `
+  query ListCourses(
+    \$filter: ModelTncCourseCatalogFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listTncCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        title
+        description
+        duration
+        level
+        price
+        category
+        publishedDate
+        isActive
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+const getCourse = /* GraphQL */ `
+  query GetCourse(\$id: ID!) {
+    getTncCourseCatalog(id: \$id) {
+      id
+      title
+      description
+      duration
+      level
+      price
+      category
+      publishedDate
+      isActive
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const createCourse = /* GraphQL */ `
+  mutation CreateCourse(\$input: CreateTncCourseCatalogInput!) {
+    createTncCourseCatalog(input: \$input) {
+      id
+      title
+      description
+      duration
+      level
+      price
+      category
+      publishedDate
+      isActive
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const updateCourse = /* GraphQL */ `
+  mutation UpdateCourse(\$input: UpdateTncCourseCatalogInput!) {
+    updateTncCourseCatalog(input: \$input) {
+      id
+      title
+      description
+      duration
+      level
+      price
+      category
+      publishedDate
+      isActive
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const deleteCourse = /* GraphQL */ `
+  mutation DeleteCourse(\$input: DeleteTncCourseCatalogInput!) {
+    deleteTncCourseCatalog(input: \$input) {
+      id
+      title
+    }
+  }
+`;
+
+// GraphQL response interfaces
 interface GraphQLResponse<T> {
     data?: T;
     errors?: any[];
 }
 
-// 쿼리 응답 인터페이스
 interface ListCoursesResponse {
-    listCourses: {
+    listTncCourseCatalogs: {
         items: Course[];
         nextToken?: string;
     };
 }
 
 interface GetCourseResponse {
-    getCourse: Course;
+    getTncCourseCatalog: Course;
 }
 
-// 뮤테이션 응답 인터페이스
 interface CreateCourseResponse {
-    createCourse: Course;
+    createTncCourseCatalog: Course;
 }
 
 interface UpdateCourseResponse {
-    updateCourse: Course;
+    updateTncCourseCatalog: Course;
 }
 
 interface DeleteCourseResponse {
-    deleteCourse: Course;
+    deleteTncCourseCatalog: Course;
 }
 
 const CourseCatalogTab: React.FC = () => {
     const { tString, t } = useTypedTranslation();
 
-    // 상태 관리
+    // State management
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
@@ -66,11 +166,12 @@ const CourseCatalogTab: React.FC = () => {
     const [filterText, setFilterText] = useState<string>('');
     const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
     const [error, setError] = useState<string | null>(null);
+    const [nextToken, setNextToken] = useState<string | null>(null);
 
-    // API 클라이언트 생성
+    // Create API client
     const client = generateClient();
 
-    // 과정 목록 불러오기
+    // Fetch courses from DynamoDB
     const fetchCourses = async () => {
         setLoading(true);
         setError(null);
@@ -79,27 +180,56 @@ const CourseCatalogTab: React.FC = () => {
             const result = await client.graphql({
                 query: listCourses,
                 variables: {
-                    limit: 20
-                }
+                    limit: 100,
+                    nextToken: nextToken
+                },
+                authMode: 'userPool'
             }) as GraphQLResponse<ListCoursesResponse>;
 
-            if (result.data?.listCourses?.items) {
-                setCourses(result.data.listCourses.items);
+            if (result.data?.listTncCourseCatalogs?.items) {
+                setCourses(result.data.listTncCourseCatalogs.items);
+                setNextToken(result.data.listTncCourseCatalogs.nextToken || null);
             }
         } catch (err) {
             console.error(t('admin.courses.error_loading'), err);
             setError(t('admin.courses.error_loading'));
+            
+            // If in dev environment, provide sample data
+            if (process.env.NODE_ENV === 'development') {
+                setCourses([
+                    {
+                        id: '1',
+                        title: 'AWS Cloud Practitioner',
+                        description: 'Fundamental AWS concepts',
+                        duration: 20,
+                        level: 'BEGINNER',
+                        price: 29.99,
+                        category: 'Cloud',
+                        isActive: true
+                    },
+                    {
+                        id: '2',
+                        title: 'AWS Solutions Architect',
+                        description: 'Advanced architecture patterns',
+                        duration: 40,
+                        level: 'ADVANCED',
+                        price: 49.99,
+                        category: 'Architecture',
+                        isActive: true
+                    }
+                ]);
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    // 컴포넌트 마운트 시 데이터 로드
+    // Load data on component mount
     useEffect(() => {
         fetchCourses();
     }, []);
 
-    // 필터링된 아이템
+    // Filter items based on search text
     const filteredItems = courses.filter(course =>
         !filterText ||
         course.title?.toLowerCase().includes(filterText.toLowerCase()) ||
@@ -107,14 +237,14 @@ const CourseCatalogTab: React.FC = () => {
         course.category?.toLowerCase().includes(filterText.toLowerCase())
     );
 
-    // 페이지당 아이템 수
+    // Pagination settings
     const PAGE_SIZE = 10;
     const paginatedItems = filteredItems.slice(
         (currentPageIndex - 1) * PAGE_SIZE,
         currentPageIndex * PAGE_SIZE
     );
 
-    // 새 과정 만들기
+    // Create new course
     const handleCreateCourse = () => {
         setCurrentCourse({
             title: '',
@@ -128,19 +258,40 @@ const CourseCatalogTab: React.FC = () => {
         setIsModalVisible(true);
     };
 
-    // 과정 수정
-    const handleEditCourse = (course: Course) => {
-        setCurrentCourse({ ...course });
-        setIsModalVisible(true);
+    // Edit existing course
+    const handleEditCourse = async (course: Course) => {
+        setLoading(true);
+        try {
+            // Get the latest course data
+            if (course.id) {
+                const result = await client.graphql({
+                    query: getCourse,
+                    variables: { id: course.id },
+                    authMode: 'userPool'
+                }) as GraphQLResponse<GetCourseResponse>;
+                
+                if (result.data?.getTncCourseCatalog) {
+                    setCurrentCourse({ ...result.data.getTncCourseCatalog });
+                } else {
+                    setCurrentCourse({ ...course });
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching course details:', err);
+            setCurrentCourse({ ...course });
+        } finally {
+            setLoading(false);
+            setIsModalVisible(true);
+        }
     };
 
-    // 과정 삭제 모달 표시
+    // Show delete confirmation modal
     const handleDeleteCourseClick = (course: Course) => {
         setCurrentCourse(course);
         setIsDeleteModalVisible(true);
     };
 
-    // 과정 저장 (생성/수정)
+    // Save course (create or update)
     const handleSaveCourse = async () => {
         if (!currentCourse || !currentCourse.title) return;
 
@@ -149,7 +300,7 @@ const CourseCatalogTab: React.FC = () => {
 
         try {
             if (currentCourse.id) {
-                // 기존 과정 수정
+                // Update existing course
                 const courseInput = {
                     id: currentCourse.id,
                     title: currentCourse.title,
@@ -164,17 +315,18 @@ const CourseCatalogTab: React.FC = () => {
 
                 const result = await client.graphql({
                     query: updateCourse,
-                    variables: { input: courseInput }
+                    variables: { input: courseInput },
+                    authMode: 'userPool'
                 }) as GraphQLResponse<UpdateCourseResponse>;
 
-                // 수정된 과정으로 상태 업데이트
-                if (result.data?.updateCourse) {
+                // Update state with updated course
+                if (result.data?.updateTncCourseCatalog) {
                     setCourses(prevCourses =>
-                        prevCourses.map(c => c.id === currentCourse.id ? result.data!.updateCourse : c)
+                        prevCourses.map(c => c.id === currentCourse.id ? result.data!.updateTncCourseCatalog : c)
                     );
                 }
             } else {
-                // 새 과정 생성
+                // Create new course
                 const courseInput = {
                     title: currentCourse.title,
                     description: currentCourse.description,
@@ -188,16 +340,17 @@ const CourseCatalogTab: React.FC = () => {
 
                 const result = await client.graphql({
                     query: createCourse,
-                    variables: { input: courseInput }
+                    variables: { input: courseInput },
+                    authMode: 'userPool'
                 }) as GraphQLResponse<CreateCourseResponse>;
 
-                // 생성된 과정 추가
-                if (result.data?.createCourse) {
-                    setCourses(prevCourses => [...prevCourses, result.data!.createCourse]);
+                // Add new course to state
+                if (result.data?.createTncCourseCatalog) {
+                    setCourses(prevCourses => [...prevCourses, result.data!.createTncCourseCatalog]);
                 }
             }
 
-            // 모달 닫기
+            // Close modal
             setIsModalVisible(false);
             setCurrentCourse(null);
         } catch (err) {
@@ -208,7 +361,7 @@ const CourseCatalogTab: React.FC = () => {
         }
     };
 
-    // 과정 삭제
+    // Delete course
     const handleDeleteCourse = async () => {
         if (!currentCourse?.id) return;
 
@@ -220,17 +373,18 @@ const CourseCatalogTab: React.FC = () => {
                 query: deleteCourse,
                 variables: {
                     input: { id: currentCourse.id }
-                }
+                },
+                authMode: 'userPool'
             }) as GraphQLResponse<DeleteCourseResponse>;
 
-            if (result.data?.deleteCourse) {
-                // 삭제된 과정 제거
+            if (result.data?.deleteTncCourseCatalog) {
+                // Remove deleted course
                 setCourses(prevCourses =>
                     prevCourses.filter(c => c.id !== currentCourse.id)
                 );
             }
 
-            // 모달 닫기
+            // Close modal
             setIsDeleteModalVisible(false);
             setCurrentCourse(null);
         } catch (err) {
@@ -259,7 +413,7 @@ const CourseCatalogTab: React.FC = () => {
             )}
 
             <SpaceBetween size="l">
-                {/* 헤더 및 검색/필터 도구 */}
+                {/* Header and search tools */}
                 <Box>
                     <SpaceBetween direction="horizontal" size="m">
                         <Header
@@ -286,7 +440,7 @@ const CourseCatalogTab: React.FC = () => {
                     </SpaceBetween>
                 </Box>
 
-                {/* 과정 테이블 */}
+                {/* Course table */}
                 <Table
                     loading={loading}
                     items={paginatedItems}
@@ -306,7 +460,7 @@ const CourseCatalogTab: React.FC = () => {
                         {
                             id: "duration",
                             header: t('admin.courses.column.duration'),
-                            cell: item => item.duration || "-",
+                            cell: item => item.duration ? `\${item.duration} \${t('admin.courses.hours')}` : "-",
                             sortingField: "duration"
                         },
                         {
@@ -382,7 +536,7 @@ const CourseCatalogTab: React.FC = () => {
                 />
             </SpaceBetween>
 
-            {/* 과정 추가/수정 모달 */}
+            {/* Add/edit course modal */}
             <Modal
                 visible={isModalVisible}
                 onDismiss={() => setIsModalVisible(false)}
@@ -393,7 +547,7 @@ const CourseCatalogTab: React.FC = () => {
                             <Button variant="link" onClick={() => setIsModalVisible(false)}>
                                 {t('admin.common.cancel')}
                             </Button>
-                            <Button variant="primary" onClick={handleSaveCourse}>
+                            <Button variant="primary" onClick={handleSaveCourse} loading={loading}>
                                 {t('admin.common.save')}
                             </Button>
                         </SpaceBetween>
@@ -402,7 +556,7 @@ const CourseCatalogTab: React.FC = () => {
             >
                 {currentCourse && (
                     <SpaceBetween size="l">
-                        <FormField label={t('admin.courses.form.title')}>
+                        <FormField label={t('admin.courses.form.title')} errorText={!currentCourse.title ? t('admin.courses.form.title_required') : undefined}>
                             <Input
                                 value={currentCourse.title}
                                 onChange={({ detail }) =>
@@ -454,7 +608,7 @@ const CourseCatalogTab: React.FC = () => {
                                 options={[
                                     { label: tString('conversation.difficulty.beginner'), value: 'BEGINNER' },
                                     { label: tString('conversation.difficulty.intermediate'), value: 'INTERMEDIATE' },
-                                    { label: ('conversation.difficulty.advanced'), value: 'ADVANCED' }
+                                    { label: tString('conversation.difficulty.advanced'), value: 'ADVANCED' }
                                 ]}
                             />
                         </FormField>
@@ -469,12 +623,13 @@ const CourseCatalogTab: React.FC = () => {
                             />
                         </FormField>
 
-                        <FormField label={t('admin.courses.form.published_date') as string}>
+                        <FormField label={t('admin.courses.form.published_date')}>
                             <DatePicker
                                 value={currentCourse.publishedDate || ''}
                                 onChange={({ detail }) =>
                                     setCurrentCourse(prev => prev ? ({ ...prev, publishedDate: detail.value }) : null)
                                 }
+                                placeholder="YYYY-MM-DD"
                             />
                         </FormField>
 
@@ -490,7 +645,7 @@ const CourseCatalogTab: React.FC = () => {
                 )}
             </Modal>
 
-            {/* 삭제 확인 모달 */}
+            {/* Delete confirmation modal */}
             <Modal
                 visible={isDeleteModalVisible}
                 onDismiss={() => setIsDeleteModalVisible(false)}
@@ -501,7 +656,7 @@ const CourseCatalogTab: React.FC = () => {
                             <Button variant="link" onClick={() => setIsDeleteModalVisible(false)}>
                                 {t('admin.common.cancel')}
                             </Button>
-                            <Button variant="primary" onClick={handleDeleteCourse}>
+                            <Button variant="primary" onClick={handleDeleteCourse} loading={loading}>
                                 {t('admin.common.delete')}
                             </Button>
                         </SpaceBetween>

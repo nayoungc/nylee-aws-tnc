@@ -17,6 +17,7 @@ import {
 
 const SignIn: React.FC = () => {
   const { t } = useTranslation();
+  
   const navigate = useNavigate();
   const location = useLocation();
   const { username: initialUsername, message } = location.state || { username: '', message: '' };

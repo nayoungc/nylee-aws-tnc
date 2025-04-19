@@ -270,7 +270,6 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* 여기서부터는 수정없이 그대로 */}
       {/* 인증 페이지 라우트 */}
       <Route element={<AuthLayout />}>
         <Route
@@ -321,7 +320,6 @@ const AppRoutes: React.FC = () => {
         {/* 교육생 평가 페이지 */}
         <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
         <Route path="quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
-        <Route path="post-quiz" element={<MainLayout><PostQuizPage /></MainLayout>} />
       </Route>
 
       {/* 강사용 페이지 (URL 구조 변경) */}
@@ -339,6 +337,7 @@ const AppRoutes: React.FC = () => {
           <Route path="quiz" element={<InstructorRoute><QuizManagement /></InstructorRoute>} />
           <Route path="quiz-creator" element={<InstructorRoute><QuizCreator /></InstructorRoute>} />
           <Route path="survey" element={<InstructorRoute><SurveyManagement /></InstructorRoute>} />
+          <Route path="survey-creator" element={<InstructorRoute><SurveyCreator /></InstructorRoute>} />
         </Route>
 
         {/* 분석 및 보고서 */}
@@ -348,8 +347,11 @@ const AppRoutes: React.FC = () => {
               <div>사전/사후 비교 분석</div>
             </InstructorRoute>
           } />
-          <Route path="/instructor/analytics/reports" element={<ReportGenerator />} />
-
+          <Route path="reports" element={
+            <InstructorRoute>
+              <ReportGenerator />
+            </InstructorRoute>
+          } />
           <Route path="insights" element={
             <InstructorRoute>
               <div>과정별 인사이트</div>
@@ -378,10 +380,7 @@ const AppRoutes: React.FC = () => {
       {/* 이전 URL 경로 리디렉션 - 단순 경로는 직접 처리 */}
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
-
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
-      <Route path="/instructor/assessments/survey" element={<SurveyManagement />} />
-      <Route path="/instructor/assessments/survey-creator" element={<SurveyCreator />} />
       
       {/* 교육생 페이지 리디렉션 - 별도 컴포넌트 사용 */}
       <Route path="/student/:courseId" element={<StudentHomeRedirect />} />

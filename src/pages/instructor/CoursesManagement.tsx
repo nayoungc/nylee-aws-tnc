@@ -11,6 +11,7 @@ import {
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
+import { Amplify } from 'aws-amplify';
 
 interface Course {
   id: string;
@@ -22,7 +23,7 @@ interface Course {
   sessionCount?: number;
 }
 
-// GraphQL 쿼리 정의
+// GraphQL query definition
 const listCourses = /* GraphQL */ `
   query ListCourses(
     \$filter: ModelCourseFilterInput
@@ -61,22 +62,23 @@ const CoursesManagement: React.FC = () => {
     setError(null);
     
     try {
-      // Amplify GraphQL 클라이언트 생성
+      // Create Amplify GraphQL client
       const client = generateClient();
       
-      // GraphQL 쿼리 실행
+      // Execute GraphQL query
       const response = await client.graphql({
         query: listCourses,
         variables: {
           limit: 100,
           filter: {
-            // 필요한 필터 조건 추가 가능
+            // Add filter conditions if needed
             // status: { eq: "ACTIVE" }
           }
-        }
+        },
+        authMode: 'userPool' // Specify the auth mode explicitly
       });
 
-      // any 타입을 사용하여 data 접근 문제 해결
+      // Use any type to resolve data access issues
       const responseAny: any = response;
       const courseItems = responseAny.data?.listCourses?.items || [];
       
@@ -89,7 +91,7 @@ const CoursesManagement: React.FC = () => {
       console.error('코스 로드 오류:', error);
       setError('코스 목록을 불러오는데 실패했습니다');
       
-      // 개발 환경에서 샘플 데이터 사용
+      // Use sample data in development environment
       if (process.env.NODE_ENV === 'development') {
         setCourses([
           { id: '1', title: 'AWS Cloud Practitioner Essentials', status: 'Active', sessionCount: 5 },
@@ -127,7 +129,7 @@ const CoursesManagement: React.FC = () => {
             </Button>
           }
         >
-          My Courses
+          Courses
         </Header>
       }
     >

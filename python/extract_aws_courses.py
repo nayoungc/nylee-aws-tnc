@@ -5,6 +5,7 @@ import os
 import docx
 import random
 import string
+import pandas as pd
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -51,9 +52,9 @@ def generate_short_id(length=8):
 def clean_course_title(title):
     """과정 제목에서 페이지 번호 및 불필요한 공백 제거"""
     # 끝에 탭과 숫자가 있는 패턴 제거
-    title = re.sub(r'\t+\d+\$', '', title)
+    title = re.sub(r'\t+\d+\\$', '', title)
     # 끝에 숫자만 있는 패턴 제거
-    title = re.sub(r'\s+\d+\$', '', title)
+    title = re.sub(r'\s+\d+\\$', '', title)
     return title.strip()
 
 
@@ -311,16 +312,16 @@ def extract_module_info(paragraphs, start_idx, course):
     
     # 특정 모듈/실습 패턴
     module_patterns = [
-        re.compile(r'^모듈\s+(\d+)[:\s]+(.+)\$'),
-        re.compile(r'^모듈\s+(\d+)[\.:]?\s*(.+)\$')
+        re.compile(r'^모듈\s+(\d+)[:\s]+(.+)\\$'),
+        re.compile(r'^모듈\s+(\d+)[\.:]?\s*(.+)\\$')
     ]
     
     lab_patterns = [
-        re.compile(r'^실습\s+(\d+)[:\s]+(.+)\$'), 
-        re.compile(r'^실습\s+(\d+)[\.:]?\s*(.+)\$')
+        re.compile(r'^실습\s+(\d+)[:\s]+(.+)\\$'), 
+        re.compile(r'^실습\s+(\d+)[\.:]?\s*(.+)\\$')
     ]
     
-    bullet_pattern = re.compile(r'^[•·-]\s+(.+)\$')
+    bullet_pattern = re.compile(r'^[•·-]\s+(.+)\\$')
     
     # 강화된 검색 - 최대 단락 수를 늘림
     max_scan = 300
@@ -584,6 +585,494 @@ def save_courses_to_dynamodb(courses, catalog_table, modules_table, region='us-e
         print(f"저장 검증 중 오류: {str(e)}")
 
 
+def extract_course_info_from_docx(file_path, course_titles):
+    """문서에서 과정 정보 추출 - 표에서 레벨과 소요 시간 추출 기능 추가"""
+    try:
+        doc = docx.Document(file_path)
+        print(f"문서 '{file_path}' 로드 완료 (총 {len(doc.paragraphs)}개 단락)")
+        
+        # 결과를 저장할 리스트
+        courses_info = []
+        
+        # 표에서 레벨 및 소요 시간 정보 추출
+        course_table_data = extract_table_data(doc)
+        print(f"표에서 {len(course_table_data)}개 과정 정보 추출됨")
+        
+        # 과정 제목 목록 처리
+        for course_title in tqdm(course_titles, desc="과정 정보 추출", ncols=100):
+            # 새로운 과정 객체 생성
+            course = Course(title=course_title)
+            
+            # 표에서 추출한 메타데이터 할당
+            if course_title in course_table_data:
+                table_info = course_table_data[course_title]
+                print(f"table_info : {table_info}")
+                
+                # 레벨 정보 추출 및 정규화
+                if "레벨" in table_info:
+                    course.level = normalize_level(table_info["레벨"])
+                elif "Level" in table_info:
+                    course.level = normalize_level(table_info["Level"])
+                
+                # 제공 방법 정보 추출
+                if "제공 방법" in table_info:
+                    course.delivery_method = table_info["제공 방법"]
+                elif "제공 방식" in table_info:
+                    course.delivery_method = table_info["제공 방식"]
+                elif "Delivery Method" in table_info:
+                    course.delivery_method = table_info["Delivery Method"]
+                
+                # 소요 시간 정보 추출 및 정규화
+                if "소요 시간" in table_info:
+                    course.duration = normalize_duration(table_info["소요 시간"])
+                elif "Duration" in table_info:
+                    course.duration = normalize_duration(table_info["Duration"])
+            
+            # 문서 전체에서 직접 모듈과 실습을 찾아 추출
+            try:
+                # detailed_course = extract_module_and_labs_directly(doc, course_title, course_titles)
+                detailed_course = extract_course_modules_and_labs(doc, course_title, course_titles)
+                
+                # 모듈과 실습 정보를 병합
+                course.modules = detailed_course.modules
+                course.labs = detailed_course.labs
+                
+                # 설명이 있으면 추가
+                if detailed_course.description:
+                    course.description = detailed_course.description
+                    
+            except Exception as e:
+                print(f"  '{course_title}' 과정의 모듈/실습 추출 중 오류 발생: {str(e)}")
+            
+            courses_info.append(course)
+            
+        return courses_info
+        
+    except Exception as e:
+        print(f"문서 처리 중 오류 발생: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return []
+
+
+def extract_module_and_labs_directly(doc, course_title, all_course_titles):
+    """문서 전체에서 직접 모듈과 실습을 찾아 추출하는 함수 - 개선된 버전"""
+    course = Course(title=course_title)
+    current_module = None
+    current_day = None
+    
+    # 패턴 정의 개선
+    day_pattern = re.compile(r'^(\d+)\s*일\s*차\\$')
+    module_pattern = re.compile(r'^모듈\s+(\d+)[:\s]+(.+)\\$')
+    lab_pattern = re.compile(r'^실습[:\s]+(.+)\\$')
+    final_lab_pattern = re.compile(r'^최종\s*실습[:\s]+(.+)\\$')
+    bullet_pattern = re.compile(r'^[•·-]\s+(.+)\\$')
+    
+    print(f"\n'{course_title}' 과정의 모듈/실습 찾기 시작...")
+    
+    # 과정 정보 탐색 상태
+    start_searching = False
+    in_course_overview = False
+    course_overview_start_idx = -1
+    
+    # 모듈과 실습 추적을 위한 변수
+    module_count = 0
+    lab_count = 0
+    
+    for i, para in enumerate(doc.paragraphs):
+        text = para.text.strip()
+        if not text:
+            continue
+        
+        # 과정 제목 확인
+        if course_title in text and not start_searching:
+            start_searching = True
+            print(f"  과정 제목 발견 (단락 {i}): {text}")
+            continue
+            
+        if not start_searching:
+            continue
+        
+        # "과정 개요" 섹션 시작 감지
+        if text == "과정 개요" and not in_course_overview:
+            in_course_overview = True
+            course_overview_start_idx = i
+            print(f"  과정 개요 섹션 발견 (단락 {i})")
+            continue
+            
+        # 과정 개요 섹션이 아닌 경우 다음 중요 섹션 확인
+        if not in_course_overview:
+            if text in ["과정 설명", "레벨", "제공 방법", "제공 방식", "소요 시간", "과정 목표", 
+                        "수강 대상", "수강 전 권장 사항", "등록"]:
+                print(f"  섹션 헤더 발견: {text}")
+                if text == "과정 설명":
+                    course.description = ""  # 과정 설명 초기화
+                continue
+            
+            # 다른 과정으로 넘어갔는지 확인
+            if any(title in text for title in all_course_titles 
+                   if title != course_title and len(title) > 10):
+                print(f"  다른 과정 발견, 검색 종료: {text}")
+                break
+                
+            # 과정 설명 수집 (다른 섹션이 나올 때까지)
+            if hasattr(course, 'description') and course.description is not None:
+                course.description += " " + text
+                
+            continue
+        
+        # 이제부터 과정 개요 섹션 내용 처리
+        # 일 차 패턴 확인
+        day_match = day_pattern.match(text)
+        if day_match:
+            current_day = f"{day_match.group(1)}일 차"
+            print(f"  {current_day} 발견")
+            continue
+        
+        # 모듈 패턴 확인
+        module_match = module_pattern.match(text)
+        if module_match:
+            module_num = int(module_match.group(1))
+            module_title = module_match.group(2).strip()
+            full_title = f"모듈 {module_num}: {module_title}"
+            
+            current_module = Module(title=full_title, order=module_num)
+            if current_day:
+                current_module.topics.append(f"[{current_day}]")
+                
+            course.modules.append(current_module)
+            module_count += 1
+            print(f"  모듈 {module_num} 발견: {module_title}")
+            continue
+        
+        # 실습 패턴 확인 (일반 실습)
+        lab_match = lab_pattern.match(text)
+        if lab_match:
+            lab_title = lab_match.group(1).strip()
+            lab_num = lab_count + 1
+            full_lab_title = f"실습 {lab_num}: {lab_title}"
+            
+            lab = Lab(
+                title=full_lab_title, 
+                order=lab_num,
+                related_module=current_module.title if current_module else ""
+            )
+            course.labs.append(lab)
+            lab_count += 1
+            print(f"  실습 {lab_num} 발견: {lab_title}")
+            continue
+            
+        # 최종 실습 패턴 확인
+        final_lab_match = final_lab_pattern.match(text)
+        if final_lab_match:
+            lab_title = final_lab_match.group(1).strip()
+            lab_num = lab_count + 1
+            full_lab_title = f"최종 실습 {lab_num}: {lab_title}"
+            
+            lab = Lab(
+                title=full_lab_title, 
+                order=lab_num,
+                related_module=current_module.title if current_module else "최종 실습"
+            )
+            course.labs.append(lab)
+            lab_count += 1
+            print(f"  최종 실습 {lab_num} 발견: {lab_title}")
+            continue
+            
+        # 글머리 기호로 시작하는 토픽 확인
+        bullet_match = bullet_pattern.match(text)
+        if bullet_match and current_module:
+            topic = bullet_match.group(1).strip()
+            
+            # 내용이 "실습: xxx" 형식인지 확인
+            nested_lab_match = re.search(r'^실습[:\s]+(.+)\\$', topic)
+            if nested_lab_match:
+                lab_title = nested_lab_match.group(1).strip()
+                lab_num = lab_count + 1
+                full_lab_title = f"실습 {lab_num}: {lab_title}"
+                
+                lab = Lab(
+                    title=full_lab_title, 
+                    order=lab_num,
+                    related_module=current_module.title
+                )
+                course.labs.append(lab)
+                lab_count += 1
+                print(f"  토픽에서 실습 {lab_num} 발견: {lab_title}")
+            else:
+                current_module.topics.append(topic)
+            
+            continue
+            
+        # 새로운 과정 섹션 시작 확인
+        if text == "과정 목표" or text == "수강 대상" or text == "수강 전 권장 사항" or text == "등록":
+            print(f"  새 섹션 발견, 과정 개요 섹션 종료: {text}")
+            in_course_overview = False
+            break
+    
+    # 결과 요약
+    print(f"  모듈/실습 추출 완료: {len(course.modules)}개 모듈, {len(course.labs)}개 실습")
+    if course.modules:
+        for i, module in enumerate(course.modules[:3]):
+            topic_count = len([t for t in module.topics if not t.startswith('[')])  # 일 차 항목 제외
+            print(f"    - 모듈 {module.order}: {module.title} ({topic_count}개 토픽)")
+        if len(course.modules) > 3:
+            print(f"    - ... 외 {len(course.modules)-3}개")
+    
+    if course.labs:
+        for i, lab in enumerate(course.labs[:3]):
+            print(f"    - {lab.title}")
+        if len(course.labs) > 3:
+            print(f"    - ... 외 {len(course.labs)-3}개 실습")
+    
+    return course
+
+def extract_course_modules_and_labs(doc, course_title, all_course_titles, course=None):
+    """문서 전체에서 과정의 모듈과 실습을 효과적으로 추출하는 통합 함수"""
+    if course is None:
+        course = Course(title=course_title)
+    
+    current_module = None
+    current_day = None
+    
+    # 정규식 패턴 - 이스케이프 문자를 \$로 수정 (\\\$ → \$)
+    day_pattern = re.compile(r'^(\d+)\s*일\s*차\$')
+    module_patterns = [
+        re.compile(r'^모듈\s+(\d+)[:\s]+(.+)\$'),
+        re.compile(r'^모듈\s+(\d+)[\.:]?\s*(.+)\$')
+    ]
+    lab_patterns = [
+        re.compile(r'^실습\s+(\d+)[:\s]+(.+)\$'), 
+        re.compile(r'^실습\s+(\d+)[\.:]?\s*(.+)\$'),
+        re.compile(r'^실습[:\s]+(.+)\$')  # 번호 없는 실습 패턴 추가
+    ]
+    final_lab_pattern = re.compile(r'^최종\s*실습[:\s]+(.+)\$')
+    bullet_pattern = re.compile(r'^[•·-]\s+(.+)\$')
+    
+    print(f"\n'{course_title}' 과정의 모듈/실습 정보 추출 시작...")
+    
+    # 상태 변수
+    start_searching = False
+    in_course_overview = False
+    found_module_section = False
+    in_modules_section = False
+    
+    # 카운터
+    module_count = 0
+    lab_count = 0
+    
+    # 전체 단락 수
+    total_paragraphs = len(doc.paragraphs)
+    
+    with tqdm(total=total_paragraphs, desc="문서 분석", ncols=100) as pbar:
+        for i, para in enumerate(doc.paragraphs):
+            text = para.text.strip()
+            pbar.update(1)
+            
+            if not text:
+                continue
+            
+            # 과정 제목 확인 - 정확한 매칭을 위해 조건 강화
+            if not start_searching:
+                if course_title == text or (course_title in text and len(text) < len(course_title) + 15):
+                    start_searching = True
+                    pbar.set_description(f"과정 '{course_title}' 발견 (단락 {i})")
+                    continue
+            
+            if not start_searching:
+                continue
+            
+            # 다른 과정으로 넘어갔는지 확인
+            if any(title == text or (title in text and len(text) < len(title) + 15) 
+                   for title in all_course_titles if title != course_title):
+                pbar.set_description(f"다른 과정 발견, 검색 종료")
+                break
+            
+            # 과정 개요 섹션 시작 감지
+            if text == "과정 개요" and not in_course_overview:
+                in_course_overview = True
+                pbar.set_description(f"과정 개요 섹션 발견 (단락 {i})")
+                continue
+            
+            # 모듈 섹션 검색 시작
+            if not found_module_section:
+                # 모듈 섹션 시작 표시자 찾기
+                if text.startswith("모듈") or "모듈 1:" in text or text == "1일 차" or text == "1일차":
+                    found_module_section = True
+                    in_modules_section = True
+                    pbar.set_description(f"모듈 섹션 시작 발견: {text[:30]}")
+                
+                # 과정 개요 섹션이 아닌 경우의 메타데이터 추출
+                elif text in ["과정 설명", "레벨", "제공 방법", "제공 방식", "소요 시간"]:
+                    pbar.set_description(f"메타데이터 섹션 발견: {text}")
+                    if text == "과정 설명":
+                        course.description = ""  # 과정 설명 초기화
+                elif hasattr(course, 'description') and course.description is not None:
+                    course.description += " " + text
+                
+                continue
+            
+            # 모듈 섹션이 끝났는지 확인
+            if in_modules_section and (text == "과정 요약" or text == "과정 마무리" or text == "사후 평가"):
+                in_modules_section = False
+                pbar.set_description(f"모듈 섹션 종료 발견: {text}")
+                break
+            
+            # 이제 모듈, 실습 등 주요 내용 추출
+            if in_modules_section:
+                # 일 차 패턴 확인
+                day_match = day_pattern.match(text)
+                if day_match:
+                    current_day = f"{day_match.group(1)}일 차"
+                    pbar.set_description(f"{current_day} 발견")
+                    continue
+                
+                # 모듈 패턴 확인
+                module_match = None
+                for pattern in module_patterns:
+                    match = pattern.match(text)
+                    if match:
+                        module_match = match
+                        break
+                
+                if module_match:
+                    module_num = int(module_match.group(1))
+                    module_title = module_match.group(2).strip()
+                    full_title = f"모듈 {module_num}: {module_title}"
+                    
+                    current_module = Module(title=full_title, order=module_num)
+                    if current_day:
+                        current_module.topics.append(f"[{current_day}]")
+                    
+                    course.modules.append(current_module)
+                    module_count += 1
+                    pbar.set_description(f"모듈 {module_num} 발견: {module_title[:30]}")
+                    continue
+                
+                # 실습 패턴 확인 (번호 있는 실습)
+                lab_match = None
+                for pattern in lab_patterns[:2]:  # 번호 있는 실습 패턴만 사용
+                    match = pattern.match(text)
+                    if match:
+                        lab_match = match
+                        lab_num = int(match.group(1))
+                        lab_title = match.group(2).strip()
+                        full_lab_title = f"실습 {lab_num}: {lab_title}"
+                        
+                        lab = Lab(
+                            title=full_lab_title, 
+                            order=lab_num,
+                            related_module=current_module.title if current_module else ""
+                        )
+                        course.labs.append(lab)
+                        lab_count += 1
+                        pbar.set_description(f"실습 {lab_num} 발견: {lab_title[:30]}")
+                        break
+                        
+                if lab_match:
+                    continue
+                
+                # 번호 없는 실습 패턴 확인
+                lab_match = lab_patterns[2].match(text)
+                if lab_match:
+                    lab_title = lab_match.group(1).strip()
+                    lab_num = lab_count + 1
+                    full_lab_title = f"실습 {lab_num}: {lab_title}"
+                    
+                    lab = Lab(
+                        title=full_lab_title, 
+                        order=lab_num,
+                        related_module=current_module.title if current_module else ""
+                    )
+                    course.labs.append(lab)
+                    lab_count += 1
+                    pbar.set_description(f"실습(번호없음) 발견: {lab_title[:30]}")
+                    continue
+                
+                # 최종 실습 패턴 확인
+                final_lab_match = final_lab_pattern.match(text)
+                if final_lab_match:
+                    lab_title = final_lab_match.group(1).strip()
+                    lab_num = lab_count + 1
+                    full_lab_title = f"최종 실습 {lab_num}: {lab_title}"
+                    
+                    lab = Lab(
+                        title=full_lab_title, 
+                        order=lab_num,
+                        related_module=current_module.title if current_module else "최종 실습"
+                    )
+                    course.labs.append(lab)
+                    lab_count += 1
+                    pbar.set_description(f"최종 실습 발견: {lab_title[:30]}")
+                    continue
+                
+                # 글머리 기호로 시작하는 토픽 확인
+                bullet_match = bullet_pattern.match(text)
+                if bullet_match and current_module:
+                    topic = bullet_match.group(1).strip()
+                    
+                    # 내용이 "실습: xxx" 형식인지 확인
+                    nested_lab_match = re.search(r'^실습[:\s]+(.+)\$', topic)
+                    if nested_lab_match:
+                        lab_title = nested_lab_match.group(1).strip()
+                        lab_num = lab_count + 1
+                        full_lab_title = f"실습 {lab_num}: {lab_title}"
+                        
+                        lab = Lab(
+                            title=full_lab_title, 
+                            order=lab_num,
+                            related_module=current_module.title
+                        )
+                        course.labs.append(lab)
+                        lab_count += 1
+                        pbar.set_description(f"토픽 내 실습 발견: {lab_title[:30]}")
+                    else:
+                        current_module.topics.append(topic)
+                        if len(current_module.topics) % 5 == 0:  # 로그 줄이기
+                            pbar.set_description(f"모듈 {current_module.order}의 토픽 추가 중 ({len(current_module.topics)}개)")
+                    continue
+    
+    # 결과 정리 - 중복 제거
+    unique_modules = []
+    seen_titles = set()
+    for module in course.modules:
+        if module.title not in seen_titles:
+            unique_modules.append(module)
+            seen_titles.add(module.title)
+    course.modules = unique_modules
+    
+    # 실습도 중복 제거
+    unique_labs = []
+    seen_lab_titles = set()
+    for lab in course.labs:
+        if lab.title not in seen_lab_titles:
+            unique_labs.append(lab)
+            seen_lab_titles.add(lab.title)
+    course.labs = unique_labs
+    
+    # 결과 요약
+    print(f"모듈/실습 추출 완료:")
+    print(f"- 모듈: {len(course.modules)}개")
+    print(f"- 실습: {len(course.labs)}개")
+    
+    if course.modules:
+        print("주요 모듈:")
+        for i, module in enumerate(course.modules[:3]):
+            topic_count = len([t for t in module.topics if not t.startswith('[')])  # 일 차 항목 제외
+            print(f"- 모듈 {module.order}: {module.title} ({topic_count}개 토픽)")
+        if len(course.modules) > 3:
+            print(f"- ... 외 {len(course.modules)-3}개 모듈")
+    
+    if course.labs:
+        print("주요 실습:")
+        for i, lab in enumerate(course.labs[:3]):
+            print(f"- {lab.title}")
+        if len(course.labs) > 3:
+            print(f"- ... 외 {len(course.labs)-3}개 실습")
+    
+    return course
+
+
 def main():
     # 설정값
     COURSE_TABLE = 'Tnc-CourseCatalog'
@@ -745,221 +1234,6 @@ Security Engineering on AWS"""
         import traceback
         traceback.print_exc()
 
-def extract_module_and_labs_directly(doc, course_title, all_course_titles):
-    """문서 전체에서 직접 모듈과 실습을 찾아 추출하는 함수 - 개선된 버전"""
-    course = Course(title=course_title)
-    current_module = None
-    current_day = None
-    
-    # 패턴 정의 개선
-    day_pattern = re.compile(r'^(\d+)\s*일\s*차\$')
-    module_pattern = re.compile(r'^모듈\s+(\d+)[:\s]+(.+)\$')
-    lab_pattern = re.compile(r'^실습[:\s]+(.+)\$')
-    final_lab_pattern = re.compile(r'^최종\s*실습[:\s]+(.+)\$')
-    bullet_pattern = re.compile(r'^[•·-]\s+(.+)\$')
-    
-    print(f"\n'{course_title}' 과정의 모듈/실습 찾기 시작...")
-    
-    # 과정 정보 탐색 상태
-    start_searching = False
-    in_course_overview = False
-    course_overview_start_idx = -1
-    
-    # 모듈과 실습 추적을 위한 변수
-    module_count = 0
-    lab_count = 0
-    
-    for i, para in enumerate(doc.paragraphs):
-        text = para.text.strip()
-        if not text:
-            continue
-        
-        # 과정 제목 확인
-        if course_title in text and not start_searching:
-            start_searching = True
-            print(f"  과정 제목 발견 (단락 {i}): {text}")
-            continue
-            
-        if not start_searching:
-            continue
-        
-        # "과정 개요" 섹션 시작 감지
-        if text == "과정 개요" and not in_course_overview:
-            in_course_overview = True
-            course_overview_start_idx = i
-            print(f"  과정 개요 섹션 발견 (단락 {i})")
-            continue
-            
-        # 과정 개요 섹션이 아닌 경우 다음 중요 섹션 확인
-        if not in_course_overview:
-            if text in ["과정 설명", "레벨", "제공 방법", "제공 방식", "소요 시간", "과정 목표", 
-                        "수강 대상", "수강 전 권장 사항", "등록"]:
-                print(f"  섹션 헤더 발견: {text}")
-                if text == "과정 설명":
-                    course.description = ""  # 과정 설명 초기화
-                continue
-            
-            # 다른 과정으로 넘어갔는지 확인
-            if any(title in text for title in all_course_titles 
-                   if title != course_title and len(title) > 10):
-                print(f"  다른 과정 발견, 검색 종료: {text}")
-                break
-                
-            # 과정 설명 수집 (다른 섹션이 나올 때까지)
-            if hasattr(course, 'description') and course.description is not None:
-                course.description += " " + text
-                
-            continue
-        
-        # 이제부터 과정 개요 섹션 내용 처리
-        # 일 차 패턴 확인
-        day_match = day_pattern.match(text)
-        if day_match:
-            current_day = f"{day_match.group(1)}일 차"
-            print(f"  {current_day} 발견")
-            continue
-        
-        # 모듈 패턴 확인
-        module_match = module_pattern.match(text)
-        if module_match:
-            module_num = int(module_match.group(1))
-            module_title = module_match.group(2).strip()
-            full_title = f"모듈 {module_num}: {module_title}"
-            
-            current_module = Module(title=full_title, order=module_num)
-            if current_day:
-                current_module.topics.append(f"[{current_day}]")
-                
-            course.modules.append(current_module)
-            module_count += 1
-            print(f"  모듈 {module_num} 발견: {module_title}")
-            continue
-        
-        # 실습 패턴 확인 (일반 실습)
-        lab_match = lab_pattern.match(text)
-        if lab_match:
-            lab_title = lab_match.group(1).strip()
-            lab_num = lab_count + 1
-            full_lab_title = f"실습 {lab_num}: {lab_title}"
-            
-            lab = Lab(
-                title=full_lab_title, 
-                order=lab_num,
-                related_module=current_module.title if current_module else ""
-            )
-            course.labs.append(lab)
-            lab_count += 1
-            print(f"  실습 {lab_num} 발견: {lab_title}")
-            continue
-            
-        # 최종 실습 패턴 확인
-        final_lab_match = final_lab_pattern.match(text)
-        if final_lab_match:
-            lab_title = final_lab_match.group(1).strip()
-            lab_num = lab_count + 1
-            full_lab_title = f"최종 실습 {lab_num}: {lab_title}"
-            
-            lab = Lab(
-                title=full_lab_title, 
-                order=lab_num,
-                related_module=current_module.title if current_module else "최종 실습"
-            )
-            course.labs.append(lab)
-            lab_count += 1
-            print(f"  최종 실습 {lab_num} 발견: {lab_title}")
-            continue
-            
-        # 글머리 기호로 시작하는 토픽 확인
-        bullet_match = bullet_pattern.match(text)
-        if bullet_match and current_module:
-            topic = bullet_match.group(1).strip()
-            
-            # 내용이 "실습: xxx" 형식인지 확인
-            nested_lab_match = re.search(r'^실습[:\s]+(.+)\$', topic)
-            if nested_lab_match:
-                lab_title = nested_lab_match.group(1).strip()
-                lab_num = lab_count + 1
-                full_lab_title = f"실습 {lab_num}: {lab_title}"
-                
-                lab = Lab(
-                    title=full_lab_title, 
-                    order=lab_num,
-                    related_module=current_module.title
-                )
-                course.labs.append(lab)
-                lab_count += 1
-                print(f"  토픽에서 실습 {lab_num} 발견: {lab_title}")
-            else:
-                current_module.topics.append(topic)
-            
-            continue
-            
-        # 새로운 과정 섹션 시작 확인
-        if text == "과정 목표" or text == "수강 대상" or text == "수강 전 권장 사항" or text == "등록":
-            print(f"  새 섹션 발견, 과정 개요 섹션 종료: {text}")
-            in_course_overview = False
-            break
-    
-    # 결과 요약
-    print(f"  모듈/실습 추출 완료: {len(course.modules)}개 모듈, {len(course.labs)}개 실습")
-    if course.modules:
-        for i, module in enumerate(course.modules[:3]):
-            topic_count = len([t for t in module.topics if not t.startswith('[')])  # 일 차 항목 제외
-            print(f"    - 모듈 {module.order}: {module.title} ({topic_count}개 토픽)")
-        if len(course.modules) > 3:
-            print(f"    - ... 외 {len(course.modules)-3}개")
-    
-    if course.labs:
-        for i, lab in enumerate(course.labs[:3]):
-            print(f"    - {lab.title}")
-        if len(course.labs) > 3:
-            print(f"    - ... 외 {len(course.labs)-3}개 실습")
-    
-    return course
-
-def extract_course_info_from_docx(file_path, course_titles):
-    """문서에서 과정 정보 추출 - 메타데이터 추출 개선"""
-    # 결과를 저장할 리스트
-    courses_info = []
-    
-    # 교육 과정 블록을 찾기
-    # 일반적으로 과정 제목 다음에 표 형태의 정보가 나옴
-    course_blocks = re.findall(r'(과정 설명.*?소요 시간\s+\S+)', text, re.DOTALL)
-    
-    for block in course_blocks:
-        # 과정 제목 추출
-        course_title_match = re.search(r'(.*?)과정 설명', block)
-        course_title = course_title_match.group(1).strip() if course_title_match else "제목 미상"
-        
-        # 레벨 추출 (레벨 또는 수준으로 표시될 수 있음)
-        level_match = re.search(r'(레벨|수준)\s+(\S+)', block)
-        level = level_match.group(2) if level_match else "정보 없음"
-        
-        # 소요 시간 추출
-        time_match = re.search(r'소요 시간\s+(\S+일|\d+시간)', block)
-        duration = time_match.group(1) if time_match else "정보 없음"
-        
-        courses_info.append({
-            "과정 제목": course_title,
-            "레벨": level,
-            "소요 시간": duration
-        })
-    
-    # Digital Classroom 과정 추출 (다른 형식을 가질 수 있음)
-    digital_courses = re.findall(r'(기초|중급|고급)\s+Digital Classroom.*?(\d+시간)', text)
-    
-    for level, duration in digital_courses:
-        courses_info.append({
-            "과정 제목": "Digital Classroom 과정",
-            "레벨": level,
-            "소요 시간": duration
-        })
-    
-    # DataFrame으로 변환
-    df = pd.DataFrame(courses_info)
-    return df
-
 
 if __name__ == "__main__":
     main()
-
