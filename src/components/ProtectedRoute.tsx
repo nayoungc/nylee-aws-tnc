@@ -1,6 +1,6 @@
-// src/components/ProtectedRoute.tsx 수정
+// src/components/ProtectedRoute.tsx
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom'; // useLocation 추가
 import MainLayout from '../layouts/MainLayout';
 
 interface ProtectedRouteProps {
@@ -18,6 +18,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   userAttributes
 }) => {
+  const location = useLocation(); // 위치 정보 가져오기 추가
+  
   // 인증 검사
   if (!authenticated) {
     return <Navigate to={redirectPath} replace />;
