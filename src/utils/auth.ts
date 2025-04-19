@@ -5,10 +5,14 @@ import {
     confirmSignUp,
     resendSignUpCode,
     fetchUserAttributes,
-    getCurrentUser
+    getCurrentUser,
+    type SignInOutput,
+    type SignUpOutput,
+    type ConfirmSignUpOutput,
+    type UserAttributeKey  // 추가된 타입 임포트
 } from 'aws-amplify/auth';
 
-// SignUp 함수의 인터페이스 정의
+// 타입 정의
 export interface SignUpParams {
     username: string;
     password: string;
@@ -19,8 +23,32 @@ export interface SignUpParams {
     };
 }
 
-// SignUp 함수 구현 - export 추가
-export const handleSignUp = async (params: SignUpParams) => {
+export interface AuthTokens {
+    accessToken?: string;
+    idToken?: string;
+    refreshToken?: string;
+}
+
+export interface SignInResult {
+    isSignedIn: boolean;
+    nextStep?: {
+        signInStep: string;
+        missingAttributes?: string[];
+    };
+}
+
+export interface AuthState {
+    isAuthenticated: boolean;
+    username?: string;
+    attributes?: Partial<Record<UserAttributeKey, string>>; // 수정된 타입
+}
+
+// SignUp 함수 구현
+export const handleSignUp = async (params: SignUpParams): Promise<{
+    isSignUpComplete: boolean;
+    nextStep?: SignUpOutput['nextStep'];
+    userId?: string;
+}> => {
     try {
         const { username, password, email, phone, options } = params;
 
@@ -51,7 +79,8 @@ export const handleSignUp = async (params: SignUpParams) => {
     }
 };
 
-export const handleSignIn = async (username: string, password: string) => {
+// 로그인 함수
+export const handleSignIn = async (username: string, password: string): Promise<SignInResult> => {
     try {
         console.log('로그인 시도:', username);
 
@@ -64,12 +93,23 @@ export const handleSignIn = async (username: string, password: string) => {
         console.log('로그인 응답:', { isSignedIn, nextStep });
 
         if (isSignedIn) {
-            // 새로운 방식으로 세션 토큰 가져오기 및 타입 처리
-            const session = await fetchAuthSession();
+            // 세션 강제 갱신으로 토큰 최신화 확보
+            const session = await fetchAuthSession({ forceRefresh: true });
 
-            // 타입 안전성을 위한 조건문 추가
+            // 토큰 저장 로직
             if (session.tokens?.idToken) {
-                sessionStorage.setItem('userToken', session.tokens.idToken.toString());
+                localStorage.setItem('userToken', session.tokens.idToken.toString());
+                localStorage.setItem('lastLoginTime', Date.now().toString());
+
+                // 사용자 속성 조회 및 캐싱 (선택적)
+                try {
+                    const attributes = await fetchUserAttributes();
+                    if (attributes) {
+                        localStorage.setItem('userAttributes', JSON.stringify(attributes));
+                    }
+                } catch (attrError) {
+                    console.warn('사용자 속성 조회 실패:', attrError);
+                }
             } else {
                 console.warn('ID 토큰을 찾을 수 없습니다');
             }
@@ -90,7 +130,14 @@ export const handleSignIn = async (username: string, password: string) => {
 };
 
 // 계정 인증 함수
-export const handleConfirmSignUp = async (username: string, confirmationCode: string) => {
+export const handleConfirmSignUp = async (
+    username: string,
+    confirmationCode: string
+): Promise<{
+    isSignUpComplete: boolean;
+    nextStep?: ConfirmSignUpOutput['nextStep'];
+    autoSignIn?: SignInResult | null;
+}> => {
     try {
         // Gen 2 방식으로 계정 인증
         const { isSignUpComplete, nextStep } = await confirmSignUp({
@@ -105,7 +152,6 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
 
         if (isSignUpComplete) {
             try {
-                // 일부 앱에서는 자동 로그인이 필요할 수 있음
                 const signInResult = await signIn({
                     username,
                     options: {
@@ -114,6 +160,9 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
                 });
 
                 if (signInResult.isSignedIn) {
+                    // 세션 갱신
+                    await fetchAuthSession({ forceRefresh: true });
+
                     autoSignIn = {
                         isSignedIn: true,
                         nextStep: { signInStep: 'DONE' }
@@ -121,7 +170,6 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
                 }
             } catch (signInError) {
                 console.log('자동 로그인 실패, 수동 로그인 필요:', signInError);
-                // 자동 로그인 실패해도 인증 자체는 성공했으므로 오류 무시
             }
         }
 
@@ -137,7 +185,10 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
 };
 
 // 인증 코드 재전송 함수
-export const handleResendConfirmationCode = async (username: string) => {
+export const handleResendConfirmationCode = async (username: string): Promise<{
+    destination: string;
+    isSuccess: boolean;
+}> => {
     try {
         const result = await resendSignUpCode({
             username
@@ -145,12 +196,10 @@ export const handleResendConfirmationCode = async (username: string) => {
 
         console.log('코드 재전송 결과:', result);
 
-        // Gen 2에서는 반환 타입이 변경됨 - 결과 객체를 그대로 반환
         return {
-            // 실제 destination 정보는 현재 사용 불가능할 수 있어 username 기반 메시지 반환
             destination: username.includes('@') ?
-                username.replace(/(.{2})(.*)(@.*)/, '\$1***\$3') : // 이메일 형식이면 마스킹
-                username.replace(/(\d{2})(\d+)(\d{2})/, '\$1****\$3'), // 아니면 다른 형식으로 마스킹
+                username.replace(/(.{2})(.*)(@.*)/, '\$1***\$3') :
+                username.replace(/(\d{2})(\d+)(\d{2})/, '\$1****\$3'),
             isSuccess: true
         };
     } catch (error) {
@@ -159,10 +208,52 @@ export const handleResendConfirmationCode = async (username: string) => {
     }
 };
 
-// 인증 상태 확인 헬퍼 함수
-export const checkAuthState = async () => {
+// 토큰 갱신 함수
+export const refreshAuthToken = async (): Promise<boolean> => {
     try {
-        // Gen 2 방식으로 현재 사용자 확인
+        const lastLoginTime = localStorage.getItem('lastLoginTime');
+        const now = Date.now();
+        const tokenMaxAge = 55 * 60 * 1000; // 55분 (1시간 토큰의 안전 마진)
+
+        // 마지막 로그인 후 55분이 지났거나 로그인 시간 기록이 없는 경우
+        if (!lastLoginTime || (now - Number(lastLoginTime)) > tokenMaxAge) {
+            const session = await fetchAuthSession({ forceRefresh: true });
+
+            if (session.tokens?.idToken) {
+                localStorage.setItem('userToken', session.tokens.idToken.toString());
+                localStorage.setItem('lastLoginTime', now.toString());
+                return true;
+            }
+        }
+        return true;
+    } catch (error) {
+        console.error('토큰 갱신 실패:', error);
+        return false;
+    }
+};
+
+// API 호출용 인증 래퍼
+export const callAuthenticatedApi = async <T>(
+    apiFunction: (...args: any[]) => Promise<T>,
+    ...args: any[]
+): Promise<T> => {
+    try {
+        // API 호출 전 토큰 새로고침
+        await refreshAuthToken();
+        return await apiFunction(...args);
+    } catch (error: any) {
+        if (error.name === 'UserUnAuthenticatedException') {
+            console.error('사용자 세션이 만료되었습니다');
+            window.location.href = '/signin?expired=true';
+            throw new Error('인증 세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
+        throw error;
+    }
+};
+
+// 인증 상태 확인 함수
+export const checkAuthState = async (): Promise<boolean> => {
+    try {
         const user = await getCurrentUser();
         return !!user;
     } catch (error) {
@@ -171,8 +262,8 @@ export const checkAuthState = async () => {
     }
 };
 
-// 인증된 세션 토큰 가져오기 함수
-export const getAuthToken = async () => {
+// 인증된 세션 토큰 가져오기
+export const getAuthToken = async (): Promise<string | null> => {
     try {
         const session = await fetchAuthSession();
         return session.tokens?.idToken?.toString() || null;
@@ -182,8 +273,8 @@ export const getAuthToken = async () => {
     }
 };
 
-// 사용자 속성 가져오기
-export const getUserAttributes = async () => {
+// 사용자 속성 가져오기 - 반환 타입 수정
+export const getUserAttributes = async (): Promise<Partial<Record<UserAttributeKey, string>>> => {
     try {
         const attributes = await fetchUserAttributes();
         return attributes;
@@ -192,3 +283,19 @@ export const getUserAttributes = async () => {
         throw error;
     }
 };
+
+// 현재 인증 상태 가져오기 - 반환 타입 수정
+export const getCurrentAuthState = async (): Promise<AuthState> => {
+    try {
+      const user = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+      
+      return {
+        isAuthenticated: true,
+        username: user.username,
+        attributes
+      };
+    } catch (error) {
+      return { isAuthenticated: false };
+    }
+  };

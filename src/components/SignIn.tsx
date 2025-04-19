@@ -10,7 +10,9 @@ import {
   FormField, 
   Input, 
   Box,
-  Alert
+  Alert,
+  Container,
+  Grid
 } from '@cloudscape-design/components';
 
 const SignIn: React.FC = () => {
@@ -98,75 +100,102 @@ const SignIn: React.FC = () => {
 
   return (
     <AuthLayout>
-      <Box fontSize="heading-xl" fontWeight="bold">
-        {String(t('auth.sign_in'))}
-      </Box>
-      
-      {successMessage && (
-        <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
-          {successMessage}
-        </Alert>
-      )}
-      
-      {error && (
-        <Alert type="error" dismissible onDismiss={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-      
-      <Form
-        actions={
-          <SpaceBetween direction="vertical" size="xs">
-            <Button
-              variant="primary"
-              loading={loading}
-              onClick={handleSignInClick}
-              data-testid="signin-button"
+      <Container>
+        <SpaceBetween direction="vertical" size="l">
+          {/* 로고 이미지 추가 */}
+          <Box textAlign="center" padding={{ bottom: 'l' }}>
+            <img 
+              src="/images/aws.png" 
+              alt="AWS Logo" 
+              style={{ 
+                maxWidth: '180px', 
+                marginBottom: '20px' 
+              }}
+            />
+            <Box 
+              fontSize="heading-xl" 
+              fontWeight="bold" 
+              color="text-label"
+              padding={{ top: 'm' }}
             >
               {String(t('auth.sign_in'))}
-            </Button>
-
-            
-            <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-              <Box padding={{ top: 's' }}>
-                {String(t('auth.no_account'))} <Link to="/signup">{String(t('auth.sign_up'))}</Link>
-              </Box>
-              <Box padding={{ top: 's' }}>
-                <Link to="/forgot-password">{String(t('auth.forgot_password') || '비밀번호 찾기')}</Link>
-              </Box>
+            </Box>
+          </Box>
+          
+          {successMessage && (
+            <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
+              {successMessage}
+            </Alert>
+          )}
+          
+          {error && (
+            <Alert type="error" dismissible onDismiss={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          
+          <Form
+            actions={
+              <SpaceBetween direction="vertical" size="xs">
+                <Button
+                  variant="primary"
+                  loading={loading}
+                  onClick={handleSignInClick}
+                  data-testid="signin-button"
+                  fullWidth
+                >
+                  {String(t('auth.sign_in'))}
+                </Button>
+                
+                <Box textAlign="right" padding={{ top: 'm' }}>
+                  <Link 
+                    to="/forgot-password"
+                    style={{ 
+                      textDecoration: 'none', 
+                      color: '#0972d3',
+                      fontSize: '14px' 
+                    }}
+                  >
+                    {String(t('auth.forgot_password') || '비밀번호 찾기')}
+                  </Link>
+                </Box>
+              </SpaceBetween>
+            }
+          >
+            <SpaceBetween size="l">
+              <FormField label={String(t('auth.username'))}>
+                <Input
+                  type="text"
+                  value={formState.username}
+                  onChange={({ detail }) => handleChange('username', detail.value)}
+                  onKeyDown={({ detail }) => {
+                    if (detail.key === 'Enter') {
+                      const passwordInput = document.querySelector('input[type="password"]');
+                      if (passwordInput) (passwordInput as HTMLElement).focus();
+                    }
+                  }}
+                  autoFocus
+                />
+              </FormField>
+              
+              <FormField label={String(t('auth.password'))}>
+                <Input
+                  type="password"
+                  value={formState.password}
+                  onChange={({ detail }) => handleChange('password', detail.value)}
+                  onKeyDown={({ detail }) => {
+                    if (detail.key === 'Enter') handleSignInClick();
+                  }}
+                />
+              </FormField>
             </SpaceBetween>
-          </SpaceBetween>
+          </Form>
           
-        }
-      >
-        <SpaceBetween size="l">
-          <FormField label={String(t('auth.username'))}>
-            <Input
-              type="text"
-              value={formState.username}
-              onChange={({ detail }) => handleChange('username', detail.value)}
-              onKeyDown={({ detail }) => {
-                if (detail.key === 'Enter') {
-                  const passwordInput = document.querySelector('input[type="password"]');
-                  if (passwordInput) (passwordInput as HTMLElement).focus();
-                }
-              }}
-              autoFocus
-            />
-          </FormField>
-          
-          <FormField label={String(t('auth.password'))}>
-            <Input
-              type="password"
-              value={formState.password}
-              onChange={({ detail }) => handleChange('password', detail.value)}
-              onKeyDown={({ detail }) => {
-                if (detail.key === 'Enter') handleSignInClick();
-              }}
-            />
-          </FormField>
+          <Box textAlign="center" color="text-body-secondary" fontSize="body-s">
+            &copy; {new Date().getFullYear()} Amazon Web Services, Inc. 또는 계열사
+          </Box>
         </SpaceBetween>
-      </Form>
+      </Container>
     </AuthLayout>
   );
 };
