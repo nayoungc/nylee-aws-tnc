@@ -10,13 +10,14 @@ import {
   Badge,
   Spinner
 } from '@cloudscape-design/components';
+import { /* 나머지 임포트 */ } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { executeGraphQL } from '@utils/auth';
 import { listCourseCatalogs } from '@graphql/queries';
 
-// 타입 정의 (이전과 동일)
+// 타입 정의
 export interface CourseCatalog {
   id: string;
   title: string;
@@ -38,6 +39,7 @@ export interface ListCourseCatalogsResponse {
   };
 }
 
+// BaseCourseView의 props 인터페이스 (하나만 정의)
 interface BaseCourseViewProps {
   title: string;
   description: string;
@@ -57,7 +59,9 @@ interface BaseCourseViewProps {
   showViewButton?: boolean;      // 학습자 뷰 버튼 표시 여부
   
   additionalActions?: React.ReactNode;
+  courses?: CourseCatalog[];     // 외부에서 코스 데이터를 주입할 수 있는 선택적 props
 }
+
 
 export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   title,

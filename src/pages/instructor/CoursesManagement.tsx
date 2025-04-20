@@ -1,4 +1,3 @@
-// CoursesManagement.tsx
 import React from 'react';
 import { BaseCourseView } from '@components/BaseCourseView';
 import { useTypedTranslation } from '@utils/i18n-utils';
@@ -11,8 +10,7 @@ const CoursesManagement: React.FC = () => {
     <BaseCourseView 
       title={t('courses.management_title')} 
       description={t('courses.management_description')}
-      isReadOnly={false}      // 읽기 전용 아님
-      isAdminView={true}      // 관리자 뷰
+      isAdminView={true}
       createPath="/instructor/courses/create"
       managePath="/instructor/courses/"
       viewPath="/course/"

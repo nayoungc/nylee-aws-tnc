@@ -13,8 +13,6 @@ Amplify.configure(resourceConfig);
 
 console.log('Amplify 현재 설정:', Amplify.getConfig());
 
-
-
 // i18n 초기화
 import './i18n';
 
