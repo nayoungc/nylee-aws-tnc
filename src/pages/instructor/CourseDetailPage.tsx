@@ -182,7 +182,7 @@ const CourseDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <MainLayout title={tString('course_detail.loading.title')}>
+      <MainLayout>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
           <StatusIndicator type="loading">
             {t('course_detail.loading.message')}
@@ -194,7 +194,7 @@ const CourseDetailPage: React.FC = () => {
 
   if (error || !course) {
     return (
-      <MainLayout title={tString('common.error')}>
+      <MainLayout>
         <Container>
           <Alert type="error" header={t('course_detail.errors.load_failed')}>
             {error || t('course_detail.errors.general')}
@@ -225,7 +225,7 @@ const CourseDetailPage: React.FC = () => {
   })) || [];
 
   return (
-    <MainLayout title={course.title}>
+    <MainLayout>
       <SpaceBetween size="l">
         {activeAssessment && (
           <Alert
