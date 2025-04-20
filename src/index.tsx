@@ -20,6 +20,11 @@ console.log('Amplify 설정 완료:', JSON.stringify({
   api: (awsExports as any).api // 소문자 api 확인
 }, null, 2));
 
+// 추가 로깅으로 API 설정 확인
+console.log('Amplify API 설정:', 
+  JSON.stringify(Amplify.getConfig().API || '설정 없음', null, 2)
+);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

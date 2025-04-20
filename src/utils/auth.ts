@@ -1,5 +1,7 @@
+import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
+
 
 // 인증 상태를 표현하는 타입 정의
 export enum AuthStateEnum {
@@ -43,12 +45,34 @@ export const getAuthenticatedApiClient = async () => {
 export const executeGraphQL = async <T>(
   query: string,
   variables?: Record<string, any>,
-  authMode: 'apiKey' | 'userPool' | 'iam' | 'oidc' | 'lambda' = 'userPool' // 유지
+  authMode: 'apiKey' | 'userPool' | 'iam' | 'oidc' | 'lambda' = 'userPool'
 ): Promise<T> => {
   try {
-    // 인증 확인 없이 클라이언트 생성
+    // Amplify 설정 확인
+    const config = Amplify.getConfig();
+    
+    // API 설정이 없으면 경고
+    if (!config.API || !config.API.GraphQL) {
+      console.warn('API 설정이 없습니다. API 설정을 확인하세요.');
+      
+      // API 설정 추가
+      Amplify.configure({
+        API: {
+          GraphQL: {
+            endpoint: "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
+            region: "us-east-1",
+            defaultAuthMode: "userPool"
+          }
+        }
+      });
+      
+      console.log('API 설정을 추가했습니다.');
+    }
+    
+    // 클라이언트 생성
     const client = generateClient();
     
+    // 나머지 코드는 동일...
     const response = await client.graphql({
       query,
       variables,
@@ -62,13 +86,7 @@ export const executeGraphQL = async <T>(
     return response.data as T;
   } catch (error) {
     console.error('GraphQL 쿼리 실행 오류:', error);
-    
-    // 개발 또는 테스트 환경을 위한 오류 처리
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      console.log('개발 환경에서 API 오류 발생, 대체 데이터 반환');
-      // 여기에서 각 쿼리 유형에 맞는 모의 데이터를 반환하는 로직을 구현할 수 있습니다
-    }
-    
+    // 기존 에러 처리 코드...
     throw error;
   }
 };
