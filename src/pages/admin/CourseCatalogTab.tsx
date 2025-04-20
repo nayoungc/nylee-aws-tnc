@@ -12,22 +12,20 @@ import {
     Input,
     Select,
     Textarea,
-    Checkbox,
-    DatePicker,
     Alert,
     Multiselect
 } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
-import { useTypedTranslation } from '../../utils/i18n-utils';
+import { useTypedTranslation } from '@utils/i18n-utils';
 import {
     listCourseCatalogs,
     getCourseCatalog
-} from '../../graphql/queries';
+} from '@graphql/queries';
 import {
     createCourseCatalog,
     updateCourseCatalog,
     deleteCourseCatalog
-} from '../../graphql/mutations';
+} from '@graphql/mutations';
 
 // 백엔드 스키마와 일치하는 인터페이스
 interface CourseCatalog {

@@ -13,7 +13,7 @@ import { useTypedTranslation } from '../../utils/i18n-utils';
 
 const AdminPage: React.FC = () => {
   const { t } = useTypedTranslation();
-  // activeTabId 상태 관리
+
   const [activeTabId, setActiveTabId] = useState("courses");
   
   // 각 탭 컴포넌트를 메모이제이션하여 렌더링 성능 최적화

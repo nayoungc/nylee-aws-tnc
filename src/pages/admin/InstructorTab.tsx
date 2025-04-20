@@ -12,9 +12,7 @@ import {
     FormField,
     Input,
     Select,
-    DatePicker,
     Alert,
-    Textarea
 } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
 import { listInstructors } from '../../graphql/queries';
