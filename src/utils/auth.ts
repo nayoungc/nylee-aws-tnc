@@ -1,6 +1,16 @@
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
 
+export interface SignUpParams {
+  username: string;
+  password: string;
+  email: string;
+  phone?: string;
+  options?: {
+    userAttributes?: Record<string, string>;
+  };
+}
+
 // 인증된 API 클라이언트 반환 함수
 export const getAuthenticatedApiClient = async () => {
   try {
@@ -58,7 +68,8 @@ export const handleSignIn = async (username: string, password: string) => {
       data: result,
       message: '로그인에 성공했습니다.',
       isComplete: result.isSignedIn,
-      nextStep: result.nextStep
+      nextStep: result.nextStep,
+      isSignedIn: result.isSignedIn // 이 속성 추가
     };
   } catch (error) {
     console.error('로그인 오류:', error);
@@ -71,12 +82,15 @@ export const handleSignIn = async (username: string, password: string) => {
 };
 
 // 회원가입 함수
-export const handleSignUp = async (username: string, password: string, email: string, attributes?: Record<string, string>) => {
+export const handleSignUp = async (params: SignUpParams) => {
   try {
     const { signUp } = await import('aws-amplify/auth');
+    const { username, password, email, phone, options = {} } = params;
+    
     const userAttributes = {
       email,
-      ...attributes
+      ...(phone && { phone }),
+      ...(options.userAttributes || {})
     };
     
     const result = await signUp({
@@ -92,7 +106,8 @@ export const handleSignUp = async (username: string, password: string, email: st
       data: result,
       message: '회원가입에 성공했습니다. 이메일을 확인하여 가입을 완료해주세요.',
       isComplete: result.isSignUpComplete,
-      nextStep: result.nextStep
+      nextStep: result.nextStep,
+      isSignUpComplete: result.isSignUpComplete // 이 속성 추가
     };
   } catch (error) {
     console.error('회원가입 오류:', error);
