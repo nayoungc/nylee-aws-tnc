@@ -20,7 +20,8 @@ import { generateClient } from 'aws-amplify/api';
 import { listInstructors } from '../../graphql/queries';
 import { createInstructor, updateInstructor, deleteInstructor } from '../../graphql/mutations';
 import { Instructor } from '../../models/Instructor';
-import { useTypedTranslation } from '../../utils/i18n-utils';
+import { useTypedTranslation } from '@utils/i18n-utils';
+import { listCognitoUsers, CognitoUser } from '../../services/cognitoService';
 
 // API 클라이언트 생성
 const client = generateClient();
@@ -99,41 +100,17 @@ const InstructorTab: React.FC = () => {
     // Cognito 사용자 풀에서 사용자 가져오기
     const fetchCognitoUsers = async () => {
         setLoadingCognitoUsers(true);
-
+      
         try {
-            // 임시 더미 데이터
-            const dummyUsers = [
-                {
-                    Username: 'user1',
-                    Attributes: [
-                        { Name: 'email', Value: 'instructor1@example.com' },
-                        { Name: 'name', Value: t('admin.instructors.dummy_data.instructor1') }
-                    ]
-                },
-                {
-                    Username: 'user2',
-                    Attributes: [
-                        { Name: 'email', Value: 'instructor2@example.com' },
-                        { Name: 'name', Value: t('admin.instructors.dummy_data.instructor2') }
-                    ]
-                },
-                {
-                    Username: 'user3',
-                    Attributes: [
-                        { Name: 'email', Value: 'instructor3@example.com' },
-                        { Name: 'name', Value: t('admin.instructors.dummy_data.instructor3') }
-                    ]
-                }
-            ];
-
-            setCognitoUsers(dummyUsers);
+          const users = await listCognitoUsers();
+          setCognitoUsers(users);
         } catch (err) {
-            console.error(t('admin.instructors.error_loading_cognito'), err);
-            setError(t('admin.instructors.error_loading_cognito'));
+          console.error(t('admin.instructors.error_loading_cognito'), err);
+          setError(t('admin.instructors.error_loading_cognito'));
         } finally {
-            setLoadingCognitoUsers(false);
+          setLoadingCognitoUsers(false);
         }
-    };
+      };
 
     // 컴포넌트 마운트 시 데이터 로드
     useEffect(() => {
@@ -145,8 +122,7 @@ const InstructorTab: React.FC = () => {
     const filteredItems = instructors.filter(instructor =>
         !filterText ||
         instructor.name?.toLowerCase().includes(filterText.toLowerCase()) ||
-        instructor.email?.toLowerCase().includes(filterText.toLowerCase()) ||
-        instructor.specialization?.toLowerCase().includes(filterText.toLowerCase())
+        instructor.email?.toLowerCase().includes(filterText.toLowerCase())
     );
 
     // 페이지당 아이템 수
@@ -161,11 +137,7 @@ const InstructorTab: React.FC = () => {
         setCurrentInstructor({
             name: '',
             email: '',
-            phone: '',
-            specialization: '',
-            bio: '',
             status: 'ACTIVE',
-            joinDate: new Date().toISOString().split('T')[0]
         });
         setIsModalVisible(true);
     };
@@ -202,12 +174,7 @@ const InstructorTab: React.FC = () => {
                     id: currentInstructor.id,
                     name: currentInstructor.name,
                     email: currentInstructor.email,
-                    phone: currentInstructor.phone || '',
-                    specialization: currentInstructor.specialization || '',
-                    bio: currentInstructor.bio || '',
                     status: currentInstructor.status || 'ACTIVE',
-                    joinDate: currentInstructor.joinDate || '',
-                    cognitoId: currentInstructor.cognitoId || ''
                 };
                 
                 const result = await client.graphql({
@@ -229,12 +196,7 @@ const InstructorTab: React.FC = () => {
                 const createInput = {
                     name: currentInstructor.name,
                     email: currentInstructor.email,
-                    phone: currentInstructor.phone || '',
-                    specialization: currentInstructor.specialization || '',
-                    bio: currentInstructor.bio || '',
                     status: currentInstructor.status || 'ACTIVE',
-                    joinDate: currentInstructor.joinDate || '',
-                    cognitoId: currentInstructor.cognitoId || ''
                 };
                 
                 const result = await client.graphql({
@@ -350,24 +312,9 @@ const InstructorTab: React.FC = () => {
                             cell: item => item.email || "-"
                         },
                         {
-                            id: "phone",
-                            header: t('admin.instructors.column.phone'),
-                            cell: item => item.phone || "-"
-                        },
-                        {
-                            id: "specialization",
-                            header: t('admin.instructors.column.specialization'),
-                            cell: item => item.specialization || "-"
-                        },
-                        {
                             id: "status",
                             header: t('admin.instructors.column.status'),
                             cell: item => item.status === 'ACTIVE' ? t('admin.common.active') : t('admin.common.inactive')
-                        },
-                        {
-                            id: "joinDate",
-                            header: t('admin.instructors.column.join_date'),
-                            cell: item => item.joinDate || "-"
                         },
                         {
                             id: "actions",
@@ -501,37 +448,6 @@ const InstructorTab: React.FC = () => {
                             />
                         </FormField>
 
-                        <FormField label={t('admin.instructors.form.phone')}>
-                            <Input
-                                type="text"
-                                inputMode="tel"
-                                value={currentInstructor.phone || ''}
-                                onChange={({ detail }) =>
-                                    setCurrentInstructor(prev => prev ? ({ ...prev, phone: detail.value }) : null)
-                                }
-                                placeholder={tString('admin.instructors.form.phone_placeholder')}
-                            />
-                        </FormField>
-
-                        <FormField label={t('admin.instructors.form.specialization')}>
-                            <Input
-                                value={currentInstructor.specialization || ''}
-                                onChange={({ detail }) =>
-                                    setCurrentInstructor(prev => prev ? ({ ...prev, specialization: detail.value }) : null)
-                                }
-                            />
-                        </FormField>
-
-                        <FormField label={t('admin.instructors.form.bio')}>
-                            <Textarea
-                                value={currentInstructor.bio || ''}
-                                onChange={({ detail }) =>
-                                    setCurrentInstructor(prev => prev ? ({ ...prev, bio: detail.value }) : null)
-                                }
-                                rows={3}
-                            />
-                        </FormField>
-
                         <FormField label={t('admin.instructors.form.status')}>
                         <Select
                             selectedOption={
@@ -548,15 +464,6 @@ const InstructorTab: React.FC = () => {
                                 { label: tString('admin.common.inactive'), value: 'INACTIVE' }
                             ]}
                         />
-                        </FormField>
-
-                        <FormField label={t('admin.instructors.form.join_date')}>
-                            <DatePicker
-                                value={currentInstructor.joinDate || ''} 
-                                onChange={({ detail }) =>
-                                    setCurrentInstructor(prev => prev ? ({ ...prev, joinDate: detail.value }) : null)
-                                }
-                            />
                         </FormField>
                     </SpaceBetween>
                 )}

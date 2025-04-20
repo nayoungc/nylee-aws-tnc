@@ -1,50 +1,98 @@
 [
     {
-        "module_id": "AWS-CPE-M1",
-        "course_id": "AWS-CPE",
+        "module_id": "AWS-TE-M1",
+        "course_id": "AWS-TE",
         "module_number": 1,
-        "module_name": "Amazon Web Services 소개",
+        "module_name": "과정 개요",
         "module_type": "강의",
-        "module_description": "AWS 용어집, 클라우드 컴퓨팅 유형, AWS를 이용한 클라우드 컴퓨팅"
+        "module_description": "과정 내용 개요 및 소개"
     },
     {
-        "module_id": "AWS-CPE-M2",
-        "course_id": "AWS-CPE",
-        "module_number": 2,
-        "module_name": "클라우드 컴퓨팅",
+        "module_id": "AWS-BDLAS-M1",
+        "course_id": "AWS-BDLAS",
+        "module_number": 1,
+        "module_name": "과정 개요",
         "module_type": "강의",
-        "module_description": "AWS에서의 컴퓨팅, AWS 컴퓨팅 서비스, 카테고리 심층 분석: 서버리스"
+        "module_description": "과정 내용 개요 및 소개"
     },
     {
-        "module_id": "AWS-CPE-LAB1",
-        "course_id": "AWS-CPE",
-        "module_number": "LAB1",
-        "module_name": "Amazon Simple Storage Service(S3) 입문",
-        "module_type": "실습",
-        "module_description": "S3 버킷 생성 및 객체 업로드/다운로드 실습"
+        "module_id": "AWS-MLOPS-M1",
+        "course_id": "AWS-MLOPS",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
+    },
+    {
+        "module_id": "AWS-DSVS-M1",
+        "course_id": "AWS-DSVS",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
+    },
+    {
+        "module_id": "AWS-WABP-M1",
+        "course_id": "AWS-WABP",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
+    },
+    {
+        "module_id": "AWS-DEVOPS-M1",
+        "course_id": "AWS-DEVOPS",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
+    },
+    {
+        "module_id": "AWS-DEV-M1",
+        "course_id": "AWS-DEV",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
     },
     {
         "module_id": "AWS-ARCH-M1",
         "course_id": "AWS-ARCH",
         "module_number": 1,
-        "module_name": "아키텍팅 기본 사항",
+        "module_name": "과정 개요",
         "module_type": "강의",
-        "module_description": "AWS 서비스 및 인프라, 인프라 모델, AWS API 도구, 인프라 보안, Well-Architected Framework"
+        "module_description": "과정 내용 개요 및 소개"
     },
     {
-        "module_id": "AWS-ARCH-LAB1",
-        "course_id": "AWS-ARCH",
-        "module_number": "LAB1",
-        "module_name": "AWS API 도구를 사용한 EC2 인스턴스 배포 살펴보기",
-        "module_type": "실습",
-        "module_description": "AWS Management Console과 CLI를 활용한 EC2 인스턴스 배포 실습"
+        "module_id": "AWS-SEC-M1",
+        "course_id": "AWS-SEC",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
+    },
+    {
+        "module_id": "AWS-DW-M1",
+        "course_id": "AWS-DW",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
+    },
+    {
+        "module_id": "AWS-CPE-M1",
+        "course_id": "AWS-CPE",
+        "module_number": 1,
+        "module_name": "과정 개요",
+        "module_type": "강의",
+        "module_description": "과정 내용 개요 및 소개"
     },
     {
         "module_id": "AWS-SE-M1",
         "course_id": "AWS-SE",
         "module_number": 1,
-        "module_name": "AWS 기반 보안",
+        "module_name": "과정 개요",
         "module_type": "강의",
-        "module_description": "AWS 클라우드의 보안 설계 원칙, AWS 공동 책임 모델"
+        "module_description": "과정 내용 개요 및 소개"
     }
 ]

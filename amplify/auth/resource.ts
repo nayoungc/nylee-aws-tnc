@@ -1,10 +1,13 @@
 // amplify/auth/resource.ts
-import { defineAuth } from "@aws-amplify/backend";
+import { defineAuth } from "@aws-amplify/backend"
 
-// 간단한 인증 구성
 export const auth = defineAuth({
   loginWith: {
     email: true,
-  }
-  // 기존 사용자 풀 연결은 백엔드 스택에서 별도로 처리
-});
+    // 필요에 따라 추가 옵션 구성 가능
+    // phone: true,
+    // externalProviders: {
+    //   google: { clientId: 'your-client-id', clientSecret: 'your-client-secret' }
+    // }
+  },
+})

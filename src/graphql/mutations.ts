@@ -1,17 +1,18 @@
-// src/graphql/mutations.ts
-
-// CourseCatalog 뮤테이션
+// 과정 카탈로그 뮤테이션
 export const createCourseCatalog = /* GraphQL */ `
-  mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {
-    createCourseCatalog(input: \$input) {
+  mutation CreateCourseCatalog(
+    \$input: CreateCourseCatalogInput!
+    \$condition: ModelCourseCatalogConditionInput
+  ) {
+    createCourseCatalog(input: \$input, condition: \$condition) {
       id
-      course_name
-      level
-      duration
-      delivery_method
+      title
       description
-      objectives
-      target_audience
+      duration
+      level
+      category
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -23,142 +24,41 @@ export const updateCourseCatalog = /* GraphQL */ `
   ) {
     updateCourseCatalog(input: \$input, condition: \$condition) {
       id
-      course_name
+      title
+      description
+      duration
       level
-      duration
-      delivery_method
-      description
-      objectives
-      target_audience
-    }
-  }
-`;
-
-export const createCourseCatalogModule = /* GraphQL */ `
-  mutation CreateCourseCatalogModule(\$input: CreateCourseCatalogModuleInput!) {
-    createCourseCatalogModule(input: \$input) {
-      id
-      catalogID
-      title
-      description
-      duration
-      order
+      category
       createdAt
       updatedAt
     }
   }
 `;
 
-export const createExercise = /* GraphQL */ `
-  mutation CreateExercise(\$input: CreateExerciseInput!) {
-    createExercise(input: \$input) {
-      id
-      moduleID
-      title
-      description
-      type
-      durationMinutes
-      order
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-// Course 뮤테이션
-export const createCourse = /* GraphQL */ `
-  mutation CreateCourse(\$input: CreateCourseInput!) {
-    createCourse(input: \$input) {
-      id
-      catalogID
-      title
-      description
-      startDate
-      endDate
-      location
-      isOnline
-      maxStudents
-      instructorID
-      instructorName
-      customerID
-      customerName
-      tags
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-export const updateCourse = /* GraphQL */ `
-  mutation UpdateCourse(\$input: UpdateCourseInput!) {
-    updateCourse(input: \$input) {
+export const deleteCourseCatalog = /* GraphQL */ `
+  mutation DeleteCourseCatalog(
+    \$input: DeleteCourseCatalogInput!
+    \$condition: ModelCourseCatalogConditionInput
+  ) {
+    deleteCourseCatalog(input: \$input, condition: \$condition) {
       id
       title
       description
-      startDate
-      endDate
-      location
-      isOnline
-      maxStudents
-      instructorID
-      instructorName
-      customerID
-      customerName
-      tags
       createdAt
       updatedAt
     }
   }
 `;
 
-export const deleteCourse = /* GraphQL */ `
-  mutation DeleteCourse(\$input: DeleteCourseInput!) {
-    deleteCourse(input: \$input) {
-      id
-    }
-  }
-`;
-
-export const createAnnouncement = /* GraphQL */ `
-  mutation CreateAnnouncement(\$input: CreateAnnouncementInput!) {
-    createAnnouncement(input: \$input) {
-      id
-      courseID
-      title
-      content
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-export const createAssessment = /* GraphQL */ `
-  mutation CreateAssessment(\$input: CreateAssessmentInput!) {
-    createAssessment(input: \$input) {
-      id
-      courseID
-      name
-      type
-      status
-      dueDate
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-// Customer 뮤테이션
+// 고객사 뮤테이션
 export const createCustomer = /* GraphQL */ `
-  mutation CreateCustomer(\$input: CreateCustomerInput!) {
-    createCustomer(input: \$input) {
+  mutation CreateCustomer(
+    \$input: CreateCustomerInput!
+    \$condition: ModelCustomerConditionInput
+  ) {
+    createCustomer(input: \$input, condition: \$condition) {
       id
       name
-      contactPerson
-      email
-      phone
-      address
-      status
-      joinDate
       createdAt
       updatedAt
     }
@@ -166,16 +66,13 @@ export const createCustomer = /* GraphQL */ `
 `;
 
 export const updateCustomer = /* GraphQL */ `
-  mutation UpdateCustomer(\$input: UpdateCustomerInput!) {
-    updateCustomer(input: \$input) {
+  mutation UpdateCustomer(
+    \$input: UpdateCustomerInput!
+    \$condition: ModelCustomerConditionInput
+  ) {
+    updateCustomer(input: \$input, condition: \$condition) {
       id
       name
-      contactPerson
-      email
-      phone
-      address
-      status
-      joinDate
       createdAt
       updatedAt
     }
@@ -183,26 +80,31 @@ export const updateCustomer = /* GraphQL */ `
 `;
 
 export const deleteCustomer = /* GraphQL */ `
-  mutation DeleteCustomer(\$input: DeleteCustomerInput!) {
-    deleteCustomer(input: \$input) {
+  mutation DeleteCustomer(
+    \$input: DeleteCustomerInput!
+    \$condition: ModelCustomerConditionInput
+  ) {
+    deleteCustomer(input: \$input, condition: \$condition) {
       id
+      name
+      createdAt
+      updatedAt
     }
   }
 `;
 
-// Instructor 뮤테이션
+// 강사 뮤테이션
 export const createInstructor = /* GraphQL */ `
-  mutation CreateInstructor(\$input: CreateInstructorInput!) {
-    createInstructor(input: \$input) {
+  mutation CreateInstructor(
+    \$input: CreateInstructorInput!
+    \$condition: ModelInstructorConditionInput
+  ) {
+    createInstructor(input: \$input, condition: \$condition) {
       id
-      cognitoId
       name
       email
-      phone
-      specialization
-      bio
       status
-      joinDate
+      profile
       createdAt
       updatedAt
     }
@@ -210,17 +112,16 @@ export const createInstructor = /* GraphQL */ `
 `;
 
 export const updateInstructor = /* GraphQL */ `
-  mutation UpdateInstructor(\$input: UpdateInstructorInput!) {
-    updateInstructor(input: \$input) {
+  mutation UpdateInstructor(
+    \$input: UpdateInstructorInput!
+    \$condition: ModelInstructorConditionInput
+  ) {
+    updateInstructor(input: \$input, condition: \$condition) {
       id
-      cognitoId
       name
       email
-      phone
-      specialization
-      bio
       status
-      joinDate
+      profile
       createdAt
       updatedAt
     }
@@ -228,9 +129,16 @@ export const updateInstructor = /* GraphQL */ `
 `;
 
 export const deleteInstructor = /* GraphQL */ `
-  mutation DeleteInstructor(\$input: DeleteInstructorInput!) {
-    deleteInstructor(input: \$input) {
+  mutation DeleteInstructor(
+    \$input: DeleteInstructorInput!
+    \$condition: ModelInstructorConditionInput
+  ) {
+    deleteInstructor(input: \$input, condition: \$condition) {
       id
+      name
+      email
+      createdAt
+      updatedAt
     }
   }
 `;
