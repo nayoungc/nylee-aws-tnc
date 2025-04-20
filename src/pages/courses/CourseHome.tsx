@@ -1,4 +1,3 @@
-// pages/CourseHome.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
@@ -76,10 +75,10 @@ const CourseHome: React.FC = () => {
         // Sample course data - this would come from your API
         setCourse({
           id: 'aws-cloud-essentials',
-          title: 'AWS Cloud Essentials Workshop',
+          title: 'Generative AI on AWS',
           description: 'A hands-on introduction to core AWS services and best practices.',
-          instructor: 'Sarah Johnson',
-          date: '2025년 10월 18일',
+          instructor: 'Nayoun Lee',
+          date: '2025-05-01',
           time: '09:00 - 17:00',
           location: '서울 강남구 테헤란로 231, 캠퍼스 3층',
           materials: [
@@ -102,14 +101,6 @@ const CourseHome: React.FC = () => {
           },
           {
             id: '2',
-            title: '주차 안내',
-            message: '건물 내 주차는 4시간까지 무료입니다. 주차권은 접수처에서 받으실 수 있습니다.',
-            type: 'info',
-            date: '2023-10-17',
-            isImportant: false
-          },
-          {
-            id: '3',
             title: '점심 식사 안내',
             message: '점심 식사는 12시부터 13시까지 제공됩니다. 식이 제한이 있으신 분들은 진행자에게 미리 알려주세요.',
             type: 'success',
@@ -131,7 +122,7 @@ const CourseHome: React.FC = () => {
           },
           {
             id: '2',
-            title: '사전 지식 테스트',
+            title: '사전 퀴즈',
             type: 'pre-quiz',
             description: 'AWS 기본 개념에 대한 이해도를 측정하는 짧은 퀴즈입니다.',
             isActive: true,
@@ -141,7 +132,7 @@ const CourseHome: React.FC = () => {
           },
           {
             id: '3',
-            title: '사후 평가',
+            title: '사후 퀴즈',
             type: 'post-quiz',
             description: '워크샵 이후 지식 습득을 확인하기 위한 평가입니다.',
             isActive: false,
@@ -159,9 +150,24 @@ const CourseHome: React.FC = () => {
     }
   };
   
+  // 수정된 부분: 평가 유형에 따라 다른 페이지로 이동
   const navigateToAssessment = (assessment: Assessment) => {
-    if (assessment.isActive) {
-      navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
+    if (!assessment.isActive) return;
+    
+    // 평가 유형에 따라 다른 경로로 이동
+    switch (assessment.type) {
+      case 'pre-quiz':
+        navigate(`/pre-quiz/\${assessment.id}`);
+        break;
+      case 'post-quiz':
+        navigate(`/post-quiz/\${assessment.id}`);
+        break;
+      case 'survey':
+        navigate(`/survey/\${assessment.id}`);
+        break;
+      default:
+        // 기존 기본 경로
+        navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
     }
   };
   
@@ -274,6 +280,11 @@ const CourseHome: React.FC = () => {
                     <Box variant="small" padding={{ top: "s" }}>
                       예상 소요시간: {item.estimatedTime}
                     </Box>
+                    {item.dueDate && (
+                      <Box variant="small" padding={{ top: "s" }}>
+                        마감일: {item.dueDate}
+                      </Box>
+                    )}
                   </>
                 )
               },
@@ -296,6 +307,7 @@ const CourseHome: React.FC = () => {
         />
       </Container>
       
+      {/* 나머지 코드는 동일 */}
       {/* Materials section */}
       <Container 
         header={<Header variant="h2">과정 자료</Header>}

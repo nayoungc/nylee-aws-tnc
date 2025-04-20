@@ -1,5 +1,5 @@
 // CourseCatalog 쿼리
-export const listTncCourseCatalogs = /* GraphQL */ `
+export const listCourseCatalogs = /* GraphQL */ `
   query ListCourseCatalogs(
     \$limit: Int
     \$nextToken: String
