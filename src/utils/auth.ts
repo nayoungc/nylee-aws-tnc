@@ -54,16 +54,18 @@ export const executeGraphQL = async <T>(
     if (!config.API || !config.API.GraphQL) {
       console.warn('API 설정이 없습니다. API 설정을 확인하세요.');
       
-      // 소문자 api를 대문자 API로 변환
-      if (config.api) {
+      // 소문자 api를 타입 안전하게 접근
+      const anyConfig = config as any;
+      
+      if (anyConfig.api) {
         console.log('소문자 api 설정을 대문자 API로 변환합니다...');
         
         Amplify.configure({
           API: {
             GraphQL: {
-              endpoint: config.api.graphql_endpoint || "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
-              region: config.api.graphql_endpoint_iam_region || "us-east-1",
-              defaultAuthMode: config.api.aws_appsync_authenticationType === "AMAZON_COGNITO_USER_POOLS" ? "userPool" : "apiKey"
+              endpoint: anyConfig.api.graphql_endpoint || "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
+              region: anyConfig.api.graphql_endpoint_iam_region || "us-east-1",
+              defaultAuthMode: anyConfig.api.aws_appsync_authenticationType === "AMAZON_COGNITO_USER_POOLS" ? "userPool" : "apiKey"
             }
           }
         });
@@ -83,17 +85,15 @@ export const executeGraphQL = async <T>(
       }
     }
     
-    // Amplify가 설정되었는지 확인 후 클라이언트 생성
+    // 나머지 코드는 동일...
     const client = generateClient();
     
-    // 요청에 인증 정보가 포함되도록 완전히 구성된 요청 객체
     const response = await client.graphql({
       query,
       variables,
       authMode
     });
     
-    // 나머지 코드는 동일
     if (!response || !('data' in response) || !response.data) {
       throw new Error('GraphQL 응답에 데이터가 없습니다');
     }
@@ -101,12 +101,6 @@ export const executeGraphQL = async <T>(
     return response.data as T;
   } catch (error) {
     console.error('GraphQL 쿼리 실행 오류:', error);
-    
-    // 개발 환경에서는 샘플 데이터 사용하도록 유지
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      console.log('개발 환경에서 API 오류 발생, 대체 데이터 반환');
-    }
-    
     throw error;
   }
 };

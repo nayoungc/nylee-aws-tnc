@@ -13,7 +13,7 @@ import awsExports from './aws-exports';
 console.log('Amplify 설정 전 awsExports:', JSON.stringify({
   Auth: awsExports.Auth,
   API: awsExports.API,
-  api: (awsExports as any).api
+  api: (awsExports as any).api // 타입 단언 사용
 }, null, 2));
 
 Amplify.configure(awsExports);
@@ -21,8 +21,8 @@ Amplify.configure(awsExports);
 // Amplify 설정 후 로그
 console.log('Amplify 설정 완료:', JSON.stringify({
   Auth: Amplify.getConfig().Auth,
-  API: Amplify.getConfig().API,
-  api: (Amplify.getConfig() as any).api
+  API: Amplify.getConfig().API
+  // api 속성은 제거 (TypeScript 오류 방지)
 }, null, 2));
 
 createRoot(document.getElementById('root')!).render(
