@@ -48,46 +48,39 @@ export const executeGraphQL = async <T>(
   authMode: 'apiKey' | 'userPool' | 'iam' | 'oidc' | 'lambda' = 'userPool'
 ): Promise<T> => {
   try {
-    // API 설정이 있는지 확인
+    // 확인 시 API 설정을 명시적으로 다시 적용
     const config = Amplify.getConfig();
     
     if (!config.API || !config.API.GraphQL) {
-      console.warn('API 설정이 없습니다. API 설정을 확인하세요.');
+      console.warn('API 설정이 없습니다. API 설정을 수동으로 적용합니다.');
       
-      // 소문자 api를 타입 안전하게 접근
-      const anyConfig = config as any;
+      // 명시적 API 설정
+      Amplify.configure({
+        API: {
+          GraphQL: {
+            endpoint: "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
+            region: "us-east-1",
+            defaultAuthMode: "userPool"
+          }
+        }
+      });
       
-      if (anyConfig.api) {
-        console.log('소문자 api 설정을 대문자 API로 변환합니다...');
-        
-        Amplify.configure({
-          API: {
-            GraphQL: {
-              endpoint: anyConfig.api.graphql_endpoint || "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
-              region: anyConfig.api.graphql_endpoint_iam_region || "us-east-1",
-              defaultAuthMode: anyConfig.api.aws_appsync_authenticationType === "AMAZON_COGNITO_USER_POOLS" ? "userPool" : "apiKey"
-            }
-          }
-        });
-        
-        console.log('API 설정 변환 완료:', Amplify.getConfig().API);
-      } else {
-        // 기본 API 설정 추가
-        Amplify.configure({
-          API: {
-            GraphQL: {
-              endpoint: "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
-              region: "us-east-1",
-              defaultAuthMode: "userPool"
-            }
-          }
-        });
-      }
+      console.log('API 설정 적용 완료:', Amplify.getConfig().API);
     }
     
-    // 나머지 코드는 동일...
+    // Auth 토큰 갱신 추가
+    try {
+      const { fetchAuthSession } = await import('aws-amplify/auth');
+      await fetchAuthSession({ forceRefresh: true });
+      console.log('Auth 세션 새로 고침 완료');
+    } catch (authError) {
+      console.warn('Auth 세션 갱신 실패:', authError);
+    }
+    
+    // 클라이언트 생성
     const client = generateClient();
     
+    // 요청 실행
     const response = await client.graphql({
       query,
       variables,
