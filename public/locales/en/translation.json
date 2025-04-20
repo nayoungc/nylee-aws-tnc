@@ -85,7 +85,9 @@
     "insights": "Course Insights",
     "student_home": "Student Home",
     "all_courses": "All Courses",
-    "admin": "Administration"
+    "admin": "Administration",
+    "profile": "My Profile",
+    "settings": "Settings"
   },
   "user": {
     "preferred_language": "Preferred Language",
@@ -333,183 +335,6 @@
         "price": "Price",
         "status": "Status"
       },
-      "course_detail": {
-  "loading": {
-    "title": "Loading Course",
-    "message": "Loading course details..."
-  },
-  "errors": {
-    "invalid_id": "Invalid course ID",
-    "not_found": "Course not found",
-    "load_error": "Failed to load course details",
-    "load_error_log": "Error loading course data:",
-    "load_failed": "Failed to load course",
-    "general": "An error occurred while loading the course"
-  },
-  "warnings": {
-    "unknown_type": "Unknown assessment type:"
-  },
-  "assessment_types": {
-    "pre_quiz": "Pre-Quiz",
-    "post_quiz": "Post-Quiz",
-    "survey": "Survey"
-  },
-  "status": {
-    "active": "Active",
-    "completed": "Completed",
-    "coming_soon": "Coming Soon",
-    "expired": "Expired"
-  },
-  "actions": {
-    "start": "Start",
-    "view": "View",
-    "start_assessment": "Start Assessment"
-  },
-  "alerts": {
-    "active_assessment": "Assessment Available",
-    "assessment_available": "You have an active {{type}} ({{name}}) to complete"
-  },
-  "tabs": {
-    "overview": "Overview",
-    "materials": "Course Materials",
-    "assessments": "Assessments",
-    "announcements": "Announcements"
-  },
-  "course_info": {
-    "instructor": "Instructor",
-    "start_date": "Start Date",
-    "end_date": "End Date",
-    "location": "Location",
-    "online": "Online",
-    "offline": "Offline",
-    "tags": "Tags"
-  },
-  "assessments": {
-    "title": "Course Assessments",
-    "empty": "No assessments available for this course",
-    "columns": {
-      "name": "Assessment Name",
-      "type": "Type",
-      "status": "Status",
-      "due_date": "Due Date",
-      "action": "Action"
-    }
-  },
-  "materials": {
-    "title": "Course Materials",
-    "empty": "No materials available for this course yet",
-    "sections": {
-      "lectures": "Lecture Materials",
-      "assignments": "Assignments",
-      "resources": "Additional Resources"
-    }
-  },
-  "announcements": {
-    "title": "Course Announcements",
-    "empty": "No announcements for this course",
-    "posted_on": "Posted on {{date}}"
-  },
-  "description": {
-    "title": "Course Description"
-  }
-},
-      "dashboard": {
-        "stats": {
-          "active_sessions": "Active Sessions",
-          "total_students": "Total Students",
-          "completion_rate": "Completion Rate",
-          "quiz_completion": "Quiz Completion Rate",
-          "change": {
-            "week_up": "{{count}}% up this week",
-            "month_up": "{{count}}% up this month",
-            "quarter_up": "{{count}}% up this quarter",
-            "same": "No change"
-          }
-        },
-        "sections": {
-          "sessions": "Upcoming Sessions",
-          "quick_actions": "Quick Actions"
-        },
-        "sessions": {
-          "create_button": "Schedule Session",
-          "when": "When",
-          "participants": "Participants",
-          "preparation": "Preparation",
-          "registered_count": "{{count}} registered",
-          "preparation_ready": "Materials ready",
-          "preparation_needed": "Materials needed",
-          "live_badge": "LIVE NOW",
-          "actions": {
-            "join": "Join Session",
-            "edit": "Edit Session",
-            "materials": "View Materials"
-          },
-          "date": {
-            "today": "Today, {{start}} - {{end}}",
-            "tomorrow": "Tomorrow, {{start}} - {{end}}",
-            "live_now": "In progress now"
-          },
-          "courses": {
-            "practitioner": "AWS Cloud Practitioner Course",
-            "architect": "Solutions Architect Training",
-            "developer": "AWS Developer Workshop"
-          },
-          "descriptions": {
-            "practitioner": "Introduction to core AWS services and cloud fundamentals",
-            "architect": "Advanced architecture design patterns for AWS solutions",
-            "developer": "Development tools and practices for AWS applications"
-          },
-          "empty": {
-            "title": "No upcoming sessions",
-            "description": "Create a new teaching session to get started"
-          }
-        },
-        "quick_actions": {
-          "go": "Go",
-          "create_course": {
-            "title": "Create Course",
-            "description": "Design a new course or training module"
-          },
-          "generate_quiz": {
-            "title": "Generate Quiz",
-            "description": "Create assessments with AI assistance"
-          },
-          "view_reports": {
-            "title": "View Reports",
-            "description": "Access analytics and student progress"
-          },
-          "manage_materials": {
-            "title": "Manage Materials",
-            "description": "Organize course materials and resources"
-          }
-        },
-        "charts": {
-          "course_completion": "Course Completion Percentage",
-          "participation": {
-            "active": "Active Students",
-            "at_risk": "At Risk",
-            "inactive": "Inactive"
-          },
-          "courses": {
-            "cloud_practitioner": "Cloud Practitioner",
-            "solutions_architect": "Solutions Architect",
-            "developer": "Developer",
-            "devops": "DevOps Engineer",
-            "security": "Security Specialist"
-          },
-          "filter_label": "Filter",
-          "filter_placeholder": "Filter data",
-          "filter_selected": "Selected filter",
-          "legend": "Chart legend",
-          "bar_chart_description": "Bar chart",
-          "pie_chart_description": "Pie chart",
-          "x_axis": "X axis",
-          "y_axis": "Y axis",
-          "details_value": "Value",
-          "details_percentage": "Percentage",
-          "segment_description": "Chart segment"
-        }
-      },
       "form": {
         "title": "Course Title",
         "category": "Category",
@@ -601,6 +426,219 @@
         "status": "Status",
         "join_date": "Join Date"
       }
+    },
+    "course_detail": {
+      "loading": {
+        "title": "Loading Course",
+        "message": "Loading course details..."
+      },
+      "errors": {
+        "invalid_id": "Invalid course ID",
+        "not_found": "Course not found",
+        "load_error": "Failed to load course details",
+        "load_error_log": "Error loading course data:",
+        "load_failed": "Failed to load course",
+        "general": "An error occurred while loading the course"
+      },
+      "warnings": {
+        "unknown_type": "Unknown assessment type:"
+      },
+      "assessment_types": {
+        "pre_quiz": "Pre-Quiz",
+        "post_quiz": "Post-Quiz",
+        "survey": "Survey"
+      },
+      "status": {
+        "active": "Active",
+        "completed": "Completed",
+        "coming_soon": "Coming Soon",
+        "expired": "Expired"
+      },
+      "actions": {
+        "start": "Start",
+        "view": "View",
+        "start_assessment": "Start Assessment"
+      },
+      "alerts": {
+        "active_assessment": "Assessment Available",
+        "assessment_available": "You have an active {{type}} ({{name}}) to complete"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "materials": "Course Materials",
+        "assessments": "Assessments",
+        "announcements": "Announcements"
+      },
+      "course_info": {
+        "instructor": "Instructor",
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "location": "Location",
+        "online": "Online",
+        "offline": "Offline",
+        "tags": "Tags"
+      },
+      "assessments": {
+        "title": "Course Assessments",
+        "empty": "No assessments available for this course",
+        "columns": {
+          "name": "Assessment Name",
+          "type": "Type",
+          "status": "Status",
+          "due_date": "Due Date",
+          "action": "Action"
+        }
+      },
+      "materials": {
+        "title": "Course Materials",
+        "empty": "No materials available for this course yet",
+        "sections": {
+          "lectures": "Lecture Materials",
+          "assignments": "Assignments",
+          "resources": "Additional Resources"
+        }
+      },
+      "announcements": {
+        "title": "Course Announcements",
+        "empty": "No announcements for this course",
+        "posted_on": "Posted on {{date}}"
+      },
+      "description": {
+        "title": "Course Description"
+      }
+    },
+    "dashboard": {
+      "stats": {
+        "active_sessions": "Active Sessions",
+        "total_students": "Total Students",
+        "completion_rate": "Completion Rate",
+        "quiz_completion": "Quiz Completion Rate",
+        "change": {
+          "week_up": "{{count}}% up this week",
+          "month_up": "{{count}}% up this month",
+          "quarter_up": "{{count}}% up this quarter",
+          "same": "No change"
+        }
+      },
+      "sections": {
+        "sessions": "Upcoming Sessions",
+        "quick_actions": "Quick Actions"
+      },
+      "sessions": {
+        "create_button": "Schedule Session",
+        "when": "When",
+        "participants": "Participants",
+        "preparation": "Preparation",
+        "registered_count": "{{count}} registered",
+        "preparation_ready": "Materials ready",
+        "preparation_needed": "Materials needed",
+        "live_badge": "LIVE NOW",
+        "actions": {
+          "join": "Join Session",
+          "edit": "Edit Session",
+          "materials": "View Materials"
+        },
+        "date": {
+          "today": "Today, {{start}} - {{end}}",
+          "tomorrow": "Tomorrow, {{start}} - {{end}}",
+          "live_now": "In progress now"
+        },
+        "courses": {
+          "practitioner": "AWS Cloud Practitioner Course",
+          "architect": "Solutions Architect Training",
+          "developer": "AWS Developer Workshop"
+        },
+        "descriptions": {
+          "practitioner": "Introduction to core AWS services and cloud fundamentals",
+          "architect": "Advanced architecture design patterns for AWS solutions",
+          "developer": "Development tools and practices for AWS applications"
+        },
+        "empty": {
+          "title": "No upcoming sessions",
+          "description": "Create a new teaching session to get started"
+        }
+      },
+      "quick_actions": {
+        "go": "Go",
+        "create_course": {
+          "title": "Create Course",
+          "description": "Design a new course or training module"
+        },
+        "generate_quiz": {
+          "title": "Generate Quiz",
+          "description": "Create assessments with AI assistance"
+        },
+        "view_reports": {
+          "title": "View Reports",
+          "description": "Access analytics and student progress"
+        },
+        "manage_materials": {
+          "title": "Manage Materials",
+          "description": "Organize course materials and resources"
+        }
+      },
+      "charts": {
+        "course_completion": "Course Completion Percentage",
+        "participation": {
+          "active": "Active Students",
+          "at_risk": "At Risk",
+          "inactive": "Inactive"
+        },
+        "courses": {
+          "cloud_practitioner": "Cloud Practitioner",
+          "solutions_architect": "Solutions Architect",
+          "developer": "Developer",
+          "devops": "DevOps Engineer",
+          "security": "Security Specialist"
+        },
+        "filter_label": "Filter",
+        "filter_placeholder": "Filter data",
+        "filter_selected": "Selected filter",
+        "legend": "Chart legend",
+        "bar_chart_description": "Bar chart",
+        "pie_chart_description": "Pie chart",
+        "x_axis": "X axis",
+        "y_axis": "Y axis",
+        "details_value": "Value",
+        "details_percentage": "Percentage",
+        "segment_description": "Chart segment"
+      }
     }
+  },
+  "course": {
+    "filter": {
+      "all_categories": "All categories",
+      "all_levels": "All levels",
+      "find_courses": "Find courses",
+      "search_aria": "Filter courses"
+    },
+    "list": {
+      "no_courses_found": "No courses match your search criteria",
+      "clear_filters": "Clear Filters"
+    },
+    "level": {
+      "foundational": "Foundational",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "expert": "Expert"
+    },
+    "categories": {
+      "cloud_fundamentals": "Cloud Fundamentals",
+      "security": "Security",
+      "analytics": "Analytics",
+      "machine_learning": "Machine Learning",
+      "devops": "DevOps",
+      "networking": "Networking"
+    },
+    "location": {
+      "online": "Online",
+      "hybrid": "Hybrid",
+      "in_person": "In-Person"
+    }
+  },
+  "role": {
+    "admin": "Administrator",
+    "instructor": "Instructor",
+    "student": "Student"
   }
 }

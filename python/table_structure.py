@@ -268,6 +268,68 @@ def find_table_like_structures(paragraphs_text):
         if len(tab_lines) > 5:
             print(f"  ... 외 {len(tab_lines)-5}개 행")
 
+def save_to_dynamodb(courses):
+    """추출된 과정 정보를 DynamoDB에 저장하는 함수"""
+    try:
+        # DynamoDB 클라이언트 초기화
+        dynamodb = boto3.resource('dynamodb')
+        catalog_table = dynamodb.Table('TnC-CourseCatalog')
+        modules_table = dynamodb.Table('TnC-CourseCatalog-Modules')
+        
+        for course in courses:
+            # 기본 과정 정보를 카탈로그 테이블에 저장
+            catalog_item = {
+                "courseId": course["id"],
+                "name": course["name"],
+                "description": course["description"],
+                "level": course["level"],
+                "deliveryMethod": course["deliveryMethod"],
+                "duration": course["duration"],
+                "objectives": course["objectives"],
+                "audience": course["audience"],
+                "createdAt": course["createdAt"]
+            }
+            
+            catalog_table.put_item(Item=catalog_item)
+            print(f"과정 '{course['name']}'을(를) TnC-CourseCatalog에 저장했습니다.")
+            
+            # 모듈 정보를 모듈 테이블에 저장
+            for i, module in enumerate(course["modules"]):
+                module_item = {
+                    "courseId": course["id"],
+                    "moduleId": f"{course['id']}#module#{i+1}",
+                    "courseTitle": course["name"],
+                    "moduleNumber": module["number"] or str(i+1),
+                    "moduleTitle": module["title"],
+                    "moduleContent": module["content"],
+                    "type": "module",
+                    "createdAt": course["createdAt"]
+                }
+                
+                modules_table.put_item(Item=module_item)
+                print(f"모듈 '{module['title']}'을(를) TnC-CourseCatalog-Modules에 저장했습니다.")
+            
+            # 실습 정보를 모듈 테이블에 저장
+            for i, lab in enumerate(course["labs"]):
+                lab_item = {
+                    "courseId": course["id"],
+                    "moduleId": f"{course['id']}#lab#{i+1}",
+                    "courseTitle": course["name"],
+                    "labNumber": lab["number"] or str(i+1),
+                    "labTitle": lab["title"],
+                    "type": "lab",
+                    "createdAt": course["createdAt"]
+                }
+                
+                modules_table.put_item(Item=lab_item)
+                print(f"실습 '{lab['title']}'을(를) TnC-CourseCatalog-Modules에 저장했습니다.")
+        
+        return True
+    
+    except Exception as e:
+        print(f"DynamoDB 저장 중 오류 발생: {str(e)}")
+        return False
+
 # 실행 부분
 if __name__ == "__main__":
     try:
@@ -287,6 +349,27 @@ if __name__ == "__main__":
             for para in doc.paragraphs:
                 f.write(para.text + "\n")
             print("\n문서 내용을 extracted_text.txt 파일로 저장했습니다.")
+
+
+         # 추출된 과정 정보 출력 (저장 전 확인용)
+        for i, course in enumerate(courses):
+            print(f"\n[{i+1}] {course['name']}")
+            print(f"레벨: {course['level']}")
+            print(f"소요 시간: {course['duration']}")
+            print(f"모듈 수: {len(course['modules'])}")
+            print(f"실습 수: {len(course['labs'])}")
+
+        # 확인 후 저장할지 결정
+        confirmation = input("\n위 정보를 DynamoDB에 저장하시겠습니까? (y/n): ")
+        
+        if confirmation.lower() == 'y':
+            success = save_to_dynamodb(courses)
+            if success:
+                print("\n모든 과정 정보가 DynamoDB에 성공적으로 저장되었습니다.")
+            else:
+                print("\n일부 데이터 저장에 실패했습니다. 오류 메시지를 확인하세요.")
+        else:
+            print("\n저장이 취소되었습니다.")
             
     except Exception as e:
         print(f"오류 발생: {str(e)}")
