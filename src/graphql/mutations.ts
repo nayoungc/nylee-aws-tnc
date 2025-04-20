@@ -4,16 +4,13 @@ export const createCourseCatalog = /* GraphQL */ `
   mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {
     createCourseCatalog(input: \$input) {
       id
-      title
-      description
-      duration
+      course_name
       level
-      price
-      category
-      status
-      version
-      createdAt
-      updatedAt
+      duration
+      delivery_method
+      description
+      objectives
+      target_audience
     }
   }
 `;
@@ -25,16 +22,13 @@ export const updateCourseCatalog = /* GraphQL */ `
   ) {
     updateCourseCatalog(input: \$input, condition: \$condition) {
       id
-      title
-      description
-      duration
+      course_name
       level
-      price
-      category
-      status
-      version
-      createdAt
-      updatedAt
+      duration
+      delivery_method
+      description
+      objectives
+      target_audience
     }
   }
 `;

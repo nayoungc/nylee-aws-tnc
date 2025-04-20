@@ -1,4 +1,24 @@
 // src/graphql/queries.ts
+
+// 과정 카탈로그 리스트
+export const listCourseCatalogs = /* GraphQL */ `
+  query ListCourses {
+    listCourses {
+      items {
+        course_id: id
+        course_name: title
+        level
+        duration
+        delivery_method
+        description
+        objectives
+        target_audience
+      }
+      nextToken
+    }
+  }
+`;
+
 export const getCourseCatalog = /* GraphQL */ `
   query GetCourseCatalog(\$id: ID!) {
     getCourseCatalog(id: \$id) {
@@ -75,28 +95,6 @@ export const getCourse = /* GraphQL */ `
     }
   }
 `;
-
-// export const listCourses = /* GraphQL */ `
-//   query ListCourses(\$filter: ModelCourseFilterInput, \$limit: Int, \$nextToken: String) {
-//     listCourses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-//       items {
-//         id
-//         catalogID
-//         title
-//         description
-//         startDate
-//         endDate
-//         location
-//         isOnline
-//         instructorName
-//         customerName
-//         createdAt
-//         updatedAt
-//       }
-//       nextToken
-//     }
-//   }
-// `;
 
 export const getCoursesByInstructor = /* GraphQL */ `
   query GetCoursesByInstructor(
@@ -262,29 +260,9 @@ export const listCourseCatalogsOriginal = /* GraphQL */ `
   }
 `;
 
-// 변경된 쿼리 - 실제 서버 스키마에 맞게 이름 수정 필요
-export const listCourseCatalogs = /* GraphQL */ `
-  query ListCourses {
-    listCourses {
-      items {
-        id
-        title
-        description
-        instructor
-        category
-        level
-        duration
-        status
-        price
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
 
-// 대체 쿼리
+
+// 과정 리스트
 export const listCourses = /* GraphQL */ `
   query ListCourses {
     listCourses {
