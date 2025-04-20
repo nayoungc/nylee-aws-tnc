@@ -2,333 +2,226 @@ import docx
 import pandas as pd
 import re
 
-def extract_tables_from_docx(file_path):
+def extract_course_info_from_docx(file_path):
     """
-    .docx 파일에서 표를 추출하는 함수
+    .docx 파일에서 2줄짜리 표를 추출하고 레벨과 소요 시간 정보를 가져오는 함수
     
     Args:
         file_path (str): .docx 파일 경로
         
     Returns:
-        list: pandas DataFrame 형식의 표 리스트, 추가 정보를 담은 딕셔너리
+        list: 과정 정보 딕셔너리들의 리스트
     """
     print(f"문서 제목: {file_path}")
     
     # 문서 열기
     doc = docx.Document(file_path)
-    print(f"doc = {doc}")
+    print(f"문서를 불러왔습니다.")
     
     # 기본 정보 출력
     print(f"문단 수: {len(doc.paragraphs)}")
+    print(f"표 수: {len(doc.tables)}")
     
-    # 문서 내 몇 개의 문단 샘플링 출력
-    for i in range(min(5, len(doc.paragraphs))):
-        if doc.paragraphs[i].text.strip():  # 빈 문단이 아닌 경우만
-            print(f"문단 {i}: {doc.paragraphs[i].text[:50]}...")
-    
-    # 표 추출
-    tables = []
-    raw_tables = []  # 원시 데이터 저장용
+    # 표 정보 저장할 리스트
+    two_row_tables = []
+    course_info_list = []
     
     # 내장 표 처리
-    if doc.tables:
-        print(f"문서 내 표 개수: {len(doc.tables)}")
-        
-        for idx, table in enumerate(doc.tables):
-            print(f"표 {idx+1} 처리 중... 행: {len(table.rows)}")
+    for idx, table in enumerate(doc.tables):
+        # 2줄짜리 표만 필터링
+        if len(table.rows) == 2:
+            print(f"2줄짜리 표 발견 (표 #{idx+1})")
             
             # 표 데이터 추출
             try:
-                data = []
-                for row in table.rows:
-                    row_data = []
-                    for cell in row.cells:
-                        # 셀 내용 추출 및 공백 정리
-                        text = cell.text.strip()
-                        row_data.append(text)
-                    data.append(row_data)
+                headers = []
+                values = []
                 
-                # 원시 데이터 저장
-                raw_tables.append(data)
+                # 첫 번째 행 (헤더)
+                for cell in table.rows[0].cells:
+                    headers.append(cell.text.strip())
                 
-                # 데이터프레임 변환 시도
-                if data:
-                    if len(data) > 1:  # 헤더와 최소 1개의 행
-                        headers = data[0]
-                        # 빈 헤더가 있으면 대체
-                        for i in range(len(headers)):
-                            if not headers[i]:
-                                headers[i] = f"Column_{i}"
-                        
-                        # 데이터프레임 생성
-                        df = pd.DataFrame(data[1:], columns=headers)
-                        tables.append(df)
-                    else:
-                        print(f"표 {idx+1}은 데이터가 충분하지 않습니다.")
+                # 두 번째 행 (값)
+                for cell in table.rows[1].cells:
+                    values.append(cell.text.strip())
+                
+                # 헤더와 값으로 딕셔너리 생성
+                table_data = dict(zip(headers, values))
+                two_row_tables.append(table_data)
+                
+                # 레벨과 소요 시간 정보를 찾음
+                level = None
+                duration = None
+                
+                # 헤더에서 "레벨"이나 "수준"이 포함된 열 찾기
+                for header, value in table_data.items():
+                    if "레벨" in header.lower() or "수준" in header.lower():
+                        level = value
+                    elif "소요 시간" in header.lower() or "기간" in header.lower() or "duration" in header.lower():
+                        duration = value
+                
+                # 열 이름이 명확하지 않은 경우, 값을 기준으로 추측
+                if not level or not duration:
+                    for header, value in table_data.items():
+                        # 값이 "기초", "중급", "고급" 등을 포함하면 레벨일 가능성 높음
+                        if value.lower() in ["기초", "중급", "고급", "초급", "intermediate", "fundamental", "advanced", "basic"]:
+                            level = value
+                        # 값이 "일" 또는 "시간"을 포함하면 소요 시간일 가능성 높음
+                        elif "일" in value or "시간" in value or "hours" in value or "days" in value:
+                            duration = value
+                
+                # 과정명 추출 시도 (표 앞 문단에서)
+                course_name = ""
+                table_index = doc._element.xpath('.//w:tbl').index(table._element)
+                
+                # 표 바로 앞 문단 검색 (최대 5개 문단 전까지)
+                for i in range(1, 6):
+                    if table_index - i >= 0:
+                        para_index = get_paragraph_index_before_table(doc, table_index - i)
+                        if para_index >= 0:
+                            potential_title = doc.paragraphs[para_index].text.strip()
+                            if potential_title and len(potential_title) > 5 and not potential_title.startswith('•'):
+                                course_name = potential_title
+                                break
+                
+                # 결과 저장
+                if level or duration:
+                    course_info = {
+                        "course_name": course_name,
+                        "level": level,
+                        "duration": duration,
+                        "table_index": idx,
+                        "full_table_data": table_data
+                    }
+                    course_info_list.append(course_info)
+                    print(f"추출된 정보: 과정명='{course_name}', 레벨='{level}', 소요 시간='{duration}'")
+                
             except Exception as e:
                 print(f"표 {idx+1} 처리 중 오류 발생: {str(e)}")
-    else:
-        print("문서에서 내장된 표를 찾을 수 없습니다. 텍스트 기반 표 형식 검색을 시도합니다...")
+    
+    if not two_row_tables:
+        print("2줄짜리 표를 찾을 수 없습니다.")
         
-        # 텍스트 기반 표 형식 찾기
-        text_tables = extract_text_tables(doc.paragraphs)
-        if text_tables:
-            tables.extend(text_tables)
-            print(f"텍스트 기반 표 {len(text_tables)}개 추출됨")
+        # 표 형식 텍스트 검색 시도
+        print("\n문단에서 표 형식 텍스트 검색 중...")
+        level_duration_patterns = find_level_duration_patterns(doc.paragraphs)
+        if level_duration_patterns:
+            course_info_list.extend(level_duration_patterns)
     
-    print(f"표 추출 완료: {len(tables)}개의 표 추출됨")
-    
-    # 결과 반환
-    result = {
-        "tables": tables,
-        "raw_tables": raw_tables,
-        "doc_info": {
-            "paragraph_count": len(doc.paragraphs),
-            "table_count": len(doc.tables)
-        }
-    }
-    
-    return result
+    return course_info_list
 
-def extract_text_tables(paragraphs):
-    """텍스트에서 표 형식으로 보이는 부분 추출"""
-    tables = []
-    current_table = []
-    in_table = False
+def get_paragraph_index_before_table(doc, table_index):
+    """표 앞에 있는 문단 인덱스 찾기"""
+    # 문서의 모든 요소 확인
+    all_elements = []
+    for i, paragraph in enumerate(doc.paragraphs):
+        all_elements.append(('paragraph', i, paragraph._element))
+    for i, table in enumerate(doc.tables):
+        all_elements.append(('table', i, table._element))
     
-    # 표 형식 탐지를 위한 패턴
-    table_patterns = [
-        r'\t{2,}',  # 2개 이상의 탭
-        r'\s{4,}',  # 4개 이상의 공백
-        r'\|\s*\w+\s*\|',  # |로 둘러싸인 형태
-        r'^\s*\d+\s+\w+\s+\w+'  # 숫자로 시작하는 행과 단어들
-    ]
+    # 요소 순서대로 정렬
+    all_elements.sort(key=lambda x: doc._element.xpath('.//w:p | .//w:tbl').index(x[2]))
     
-    for para in paragraphs:
+    # 지정된 테이블 바로 앞의 문단 찾기
+    for i, (elem_type, elem_index, _) in enumerate(all_elements):
+        if elem_type == 'table' and elem_index == table_index:
+            if i > 0 and all_elements[i-1][0] == 'paragraph':
+                return all_elements[i-1][1]
+    
+    return -1
+
+def find_level_duration_patterns(paragraphs):
+    """문단에서 레벨과 소요 시간 패턴 찾기"""
+    results = []
+    
+    # 레벨 및 소요 시간 패턴
+    level_pattern = r'(레벨|수준|level)[\s:]*([가-힣a-zA-Z]+)'  # 레벨: 중급
+    duration_pattern = r'(소요\s*시간|기간|duration)[\s:]*([\d가-힣a-zA-Z\s]+)'  # 소요 시간: 3일
+    
+    # 과정명과 연관된 레벨/시간 찾기
+    current_course = ""
+    level = ""
+    duration = ""
+    
+    for i, para in enumerate(paragraphs):
         text = para.text.strip()
         if not text:
-            # 빈 줄을 만났을 때 현재 테이블 처리 종료
-            if in_table and current_table:
-                try:
-                    # 표로 변환 시도
-                    df = process_text_table(current_table)
-                    if not df.empty and df.shape[1] > 1:  # 열이 2개 이상인 경우만
-                        tables.append(df)
-                except Exception as e:
-                    print(f"텍스트 표 변환 중 오류: {str(e)}")
-                
-                current_table = []
-                in_table = False
+            # 빈 줄이면서 이전에 과정/레벨/시간 정보가 있으면 결과 저장
+            if current_course and (level or duration):
+                results.append({
+                    "course_name": current_course,
+                    "level": level,
+                    "duration": duration
+                })
+                current_course = ""
+                level = ""
+                duration = ""
             continue
         
-        # 표 형식인지 확인
-        is_table_row = any(re.search(pattern, text) for pattern in table_patterns)
+        # 과정명으로 보이는 텍스트 (특정 패턴이나 위치에 따라 판단)
+        if len(text) > 10 and ("과정" in text or "AWS" in text or "Amazon" in text):
+            if not text.startswith('•') and not re.match(r'^\d+\.', text):
+                current_course = text
         
-        if is_table_row:
-            in_table = True
-            current_table.append(text)
-        elif in_table:
-            # 표 형식이 끝났음
-            if current_table:
-                try:
-                    df = process_text_table(current_table)
-                    if not df.empty and df.shape[1] > 1:
-                        tables.append(df)
-                except Exception as e:
-                    print(f"텍스트 표 변환 중 오류: {str(e)}")
-                
-                current_table = []
-                in_table = False
+        # 레벨 찾기
+        level_match = re.search(level_pattern, text, re.IGNORECASE)
+        if level_match:
+            level = level_match.group(2).strip()
+        
+        # 소요 시간 찾기 
+        duration_match = re.search(duration_pattern, text, re.IGNORECASE)
+        if duration_match:
+            duration = duration_match.group(2).strip()
+        
+        # 직접적인 표현이 없는 경우, 값을 기준으로 판단
+        if not level and ("기초" in text or "중급" in text or "고급" in text or "초급" in text):
+            for level_term in ["기초", "중급", "고급", "초급"]:
+                if level_term in text:
+                    level = level_term
+                    break
+        
+        if not duration and ("일" in text or "시간" in text):
+            # "N일" 또는 "N시간" 패턴 찾기
+            time_match = re.search(r'(\d+\s*[일시간])', text)
+            if time_match:
+                duration = time_match.group(1)
     
-    # 마지막 표 처리
-    if in_table and current_table:
-        try:
-            df = process_text_table(current_table)
-            if not df.empty and df.shape[1] > 1:
-                tables.append(df)
-        except Exception as e:
-            print(f"텍스트 표 변환 중 오류: {str(e)}")
+    # 마지막 항목 처리
+    if current_course and (level or duration):
+        results.append({
+            "course_name": current_course,
+            "level": level,
+            "duration": duration
+        })
     
-    return tables
+    return results
 
-def process_text_table(text_lines):
-    """텍스트 라인들을 표로 변환"""
-    # 구분자 추측
-    sample_line = text_lines[0]
+def extract_and_save_course_info(file_path):
+    """과정 정보 추출 및 저장 메인 함수"""
+    # 과정 정보 추출
+    course_info = extract_course_info_from_docx(file_path)
     
-    if '\t' in sample_line:
-        delimiter = '\t'
-    elif '|' in sample_line:
-        # | 기호로 분리된 경우
-        processed_lines = []
-        for line in text_lines:
-            processed_lines.append(line.strip('| \t').replace('|', '\t'))
-        return pd.read_csv('\n'.join(processed_lines), sep='\t', engine='python')
+    print("\n===== 추출된 과정 정보 요약 =====")
+    if course_info:
+        print(f"총 {len(course_info)}개 과정 정보 추출")
+        
+        # DataFrame으로 변환하여 정리된 형태로 출력
+        df = pd.DataFrame(course_info)
+        if 'full_table_data' in df.columns:
+            df = df.drop('full_table_data', axis=1)  # 전체 표 데이터는 출력에서 제외
+        
+        print("\n추출된 정보:")
+        print(df)
+        
+        # CSV로 저장
+        csv_filename = "extracted_course_info.csv"
+        df.to_csv(csv_filename, index=False, encoding='utf-8-sig')
+        print(f"\n추출된 정보를 {csv_filename}에 저장했습니다.")
+        
+        return course_info
     else:
-        # 공백을 구분자로 사용하되, 여러 개의 공백은 하나로 취급
-        processed_lines = []
-        for line in text_lines:
-            processed_line = re.sub(r'\s{2,}', '\t', line)
-            processed_lines.append(processed_line)
-        return pd.read_csv('\n'.join(processed_lines), sep='\t', engine='python')
-    
-    # 기본 처리: 텍스트를 구분자로 분리하여 DataFrame 생성
-    return pd.read_csv('\n'.join(text_lines), sep=delimiter, engine='python')
-
-def print_table_info(result):
-    """
-    추출된 표 정보를 출력하는 함수
-    
-    Args:
-        result: 추출된 표와 정보를 담은 딕셔너리
-    """
-    tables = result["tables"]
-    raw_tables = result["raw_tables"]
-    
-    if not tables and not raw_tables:
-        print("추출된 표가 없습니다.")
-        
-        # 원시 텍스트에서 수동으로 표와 유사한 형식 찾기
-        print("\n표와 유사한 구조를 수동으로 찾아봅니다...")
-        find_table_like_structures(result["doc_info"].get("paragraph_texts", []))
-        return
-    
-    print(f"총 {len(tables)}개의 표가 추출되었습니다.")
-    
-    if raw_tables and not tables:
-        print("\n표 구조는 감지되었으나 변환하지 못했습니다. 원시 데이터:")
-        for i, raw_table in enumerate(raw_tables):
-            print(f"\n원시 표 {i+1}:")
-            for row in raw_table:
-                print(" | ".join(row))
-    
-    for i, table in enumerate(tables):
-        print(f"\n표 {i+1}:")
-        print(f"- 행 수: {table.shape[0]}")
-        print(f"- 열 수: {table.shape[1]}")
-        print(f"- 열 이름: {list(table.columns)}")
-        print("\n처음 5행:")
-        print(table.head())
-        print("-" * 50)
-
-def find_table_like_structures(paragraphs_text):
-    """문서에서 표와 비슷한 구조를 찾는 함수"""
-    # 연속되는 특정 패턴을 가진 문단 그룹 찾기
-    
-    # 예: 숫자와 문자가 특정 패턴으로 반복되는 경우
-    pattern_groups = []
-    current_group = []
-    
-    # 패턴 정의: 레벨, 교육 방식, 소요 시간 등의 패턴
-    table_row_patterns = [
-        r'^\s*(\w+)\s+(\w[^0-9]+)\s+(\d+일|\d+시간)',  # 레벨 제공방법 소요시간
-        r'^\s*\d+\.\s+.+',  # 번호로 시작하는 목록형 데이터
-        r'^\s*•\s+.+',  # 불릿으로 시작하는 목록형 데이터
-    ]
-    
-    if not paragraphs_text:
-        print("분석할 텍스트가 제공되지 않았습니다.")
-        return
-    
-    for para in paragraphs_text:
-        is_table_like = any(re.match(pattern, para) for pattern in table_row_patterns)
-        
-        if is_table_like:
-            current_group.append(para)
-        elif current_group:
-            if len(current_group) >= 3:  # 최소 3개 연속 행이면 표와 유사하다고 판단
-                pattern_groups.append(current_group)
-            current_group = []
-    
-    # 마지막 그룹 처리
-    if current_group and len(current_group) >= 3:
-        pattern_groups.append(current_group)
-    
-    # 발견된 패턴 그룹 출력
-    if pattern_groups:
-        print(f"\n{len(pattern_groups)}개의 표와 유사한 구조를 발견했습니다:")
-        for i, group in enumerate(pattern_groups):
-            print(f"\n구조 {i+1} (행 {len(group)}개):")
-            for line in group[:5]:  # 처음 5줄만 출력
-                print(f"  {line}")
-            if len(group) > 5:
-                print(f"  ... 외 {len(group)-5}개 행")
-    else:
-        print("표와 유사한 구조를 발견하지 못했습니다.")
-        
-    # 두 번째 시도: 워드 문서에서 구조화된 콘텐츠를 찾기 위한 다른 패턴 검색
-    print("\n특수 형식이나 레이아웃이 있는지 검색합니다...")
-    
-    # 예: 탭이나 여러 공백을 포함한 줄 찾기
-    tab_lines = [p for p in paragraphs_text if '\t' in p]
-    if tab_lines:
-        print(f"\n탭이 포함된 {len(tab_lines)}개 라인을 발견했습니다 (표일 가능성 있음):")
-        for line in tab_lines[:5]:
-            print(f"  {line}")
-        if len(tab_lines) > 5:
-            print(f"  ... 외 {len(tab_lines)-5}개 행")
-
-def save_to_dynamodb(courses):
-    """추출된 과정 정보를 DynamoDB에 저장하는 함수"""
-    try:
-        # DynamoDB 클라이언트 초기화
-        dynamodb = boto3.resource('dynamodb')
-        catalog_table = dynamodb.Table('TnC-CourseCatalog')
-        modules_table = dynamodb.Table('TnC-CourseCatalog-Modules')
-        
-        for course in courses:
-            # 기본 과정 정보를 카탈로그 테이블에 저장
-            catalog_item = {
-                "courseId": course["id"],
-                "name": course["name"],
-                "description": course["description"],
-                "level": course["level"],
-                "deliveryMethod": course["deliveryMethod"],
-                "duration": course["duration"],
-                "objectives": course["objectives"],
-                "audience": course["audience"],
-                "createdAt": course["createdAt"]
-            }
-            
-            catalog_table.put_item(Item=catalog_item)
-            print(f"과정 '{course['name']}'을(를) TnC-CourseCatalog에 저장했습니다.")
-            
-            # 모듈 정보를 모듈 테이블에 저장
-            for i, module in enumerate(course["modules"]):
-                module_item = {
-                    "courseId": course["id"],
-                    "moduleId": f"{course['id']}#module#{i+1}",
-                    "courseTitle": course["name"],
-                    "moduleNumber": module["number"] or str(i+1),
-                    "moduleTitle": module["title"],
-                    "moduleContent": module["content"],
-                    "type": "module",
-                    "createdAt": course["createdAt"]
-                }
-                
-                modules_table.put_item(Item=module_item)
-                print(f"모듈 '{module['title']}'을(를) TnC-CourseCatalog-Modules에 저장했습니다.")
-            
-            # 실습 정보를 모듈 테이블에 저장
-            for i, lab in enumerate(course["labs"]):
-                lab_item = {
-                    "courseId": course["id"],
-                    "moduleId": f"{course['id']}#lab#{i+1}",
-                    "courseTitle": course["name"],
-                    "labNumber": lab["number"] or str(i+1),
-                    "labTitle": lab["title"],
-                    "type": "lab",
-                    "createdAt": course["createdAt"]
-                }
-                
-                modules_table.put_item(Item=lab_item)
-                print(f"실습 '{lab['title']}'을(를) TnC-CourseCatalog-Modules에 저장했습니다.")
-        
-        return True
-    
-    except Exception as e:
-        print(f"DynamoDB 저장 중 오류 발생: {str(e)}")
-        return False
+        print("추출된 과정 정보가 없습니다.")
+        return []
 
 # 실행 부분
 if __name__ == "__main__":
@@ -337,11 +230,9 @@ if __name__ == "__main__":
         if len(sys.argv) > 1:
             file_path = sys.argv[1]
         else:
-            #file_path = "Instuctor.docx"  # 기본 파일 이름
-            file_path = 'AWS TnC_ILT_DILT.docx'
+            file_path = 'AWS TnC_ILT_DILT.docx'  # 기본 파일 이름
         
-        result = extract_tables_from_docx(file_path)
-        print_table_info(result)
+        course_info = extract_and_save_course_info(file_path)
         
         # 문서 내용 전체를 저장 (선택적)
         doc = docx.Document(file_path)
@@ -349,27 +240,6 @@ if __name__ == "__main__":
             for para in doc.paragraphs:
                 f.write(para.text + "\n")
             print("\n문서 내용을 extracted_text.txt 파일로 저장했습니다.")
-
-
-         # 추출된 과정 정보 출력 (저장 전 확인용)
-        for i, course in enumerate(courses):
-            print(f"\n[{i+1}] {course['name']}")
-            print(f"레벨: {course['level']}")
-            print(f"소요 시간: {course['duration']}")
-            print(f"모듈 수: {len(course['modules'])}")
-            print(f"실습 수: {len(course['labs'])}")
-
-        # 확인 후 저장할지 결정
-        confirmation = input("\n위 정보를 DynamoDB에 저장하시겠습니까? (y/n): ")
-        
-        if confirmation.lower() == 'y':
-            success = save_to_dynamodb(courses)
-            if success:
-                print("\n모든 과정 정보가 DynamoDB에 성공적으로 저장되었습니다.")
-            else:
-                print("\n일부 데이터 저장에 실패했습니다. 오류 메시지를 확인하세요.")
-        else:
-            print("\n저장이 취소되었습니다.")
             
     except Exception as e:
         print(f"오류 발생: {str(e)}")

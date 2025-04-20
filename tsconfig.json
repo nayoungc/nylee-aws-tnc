@@ -23,5 +23,5 @@
       "@components/*": ["src/components/*"]
     }
   },
-  "include": ["src", "src/types/**/*.d.ts"]
+  "include": ["src", "src/types/**/*.d.ts", "craco.config.js"]
 }
