@@ -1,22 +1,26 @@
 import { useState, useEffect } from 'react';
 import { fetchUserAttributes, signOut, getCurrentUser, UserAttributeKey } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
-import { useTypedTranslation } from '../utils/i18n-utils';
-import { TopNavigation } from '@cloudscape-design/components';
+import { useTypedTranslation } from '@utils/i18n-utils';
+import {
+  TopNavigation,
+  Button,
+  SpaceBetween
+} from '@cloudscape-design/components';
 
-// UserAttributes 인터페이스를 AWS Amplify의 타입과 호환되게 정의
-interface UserAttributes extends Partial<Record<UserAttributeKey, string>> {}
+// UserAttributes interface
+interface UserAttributes extends Partial<Record<UserAttributeKey, string>> { }
 
 const Header = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTypedTranslation();
+  const { t, tString, i18n } = useTypedTranslation();
   const [username, setUsername] = useState<string>('');
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userAttributes, setUserAttributes] = useState<UserAttributes | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // 사용자 속성 로드 - 캐시 사용
+  // Load user attributes with caching
   useEffect(() => {
     const cachedData = sessionStorage.getItem('userAttributes');
     if (cachedData) {
@@ -27,7 +31,7 @@ const Header = () => {
         setLoading(false);
         return;
       } catch (e) {
-        // 캐시 데이터 파싱 오류는 무시하고 계속 진행
+        // Ignore cache parsing errors
       }
     }
 
@@ -35,14 +39,12 @@ const Header = () => {
       try {
         setLoading(true);
         const attributes = await fetchUserAttributes();
-        // 타입 캐스팅 추가
         setUserAttributes(attributes as UserAttributes);
         setUserRole(attributes.profile || null);
-        // 데이터 캐싱 (세션 동안 유효)
         sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
         setLoading(false);
       } catch (error) {
-        console.error('사용자 속성 로드 오류:', error);
+        console.error('Error loading user attributes:', error);
         setError(error instanceof Error ? error : new Error(String(error)));
         setLoading(false);
       }
@@ -51,7 +53,7 @@ const Header = () => {
     loadUserAttributes();
   }, []);
 
-  // 사용자 정보 로드
+  // Load user info
   useEffect(() => {
     async function loadUserInfo() {
       try {
@@ -67,65 +69,96 @@ const Header = () => {
         setUsername(email);
         sessionStorage.setItem('username', email);
       } catch (error) {
-        console.error('사용자 정보 로드 오류:', error);
+        console.error('Error loading user info:', error);
         setUsername('User');
       }
     }
-    
+
     loadUserInfo();
   }, []);
 
   const handleSignOut = async () => {
     try {
-      // 캐시 데이터 삭제
+      // Clear cache
       sessionStorage.removeItem('userAttributes');
       sessionStorage.removeItem('username');
-      
+
       await signOut();
       navigate('/signin');
     } catch (error) {
-      console.error('로그아웃 오류:', error);
+      console.error('Sign out error:', error);
     }
   };
 
-  // 언어 변경 핸들러
+  // Language change handler
   const changeLanguage = (languageCode: string) => {
     i18n.changeLanguage(languageCode);
+  };
+
+  // User role display text
+  const getRoleDisplay = () => {
+    if (!userRole) return '';
+
+    switch (userRole) {
+      case 'admin': return t('role.admin') || 'Administrator';
+      case 'instructor': return t('role.instructor') || 'Instructor';
+      default: return t('role.student') || 'Student';
+    }
   };
 
   return (
     <TopNavigation
       identity={{
         href: '/',
-        title: String(t('app.title')),
+        title: tString('app.title'),
         logo: {
-          src: '/images/aws.png', 
-          alt: String(t('app.title'))
+          src: '/images/aws.png',
+          alt: tString('app.title')
         }
       }}
       utilities={[
+        // More visible language selector
         {
-          type: 'menu-dropdown',
-          text: i18n.language === 'ko' ? '한국어' : 'English',
-          iconName: 'settings',
-          items: [
-            { id: 'en', text: 'English' },
-            { id: 'ko', text: '한국어' }
-          ],
-          onItemClick: ({ detail }) => changeLanguage(detail.id)
+          type: 'button',
+          text: i18n.language === 'ko' ? '🇰🇷 한국어' : '🇺🇸 English',
+          onClick: () => changeLanguage(i18n.language === 'ko' ? 'en' : 'ko')
         },
+
+        // Prominent user info section
+        // Use badge styling in the menu items instead
         {
           type: 'menu-dropdown',
           text: username,
           iconName: 'user-profile',
           items: [
+            // Show role as first item in the dropdown
+            {
+              id: 'role-display',
+              text: getRoleDisplay(),
+              disabled: true,
+              disabledReason: 'User role information',
+            },
+            { id: 'divider-1', text: '-' },
             ...(userRole === 'admin' ? [{ id: 'admin', text: t('nav.admin') || 'Administration' }] : []),
+            { id: 'profile', text: t('nav.profile') || 'My Profile' },
+            { id: 'settings', text: t('nav.settings') || 'Settings' },
+            { id: 'divider-2', text: '-' },
             { id: 'signout', text: String(t('auth.sign_out')) }
           ],
           onItemClick: ({ detail }) => {
             if (detail.id === 'signout') handleSignOut();
             if (detail.id === 'admin') navigate('/admin');
+            if (detail.id === 'profile') navigate('/profile');
+            if (detail.id === 'settings') navigate('/settings');
           }
+        },
+
+        // Sign out button for quick access
+        {
+          type: 'button',
+          variant: 'link',
+          ariaLabel: tString('auth.sign_out'),
+          onClick: handleSignOut
         }
       ]}
     />

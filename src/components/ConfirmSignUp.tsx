@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { handleConfirmSignUp, handleResendConfirmationCode } from '../utils/auth';
-import { useTypedTranslation } from '../utils/i18n-utils';
+import { handleConfirmSignUp, handleResendConfirmationCode } from '@utils/auth';
+import { useTypedTranslation } from '@utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
+
 import { 
   Form, 
   SpaceBetween, 
@@ -14,7 +15,7 @@ import {
 } from '@cloudscape-design/components';
 
 const ConfirmSignUp: React.FC = () => {
-  const { t } = useTypedTranslation();
+  const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { username, email, destination } = location.state || { username: '', email: '', destination: '' };

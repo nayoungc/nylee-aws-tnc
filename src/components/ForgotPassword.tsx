@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';
-import { useTypedTranslation } from '../utils/i18n-utils';
+import { useTypedTranslation } from '@utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 import { 
   Form, 

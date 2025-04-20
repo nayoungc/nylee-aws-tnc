@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { confirmSignIn } from 'aws-amplify/auth';
-import { useTypedTranslation } from '../utils/i18n-utils';
+import { useTypedTranslation } from '@utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
+
 import { 
   Form, 
   SpaceBetween, 

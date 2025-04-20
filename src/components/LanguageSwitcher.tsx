@@ -1,6 +1,6 @@
-// LanguageSwitcher.tsx
+// components/LanguageSwitcher.tsx
 import React from 'react';
-import { useTypedTranslation } from '../utils/i18n-utils';
+import { useTypedTranslation } from '@utils//i18n-utils';
 import { Select } from '@cloudscape-design/components';
 
 const LanguageSwitcher: React.FC = () => {

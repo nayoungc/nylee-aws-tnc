@@ -1,4 +1,4 @@
-// src/components/LoadingScreen.tsx
+// components/LoadingScreen.tsx
 import React from 'react';
 import { Box, SpaceBetween } from '@cloudscape-design/components';
 

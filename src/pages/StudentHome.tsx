@@ -1,3 +1,4 @@
+// pages/StudentHome.tsx
 import React from 'react';
 import {
   SpaceBetween,
@@ -7,11 +8,12 @@ import TextFilter from '@cloudscape-design/components/text-filter';
 import Select from '@cloudscape-design/components/select';
 import { NonCancelableCustomEvent } from '@cloudscape-design/components/internal/events';
 import { useNavigate } from 'react-router-dom';
+import { useTypedTranslation } from '@utils/i18n-utils'; // Using absolute path
 
-// 타입 정의 - Cloudscape Select 컴포넌트와 호환되는 옵션 타입
+// Define types compatible with Cloudscape Select component
 type SelectOption = { label: string; value: string };
 
-// 예시 과정 데이터
+// Sample course data
 const COURSES = [
   {
     id: 'cloud-practitioner',
@@ -22,51 +24,52 @@ const COURSES = [
     startDate: '2025-04-20',
     instructor: 'Jane Smith',
     location: 'Online',
-    price: '\$699',
+    price: '\\$699',
     featured: true,
     category: 'Cloud Fundamentals'
   },
-  // ... 나머지 과정 데이터 ...
+  // ... rest of course data ...
 ];
 
 const StudentHome = () => {
   const navigate = useNavigate();
+  const { t, i18n, tString } = useTypedTranslation(); // Add translation hook
   const [filterText, setFilterText] = React.useState('');
   
-  // Select 컴포넌트 상태 관리 - 명확한 타입으로 정의
+  // Select component state management with clear types
   const [selectedCategory, setSelectedCategory] = React.useState<SelectOption>({ 
-    label: 'All categories', 
+    label: t('admin.courses.form.category') || 'All categories', 
     value: 'all' 
   });
   
   const [selectedLevel, setSelectedLevel] = React.useState<SelectOption>({ 
-    label: 'All levels', 
+    label: t('user.level') || 'All levels', 
     value: 'all' 
   });
   
   const [viewType, setViewType] = React.useState('grid');
 
-  // 카테고리 변경 핸들러 - 안전한 타입 처리
+  // Category change handler with safe type handling
   const handleCategoryChange = (event: NonCancelableCustomEvent<any>) => {
     const option = event.detail.selectedOption;
-    // 필요한 속성이 존재하는지 확인하고 기본값 제공
+    // Verify required properties exist and provide defaults
     setSelectedCategory({
-      label: option.label || 'All categories',
+      label: option.label || t('admin.courses.form.category') || 'All categories',
       value: option.value || 'all'
     });
   };
 
-  // 레벨 변경 핸들러 - 안전한 타입 처리
+  // Level change handler with safe type handling
   const handleLevelChange = (event: NonCancelableCustomEvent<any>) => {
     const option = event.detail.selectedOption;
-    // 필요한 속성이 존재하는지 확인하고 기본값 제공
+    // Verify required properties exist and provide defaults
     setSelectedLevel({
-      label: option.label || 'All levels',
+      label: option.label || t('user.level') || 'All levels',
       value: option.value || 'all'
     });
   };
 
-  // 필터 및 정렬 로직
+  // Filter and sort logic
   const filteredCourses = COURSES.filter(course => {
     const matchesText = course.title.toLowerCase().includes(filterText.toLowerCase()) ||
                         course.description.toLowerCase().includes(filterText.toLowerCase());
@@ -76,48 +79,48 @@ const StudentHome = () => {
     return matchesText && matchesCategory && matchesLevel;
   });
 
-  // 카테고리 및 레벨 옵션 생성
-  const categoryOptions = [
-    { label: 'All categories', value: 'all' },
+  // Generate category and level options with translations
+  const categoryOptions = React.useMemo(() => [
+    { label: t('admin.courses.form.category') || 'All categories', value: 'all' },
     ...Array.from(new Set(COURSES.map(c => c.category))).map(cat => ({ 
       label: cat, 
       value: cat 
     }))
-  ];
+  ], [t, i18n.language]); // Re-compute when language changes
   
-  const levelOptions = [
-    { label: 'All levels', value: 'all' },
+  const levelOptions = React.useMemo(() => [
+    { label: t('user.level') || 'All levels', value: 'all' },
     ...Array.from(new Set(COURSES.map(c => c.level))).map(level => ({ 
       label: level, 
       value: level 
     }))
-  ];
+  ], [t, i18n.language]); // Re-compute when language changes
   
   return (
     <SpaceBetween size="l">
-      {/* 내용은 동일하게 유지, Select 컴포넌트 부분만 변경 */}
-      
-      {/* 필터링 옵션 */}
+      {/* Filtering options */}
       <Grid gridDefinition={[{ colspan: 8 }, { colspan: 2 }, { colspan: 2 }]}>
         <TextFilter
           filteringText={filterText}
-          filteringPlaceholder="Find courses"
-          filteringAriaLabel="Filter courses"
+          filteringPlaceholder={t('admin.courses.search_placeholder') || "Find courses"}
+          filteringAriaLabel={t('admin.courses.search_aria_label') || "Filter courses"}
           onChange={({ detail }) => setFilterText(detail.filteringText)}
         />
         <Select
           selectedOption={selectedCategory}
           onChange={handleCategoryChange}
           options={categoryOptions}
+          placeholder={tString('survey.course_placeholder')}
         />
         <Select
           selectedOption={selectedLevel}
           onChange={handleLevelChange}
           options={levelOptions}
+          placeholder={tString('user.level')}
         />
       </Grid>
 
-      {/* 나머지 코드는 동일하게 유지 */}
+      {/* Rest of code stays the same */}
     </SpaceBetween>
   );
 };

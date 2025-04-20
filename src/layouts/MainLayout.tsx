@@ -3,18 +3,18 @@ import React, { useState, useEffect, ReactNode, useMemo, useCallback } from 'rea
 import {
   AppLayout,
   SideNavigation,
+  SideNavigationProps,
   TopNavigation,
   Spinner,
   BreadcrumbGroup,
   BreadcrumbGroupProps,
   Box
 } from '@cloudscape-design/components';
-import { SideNavigationProps } from '@cloudscape-design/components';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getCurrentUser, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
-import { useTypedTranslation } from '../utils/i18n-utils';
-import { changeLanguage, getCurrentLanguage } from '../utils/i18n-utils';
+import { useTypedTranslation, changeLanguage, getCurrentLanguage } from '@utils/i18n-utils';
 
 interface MainLayoutProps {
   children: ReactNode;

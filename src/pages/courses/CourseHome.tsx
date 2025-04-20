@@ -1,55 +1,34 @@
-// pages/CourseHome.tsx (or pages/common/CourseHome.tsx)
+// pages/CourseHome.tsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useTypedTranslation } from '@utils/i18n-utils';
+
 import {
   Container,
   Header,
   SpaceBetween,
   Box,
   Button,
-  Cards,
   Grid,
   Alert,
-  Modal,
-  FormField,
-  Input,
   Spinner,
   Badge,
-  ExpandableSection,
   Link,
-  TextFilter,
-  Select
+  ColumnLayout,
+  Cards,
+  StatusIndicator
 } from '@cloudscape-design/components';
-import { NonCancelableCustomEvent } from '@cloudscape-design/components/internal/events';
 
-// 타입 정의
+// Types
 interface Course {
   id: string;
   title: string;
   description: string;
-  instructors: Instructor[];
-  sessions: Session[];
-  materials: { title: string; url: string }[];
-  level: string;
-  duration: string;
-  startDate: string;
-  location: string;
-  price: string;
-  featured: boolean;
-  category: string;
-}
-
-interface Instructor {
-  name: string;
-  title: string;
-  imageUrl?: string;
-}
-
-interface Session {
-  title: string;
+  instructor: string;
   date: string;
   time: string;
-  topics: string[];
+  location: string;
+  materials: { title: string; url: string; type: string }[];
 }
 
 interface Announcement {
@@ -69,504 +48,181 @@ interface Assessment {
   isActive: boolean;
   dueDate?: string;
   estimatedTime: string;
+  status: 'completed' | 'pending' | 'overdue';
 }
 
-type SelectOption = { label: string; value: string };
-
-// 예시 과정 데이터
-const COURSES: Course[] = [
-  {
-    id: 'cloud-practitioner',
-    title: 'AWS Cloud Practitioner Essentials',
-    description: 'This introductory course provides an overview of AWS Cloud concepts, services and security.',
-    level: 'Foundational',
-    duration: '2 days',
-    startDate: '2025-04-20',
-    location: 'Online',
-    price: '\$699',
-    featured: true,
-    category: 'Cloud Fundamentals',
-    instructors: [
-      {
-        name: 'Jane Smith',
-        title: 'AWS Certified Trainer',
-        imageUrl: 'https://randomuser.me/api/portraits/women/44.jpg'
-      },
-      {
-        name: 'Michael Johnson',
-        title: 'Cloud Solutions Architect',
-        imageUrl: 'https://randomuser.me/api/portraits/men/32.jpg'
-      }
-    ],
-    sessions: [
-      {
-        title: 'Day 1: Introduction to Cloud Computing and AWS',
-        date: 'April 20, 2025',
-        time: '9:00 AM - 5:00 PM',
-        topics: ['Cloud Computing Concepts', 'AWS Global Infrastructure', 'Core AWS Services']
-      },
-      {
-        title: 'Day 2: Security, Architecture, and Support',
-        date: 'April 21, 2025',
-        time: '9:00 AM - 5:00 PM',
-        topics: ['AWS Security', 'AWS Architecture', 'Pricing and Support']
-      }
-    ],
-    materials: [
-      { title: 'Course Slides', url: '#slides' },
-      { title: 'AWS Documentation', url: 'https://docs.aws.amazon.com' },
-      { title: 'Practice Labs', url: '#labs' }
-    ]
-  },
-  {
-    id: 'security-engineering',
-    title: 'Security Engineering on AWS',
-    description: 'Learn how to efficiently use AWS security services to stay secure in the AWS Cloud.',
-    level: 'Advanced',
-    duration: '3 days',
-    startDate: '2025-05-15',
-    location: 'Virtual Classroom',
-    price: '\$1,299',
-    featured: true,
-    category: 'Security',
-    instructors: [
-      {
-        name: 'David Wilson',
-        title: 'Security Specialist',
-        imageUrl: 'https://randomuser.me/api/portraits/men/22.jpg'
-      }
-    ],
-    sessions: [
-      {
-        title: 'Day 1: AWS Security Fundamentals',
-        date: 'May 15, 2025',
-        time: '9:00 AM - 5:00 PM',
-        topics: ['Security Models', 'IAM Deep Dive', 'Security Monitoring']
-      }
-    ],
-    materials: [
-      { title: 'Security Handbook', url: '#security' },
-      { title: 'Lab Guide', url: '#labs' }
-    ]
-  },
-  {
-    id: 'data-analytics',
-    title: 'Data Analytics on AWS',
-    description: 'Learn to build big data analytics solutions on AWS services.',
-    level: 'Intermediate',
-    duration: '2 days',
-    startDate: '2025-06-10',
-    location: 'Hybrid',
-    price: '\$899',
-    featured: false,
-    category: 'Analytics',
-    instructors: [
-      {
-        name: 'Sarah Chen',
-        title: 'Data Science Lead',
-        imageUrl: 'https://randomuser.me/api/portraits/women/28.jpg'
-      }
-    ],
-    sessions: [
-      {
-        title: 'Day 1: Data Lakes and Analytics',
-        date: 'June 10, 2025',
-        time: '9:00 AM - 5:00 PM',
-        topics: ['Data Lake Architecture', 'AWS Analytics Services']
-      }
-    ],
-    materials: [
-      { title: 'Lab Instructions', url: '#labs' }
-    ]
-  }
-];
-
 const CourseHome: React.FC = () => {
-  const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const isCoursesList = !courseId;
+  const { t, tString, i18n } = useTypedTranslation();
   
-  // 상태 관리
+  // State management
   const [course, setCourse] = useState<Course | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [activeAssessments, setActiveAssessments] = useState<Assessment[]>([]);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // 필터링 상태 (과정 목록 뷰)
-  const [filterText, setFilterText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<SelectOption>({ 
-    label: 'All categories', 
-    value: 'all' 
-  });
-  const [selectedLevel, setSelectedLevel] = useState<SelectOption>({ 
-    label: 'All levels', 
-    value: 'all' 
-  });
-  
-  // 학생 이름 관리
-  const [studentName, setStudentName] = useState<string>('');
-  const [studentEmail, setStudentEmail] = useState<string>('');
-  const [showNameInput, setShowNameInput] = useState(false);
-  
   useEffect(() => {
-    // 초기 로딩
-    setLoading(true);
-    
-    if (courseId) {
-      // 과정 상세 페이지 - 특정 과정 데이터 로드
-      const savedName = localStorage.getItem(`student_name_\${courseId}`);
-      const savedEmail = localStorage.getItem(`student_email_\${courseId}`);
-      
-      if (savedName) {
-        setStudentName(savedName);
-        if (savedEmail) setStudentEmail(savedEmail);
-      } else {
-        setShowNameInput(true);
-      }
-      
-      loadCourseDetail(courseId);
-    } else {
-      // 과정 목록 페이지 - 전체 과정 목록 로드
-      setLoading(false);
-    }
-  }, [courseId]);
+    // Initial loading
+    loadCourseData();
+  }, []);
   
-  const loadCourseDetail = async (id: string) => {
+  const loadCourseData = async () => {
     try {
-      // 실제 구현에서는 API 호출로 대체
+      setLoading(true);
+      
+      // In a real app, this would be an API call
       setTimeout(() => {
-        const foundCourse = COURSES.find(c => c.id === id);
+        // Sample course data - this would come from your API
+        setCourse({
+          id: 'aws-cloud-essentials',
+          title: 'AWS Cloud Essentials Workshop',
+          description: 'A hands-on introduction to core AWS services and best practices.',
+          instructor: 'Sarah Johnson',
+          date: '2023년 10월 18일',
+          time: '09:00 - 17:00',
+          location: '서울 강남구 테헤란로 231, 캠퍼스 3층',
+          materials: [
+            { title: '워크샵 슬라이드', url: '/materials/slides.pdf', type: 'pdf' },
+            { title: '실습 가이드', url: '/materials/lab-guide.pdf', type: 'pdf' },
+            { title: '참고 자료', url: '/materials/references.zip', type: 'zip' },
+            { title: 'AWS 계정 생성 가이드', url: '/materials/account-setup.pdf', type: 'pdf' }
+          ]
+        });
         
-        if (foundCourse) {
-          setCourse(foundCourse);
-          
-          // 예시 공지사항
-          setAnnouncements([
-            {
-              id: '1',
-              title: 'Welcome to the course!',
-              message: 'We\'re excited to have you join our course. Please complete the pre-course survey and quiz before our first session.',
-              type: 'info',
-              date: '2025-04-15',
-              isImportant: true
-            },
-            {
-              id: '2',
-              title: 'Pre-course materials now available',
-              message: 'Access your pre-course materials in the Materials section. These will help you prepare for our first session.',
-              type: 'success',
-              date: '2025-04-16',
-              isImportant: false
-            }
-          ]);
-          
-          // 예시 활성화된 평가
-          setActiveAssessments([
-            {
-              id: '1',
-              title: 'Pre-Course Survey',
-              type: 'survey',
-              description: 'Please complete this brief survey to help us understand your experience level and expectations for the course.',
-              isActive: true,
-              estimatedTime: '5 minutes'
-            },
-            {
-              id: '2',
-              title: 'Pre-Course Knowledge Assessment',
-              type: 'pre-quiz',
-              description: 'This quiz helps us gauge your current knowledge of AWS services and adapt our teaching accordingly.',
-              isActive: true,
-              dueDate: '2025-04-19',
-              estimatedTime: '15 minutes'
-            }
-          ]);
-        } else {
-          setError('Course not found');
-        }
+        // Sample announcements
+        setAnnouncements([
+          {
+            id: '1',
+            title: '워크샵 사전 준비 안내',
+            message: '워크샵에 참여하시는 모든 분들은 개인 노트북을 지참해주세요. 실습을 위한 AWS 계정은 현장에서 제공됩니다.',
+            type: 'info',
+            date: '2023-10-16',
+            isImportant: true
+          },
+          {
+            id: '2',
+            title: '주차 안내',
+            message: '건물 내 주차는 4시간까지 무료입니다. 주차권은 접수처에서 받으실 수 있습니다.',
+            type: 'info',
+            date: '2023-10-17',
+            isImportant: false
+          },
+          {
+            id: '3',
+            title: '점심 식사 안내',
+            message: '점심 식사는 12시부터 13시까지 제공됩니다. 식이 제한이 있으신 분들은 진행자에게 미리 알려주세요.',
+            type: 'success',
+            date: '2023-10-17',
+            isImportant: false
+          }
+        ]);
+        
+        // Sample assessments
+        setAssessments([
+          {
+            id: '1',
+            title: '사전 설문조사',
+            type: 'survey',
+            description: '워크샵 참여자의 경험과 기대를 파악하기 위한 간단한 설문조사입니다.',
+            isActive: true,
+            estimatedTime: '5분',
+            status: 'pending'
+          },
+          {
+            id: '2',
+            title: '사전 지식 테스트',
+            type: 'pre-quiz',
+            description: 'AWS 기본 개념에 대한 이해도를 측정하는 짧은 퀴즈입니다.',
+            isActive: true,
+            dueDate: '2023-10-18',
+            estimatedTime: '10분',
+            status: 'pending'
+          },
+          {
+            id: '3',
+            title: '사후 평가',
+            type: 'post-quiz',
+            description: '워크샵 이후 지식 습득을 확인하기 위한 평가입니다.',
+            isActive: false,
+            estimatedTime: '15분',
+            status: 'pending'
+          }
+        ]);
+        
         setLoading(false);
       }, 1000);
       
     } catch (err) {
-      setError('Failed to load course data. Please try again later.');
+      setError('과정 데이터를 불러오는데 실패했습니다. 나중에 다시 시도해주세요.');
       setLoading(false);
     }
   };
   
-  const handleNameSubmit = () => {
-    if (studentName.trim() && courseId) {
-      localStorage.setItem(`student_name_\${courseId}`, studentName);
-      if (studentEmail) {
-        localStorage.setItem(`student_email_\${courseId}`, studentEmail);
-      }
-      setShowNameInput(false);
-    }
-  };
-  
   const navigateToAssessment = (assessment: Assessment) => {
-    if (courseId) {
-      navigate(`/course/\${courseId}/\${assessment.type}`);
+    if (assessment.isActive) {
+      navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
     }
   };
   
-  const navigateToCourse = (courseId: string) => {
-    navigate(`/course/\${courseId}`);
-  };
-  
-  // 카테고리 변경 핸들러
-  const handleCategoryChange = (event: NonCancelableCustomEvent<any>) => {
-    const option = event.detail.selectedOption;
-    setSelectedCategory({
-      label: option.label || 'All categories',
-      value: option.value || 'all'
-    });
-  };
-
-  // 레벨 변경 핸들러
-  const handleLevelChange = (event: NonCancelableCustomEvent<any>) => {
-    const option = event.detail.selectedOption;
-    setSelectedLevel({
-      label: option.label || 'All levels',
-      value: option.value || 'all'
-    });
-  };
-
-  // 필터링된 과정 목록
-  const filteredCourses = COURSES.filter(course => {
-    const matchesText = course.title.toLowerCase().includes(filterText.toLowerCase()) ||
-                        course.description.toLowerCase().includes(filterText.toLowerCase());
-    const matchesCategory = selectedCategory.value === 'all' || course.category === selectedCategory.value;
-    const matchesLevel = selectedLevel.value === 'all' || course.level === selectedLevel.value;
-    
-    return matchesText && matchesCategory && matchesLevel;
-  });
-
-  // 카테고리 및 레벨 옵션 생성
-  const categoryOptions = [
-    { label: 'All categories', value: 'all' },
-    ...Array.from(new Set(COURSES.map(c => c.category))).map(cat => ({ 
-      label: cat, 
-      value: cat 
-    }))
-  ];
-  
-  const levelOptions = [
-    { label: 'All levels', value: 'all' },
-    ...Array.from(new Set(COURSES.map(c => c.level))).map(level => ({ 
-      label: level, 
-      value: level 
-    }))
-  ];
-  
-  // 로딩 중 표시
+  // Loading indicator
   if (loading) {
     return (
       <Box padding="l" textAlign="center">
         <Spinner size="large" />
-        <Box padding="s">Loading course information...</Box>
+        <Box padding="s">과정 정보를 불러오는 중...</Box>
       </Box>
     );
   }
   
-  // 오류 표시
-  if (error) {
+  // Error display
+  if (error || !course) {
     return (
       <Container>
-        <Alert type="error" header="Failed to load course">
-          {error}
-          <Box padding={{ top: 'm' }}>
-            <Button onClick={() => navigate('/courses')}>
-              Back to Courses
-            </Button>
-          </Box>
+        <Alert type="error" header="과정을 불러올 수 없습니다">
+          {error || "과정 정보가 없습니다."}
         </Alert>
       </Container>
     );
   }
   
-  // 과정 목록 렌더링 (courseId가 없을 때)
-  if (isCoursesList) {
-    return (
-      <SpaceBetween size="l">
-        <Container
-          header={
-            <Header
-              variant="h1"
-              description="Browse available training courses and enroll today"
-            >
-              Available Courses
-            </Header>
-          }
-        >
-          {/* 필터링 옵션 */}
-          <Grid gridDefinition={[{ colspan: 8 }, { colspan: 2 }, { colspan: 2 }]}>
-            <TextFilter
-              filteringText={filterText}
-              filteringPlaceholder="Find courses"
-              filteringAriaLabel="Filter courses"
-              onChange={({ detail }) => setFilterText(detail.filteringText)}
-            />
-            <Select
-              selectedOption={selectedCategory}
-              onChange={handleCategoryChange}
-              options={categoryOptions}
-            />
-            <Select
-              selectedOption={selectedLevel}
-              onChange={handleLevelChange}
-              options={levelOptions}
-            />
-          </Grid>
-        </Container>
-        
-        {/* 과정 카드 목록 */}
-        <Container>
-          {filteredCourses.length > 0 ? (
-            <Cards
-              cardDefinition={{
-                header: item => (
-                  <div>
-                    <h2>{item.title}</h2>
-                    {item.featured && <Badge color="blue">Featured</Badge>}
-                  </div>
-                ),
-                sections: [
-                  {
-                    id: "description",
-                    header: "Description",
-                    content: item => item.description
-                  },
-                  {
-                    id: "details",
-                    header: "Details",
-                    content: item => (
-                      <Grid gridDefinition={[{colspan: 6}, {colspan: 6}]}>
-                        <SpaceBetween size="xs">
-                          <div><strong>Level:</strong> {item.level}</div>
-                          <div><strong>Duration:</strong> {item.duration}</div>
-                          {/* <div><strong>Instructor:</strong> {item.instructor}</div> */}
-                        </SpaceBetween>
-                        <SpaceBetween size="xs">
-                          <div><strong>Start Date:</strong> {new Date(item.startDate).toLocaleDateString()}</div>
-                          <div><strong>Location:</strong> {item.location}</div>
-                          <div><strong>Price:</strong> {item.price}</div>
-                        </SpaceBetween>
-                      </Grid>
-                    )
-                  },
-                  {
-                    id: "action",
-                    content: item => (
-                      <Button 
-                        variant="primary"
-                        onClick={() => navigateToCourse(item.id)}
-                      >
-                        View Course
-                      </Button>
-                    )
-                  }
-                ]
-              }}
-              items={filteredCourses}
-              cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 2 }]}
-            />
-          ) : (
-            <Box textAlign="center" padding="l">
-              No courses match your search criteria.
-              <Box padding="m">
-                <Button onClick={() => {
-                  setFilterText('');
-                  setSelectedCategory({ label: 'All categories', value: 'all' });
-                  setSelectedLevel({ label: 'All levels', value: 'all' });
-                }}>
-                  Clear Filters
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </Container>
-      </SpaceBetween>
-    );
-  }
-  
-  // 과정 상세 페이지 렌더링 (courseId가 있을 때)
+  // Course detail page rendering
   return (
     <SpaceBetween size="l">
-      {/* 이름 입력 모달 */}
-      <Modal
-        visible={showNameInput}
-        closeAriaLabel="Close modal"
-        onDismiss={() => {}} // 닫기 방지 (필수 입력)
-        header="Welcome to the Course"
-        footer={
-          <Box float="right">
-            <Button 
-              variant="primary" 
-              onClick={handleNameSubmit}
-              disabled={!studentName.trim()}
-            >
-              Continue
-            </Button>
-          </Box>
-        }
-      >
-        <SpaceBetween size="m">
-          <Box variant="p">
-            Please provide your name so we can track your progress in this course.
-          </Box>
-          <FormField label="Your Name*" constraintText="Required">
-            <Input 
-              value={studentName}
-              onChange={({ detail }) => setStudentName(detail.value)}
-              placeholder="Enter your full name"
-              autoFocus
-            />
-          </FormField>
-          <FormField label="Email Address (Optional)" constraintText="We'll use this to send you course updates">
-            <Input 
-              value={studentEmail}
-              onChange={({ detail }) => setStudentEmail(detail.value)}
-              placeholder="Enter your email address"
-              type="email"
-            />
-          </FormField>
-        </SpaceBetween>
-      </Modal>
-      
-      {/* 과정 상세 페이지 콘텐츠 */}
-      {/* 환영 섹션 */}
+      {/* Course header section */}
       <Container
         header={
           <Header
             variant="h1"
-            description={course?.description}
-            actions={
-              <Button iconName="user-profile" variant="normal">
-                {studentName ? `Welcome, \${studentName}` : 'Update Profile'}
-              </Button>
-            }
+            description={course.description}
           >
-            {course?.title}
+            {course.title}
           </Header>
         }
       >
-        <Box padding="m">
-          <Alert type="info" header="Getting Started">
-            <p>Welcome to your course home page! Here you can:</p>
-            <ul>
-              <li>View important announcements</li>
-              <li>Access course materials</li>
-              <li>Complete assessments when they become available</li>
-              <li>Check the course schedule and details</li>
-            </ul>
-          </Alert>
-        </Box>
+        <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
+          <SpaceBetween size="m">
+            <Box variant="awsui-key-label">일시</Box>
+            <Box variant="p">{course.date}, {course.time}</Box>
+            
+            <Box variant="awsui-key-label">장소</Box>
+            <Box variant="p">{course.location}</Box>
+          </SpaceBetween>
+          
+          <SpaceBetween size="m">
+            <Box variant="awsui-key-label">강사</Box>
+            <Box variant="p">{course.instructor}</Box>
+            
+            <Alert type="info" header="오늘의 과정">
+              이 페이지에서는 오늘 진행되는 과정에 관한 모든 정보와 자료를 확인하실 수 있습니다.
+            </Alert>
+          </SpaceBetween>
+        </Grid>
       </Container>
       
-      {/* 공지사항 섹션 */}
+      {/* Announcements section */}
       <Container
-        header={<Header variant="h2">Announcements</Header>}
+        header={<Header variant="h2">공지사항</Header>}
       >
         {announcements.length > 0 ? (
           <SpaceBetween size="m">
@@ -578,183 +234,194 @@ const CourseHome: React.FC = () => {
                   <>
                     {announcement.title} 
                     {announcement.isImportant && (
-                      <Badge color="red">Important</Badge>
+                      <Badge color="red">중요</Badge>
                     )}
                   </>
                 }
               >
                 <Box variant="p">{announcement.message}</Box>
                 <Box variant="small" color="text-body-secondary">
-                  Posted on: {new Date(announcement.date).toLocaleDateString()}
+                  작성일: {new Date(announcement.date).toLocaleDateString()}
                 </Box>
               </Alert>
             ))}
           </SpaceBetween>
         ) : (
           <Box textAlign="center" padding="l">
-            No announcements at this time.
+            현재 공지사항이 없습니다.
           </Box>
         )}
       </Container>
       
-      {/* 활성화된 평가 도구 */}
+      {/* Assessments section */}
       <Container
-        header={
-          <Header 
-            variant="h2"
-            description="Complete these assessments when activated by your instructor"
-          >
-            Available Assessments
-          </Header>
-        }
+        header={<Header variant="h2">퀴즈 및 설문조사</Header>}
       >
-        {activeAssessments.length > 0 ? (
-          <Cards
-            cardDefinition={{
-              header: item => (
-                <Box>
-                  {item.title}
-                  {item.dueDate && (
-                    <Box float="right" color="text-body-secondary">
-                      Due: {new Date(item.dueDate).toLocaleDateString()}
+        <Cards
+          cardDefinition={{
+            header: item => (
+              <Box>
+                {item.title}
+                {getAssessmentStatusBadge(item.status, item.isActive)}
+              </Box>
+            ),
+            sections: [
+              {
+                id: "description",
+                content: item => (
+                  <>
+                    <Box variant="p">{item.description}</Box>
+                    <Box variant="small" padding={{ top: "s" }}>
+                      예상 소요시간: {item.estimatedTime}
                     </Box>
-                  )}
-                </Box>
-              ),
-              sections: [
-                {
-                  id: "description",
-                  content: item => (
-                    <>
-                      <Box variant="p">{item.description}</Box>
-                      <Box variant="small" padding={{ top: "s" }}>
-                        Estimated time: {item.estimatedTime}
-                      </Box>
-                    </>
-                  )
-                },
-                {
-                  id: "action",
-                  content: item => (
-                    <Button 
-                      variant="primary"
-                      onClick={() => navigateToAssessment(item)}
-                    >
-                      Start Now
-                    </Button>
-                  )
-                }
-              ]
-            }}
-            items={activeAssessments}
-            cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 2 }]}
-          />
-        ) : (
-          <Box textAlign="center" padding="l">
-            No assessments are currently available. 
-            The instructor will activate them when ready.
-          </Box>
-        )}
+                  </>
+                )
+              },
+              {
+                id: "action",
+                content: item => (
+                  <Button 
+                    variant="primary"
+                    onClick={() => navigateToAssessment(item)}
+                    disabled={!item.isActive}
+                  >
+                    {item.status === 'completed' ? '결과 보기' : '시작하기'}
+                  </Button>
+                )
+              }
+            ]
+          }}
+          items={assessments}
+          cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 3 }]}
+        />
       </Container>
       
-      {/* 세션 및 일정 */}
-      <Container
-        header={<Header variant="h2">Course Schedule</Header>}
+      {/* Materials section */}
+      <Container 
+        header={<Header variant="h2">과정 자료</Header>}
       >
-        <SpaceBetween size="l">
-          {course?.sessions.map((session, index) => (
-            <Container
-              key={index}
-              header={<Header variant="h3">{session.title}</Header>}
-            >
-              <Grid gridDefinition={[{ colspan: 4 }, { colspan: 8 }]}>
-                <SpaceBetween size="s">
-                  <Box variant="h4">Date & Time</Box>
-                  <Box variant="p">{session.date}</Box>
-                  <Box variant="p">{session.time}</Box>
+        <ColumnLayout columns={2} variant="text-grid">
+          {course.materials.map((material, index) => (
+            <Box key={index} padding="s">
+              <Link href={material.url} external target="_blank">
+                <SpaceBetween direction="horizontal" size="xs">
+                  {getFileIcon(material.type)}
+                  {material.title}
                 </SpaceBetween>
-                
-                <SpaceBetween size="s">
-                  <Box variant="h4">Topics</Box>
-                  <ul>
-                    {session.topics.map((topic, i) => (
-                      <li key={i}>{topic}</li>
-                    ))}
-                  </ul>
-                </SpaceBetween>
-              </Grid>
-            </Container>
-          ))}
-        </SpaceBetween>
-      </Container>
-      
-      {/* 강사 정보 */}
-      <Container
-        header={<Header variant="h2">Instructors</Header>}
-      >
-        <Grid
-          gridDefinition={course?.instructors.map(() => ({ colspan: { default: 12, xxs: 6 } }))}
-        >
-          {course?.instructors.map((instructor, index) => (
-            <Box key={index} padding="m" textAlign="center">
-              {instructor.imageUrl && (
-                <Box padding="s">
-                  <img
-                    src={instructor.imageUrl}
-                    alt={instructor.name}
-                    style={{
-                      width: '120px',
-                      height: '120px',
-                      borderRadius: '50%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                </Box>
-              )}
-              <Box variant="h3" padding={{ top: 's' }}>{instructor.name}</Box>
-              <Box variant="p">{instructor.title}</Box>
+              </Link>
             </Box>
           ))}
-        </Grid>
+        </ColumnLayout>
       </Container>
       
-      {/* 학습 자료 */}
-      <Container header={<Header variant="h2">Course Materials</Header>}>
-        {course?.materials && course.materials.length > 0 ? (
-          <SpaceBetween size="s">
-            {course.materials.map((material, index) => (
-              <Box key={index}>
-                <Link href={material.url} external target="_blank">
-                  {material.title}
-                </Link>
+      {/* Schedule section */}
+      <Container
+        header={<Header variant="h2">일정 안내</Header>}
+      >
+        <Box padding="m">
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <th style={{ padding: '10px', textAlign: 'left' }}>시간</th>
+                <th style={{ padding: '10px', textAlign: 'left' }}>내용</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>09:00 - 09:30</td>
+                <td style={{ padding: '10px' }}>등록 및 오리엔테이션</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>09:30 - 10:30</td>
+                <td style={{ padding: '10px' }}>AWS 소개 및 기본 개념</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>10:30 - 10:45</td>
+                <td style={{ padding: '10px' }}>휴식</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>10:45 - 12:00</td>
+                <td style={{ padding: '10px' }}>실습 1: EC2 인스턴스 생성</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>12:00 - 13:00</td>
+                <td style={{ padding: '10px' }}>점심 식사</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>13:00 - 14:30</td>
+                <td style={{ padding: '10px' }}>실습 2: S3 및 스토리지 서비스</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>14:30 - 14:45</td>
+                <td style={{ padding: '10px' }}>휴식</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid #eaeded' }}>
+                <td style={{ padding: '10px' }}>14:45 - 16:30</td>
+                <td style={{ padding: '10px' }}>실습 3: 데이터베이스 서비스</td>
+              </tr>
+              <tr>
+                <td style={{ padding: '10px' }}>16:30 - 17:00</td>
+                <td style={{ padding: '10px' }}>Q&A 및 마무리</td>
+              </tr>
+            </tbody>
+          </table>
+        </Box>
+      </Container>
+      
+      {/* Support information */}
+      <Container
+        header={<Header variant="h2">문의 및 도움말</Header>}
+      >
+        <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
+          <Box padding="m">
+            <SpaceBetween size="m">
+              <Box variant="h3">기술적 문의</Box>
+              <Box variant="p">
+                실습 중 기술적 문제가 있으신 경우 강사에게 문의하거나<br />
+                <Link href="mailto:support@example.com">support@example.com</Link>으로 이메일을 보내주세요.
               </Box>
-            ))}
-          </SpaceBetween>
-        ) : (
-          <Box textAlign="center" padding="l">
-            No materials have been shared yet.
+            </SpaceBetween>
           </Box>
-        )}
-      </Container>
-      
-      {/* 도움말 섹션 */}
-      <Container header={<Header variant="h2">Need Help?</Header>}>
-        <ExpandableSection headerText="How to contact the instructors">
-          <Box variant="p">
-            If you have questions about the course content, please email your instructors at:
-            <Box variant="code" padding="s">instructors@example.com</Box>
+          <Box padding="m">
+            <SpaceBetween size="m">
+              <Box variant="h3">과정 관련 문의</Box>
+              <Box variant="p">
+                과정 내용이나 일정에 대한 문의는<br />
+                <Link href="mailto:training@example.com">training@example.com</Link>으로 연락해 주세요.
+              </Box>
+            </SpaceBetween>
           </Box>
-        </ExpandableSection>
-        
-        <ExpandableSection headerText="Technical support">
-          <Box variant="p">
-            For technical issues with the platform, please contact support at:
-            <Box variant="code" padding="s">support@example.com</Box>
-          </Box>
-        </ExpandableSection>
+        </Grid>
       </Container>
     </SpaceBetween>
   );
 };
+
+// Helper functions
+function getAssessmentStatusBadge(status: string, isActive: boolean) {
+  if (!isActive) {
+    return <Badge color="grey">준비 중</Badge>;
+  }
+  
+  switch (status) {
+    case 'completed':
+      return <StatusIndicator type="success">완료됨</StatusIndicator>;
+    case 'overdue':
+      return <StatusIndicator type="error">기한 초과</StatusIndicator>;
+    default:
+      return <StatusIndicator type="pending">대기 중</StatusIndicator>;
+  }
+}
+
+function getFileIcon(type: string) {
+  switch (type) {
+    case 'pdf':
+      return <Box color="text-status-error">📄</Box>;
+    case 'zip':
+      return <Box color="text-status-info">📦</Box>;
+    default:
+      return <Box color="text-status-info">📄</Box>;
+  }
+}
 
 export default CourseHome;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { handleSignUp } from '../utils/auth';
-import { useTypedTranslation } from '../utils/i18n-utils';
+import { handleSignUp } from '@utils/auth';
+import { useTypedTranslation } from '@utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 import { 
   Form, 

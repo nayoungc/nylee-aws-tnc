@@ -287,17 +287,18 @@ const AppRoutes: React.FC = () => {
         authenticated ? <Navigate to="/" /> : <AuthLayout><NewPassword /></AuthLayout>
       } />
 
-      {/* 루트 리디렉션 */}      <Route
+      {/* 루트 리디렉션 */}      
+      <Route
         path="/"
         element={
           authenticated ? (
-            userAttributes?.profile === 'instructor' ? (
+            userAttributes?.profile === 'instructor' || userAttributes?.profile === 'admin' ? (
               <Navigate to="/instructor/dashboard" />
             ) : (
               <Navigate to="/courses" />
             )
           ) : (
-            <Navigate to="/signin" /> // 이 부분을 수정 - 로그인 안된 경우 로그인 페이지로
+            <Navigate to="/signin" />
           )
         }
       />
