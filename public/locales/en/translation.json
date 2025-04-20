@@ -112,7 +112,32 @@
     "edit": "Edit",
     "view": "View",
     "go_back": "Go Back",
-    "error": "Error"
+    "error": "Error",
+    "filter": "Filter",
+    "selected": "Selected",
+    "legend": "Legend",
+    "chart": {
+      "bar": "Bar chart",
+      "pie": "Pie chart",
+      "xAxis": "X axis",
+      "yAxis": "Y axis"
+    },
+    "value": "Value",
+    "percentage": "Percentage",
+    "date": {
+      "next_month": "Next month",
+      "previous_month": "Previous month",
+      "today": "Today"
+    },
+    "errors": {
+      "fetch_user_role": "Failed to fetch user role:"
+    },
+    "nav": {
+      "admin_section": "Administration",
+      "admin_dashboard": "Admin Dashboard",
+      "user_management": "User Management",
+      "system_settings": "System Settings"
+    }
   },
   "survey": {
     "management_title": "Survey Management",
@@ -759,6 +784,218 @@
     },
     "loading": {
       "questions": "Loading questions..."
+    }
+  },
+  "dashboard": {
+    "stats": {
+      "active_sessions": "Active Sessions",
+      "total_students": "Total Students",
+      "completion_rate": "Completion Rate",
+      "quiz_completion": "Quiz Completion Rate",
+      "change": {
+        "week_up": "{{count}}% up this week",
+        "month_up": "{{count}}% up this month",
+        "quarter_up": "{{count}}% up this quarter",
+        "same": "No change"
+      }
+    },
+    "sections": {
+      "sessions": "Upcoming Sessions",
+      "quick_actions": "Quick Actions"
+    },
+    "sessions": {
+      "create_button": "Schedule Session",
+      "when": "When",
+      "participants": "Participants",
+      "preparation": "Preparation",
+      "registered_count": "{{count}} registered",
+      "preparation_ready": "Materials ready",
+      "preparation_needed": "Materials needed",
+      "live_badge": "LIVE NOW",
+      "actions": {
+        "join": "Join Session",
+        "edit": "Edit Session",
+        "materials": "View Materials"
+      },
+      "date": {
+        "today": "Today, {{start}} - {{end}}",
+        "tomorrow": "Tomorrow, {{start}} - {{end}}",
+        "live_now": "In progress now"
+      },
+      "courses": {
+        "practitioner": "AWS Cloud Practitioner Course",
+        "architect": "Solutions Architect Training",
+        "developer": "AWS Developer Workshop"
+      },
+      "descriptions": {
+        "practitioner": "Introduction to core AWS services and cloud fundamentals",
+        "architect": "Advanced architecture design patterns for AWS solutions",
+        "developer": "Development tools and practices for AWS applications"
+      },
+      "empty": {
+        "title": "No upcoming sessions",
+        "description": "Create a new teaching session to get started"
+      }
+    },
+    "quick_actions": {
+      "go": "Go",
+      "create_course": {
+        "title": "Create Course",
+        "description": "Design a new course or training module"
+      },
+      "generate_quiz": {
+        "title": "Generate Quiz",
+        "description": "Create assessments with AI assistance"
+      },
+      "view_reports": {
+        "title": "View Reports",
+        "description": "Access analytics and student progress"
+      },
+      "manage_materials": {
+        "title": "Manage Materials",
+        "description": "Organize course materials and resources"
+      }
+    },
+    "charts": {
+      "course_completion": "Course Completion Percentage",
+      "participation": {
+        "active": "Active Students",
+        "at_risk": "At Risk",
+        "inactive": "Inactive"
+      },
+      "courses": {
+        "cloud_practitioner": "Cloud Practitioner",
+        "solutions_architect": "Solutions Architect",
+        "developer": "Developer",
+        "devops": "DevOps Engineer",
+        "security": "Security Specialist"
+      },
+      "filter_label": "Filter",
+      "filter_placeholder": "Filter data",
+      "filter_selected": "Selected filter",
+      "legend": "Chart legend",
+      "bar_chart_description": "Bar chart",
+      "pie_chart_description": "Pie chart",
+      "x_axis": "X axis",
+      "y_axis": "Y axis",
+      "details_value": "Value",
+      "details_percentage": "Percentage",
+      "segment_description": "Chart segment"
+    }
+  },
+  "reports": {
+    "title": "Report Generator",
+    "report_settings": "Report Settings",
+    "select_course": "Select Course",
+    "course_placeholder": "Select a course",
+    "loading_courses": "Loading courses...",
+    "no_courses": {
+      "title": "No Courses Available",
+      "message": "There are no courses available. Please add courses first."
+    },
+    "report_type": "Report Type",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "format": "Report Format",
+    "formats": {
+      "html": "HTML"
+    },
+    "buttons": {
+      "preview": "Preview",
+      "generate": "Generate Report",
+      "download": "Download",
+      "delete": "Delete"
+    },
+    "tabs": {
+      "generate": "Generate",
+      "preview": "Preview",
+      "generated": "Generated Reports"
+    },
+    "preview_title": "Report Preview",
+    "preview_select_course": {
+      "title": "No Course Selected",
+      "message": "Please select a course to preview a report."
+    },
+    "loading_data": "Loading preview data...",
+    "preview_subtitle": "Report Preview",
+    "quiz_comparison": "Pre/Post Quiz Comparison",
+    "survey_analysis": "Survey Response Analysis",
+    "pre_quiz": "Pre-Quiz",
+    "post_quiz": "Post-Quiz",
+    "average_improvement": "Average Improvement",
+    "responses": "Responses",
+    "percentage": "Percentage",
+    "recommendation_score": "Recommendation Score",
+    "top_opinions": "Top Student Comments",
+    "generated_reports": "Generated Reports",
+    "loading_reports": "Loading reports...",
+    "no_reports": {
+      "title": "No Reports",
+      "message": "No reports have been generated yet."
+    },
+    "columns": {
+      "title": "Title",
+      "type": "Type",
+      "course": "Course",
+      "format": "Format",
+      "status": "Status",
+      "created_date": "Created Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "completed": "Completed",
+      "in_progress": "In Progress",
+      "failed": "Failed"
+    },
+    "types": {
+      "quiz_comparison": {
+        "title": "Quiz Comparison",
+        "description": "Compare pre and post quiz results to measure learning progress"
+      },
+      "survey_analysis": {
+        "title": "Survey Analysis",
+        "description": "Analyze student feedback and satisfaction metrics"
+      },
+      "comprehensive": {
+        "title": "Comprehensive Report",
+        "description": "Complete course analytics including all assessment metrics"
+      },
+      "attendance": {
+        "title": "Attendance Report",
+        "description": "Track student participation and engagement statistics"
+      }
+    },
+    "preview": {
+      "question": "Question {{number}}",
+      "satisfaction": {
+        "very_high": "Very Satisfied",
+        "high": "Satisfied",
+        "neutral": "Neutral",
+        "low": "Dissatisfied",
+        "very_low": "Very Dissatisfied"
+      },
+      "comment1": "The hands-on exercises were very helpful for understanding the concepts.",
+      "comment2": "I'd like more time for the practical components of the course.",
+      "comment3": "The instructor was knowledgeable and explained complex topics clearly."
+    },
+    "errors": {
+      "course_load": "Error loading course list:",
+      "course_load_message": "Failed to load courses. Please try again later.",
+      "report_load": "Error loading report list:",
+      "report_load_message": "Failed to load reports. Please try again later.",
+      "preview_load": "Error loading preview data:",
+      "preview_load_message": "Failed to generate preview. Please try again.",
+      "generation": "Error generating report:",
+      "generation_message": "Failed to generate report. Please try again later.",
+      "delete": "Error deleting report:",
+      "delete_message": "Failed to delete report. Please try again.",
+      "select_course": "Please select a course before generating a report."
+    },
+    "alerts": {
+      "generation_started": "Report generation has started. It will appear in your list when complete.",
+      "report_created": "Report has been successfully created.",
+      "no_download_url": "Download link not available for this report.",
+      "confirm_delete": "Are you sure you want to delete this report? This action cannot be undone."
     }
   }
 }

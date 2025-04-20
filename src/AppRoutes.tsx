@@ -182,11 +182,11 @@ const AppRoutes: React.FC = () => {
       // 공개 경로 목록
       const publicPaths = [
         '/signin', '/signup', '/confirm-signup', '/forgot-password',
-        '/new-password', '/courses'
+        '/new-password', '/aws-tnc'
       ];
 
       // 공개 경로 패턴 (시작 부분만 체크)
-      const publicPathPatterns = ['/course/'];
+      const publicPathPatterns = ['/aws-tnc/'];
 
       // 현재 경로가 공개 경로인지 체크
       const isPublicPath =

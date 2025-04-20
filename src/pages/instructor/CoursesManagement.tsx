@@ -12,33 +12,41 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
+import { useTypedTranslation } from '../../utils/i18n-utils'; // 다국어 지원 추가
 
-interface Course {
+// CourseCatalog 테이블에 맞는 타입 정의
+interface CourseCatalog {
   id: string;
   title: string;
-  startDate?: string;
-  endDate?: string;
-  instructorId?: string; 
-  status: 'Active' | 'Inactive' | 'Completed';
-  sessionCount?: number;
+  description?: string;
+  level?: string;
+  category?: string;
+  duration?: number;
+  status: string;
+  price?: number;
+  instructor?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// GraphQL query definition - 이스케이프 문자 제거
-const listCourses = /* GraphQL */ `
-  query ListCourses(
-    \$filter: ModelCourseFilterInput
+// GraphQL query for Tnc-CourseCatalog table
+const listCourseCatalogs = /* GraphQL */ `
+  query ListCourseCatalogs(
+    \$filter: ModelCourseCatalogFilterInput
     \$limit: Int
     \$nextToken: String
   ) {
-    listCourses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         id
         title
-        startDate
-        endDate
-        instructorId
+        description
+        level
+        category
+        duration
         status
-        sessionCount
+        price
+        instructor
         createdAt
         updatedAt
       }
@@ -49,7 +57,8 @@ const listCourses = /* GraphQL */ `
 
 const CoursesManagement: React.FC = () => {
   const navigate = useNavigate();
-  const [courses, setCourses] = useState<Course[]>([]);
+  const { t, tString } = useTypedTranslation(); // 다국어 지원 추가
+  const [courses, setCourses] = useState<CourseCatalog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [client] = useState(() => generateClient());
@@ -66,9 +75,14 @@ const CoursesManagement: React.FC = () => {
         
         console.log('API 호출 시작...');
         const response = await client.graphql({
-          query: listCourses,
+          query: listCourseCatalogs, // 변경된 쿼리 사용
           variables: {
             limit: 100,
+            filter: {
+              // 필요에 따라 필터링 조건 추가
+              // 예: 현재 강사가 담당하는 과정만 필터링
+              // instructorId: { eq: currentUser.id }
+            }
           },
           authMode: 'userPool'
         });
@@ -77,7 +91,7 @@ const CoursesManagement: React.FC = () => {
 
         // 응답 데이터 처리
         const responseAny: any = response;
-        const courseItems = responseAny.data?.listCourses?.items || [];
+        const courseItems = responseAny.data?.listCourseCatalogs?.items || []; // 변경된 응답 경로
         
         if (courseItems && courseItems.length > 0) {
           setCourses(courseItems);
@@ -85,15 +99,42 @@ const CoursesManagement: React.FC = () => {
           setCourses([]);
         }
       } catch (error) {
-        console.error('코스 로드 오류:', error);
-        setError('코스 목록을 불러오는데 실패했습니다');
+        console.error(t('courses.errors.load_error'), error);
+        setError(t('courses.errors.load_message'));
         
         // 개발 환경에서만 샘플 데이터 사용
         if (process.env.NODE_ENV === 'development') {
           setCourses([
-            { id: '1', title: 'AWS Cloud Practitioner Essentials', status: 'Active', sessionCount: 5 },
-            { id: '2', title: 'AWS Solutions Architect - Associate', status: 'Active', sessionCount: 3 },
-            { id: '3', title: 'AWS Developer - Associate', status: 'Inactive', sessionCount: 0 }
+            { 
+              id: '1', 
+              title: 'AWS Cloud Practitioner Essentials', 
+              description: 'Learn the fundamentals of AWS Cloud',
+              level: 'Beginner',
+              category: 'Cloud',
+              duration: 8,
+              status: 'ACTIVE', 
+              price: 99 
+            },
+            { 
+              id: '2', 
+              title: 'AWS Solutions Architect - Associate', 
+              description: 'Design available, cost-efficient AWS architecture',
+              level: 'Intermediate',
+              category: 'Architecture',
+              duration: 40,
+              status: 'ACTIVE', 
+              price: 149 
+            },
+            { 
+              id: '3', 
+              title: 'AWS Developer - Associate', 
+              description: 'Develop and maintain AWS applications',
+              level: 'Intermediate',
+              category: 'Development',
+              duration: 32,
+              status: 'INACTIVE', 
+              price: 149 
+            }
           ]);
         }
       } finally {
@@ -108,11 +149,20 @@ const CoursesManagement: React.FC = () => {
     navigate('/instructor/courses/create');
   };
 
+  // 상태에 따른 배지 색상 결정
+  const getStatusColor = (status: string): "green" | "blue" | "grey" => {
+    switch(status.toUpperCase()) {
+      case 'ACTIVE': return 'green';
+      case 'COMPLETED': return 'blue';
+      default: return 'grey';
+    }
+  };
+
   if (loading) {
     return (
       <Box padding="l" textAlign="center">
         <Spinner size="large" />
-        <Box padding="s">코스 목록을 불러오는 중...</Box>
+        <Box padding="s">{t('courses.loading')}</Box>
       </Box>
     );
   }
@@ -122,14 +172,14 @@ const CoursesManagement: React.FC = () => {
       header={
         <Header
           variant="h2"
-          description="현재 담당하고 있는 과정 목록"
+          description={t('courses.description')}
           actions={
             <Button variant="primary" onClick={navigateToCreateCourse}>
-              Create New Course
+              {t('courses.create_button')}
             </Button>
           }
         >
-          Courses
+          {t('courses.title')}
         </Header>
       }
     >
@@ -145,33 +195,37 @@ const CoursesManagement: React.FC = () => {
             header: item => (
               <SpaceBetween size="xxs">
                 <div>{item.title}</div>
-                <Badge color={item.status === 'Active' ? 'green' : (item.status === 'Completed' ? 'blue' : 'grey')}>
+                <Badge color={getStatusColor(item.status)}>
                   {item.status}
                 </Badge>
               </SpaceBetween>
             ),
             sections: [
               {
-                id: "date",
-                header: "기간",
-                content: item => item.startDate ? 
-                  `\\${new Date(item.startDate).toLocaleDateString()} ~ \\${item.endDate ? new Date(item.endDate).toLocaleDateString() : '진행 중'}` 
-                  : '날짜 미정'
+                id: "description",
+                content: item => item.description || t('courses.no_description')
               },
               {
-                id: "sessions",
-                header: "세션 수",
-                content: item => `\\${item.sessionCount || 0} 세션`
+                id: "details",
+                header: t('courses.details'),
+                content: item => (
+                  <SpaceBetween size="xs">
+                    <div>{t('courses.level')}: {item.level || t('courses.not_specified')}</div>
+                    <div>{t('courses.category')}: {item.category || t('courses.not_specified')}</div>
+                    <div>{t('courses.duration')}: {item.duration ? `\${item.duration} \${t('courses.hours')}` : t('courses.not_specified')}</div>
+                    <div>{t('courses.price')}: {item.price ? `\${item.price} \${t('courses.currency')}` : t('courses.free')}</div>
+                  </SpaceBetween>
+                )
               },
               {
                 id: "actions",
                 content: item => (
                   <SpaceBetween direction="horizontal" size="xs">
-                    <Button onClick={() => navigate(`/instructor/courses/\\${item.id}`)}>
-                      관리
+                    <Button onClick={() => navigate(`/instructor/courses/\${item.id}`)}>
+                      {t('courses.manage')}
                     </Button>
-                    <Button iconName="external" onClick={() => navigate(`/course/\\${item.id}`)}>
-                      학생 화면 보기
+                    <Button iconName="external" onClick={() => navigate(`/course/\${item.id}`)}>
+                      {t('courses.view_student')}
                     </Button>
                   </SpaceBetween>
                 )
@@ -183,14 +237,14 @@ const CoursesManagement: React.FC = () => {
             { minWidth: 500, cards: 2 }
           ]}
           items={courses}
-          loadingText="Loading courses"
+          loadingText={tString('courses.loading')}
           empty={
             <Box textAlign="center" color="inherit">
-              <b>개설된 과정이 없습니다</b>
+              <b>{t('courses.empty.title')}</b>
               <Box padding={{ bottom: "s" }} variant="p" color="inherit">
-                "Create New Course" 버튼을 클릭하여 새 과정을 개설하세요.
+                {t('courses.empty.description')}
               </Box>
-              <Button onClick={navigateToCreateCourse}>Create New Course</Button>
+              <Button onClick={navigateToCreateCourse}>{t('courses.create_button')}</Button>
             </Box>
           }
         />
