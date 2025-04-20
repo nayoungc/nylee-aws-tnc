@@ -53,23 +53,23 @@ interface Assessment {
 const CourseHome: React.FC = () => {
   const navigate = useNavigate();
   const { t, tString, i18n } = useTypedTranslation();
-  
+
   // State management
   const [course, setCourse] = useState<Course | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     // Initial loading
     loadCourseData();
   }, []);
-  
+
   const loadCourseData = async () => {
     try {
       setLoading(true);
-      
+
       // In a real app, this would be an API call
       setTimeout(() => {
         // Sample course data - this would come from your API
@@ -88,7 +88,7 @@ const CourseHome: React.FC = () => {
             { title: 'AWS 계정 생성 가이드', url: '/materials/account-setup.pdf', type: 'pdf' }
           ]
         });
-        
+
         // Sample announcements
         setAnnouncements([
           {
@@ -108,7 +108,7 @@ const CourseHome: React.FC = () => {
             isImportant: false
           }
         ]);
-        
+
         // Sample assessments
         setAssessments([
           {
@@ -140,37 +140,37 @@ const CourseHome: React.FC = () => {
             status: 'pending'
           }
         ]);
-        
+
         setLoading(false);
       }, 1000);
-      
+
     } catch (err) {
       setError('과정 데이터를 불러오는데 실패했습니다. 나중에 다시 시도해주세요.');
       setLoading(false);
     }
   };
-  
+
   // 수정된 부분: 평가 유형에 따라 다른 페이지로 이동
   const navigateToAssessment = (assessment: Assessment) => {
     if (!assessment.isActive) return;
-    
+
     // 평가 유형에 따라 다른 경로로 이동
     switch (assessment.type) {
       case 'pre-quiz':
-        navigate(`/pre-quiz/\${assessment.id}`);
+        navigate(`/pre-quiz/\${assessment.id}`);  // 백슬래시 제거
         break;
       case 'post-quiz':
-        navigate(`/post-quiz/\${assessment.id}`);
+        navigate(`/post-quiz/\${assessment.id}`);  // 백슬래시 제거
         break;
       case 'survey':
-        navigate(`/survey/\${assessment.id}`);
+        navigate(`/survey/\${assessment.id}`);  // 백슬래시 제거
         break;
       default:
         // 기존 기본 경로
-        navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
+        navigate(`/assessment/\${assessment.type}/\${assessment.id}`);  // 백슬래시 제거
     }
   };
-  
+
   // Loading indicator
   if (loading) {
     return (
@@ -180,7 +180,7 @@ const CourseHome: React.FC = () => {
       </Box>
     );
   }
-  
+
   // Error display
   if (error || !course) {
     return (
@@ -191,7 +191,7 @@ const CourseHome: React.FC = () => {
       </Container>
     );
   }
-  
+
   // Course detail page rendering
   return (
     <SpaceBetween size="l">
@@ -210,22 +210,22 @@ const CourseHome: React.FC = () => {
           <SpaceBetween size="m">
             <Box variant="awsui-key-label">일시</Box>
             <Box variant="p">{course.date}, {course.time}</Box>
-            
+
             <Box variant="awsui-key-label">장소</Box>
             <Box variant="p">{course.location}</Box>
           </SpaceBetween>
-          
+
           <SpaceBetween size="m">
             <Box variant="awsui-key-label">강사</Box>
             <Box variant="p">{course.instructor}</Box>
-            
+
             <Alert type="info" header="오늘의 과정">
               이 페이지에서는 오늘 진행되는 과정에 관한 모든 정보와 자료를 확인하실 수 있습니다.
             </Alert>
           </SpaceBetween>
         </Grid>
       </Container>
-      
+
       {/* Announcements section */}
       <Container
         header={<Header variant="h2">공지사항</Header>}
@@ -233,12 +233,12 @@ const CourseHome: React.FC = () => {
         {announcements.length > 0 ? (
           <SpaceBetween size="m">
             {announcements.map(announcement => (
-              <Alert 
+              <Alert
                 key={announcement.id}
                 type={announcement.type}
                 header={
                   <>
-                    {announcement.title} 
+                    {announcement.title}
                     {announcement.isImportant && (
                       <Badge color="red">중요</Badge>
                     )}
@@ -258,7 +258,7 @@ const CourseHome: React.FC = () => {
           </Box>
         )}
       </Container>
-      
+
       {/* Assessments section */}
       <Container
         header={<Header variant="h2">퀴즈 및 설문조사</Header>}
@@ -291,7 +291,7 @@ const CourseHome: React.FC = () => {
               {
                 id: "action",
                 content: item => (
-                  <Button 
+                  <Button
                     variant="primary"
                     onClick={() => navigateToAssessment(item)}
                     disabled={!item.isActive}
@@ -306,10 +306,10 @@ const CourseHome: React.FC = () => {
           cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 3 }]}
         />
       </Container>
-      
+
       {/* 나머지 코드는 동일 */}
       {/* Materials section */}
-      <Container 
+      <Container
         header={<Header variant="h2">과정 자료</Header>}
       >
         <ColumnLayout columns={2} variant="text-grid">
@@ -325,7 +325,7 @@ const CourseHome: React.FC = () => {
           ))}
         </ColumnLayout>
       </Container>
-      
+
       {/* Schedule section */}
       <Container
         header={<Header variant="h2">일정 안내</Header>}
@@ -379,7 +379,7 @@ const CourseHome: React.FC = () => {
           </table>
         </Box>
       </Container>
-      
+
       {/* Support information */}
       <Container
         header={<Header variant="h2">문의 및 도움말</Header>}
@@ -414,7 +414,7 @@ function getAssessmentStatusBadge(status: string, isActive: boolean) {
   if (!isActive) {
     return <Badge color="grey">준비 중</Badge>;
   }
-  
+
   switch (status) {
     case 'completed':
       return <StatusIndicator type="success">완료됨</StatusIndicator>;
