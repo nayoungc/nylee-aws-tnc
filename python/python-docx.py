@@ -194,20 +194,54 @@ def analyze_with_bedrock_course(section_text):
         response_body = json.loads(response['body'].read())
         result = response_body.get('completion', '').strip()
         
-        # JSON 부분 추출
-        json_start = result.find('{')
-        json_end = result.rfind('}') + 1
+        # 추가: 원시 응답 로그 기록 (디버깅용)
+        print(f"원시 응답: {result[:100]}...") # 응답의 앞부분만 출력
         
-        if json_start >= 0 and json_end > json_start:
-            json_text = result[json_start:json_end]
-            return json.loads(json_text)
-        else:
-            print(f"JSON 형식을 찾을 수 없음: {result}")
+        # 개선된 JSON 추출
+        try:
+            # 먼저 전체 텍스트에서 JSON 형식 찾기 시도
+            json_start = result.find('{')
+            json_end = result.rfind('}') + 1
+            
+            if json_start >= 0 and json_end > json_start:
+                json_text = result[json_start:json_end]
+                
+                # 중간에 있는 특수 문자나 이스케이프 문자 처리
+                json_text = json_text.replace('\n', ' ').replace('\r', '')
+                
+                # 추가 데이터 확인
+                if json_end < len(result):
+                    print(f"경고: JSON 이후 추가 데이터 발견 - {result[json_end:json_end+30]}...")
+                
+                # JSON 파싱 시도
+                try:
+                    return json.loads(json_text)
+                except json.JSONDecodeError as e:
+                    print(f"JSON 파싱 오류: {e}")
+                    print(f"문제의 JSON 문자열: {json_text[:50]}...{json_text[-50:]} (총 {len(json_text)}자)")
+                    
+                    # 정규식을 사용하여 가장 바깥쪽 JSON 객체 추출 시도
+                    import re
+                    json_pattern = re.compile(r'(\{.*\})', re.DOTALL)
+                    match = json_pattern.search(result)
+                    if match:
+                        try:
+                            return json.loads(match.group(1))
+                        except json.JSONDecodeError:
+                            pass
+            
+            # 여전히 실패한 경우
+            print("JSON 형식을 추출할 수 없음")
+            return None
+                
+        except Exception as e:
+            print(f"JSON 추출 중 오류: {e}")
             return None
             
     except Exception as e:
         print(f"Bedrock 분석 오류: {str(e)}")
         return None
+
 
 def analyze_with_bedrock_module(section_text, course_id):
     """Amazon Bedrock을 사용하여 모듈 정보를 JSON으로 구조화"""
@@ -311,18 +345,36 @@ def process_docx_and_create_json():
             
             print(f"과정 {i+1}/{len(course_sections)} 분석 중...")
             
-            # Bedrock 호출 레이트 제한 방지를 위한 딜레이
-            time.sleep(3)
+            # 재시도 로직 추가
+            max_retries = 2
+            retry_count = 0
+            course_info = None
             
-            # Bedrock 분석
-            course_info = analyze_with_bedrock_course(section_text)
+            while retry_count <= max_retries and course_info is None:
+                if retry_count > 0:
+                    print(f"과정 {i+1} 분석 재시도 중... (시도 {retry_count}/{max_retries})")
+                
+                # Bedrock 호출 레이트 제한 방지를 위한 딜레이
+                time.sleep(3)
+                
+                try:
+                    # Bedrock 분석
+                    course_info = analyze_with_bedrock_course(section_text)
+                    
+                    # 성공한 경우 루프 종료
+                    if course_info:
+                        break
+                except Exception as e:
+                    print(f"과정 {i+1} 분석 중 예외 발생: {e}")
+                
+                retry_count += 1
             
             # 분석된 과정 추가
             if course_info:
                 all_courses.append(course_info)
                 print(f"'{course_info.get('course_name', 'Unknown')}' 과정 정보 추출 완료")
             else:
-                print(f"과정 {i+1} 정보 추출 실패")
+                print(f"과정 {i+1} 정보 추출 실패 (최대 재시도 횟수 초과)")
         
         # 중복 제거 (course_id 기준)
         unique_courses = []

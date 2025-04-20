@@ -16,7 +16,7 @@ const awsExports = {
       }
     },
     
-    // 대문자 API (Amplify v6)
+    // 대문자 API로 수정 (올바른 형식)
     API: {
       GraphQL: {
         endpoint: "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
@@ -25,7 +25,7 @@ const awsExports = {
       }
     },
     
-    // 소문자 속성도 추가 (이전 버전 호환)
+    // 기존 소문자 api는 유지 (레거시 지원용)
     api: {
       graphql_endpoint: "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
       graphql_endpoint_iam_region: "us-east-1",
