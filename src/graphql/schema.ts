@@ -7,7 +7,6 @@ export const schema = /* GraphQL */ `
     subscription: Subscription
   }
 
-  # 누락된 스칼라 타입 정의 추가
   scalar AWSDateTime
   scalar AWSJSON
   scalar AWSEmail
@@ -17,16 +16,12 @@ export const schema = /* GraphQL */ `
   type CourseCatalog @model @auth(rules: [{allow: private}]) {
     id: ID!
     title: String!
-    description: String
-    duration: Int
     level: String
-    price: Float
-    category: String
-    status: String
-    version: String
-    createdAt: AWSDateTime
-    updatedAt: AWSDateTime
-    modules: [CourseCatalogModule] @hasMany(indexName: "byCatalog", fields: ["id"])
+    duration: Int
+    description: String
+    delivery_method: String
+    objectives: String
+    target_audience: String
   }
 
   type CourseCatalogModule @model @auth(rules: [{allow: private}]) {

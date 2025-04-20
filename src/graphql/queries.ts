@@ -1,10 +1,10 @@
 // src/graphql/queries.ts
 export const listCourseCatalogs = /* GraphQL */ `
-  query ListTncCourseCatalogs {
-    listTncCourseCatalogs {
+  query ListCourseCatalogs {
+    listCourseCatalogs {
       items {
-        course_id
-        course_name
+        id
+        title
         level
         duration
         delivery_method
@@ -16,7 +16,6 @@ export const listCourseCatalogs = /* GraphQL */ `
     }
   }
 `;
-
 // // 예시 2: 실제 쿼리 이름이 getTncCourses인 경우
 // export const listCourseCatalogs = /* GraphQL */ `
 //   query GetTncCourses {

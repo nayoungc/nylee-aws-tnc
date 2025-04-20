@@ -113,7 +113,7 @@ def analyze_with_bedrock_module(section_text, course_id):
         )
         
         # 모델 ID 정의 - 이 부분이 누락되었습니다
-        model_id = 'anthropic.claude-instant-v1'
+        model_id = 'anthropic.claude-v2:1'
         
         # 프롬프트 작성 - Claude 형식에 맞게 수정
         prompt_content = f"""
