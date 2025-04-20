@@ -2,11 +2,17 @@ import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
 
 // 인증 상태를 표현하는 타입 정의
-export enum AuthState {
+export enum AuthStateEnum {
   SIGNED_IN = 'SIGNED_IN',
   SIGNED_OUT = 'SIGNED_OUT',
   LOADING = 'LOADING',
   ERROR = 'ERROR'
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user?: any;
+  error?: Error;
 }
 
 export interface SignUpParams {
@@ -347,35 +353,28 @@ export const refreshAuthToken = async () => {
 };
 
 // 현재 인증 상태를 확인하는 함수
-export const getCurrentAuthState = async (): Promise<{
-  state: AuthState;
-  user?: any;
-  error?: Error;
-}> => {
+export const getCurrentAuthState = async (): Promise<AuthState> => {
   try {
     const { getCurrentUser } = await import('aws-amplify/auth');
-    
-    // 로딩 상태 먼저 반환
-    const loadingState = { state: AuthState.LOADING };
     
     try {
       // 현재 인증된 사용자 정보 가져오기
       const user = await getCurrentUser();
       return {
-        state: AuthState.SIGNED_IN,
+        isAuthenticated: true,
         user
       };
     } catch (error) {
-      // 사용자가 인증되지 않은 경우 (getCurrentUser가 오류를 던짐)
+      // 사용자가 인증되지 않은 경우
       return {
-        state: AuthState.SIGNED_OUT
+        isAuthenticated: false
       };
     }
   } catch (error) {
     // 다른 예상치 못한 오류가 발생한 경우
     console.error('인증 상태 확인 오류:', error);
     return {
-      state: AuthState.ERROR,
+      isAuthenticated: false,
       error: error instanceof Error ? error : new Error('인증 상태 확인 중 오류가 발생했습니다.')
     };
   }

@@ -120,7 +120,13 @@ def extract_course_information_improved(doc):
         # 모듈과 실습 정보 추출
         extract_modules_and_labs(doc, course, candidate["table_index"])
         
+        # 디버깅 출력: 이 과정에서 추출된 실습 수 확인
+        print(f"[디버깅] 과정 '{course['courseName']}'에서 추출된 실습 수: {len(course.get('labs', []))}")
+        if len(course.get('labs', [])) > 0:
+            print(f"[디버깅] 첫 번째 실습: {course['labs'][0]}")
+        
         courses.append(course)
+
         print(f"과정 정보 추출 완료: {course['courseName']} (ID: {course_id})")
     
     return courses
@@ -492,7 +498,13 @@ def extract_modules_and_labs(doc, course, start_table_index):
     day_pattern = r'(\d+)일\s*차'
     # 모듈 패턴 - 불릿 포인트 포함
     module_pattern = r'(?:•|\*|-)?\s*모듈\s*(\d+)[:\s-]\s*(.+)'
-    lab_pattern = r'(?:•|\*|-)?\s*(실습|핸즈온\s*랩|Lab)[:\s-]?\s*(.+)'
+    # 실습 패턴 - 다양한 형태 포함
+    lab_patterns = [
+        r'(?:•|\*|-)?\s*실습\s*(\d+)?[:\s-]\s*(.+)',
+        r'(?:•|\*|-)?\s*핸즈온\s*랩\s*(\d+)?[:\s-]\s*(.+)',
+        r'(?:•|\*|-)?\s*Lab\s*(\d+)?[:\s-]\s*(.+)',
+        r'(?:•|\*|-)?\s*실습\s*(\d+)?[\s]*(.+)'
+    ]
     
     # 과정 개요 섹션 찾기
     in_outline_section = False
@@ -606,15 +618,24 @@ def extract_modules_and_labs(doc, course, start_table_index):
                 # 실습 관련 패턴
                 lab_pattern = r'(?:•|\*|-)?\s*(?:실습|핸즈온\s*랩|Lab).*'
 
-                # 실습 정보 확인
-                if re.search(lab_pattern, text, re.IGNORECASE):
-                    lab_number, lab_title = extract_labs(text)
-                    if lab_title and "을 통해 강력한 스토리지 솔루션" not in lab_title:
-                        labs.append({
-                            "lab_number": lab_number,
-                            "lab_title": lab_title,
-                            "day": current_day
-                        })
+                # 실습 정보 확인 - 여러 패턴 시도
+                lab_found = False
+                for pattern in lab_patterns:
+                    lab_match = re.search(pattern, text, re.IGNORECASE)
+                    if lab_match:
+                        lab_found = True
+                        lab_number = lab_match.group(1) if lab_match.group(1) else "N/A"
+                        lab_title = lab_match.group(2).strip() if lab_match.group(2) else text
+                        
+                        # 유효한 실습 제목인지 검증
+                        if lab_title and len(lab_title) > 3:
+                            labs.append({
+                                "lab_number": lab_number,
+                                "lab_title": lab_title,
+                                "day": current_day
+                            })
+                            print(f"[디버깅] 실습 발견: {lab_title[:30]}...")
+                        break
                 
                 # 모듈이 없는데 "모듈 N"으로 시작하면 새 모듈 생성
                 if not current_module and text.strip().startswith("모듈 "):
