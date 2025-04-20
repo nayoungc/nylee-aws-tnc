@@ -61,8 +61,7 @@ def extract_course_data(docx_path):
     course_catalog_items, module_lab_items = prepare_dynamodb_items(course_info)
     
     # 파일로 저장
-    save_to_json_files(course_catalog_items, module_lab_items)
-    
+    save_to_json_files(course_catalog_items, module_lab_items, course_info)    
     return course_catalog_items, module_lab_items
 
 def extract_course_information_improved(doc):
@@ -272,9 +271,6 @@ def extract_modules_and_labs(doc, course, start_table_index):
     module_pattern = r'(?:•|\*|-)?\s*모듈\s*(\d+)[:\s-]\s*(.+)'
     lab_pattern = r'(?:•|\*|-)?\s*(실습|핸즈온\s*랩|Lab)[:\s-]?\s*(.+)'
     
-    # 설명 불릿 패턴
-    desc_bullet_pattern = r'(?:o|○|◦|·|▪)?\s*(.+)'
-    
     # 과정 개요 섹션 찾기
     in_outline_section = False
     current_module = None
@@ -312,7 +308,7 @@ def extract_modules_and_labs(doc, course, start_table_index):
                 day_match = re.search(day_pattern, text)
                 if day_match:
                     current_day = day_match.group(1)
-                    continue
+                    continue  # 일차 정보만 있는 경우 다음 줄로 넘어감
                 
                 # 모듈 정보 확인 (불릿 포인트 포함)
                 module_match = re.search(module_pattern, text, re.IGNORECASE)
@@ -326,8 +322,19 @@ def extract_modules_and_labs(doc, course, start_table_index):
                     module_num = module_match.group(1)
                     module_text = module_match.group(2).strip()
                     
-                    # 모듈 텍스트에서 타이틀과 설명 분리
-                    module_title, module_description = extract_module_title_description(module_text)
+                    # 모듈 제목과 첫 설명 분리 (":" 또는 첫 줄바꿈으로 구분)
+                    if ':' in module_text:
+                        parts = module_text.split(':', 1)
+                        module_title = parts[0].strip()
+                        if len(parts) > 1 and parts[1].strip():
+                            current_module_description.append(parts[1].strip())
+                    elif '\n' in module_text:
+                        lines = module_text.split('\n', 1)
+                        module_title = lines[0].strip()
+                        if len(lines) > 1 and lines[1].strip():
+                            current_module_description.append(lines[1].strip())
+                    else:
+                        module_title = module_text
                     
                     # 새 모듈 생성
                     current_module = {
@@ -336,27 +343,47 @@ def extract_modules_and_labs(doc, course, start_table_index):
                         "module_description": "",
                         "day": current_day
                     }
-                    
-                    # 모듈 설명이 있으면 추가
-                    if module_description:
-                        current_module_description.append(module_description)
                     continue
                 
-                # 다음 모듈 또는 다른 섹션이 시작되는지 확인
-                if text.startswith('•') or text.startswith('*') or text.startswith('-'):
-                    # 새로운 주요 불릿이 시작되고 모듈 또는 실습이 아니면
-                    if not any(keyword in text.lower() for keyword in ["모듈", "실습", "핸즈온"]):
-                        # 현재 모듈이 있으면 저장하고 다음으로 넘어감
-                        if current_module:
-                            current_module["module_description"] = '\n'.join(current_module_description)
-                            modules.append(current_module)
-                            current_module = None
-                            current_module_description = []
+                # 새로운 모듈 시작 체크 - 모듈 문자열이 없지만 "모듈 N:"으로 시작하는 경우
+                standalone_module_match = re.match(r'모듈\s*(\d+)[:\s-]\s*(.+)', text)
+                if standalone_module_match and not module_match:
+                    # 이전 모듈이 있으면 저장
+                    if current_module:
+                        current_module["module_description"] = '\n'.join(current_module_description)
+                        modules.append(current_module)
+                        current_module_description = []
+                    
+                    module_num = standalone_module_match.group(1)
+                    module_text = standalone_module_match.group(2).strip()
+                    
+                    # 모듈 제목과 첫 설명 분리
+                    if ':' in module_text:
+                        parts = module_text.split(':', 1)
+                        module_title = parts[0].strip()
+                        if len(parts) > 1 and parts[1].strip():
+                            current_module_description.append(parts[1].strip())
+                    elif '\n' in module_text:
+                        lines = module_text.split('\n', 1)
+                        module_title = lines[0].strip()
+                        if len(lines) > 1 and lines[1].strip():
+                            current_module_description.append(lines[1].strip())
+                    else:
+                        module_title = module_text
+                    
+                    # 새 모듈 생성
+                    current_module = {
+                        "module_number": module_num,
+                        "module_title": module_title,
+                        "module_description": "",
+                        "day": current_day
+                    }
+                    continue
                 
                 # 실습 정보 확인
                 lab_match = re.search(lab_pattern, text, re.IGNORECASE)
                 if lab_match:
-                    lab_title = lab_match.group(2).strip()
+                    lab_title = lab_match.group(2).strip() if lab_match.group(2) else text
                     labs.append({
                         "lab_number": extract_lab_number(text),
                         "lab_title": lab_title,
@@ -364,18 +391,53 @@ def extract_modules_and_labs(doc, course, start_table_index):
                     })
                     continue
                 
+                # 모듈이 없는데 "모듈 N"으로 시작하면 새 모듈 생성
+                if not current_module and text.strip().startswith("모듈 "):
+                    module_match = re.match(r'모듈\s*(\d+)(?:[:\s-]\s*(.+))?', text)
+                    if module_match:
+                        module_num = module_match.group(1)
+                        module_title = module_match.group(2).strip() if module_match.group(2) else ""
+                        
+                        current_module = {
+                            "module_number": module_num,
+                            "module_title": module_title,
+                            "module_description": "",
+                            "day": current_day
+                        }
+                        continue
+                
                 # 현재 모듈이 있으면 설명에 텍스트 추가
                 if current_module:
-                    # 불릿 포인트 설명 확인
-                    desc_match = re.search(desc_bullet_pattern, text)
-                    if desc_match:
-                        desc_text = desc_match.group(1).strip()
-                        
-                        # o, ○ 등의 불릿으로 시작하면 들여쓰기 추가
-                        if re.match(r'o|○|◦|·|▪', text[:2]):
-                            current_module_description.append(f"o\t{desc_text}")
-                        else:
-                            current_module_description.append(desc_text)
+                    # 새 모듈 시작 체크
+                    if text.startswith("모듈 "):
+                        new_module_match = re.match(r'모듈\s*(\d+)[:\s-]\s*(.+)', text)
+                        if new_module_match:
+                            # 이전 모듈 저장
+                            current_module["module_description"] = '\n'.join(current_module_description)
+                            modules.append(current_module)
+                            current_module_description = []
+                            
+                            # 새 모듈 생성
+                            module_num = new_module_match.group(1)
+                            module_text = new_module_match.group(2).strip()
+                            module_title = module_text.split(':')[0].strip() if ':' in module_text else module_text
+                            
+                            current_module = {
+                                "module_number": module_num,
+                                "module_title": module_title,
+                                "module_description": "",
+                                "day": current_day
+                            }
+                            
+                            # 설명 부분이 있으면 추가
+                            if ':' in module_text:
+                                desc = module_text.split(':', 1)[1].strip()
+                                if desc:
+                                    current_module_description.append(desc)
+                            continue
+                    
+                    # 일반 설명 텍스트
+                    current_module_description.append(text)
     
     # 마지막 모듈 추가
     if current_module and current_module_description:
@@ -389,16 +451,81 @@ def extract_modules_and_labs(doc, course, start_table_index):
             modules.extend(table_modules)
             labs.extend(table_labs)
     
-    # 중복 제거 및 모듈 정보 정리
-    unique_modules = []
-    seen_module_numbers = set()
-    
+    # 모듈 목록 정리: 합쳐진 모듈을 개별 모듈로 분리
+    separate_modules = []
     for module in modules:
-        # 모듈 번호 기준으로 중복 제거
+        # 모듈 설명에 여러 모듈이 포함되어 있는지 확인
+        desc = module["module_description"]
+        additional_modules = []
+        
+        # 설명에서 새 모듈 패턴 확인
+        module_lines = desc.split('\n')
+        current_desc_lines = []
+        current_module_info = {
+            "number": module["module_number"],
+            "title": module["module_title"],
+            "desc_lines": current_desc_lines,
+            "day": module["day"]
+        }
+        module_infos = [current_module_info]
+        
+        for line in module_lines:
+            # 새로운 모듈이 시작되면
+            new_module_match = re.match(r'모듈\s*(\d+)[:\s-]\s*(.+)', line)
+            if new_module_match:
+                # 새 모듈 정보 생성
+                module_num = new_module_match.group(1)
+                module_text = new_module_match.group(2).strip()
+                
+                # 제목과 설명 분리
+                module_title = module_text
+                module_desc = ""
+                if ':' in module_text:
+                    parts = module_text.split(':', 1)
+                    module_title = parts[0].strip()
+                    module_desc = parts[1].strip() if len(parts) > 1 else ""
+                
+                current_desc_lines = []
+                if module_desc:
+                    current_desc_lines.append(module_desc)
+                
+                current_module_info = {
+                    "number": module_num,
+                    "title": module_title,
+                    "desc_lines": current_desc_lines,
+                    "day": module["day"]
+                }
+                module_infos.append(current_module_info)
+            else:
+                # 기존 모듈의 설명에 라인 추가
+                current_desc_lines.append(line)
+        
+        # 첫 모듈 생성
+        separate_modules.append({
+            "module_number": module_infos[0]["number"],
+            "module_title": module_infos[0]["title"],
+            "module_description": '\n'.join(module_infos[0]["desc_lines"]),
+            "day": module_infos[0]["day"]
+        })
+        
+        # 추가 모듈 생성 (있으면)
+        for module_info in module_infos[1:]:
+            separate_modules.append({
+                "module_number": module_info["number"],
+                "module_title": module_info["title"],
+                "module_description": '\n'.join(module_info["desc_lines"]),
+                "day": module_info["day"]
+            })
+    
+    # 중복 제거
+    unique_modules = []
+    seen_module_keys = set()
+    
+    for module in separate_modules:
         key = f"{module['day']}:{module['module_number']}" if module['day'] else module['module_number']
         
-        if key not in seen_module_numbers and module['module_title']:
-            seen_module_numbers.add(key)
+        if key not in seen_module_keys and module['module_title']:
+            seen_module_keys.add(key)
             unique_modules.append(module)
     
     course["modules"] = unique_modules

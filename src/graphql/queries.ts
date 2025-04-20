@@ -1,3 +1,4 @@
+// src/graphql/queries.ts
 export const getCourseCatalog = /* GraphQL */ `
   query GetCourseCatalog(\$id: ID!) {
     getCourseCatalog(id: \$id) {
@@ -47,11 +48,11 @@ export const listCourseCatalogs = /* GraphQL */ `
         title
         description
         level
-        duration
-        price
         category
+        duration
         status
-        version
+        price
+        instructor
         createdAt
         updatedAt
       }

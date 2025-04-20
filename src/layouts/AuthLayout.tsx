@@ -15,7 +15,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       flexDirection: 'column'
     }}>
       {/* 간소화된 헤더 추가 */}
-      {/* <SimpleHeader /> */}
+      <SimpleHeader />
       
       <div style={{
         flex: 1,

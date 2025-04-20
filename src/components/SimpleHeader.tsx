@@ -1,7 +1,7 @@
 // src/components/SimpleHeader.tsx 수정
 import React from 'react';
 import { TopNavigation } from '@cloudscape-design/components';
-import { useTypedTranslation } from '../utils/i18n-utils';
+import { useTypedTranslation } from '@utils/i18n-utils';
 
 const SimpleHeader: React.FC = () => {
   const { tString, i18n } = useTypedTranslation();
@@ -18,7 +18,7 @@ const SimpleHeader: React.FC = () => {
         title: tString('app.title'),
         // 로고를 제거하거나 다른 이미지 사용
         logo: {
-          src: '/images/aws-minimal.png', // 더 간소화된 로고
+          src: '/images/aws.png', // 더 간소화된 로고
           alt: tString('app.title')
         }
       }}
