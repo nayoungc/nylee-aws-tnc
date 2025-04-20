@@ -4,6 +4,409 @@ import re
 import time
 import json
 from collections import defaultdict
+import boto3
+import json
+import uuid
+from datetime import datetime
+import time
+from boto3.dynamodb.conditions import Key, Attr
+from decimal import Decimal
+
+def save_courses_to_dynamodb(json_file_path, region_name='ap-northeast-2'):
+    """
+    JSON 파일에서 과정 정보를 읽어 DynamoDB에 저장하는 함수
+    
+    Args:
+        json_file_path (str): 과정 정보가 담긴 JSON 파일 경로
+        region_name (str): AWS 리전 이름
+    """
+    # 데이터 로드
+    try:
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            course_data = json.load(f)
+        print(f"총 {len(course_data)}개 과정 정보를 로드했습니다.")
+    except Exception as e:
+        print(f"JSON 파일 로드 중 오류 발생: {str(e)}")
+        return False
+    
+    # AWS 세션 및 DynamoDB 클라이언트 생성
+    try:
+        session = boto3.Session(region_name=region_name)
+        dynamodb = session.resource('dynamodb')
+        
+        # 테이블 참조
+        catalog_table = dynamodb.Table('Tnc-CourseCatalog')
+        modules_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
+        
+        print("AWS DynamoDB에 연결했습니다.")
+    except Exception as e:
+        print(f"AWS 연결 중 오류 발생: {str(e)}")
+        return False
+    
+    # 저장 전 데이터 미리보기
+    sample_course = course_data[0] if course_data else None
+    if sample_course:
+        print("\n=== 저장할 데이터 미리보기 ===")
+        print(f"과정명: {sample_course['course_name']}")
+        print(f"레벨: {sample_course['level']}")
+        print(f"소요 시간: {sample_course['duration']}")
+        print(f"모듈 수: {len(sample_course.get('modules', []))}")
+        print(f"실습 수: {len(sample_course.get('labs', []))}")
+    
+    # 사용자 확인
+    confirmation = input("\n위 정보를 DynamoDB에 저장하시겠습니까? (y/n): ")
+    if confirmation.lower() != 'y':
+        print("저장이 취소되었습니다.")
+        return False
+    
+    # 타임스탬프 및 성공/실패 카운터
+    timestamp = datetime.now().isoformat()
+    success_count = 0
+    failure_count = 0
+    
+    # 과정 정보를 DynamoDB 테이블에 저장
+    print("\n=== 과정 정보 저장 중 ===")
+    for course in course_data:
+        try:
+            # 과정 ID 생성 (고유 식별자)
+            course_id = str(uuid.uuid4())
+            
+            # 과정 정보 항목 생성
+            catalog_item = {
+                "courseId": course_id,
+                "courseName": course['course_name'],
+                "level": course['level'],
+                "duration": course['duration'],
+                "deliveryMethod": course.get('delivery_method', ''),
+                "description": course.get('description', ''),
+                "objectives": course.get('objectives', ''),
+                "audience": course.get('audience', ''),
+                "prerequisites": course.get('prerequisites', ''),
+                "outline": course.get('outline', ''),
+                "createdAt": timestamp,
+                "updatedAt": timestamp
+            }
+            
+            # DynamoDB에 과정 정보 저장
+            catalog_table.put_item(Item=catalog_item)
+            
+            print(f"과정 정보 저장 완료: {course['course_name']}")
+            success_count += 1
+            
+            # 모듈 정보 저장
+            module_count = 0
+            for idx, module in enumerate(course.get('modules', [])):
+                try:
+                    module_id = f"{course_id}#module#{idx+1}"
+                    module_item = {
+                        "courseId": course_id,
+                        "id": module_id,
+                        "courseName": course['course_name'],
+                        "moduleNumber": module['module_number'],
+                        "moduleTitle": module['module_title'],
+                        "type": "module",
+                        "createdAt": timestamp,
+                        "updatedAt": timestamp
+                    }
+                    
+                    modules_table.put_item(Item=module_item)
+                    module_count += 1
+                except Exception as e:
+                    print(f"모듈 저장 중 오류 발생: {str(e)}")
+                    failure_count += 1
+            
+            # 실습 정보 저장
+            lab_count = 0
+            for idx, lab in enumerate(course.get('labs', [])):
+                try:
+                    lab_id = f"{course_id}#lab#{idx+1}"
+                    lab_item = {
+                        "courseId": course_id,
+                        "id": lab_id,
+                        "courseName": course['course_name'],
+                        "labNumber": lab['lab_number'],
+                        "labTitle": lab['lab_title'],
+                        "type": "lab",
+                        "createdAt": timestamp,
+                        "updatedAt": timestamp
+                    }
+                    
+                    modules_table.put_item(Item=lab_item)
+                    lab_count += 1
+                except Exception as e:
+                    print(f"실습 저장 중 오류 발생: {str(e)}")
+                    failure_count += 1
+            
+            print(f"  - {module_count}개 모듈, {lab_count}개 실습 정보 저장 완료")
+            
+        except Exception as e:
+            print(f"과정 {course['course_name']} 저장 중 오류 발생: {str(e)}")
+            failure_count += 1
+    
+    print(f"\n저장 완료: 성공 {success_count}개 과정, 실패 {failure_count}건")
+    return True
+
+def save_courses_to_dynamodb_batch(json_file_path, region_name='ap-northeast-2', batch_size=25):
+    """
+    JSON 파일에서 과정 정보를 읽어 배치 방식으로 DynamoDB에 저장하는 함수
+    
+    Args:
+        json_file_path (str): 과정 정보가 담긴 JSON 파일 경로
+        region_name (str): AWS 리전 이름
+        batch_size (int): 배치 크기 (최대 25)
+    """
+    # 데이터 로드
+    try:
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            course_data = json.load(f)
+        print(f"총 {len(course_data)}개 과정 정보를 로드했습니다.")
+    except Exception as e:
+        print(f"JSON 파일 로드 중 오류 발생: {str(e)}")
+        return False
+    
+    # AWS 세션 및 DynamoDB 클라이언트 생성
+    try:
+        session = boto3.Session(region_name=region_name)
+        dynamodb = session.resource('dynamodb')
+        client = session.client('dynamodb')
+        
+        # 테이블 참조 (배치 작업 시는 테이블명만 사용)
+        catalog_table_name = 'Tnc-CourseCatalog'
+        modules_table_name = 'Tnc-CourseCatalog-Modules'
+        
+        print("AWS DynamoDB에 연결했습니다.")
+    except Exception as e:
+        print(f"AWS 연결 중 오류 발생: {str(e)}")
+        return False
+    
+    # 저장 전 데이터 미리보기
+    sample_course = course_data[0] if course_data else None
+    if sample_course:
+        print("\n=== 저장할 데이터 미리보기 ===")
+        print(f"과정명: {sample_course['course_name']}")
+        print(f"레벨: {sample_course['level']}")
+        print(f"소요 시간: {sample_course['duration']}")
+        print(f"모듈 수: {len(sample_course.get('modules', []))}")
+        print(f"실습 수: {len(sample_course.get('labs', []))}")
+    
+    # 사용자 확인
+    confirmation = input("\n위 정보를 DynamoDB에 저장하시겠습니까? (y/n): ")
+    if confirmation.lower() != 'y':
+        print("저장이 취소되었습니다.")
+        return False
+    
+    # 타임스탬프 및 성공/실패 카운터
+    timestamp = datetime.now().isoformat()
+    success_count = 0
+    failure_count = 0
+    
+    # 모든 항목을 배치 요청으로 구성
+    catalog_batch_items = []
+    modules_batch_items = []
+    
+    print("\n=== 배치 작업 준비 중 ===")
+    for course in course_data:
+        try:
+            # 과정 ID 생성 (고유 식별자)
+            course_id = str(uuid.uuid4())
+            
+            # 과정 정보 항목 생성 (DynamoDB 형식으로 변환)
+            catalog_item = {
+                'PutRequest': {
+                    'Item': {
+                        'courseId': {'S': course_id},
+                        'courseName': {'S': course['course_name']},
+                        'level': {'S': course['level'] if course['level'] else ''},
+                        'duration': {'S': course['duration'] if course['duration'] else ''},
+                        'deliveryMethod': {'S': course.get('delivery_method', '')},
+                        'description': {'S': course.get('description', '')},
+                        'objectives': {'S': course.get('objectives', '')},
+                        'audience': {'S': course.get('audience', '')},
+                        'prerequisites': {'S': course.get('prerequisites', '')},
+                        'outline': {'S': course.get('outline', '')},
+                        'createdAt': {'S': timestamp},
+                        'updatedAt': {'S': timestamp}
+                    }
+                }
+            }
+            
+            catalog_batch_items.append(catalog_item)
+            
+            # 모듈 정보 배치 항목 생성
+            for idx, module in enumerate(course.get('modules', [])):
+                module_id = f"{course_id}#module#{idx+1}"
+                module_item = {
+                    'PutRequest': {
+                        'Item': {
+                            'courseId': {'S': course_id},
+                            'id': {'S': module_id},
+                            'courseName': {'S': course['course_name']},
+                            'moduleNumber': {'S': str(module['module_number'])},
+                            'moduleTitle': {'S': module['module_title']},
+                            'type': {'S': 'module'},
+                            'createdAt': {'S': timestamp},
+                            'updatedAt': {'S': timestamp}
+                        }
+                    }
+                }
+                modules_batch_items.append(module_item)
+            
+            # 실습 정보 배치 항목 생성
+            for idx, lab in enumerate(course.get('labs', [])):
+                lab_id = f"{course_id}#lab#{idx+1}"
+                lab_item = {
+                    'PutRequest': {
+                        'Item': {
+                            'courseId': {'S': course_id},
+                            'id': {'S': lab_id},
+                            'courseName': {'S': course['course_name']},
+                            'labNumber': {'S': str(lab['lab_number'])},
+                            'labTitle': {'S': lab['lab_title']},
+                            'type': {'S': 'lab'},
+                            'createdAt': {'S': timestamp},
+                            'updatedAt': {'S': timestamp}
+                        }
+                    }
+                }
+                modules_batch_items.append(lab_item)
+                
+            success_count += 1
+                
+        except Exception as e:
+            print(f"과정 {course['course_name']} 준비 중 오류 발생: {str(e)}")
+            failure_count += 1
+    
+    print(f"배치 작업 준비 완료: {success_count}개 과정, {len(modules_batch_items)}개 모듈/실습 항목")
+    
+    # 배치 저장 작업 수행
+    print("\n=== 배치 저장 작업 시작 ===")
+    
+    # 과정 정보 배치 저장
+    catalog_batches = [catalog_batch_items[i:i+batch_size] for i in range(0, len(catalog_batch_items), batch_size)]
+    for i, batch in enumerate(catalog_batches):
+        try:
+            response = client.batch_write_item(
+                RequestItems={
+                    catalog_table_name: batch
+                }
+            )
+            print(f"과정 정보 배치 {i+1}/{len(catalog_batches)} 저장 완료 ({len(batch)}개 항목)")
+            
+            # 처리되지 않은 항목이 있는 경우 재시도
+            unprocessed = response.get('UnprocessedItems', {}).get(catalog_table_name, [])
+            retry_count = 0
+            while unprocessed and retry_count < 3:
+                retry_count += 1
+                time.sleep(2 ** retry_count)  # 지수 백오프
+                retry_response = client.batch_write_item(
+                    RequestItems={
+                        catalog_table_name: unprocessed
+                    }
+                )
+                unprocessed = retry_response.get('UnprocessedItems', {}).get(catalog_table_name, [])
+                print(f"  재시도 {retry_count}: {len(unprocessed)}개 항목 남음")
+            
+            if unprocessed:
+                print(f"  경고: {len(unprocessed)}개 항목이 처리되지 않았습니다.")
+                
+        except Exception as e:
+            print(f"과정 정보 배치 {i+1} 저장 중 오류 발생: {str(e)}")
+    
+    # 모듈/실습 정보 배치 저장
+    modules_batches = [modules_batch_items[i:i+batch_size] for i in range(0, len(modules_batch_items), batch_size)]
+    for i, batch in enumerate(modules_batches):
+        try:
+            response = client.batch_write_item(
+                RequestItems={
+                    modules_table_name: batch
+                }
+            )
+            print(f"모듈/실습 정보 배치 {i+1}/{len(modules_batches)} 저장 완료 ({len(batch)}개 항목)")
+            
+            # 처리되지 않은 항목이 있는 경우 재시도
+            unprocessed = response.get('UnprocessedItems', {}).get(modules_table_name, [])
+            retry_count = 0
+            while unprocessed and retry_count < 3:
+                retry_count += 1
+                time.sleep(2 ** retry_count)  # 지수 백오프
+                retry_response = client.batch_write_item(
+                    RequestItems={
+                        modules_table_name: unprocessed
+                    }
+                )
+                unprocessed = retry_response.get('UnprocessedItems', {}).get(modules_table_name, [])
+                print(f"  재시도 {retry_count}: {len(unprocessed)}개 항목 남음")
+            
+            if unprocessed:
+                print(f"  경고: {len(unprocessed)}개 항목이 처리되지 않았습니다.")
+                
+        except Exception as e:
+            print(f"모듈/실습 정보 배치 {i+1} 저장 중 오류 발생: {str(e)}")
+    
+    print(f"\n저장 작업 완료: {len(catalog_batch_items)}개 과정, {len(modules_batch_items)}개 모듈/실습 항목 처리됨")
+    return True
+
+def verify_dynamodb_data(course_names, region_name='ap-northeast-2'):
+    """
+    저장된 데이터를 확인하는 함수
+    
+    Args:
+        course_names (list): 확인할 과정명 목록
+        region_name (str): AWS 리전 이름
+    """
+    try:
+        session = boto3.Session(region_name=region_name)
+        dynamodb = session.resource('dynamodb')
+        
+        catalog_table = dynamodb.Table('Tnc-CourseCatalog')
+        modules_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
+        
+        print("\n=== DynamoDB 저장 데이터 확인 ===")
+        
+        # 샘플 과정 확인 (최대 3개)
+        for i, course_name in enumerate(course_names[:3]):
+            # 과정 정보 조회
+            response = catalog_table.query(
+                IndexName='courseNameIndex',  # courseName을 인덱스로 설정한 경우
+                KeyConditionExpression=Key('courseName').eq(course_name)
+            )
+            
+            items = response.get('Items', [])
+            if items:
+                print(f"\n과정: {course_name}")
+                course_item = items[0]
+                print(f"  ID: {course_item['courseId']}")
+                print(f"  레벨: {course_item.get('level', 'N/A')}")
+                print(f"  소요 시간: {course_item.get('duration', 'N/A')}")
+                
+                # 과정에 속한 모듈/실습 조회
+                modules_response = modules_table.query(
+                    KeyConditionExpression=Key('courseId').eq(course_item['courseId'])
+                )
+                
+                modules = [item for item in modules_response.get('Items', []) if item.get('type') == 'module']
+                labs = [item for item in modules_response.get('Items', []) if item.get('type') == 'lab']
+                
+                print(f"  모듈 수: {len(modules)}")
+                print(f"  실습 수: {len(labs)}")
+                
+                # 첫 번째 모듈과 실습 샘플 출력
+                if modules:
+                    print(f"  첫 번째 모듈: {modules[0].get('moduleNumber', '')} - {modules[0].get('moduleTitle', '')}")
+                if labs:
+                    print(f"  첫 번째 실습: {labs[0].get('labNumber', '')} - {labs[0].get('labTitle', '')}")
+            else:
+                print(f"\n과정 '{course_name}'을 찾을 수 없습니다.")
+        
+        # 전체 항목 수 조회
+        catalog_scan = catalog_table.scan(Select='COUNT')
+        modules_scan = modules_table.scan(Select='COUNT')
+        
+        print(f"\n총 저장된 과정 수: {catalog_scan['Count']}")
+        print(f"총 저장된 모듈/실습 수: {modules_scan['Count']}")
+        
+    except Exception as e:
+        print(f"데이터 확인 중 오류 발생: {str(e)}")
 
 def extract_comprehensive_course_info(file_path):
     """
@@ -121,7 +524,7 @@ def extract_comprehensive_course_info(file_path):
                 }
                 
                 courses.append(course_info)
-                print(f"  추출 정보: 과정명='{course_name}', 레벨='{level}', 소요 시간='{duration}'")
+                #print(f"  추출 정보: 과정명='{course_name}', 레벨='{level}', 소요 시간='{duration}'")
                 
             except Exception as e:
                 print(f"표 {table_idx+1} 처리 중 오류 발생: {str(e)}")
@@ -748,6 +1151,29 @@ def main():
         print(f"오류 발생: {str(e)}")
         import traceback
         traceback.print_exc()
+
+    # try:
+    #     # 사용할 JSON 파일 결정
+    #     json_file_path = "all_course_data.json"
+    #     print(f"'{json_file_path}' 파일을 DynamoDB에 저장합니다.")
+        
+    #     # 배치 방식으로 저장 (더 효율적)
+    #     result = save_courses_to_dynamodb_batch(json_file_path)
+        
+    #     if result:
+    #         # 저장된 데이터 확인
+    #         try:
+    #             with open(json_file_path, 'r', encoding='utf-8') as f:
+    #                 course_data = json.load(f)
+    #             course_names = [course['course_name'] for course in course_data]
+    #             verify_dynamodb_data(course_names)
+    #         except Exception as e:
+    #             print(f"저장된 데이터 확인 중 오류 발생: {str(e)}")
+        
+    # except Exception as e:
+    #     print(f"오류 발생: {str(e)}")
+    #     import traceback
+    #     traceback.print_exc()
 
 if __name__ == "__main__":
     main()

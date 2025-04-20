@@ -269,7 +269,7 @@ const AppRoutes: React.FC = () => {
     </ProtectedRoute>
   );
 
-  rreturn(
+  return(
     <Routes>
       {/* 인증 페이지 라우트 - AuthLayout을 각 라우트의 element 안에 포함시켜 children 전달 */}
       <Route path="/signin" element={
@@ -307,7 +307,7 @@ const AppRoutes: React.FC = () => {
       {/* 과정 목록 페이지 (CoursesList) */}
       <Route path="/courses" element={
         <MainLayout>
-          <CoursesList />
+          <CourseList />
         </MainLayout>
       } />
 
