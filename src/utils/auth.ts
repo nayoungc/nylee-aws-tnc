@@ -1,6 +1,5 @@
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
-import type { GraphQLQuery, GraphQLResult } from '@aws-amplify/api';
 
 // 인증된 API 클라이언트 반환 함수
 export const getAuthenticatedApiClient = async () => {
@@ -17,7 +16,7 @@ export const getAuthenticatedApiClient = async () => {
 };
 
 // GraphQL 쿼리 실행 헬퍼 함수
-export const executeGraphQL = async <T = any>(
+export const executeGraphQL = async <T>(
   query: string,
   variables?: Record<string, any>,
   authMode: 'apiKey' | 'userPool' | 'iam' | 'oidc' | 'lambda' = 'userPool'
@@ -25,56 +24,23 @@ export const executeGraphQL = async <T = any>(
   try {
     const client = await getAuthenticatedApiClient();
     
-    // any로 타입 캐스팅하여 타입 오류 우회
+    // @ts-ignore - variables 타입 오류 무시
     const response = await client.graphql({
       query,
-      // @ts-ignore - variables 타입 오류 무시
       variables,
       authMode
     });
     
-    // 응답 데이터 확인 및 반환
-    if (response && 'data' in response && response.data) {
-      return response.data as T;
-    } else {
+    // 결과 확인
+    if (!response || !('data' in response) || !response.data) {
       throw new Error('GraphQL 응답에 데이터가 없습니다');
     }
+    
+    // 데이터 반환
+    return response.data as T;
   } catch (error) {
     console.error('GraphQL 쿼리 실행 오류:', error);
     throw error;
-  }
-};
-
-// 회원가입 함수
-export const handleSignUp = async (username: string, password: string, email: string, additionalFields?: Record<string, any>) => {
-  try {
-    const { signUp } = await import('aws-amplify/auth');
-    const result = await signUp({
-      username,
-      password,
-      options: {
-        userAttributes: {
-          email,
-          ...additionalFields
-        },
-        autoSignIn: true
-      }
-    });
-    
-    return {
-      success: true,
-      data: result,
-      message: '회원가입에 성공했습니다. 이메일로 전송된 확인 코드를 입력하세요.',
-      isComplete: result.isSignUpComplete,
-      nextStep: result.nextStep
-    };
-  } catch (error) {
-    console.error('회원가입 오류:', error);
-    return {
-      success: false,
-      error,
-      message: error instanceof Error ? error.message : '회원가입 중 오류가 발생했습니다.'
-    };
   }
 };
 
@@ -105,6 +71,7 @@ export const handleSignIn = async (username: string, password: string) => {
 };
 
 // 확인 코드 확인 함수
+// 확인 코드 확인 함수
 export const handleConfirmSignUp = async (username: string, confirmationCode: string) => {
   try {
     const { confirmSignUp } = await import('aws-amplify/auth');
@@ -113,22 +80,34 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
       confirmationCode
     });
     
-    // AWS Amplify v6에서는 상태를 isSignUpComplete로 확인
+    // isSignedIn 속성은 ConfirmSignUpOutput에 명시적으로 존재하지 않으므로
+    // 더 이상 result.isSignedIn을 참조하지 않고 다른 정보로 판단
+    
+    // 완료 여부로 판단
     const isCompleted = result.isSignUpComplete;
+    const isSignInStep = result.nextStep?.signUpStep === 'DONE';
     
     return {
       success: true,
       data: result,
       message: '이메일 확인이 완료되었습니다. 이제 로그인할 수 있습니다.',
       isComplete: isCompleted,
-      nextStep: result.nextStep
+      nextStep: result.nextStep,
+      // autoSignIn 속성을 제공 (이 부분이 해당 컴포넌트에서 사용됨)
+      autoSignIn: {
+        // isSignedIn 값을 완료 여부와 단계 정보로 추론
+        isSignedIn: isCompleted && isSignInStep
+      }
     };
   } catch (error) {
     console.error('확인 코드 확인 오류:', error);
     return {
       success: false,
       error,
-      message: error instanceof Error ? error.message : '확인 코드 확인 중 오류가 발생했습니다.'
+      message: error instanceof Error ? error.message : '확인 코드 확인 중 오류가 발생했습니다.',
+      autoSignIn: {
+        isSignedIn: false
+      }
     };
   }
 };
