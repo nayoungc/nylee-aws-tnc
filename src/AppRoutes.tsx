@@ -29,14 +29,15 @@ import SurveyManagement from './pages/instructor/SurveyManagement';
 import SurveyCreator from './pages/instructor/SurveyCreator';
 import ReportGenerator from './pages/instructor/ReportGenerator';
 import AdminPage from './pages/admin/AdminPage';
-import CourseCatalog from './pages/admin/CourseCatalogTab'; 
+import CourseCatalog from './pages/admin/CourseCatalogTab';
 
 
 // 교육생용 페이지 컴포넌트
 import SurveyPage from './pages/courses/SurveyPage';
 import PreQuizPage from './pages/courses/PreQuizPage';
 import PostQuizPage from './pages/courses/PostQuizPage';
-import CourseHome from './pages/courses/CourseHome'; 
+import CourseHome from './pages/courses/CourseHome';
+import CourseList from './pages/courses/CourseList';
 
 
 // 레이아웃 컴포넌트
@@ -44,12 +45,12 @@ import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
 
 // 리디렉션을 위한 별도 컴포넌트들
-const StudentHomeRedirect = () => {
+const CoursesHomeRedirect = () => {
   const { courseId } = useParams();
   return <Navigate to={`/course/\${courseId}`} replace />;
 };
 
-const StudentPathRedirect = () => {
+const CoursePathRedirect = () => {
   const { courseId, path } = useParams();
   return <Navigate to={`/course/\${courseId}/\${path}`} replace />;
 };
@@ -61,7 +62,7 @@ const AppRoutes: React.FC = () => {
   const [userAttributes, setUserAttributes] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useTranslation();
-  
+
   // 인증 요청 중복 방지 ref
   const authCheckInProgress = useRef(false);
   // 인증 실패 횟수 카운터
@@ -77,11 +78,11 @@ const AppRoutes: React.FC = () => {
   const checkAuthState = useCallback(async () => {
     // 이미 인증 체크 중이면 중복 요청 방지
     if (authCheckInProgress.current) return;
-    
+
     // 세션 스토리지에서 사용자 속성 확인
     const cachedData = sessionStorage.getItem('userAttributes');
     const timestamp = sessionStorage.getItem('userAttributesTimestamp');
-    
+
     // 캐시가 유효한 경우 사용
     if (cachedData && timestamp && (Date.now() - parseInt(timestamp) < CACHE_TTL)) {
       try {
@@ -94,7 +95,7 @@ const AppRoutes: React.FC = () => {
         // 캐시 데이터 파싱 오류는 무시하고 계속 진행
       }
     }
-    
+
     // 재시도 블록 확인
     const retryBlock = sessionStorage.getItem('userAttributesRetryBlock');
     if (retryBlock && parseInt(retryBlock) > Date.now()) {
@@ -111,7 +112,7 @@ const AppRoutes: React.FC = () => {
       setIsLoading(false);
       return;
     }
-    
+
     authCheckInProgress.current = true;
     setIsLoading(true);
 
@@ -121,17 +122,17 @@ const AppRoutes: React.FC = () => {
 
       try {
         // 속성 가져오기 시도 (마지막 성공 후 15분 경과 시만)
-        if ((Date.now() - lastSuccessfulFetch.current > CACHE_TTL) && 
-            authFailCount.current < 3) { // 연속 3회 이상 실패하면 시도하지 않음
-          
+        if ((Date.now() - lastSuccessfulFetch.current > CACHE_TTL) &&
+          authFailCount.current < 3) { // 연속 3회 이상 실패하면 시도하지 않음
+
           const attributes = await fetchUserAttributes();
           setUserAttributes(attributes);
-          
+
           // 성공하면 저장 및 카운터 초기화
           sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
           sessionStorage.setItem('userAttributesTimestamp', Date.now().toString());
           sessionStorage.removeItem('userAttributesFailCount');
-          
+
           // 성공 기록
           lastSuccessfulFetch.current = Date.now();
           authFailCount.current = 0;
@@ -142,24 +143,24 @@ const AppRoutes: React.FC = () => {
         const err = error as Error;
         console.warn('속성 가져오기 실패:', err);
         authFailCount.current++;
-        
+
         // 실패 횟수 저장
         const failCount = parseInt(sessionStorage.getItem('userAttributesFailCount') || '0') + 1;
         sessionStorage.setItem('userAttributesFailCount', failCount.toString());
-        
+
         // 3회 이상 실패 시 30분 동안 재시도 차단
         if (failCount >= 3) {
           const blockUntil = Date.now() + 30 * 60 * 1000; // 30분
           sessionStorage.setItem('userAttributesRetryBlock', blockUntil.toString());
           console.log(`최대 재시도 횟수 초과. \${new Date(blockUntil).toLocaleTimeString()}까지 재시도하지 않습니다.`);
         }
-        
+
         // 지수 백오프 (실패할수록 대기 시간 증가)
         authRetryDelay.current = Math.min(authRetryDelay.current * 2, 30000); // 최대 30초
-        
+
         // 안전하게 오류 메시지 확인
         const errorMessage = String(error);
-        
+
         // Rate Exceeded 오류시 추가 처리
         if (errorMessage.includes('TooManyRequestsException')) {
           console.log('요청 제한 초과, 잠시 후 다시 시도합니다');
@@ -180,18 +181,18 @@ const AppRoutes: React.FC = () => {
 
       // 공개 경로 목록
       const publicPaths = [
-        '/signin', '/signup', '/confirm-signup', '/forgot-password', 
+        '/signin', '/signup', '/confirm-signup', '/forgot-password',
         '/new-password', '/courses'
       ];
-      
+
       // 공개 경로 패턴 (시작 부분만 체크)
       const publicPathPatterns = ['/course/'];
-      
+
       // 현재 경로가 공개 경로인지 체크
-      const isPublicPath = 
-        publicPaths.includes(location.pathname) || 
+      const isPublicPath =
+        publicPaths.includes(location.pathname) ||
         publicPathPatterns.some(pattern => location.pathname.startsWith(pattern));
-      
+
       // 보호된 경로인 경우만 리디렉션
       if (!isPublicPath) {
         // 리디렉션 중복 방지
@@ -202,7 +203,7 @@ const AppRoutes: React.FC = () => {
       }
     } finally {
       setIsLoading(false);
-      
+
       // 다음 인증 체크 호출을 허용하기 전에 지연
       setTimeout(() => {
         authCheckInProgress.current = false;
@@ -268,7 +269,7 @@ const AppRoutes: React.FC = () => {
     </ProtectedRoute>
   );
 
-  return (
+  rreturn(
     <Routes>
       {/* 인증 페이지 라우트 - AuthLayout을 각 라우트의 element 안에 포함시켜 children 전달 */}
       <Route path="/signin" element={
@@ -287,7 +288,7 @@ const AppRoutes: React.FC = () => {
         authenticated ? <Navigate to="/" /> : <AuthLayout><NewPassword /></AuthLayout>
       } />
 
-      {/* 루트 리디렉션 */}      
+      {/* 루트 리디렉션 */}
       <Route
         path="/"
         element={
@@ -302,22 +303,21 @@ const AppRoutes: React.FC = () => {
           )
         }
       />
-      {/* 공개 접근 가능한 과정 페이지 */}
+
+      {/* 과정 목록 페이지 (CoursesList) */}
       <Route path="/courses" element={
-        <ProtectedRoute
-          authenticated={authenticated}
-          redirectPath="/signin"
-          requiredRole="student" // 또는 권한 체크를 하지 않도록 수정
-          userAttributes={userAttributes}
-        >
-          <MainLayout><CourseHome /></MainLayout>
-        </ProtectedRoute>
+        <MainLayout>
+          <CoursesList />
+        </MainLayout>
       } />
-  
-      
-      {/* 공개 접근 가능한 과정 페이지 */}
-      <Route path="/courses" element={<MainLayout><CourseHome /></MainLayout>} />
-      
+
+      {/* 과정 상세 페이지 (CourseHome) */}
+      <Route path="/courses/:courseId" element={
+        <MainLayout>
+          <CourseHome />
+        </MainLayout>
+      } />
+
       {/* 통합된 과정 경로 - 상세 및 교육생 기능 */}
       <Route path="/course/:courseId">
         {/* 과정 홈페이지 */}
@@ -331,7 +331,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/instructor">
         {/* 대시보드 */}
         <Route path="dashboard" element={<InstructorRoute><Dashboard /></InstructorRoute>} />
-        
+
         {/* 과정 관리 */}
         <Route path="courses" element={<InstructorRoute><CoursesManagement /></InstructorRoute>} />
         <Route path="courses/create" element={<InstructorRoute><CourseCreation /></InstructorRoute>} />
@@ -386,15 +386,15 @@ const AppRoutes: React.FC = () => {
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
-      
+
       {/* 교육생 페이지 리디렉션 - 별도 컴포넌트 사용 */}
-      <Route path="/student/:courseId" element={<StudentHomeRedirect />} />
-      <Route path="/student/:courseId/:path" element={<StudentPathRedirect />} />
+      <Route path="/student/:courseId" element={<CoursesHomeRedirect />} />
+      <Route path="/student/:courseId/:path" element={<CoursePathRedirect />} />
 
       {/* 404 라우트 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
-};
+}
 
 export default AppRoutes;
