@@ -1,5 +1,5 @@
 // src/pages/admin/AdminPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Container, 
   Header, 
@@ -9,15 +9,27 @@ import {
 import CourseCatalogTab from './CourseCatalogTab';
 import CustomerTab from './CustomerTab';
 import InstructorTab from './InstructorTab';
+import { useTypedTranslation } from '../../utils/i18n-utils';
 
 const AdminPage: React.FC = () => {
-  // activeTabId 상태 추가 - 누락되었던 부분
+  const { t } = useTypedTranslation();
+  // activeTabId 상태 관리
   const [activeTabId, setActiveTabId] = useState("courses");
+  
+  // 각 탭 컴포넌트를 메모이제이션하여 렌더링 성능 최적화
+  const courseCatalogTabContent = useMemo(() => <CourseCatalogTab />, []);
+  const customerTabContent = useMemo(() => <CustomerTab />, []);
+  const instructorTabContent = useMemo(() => <InstructorTab />, []);
 
   return (
-    <SpaceBetween size="l">
-      <Container>
-        <Header variant="h1">시스템 관리</Header>
+    <Container>
+      <SpaceBetween size="l">
+        <Header
+          variant="h1"
+          description={t('admin.description')}
+        >
+          {t('admin.title')}
+        </Header>
         
         <Tabs
           activeTabId={activeTabId}
@@ -25,23 +37,23 @@ const AdminPage: React.FC = () => {
           tabs={[
             {
               id: "courses",
-              label: "과정 관리",
-              content: <CourseCatalogTab />
+              label: t('admin.tabs.courses'),
+              content: courseCatalogTabContent
             },
             {
               id: "customers",
-              label: "고객사 관리",
-              content: <CustomerTab />
+              label: t('admin.tabs.customers'),
+              content: customerTabContent
             },
             {
               id: "instructors",
-              label: "강사 관리",
-              content: <InstructorTab />
+              label: t('admin.tabs.instructors'),
+              content: instructorTabContent
             }
           ]}
         />
-      </Container>
-    </SpaceBetween>
+      </SpaceBetween>
+    </Container>
   );
 };
 

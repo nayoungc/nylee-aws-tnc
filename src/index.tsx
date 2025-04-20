@@ -5,21 +5,17 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-// Amplify Gen 2 설정 임포트
-import { Amplify } from 'aws-amplify';
-// i18n 초기화 BEFORE amplify config
+// i18n 초기화
 import './i18n';
 
-// 반드시 다른 import 다음에 와야 함
-import amplifyconfig from './amplifyconfiguration.json';
+// API 설정 가져오기
+import { configureAmplify } from './api-config';
 
-
-// Amplify Gen 2 초기화 - 애플리케이션 진입점에서 한 번만 설정
-console.log('Initializing Amplify with config:', amplifyconfig);
-Amplify.configure(amplifyconfig);
+// Amplify 초기화
+configureAmplify();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 );

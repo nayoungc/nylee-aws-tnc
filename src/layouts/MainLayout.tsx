@@ -17,7 +17,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { t, tString } = useTypedTranslation(); // tString 함수도 가져오기
+  const { t, tString } = useTypedTranslation();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,7 +64,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       {
         type: 'link',
         text: t('nav.course_catalog'),
-        href: '/courses'
+        href: '/tnc' // /courses에서 /tnc로 변경
       }
     ];
 
@@ -129,11 +129,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
             }
           ]
         },
-        // 과정 카탈로그는 모든 사용자에게 표시
+        // 과정 카탈로그는 모든 사용자에게 표시 (URL 변경)
         {
           type: 'link',
           text: t('nav.course_catalog'),
-          href: '/courses'
+          href: '/tnc' // /courses에서 /tnc로 변경
         }
       ];
     }
@@ -141,25 +141,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     // admin 사용자만을 위한 추가 메뉴
     if (userRole === 'admin') {
       navItems.push({
-        type: 'section',
-        text: t('nav.admin_section'),
-        items: [
-          {
-            type: 'link',
-            text: t('nav.admin_dashboard'),
-            href: '/admin'
-          },
-          {
-            type: 'link',
-            text: t('nav.user_management'),
-            href: '/admin/users'
-          },
-          {
-            type: 'link',
-            text: t('nav.system_settings'),
-            href: '/admin/settings'
-          }
-        ]
+        type: 'link',
+        text: t('nav.admin'),
+        href: '/admin'
       });
     }
 

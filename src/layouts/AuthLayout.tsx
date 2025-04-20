@@ -15,7 +15,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       flexDirection: 'column'
     }}>
       {/* 간소화된 헤더 추가 */}
-      <SimpleHeader />
+      {/* <SimpleHeader /> */}
       
       <div style={{
         flex: 1,
@@ -25,7 +25,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         alignItems: 'center',
         backgroundColor: 'var(--color-background-layout-main)'
       }}>
-        <div style={{ width: '100%', maxWidth: '450px' }}>
+        <div style={{ width: '100%', maxWidth: '650px' }}>
           <Container>
             <SpaceBetween size="l">
               {children}

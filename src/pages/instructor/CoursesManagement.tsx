@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/instructor/CoursesManagement.tsx
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Header,
@@ -10,10 +11,10 @@ import {
   Spinner
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
-import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
-import { useTypedTranslation } from '@utils/i18n-utils'; // 다국어 지원 추가
-
+import { generateClient } from 'aws-amplify/api';
+import type { GraphQLQuery, GraphQLResult } from '@aws-amplify/api';
+import { useTypedTranslation } from '@utils/i18n-utils';
 
 // CourseCatalog 테이블에 맞는 타입 정의
 interface CourseCatalog {
@@ -28,6 +29,14 @@ interface CourseCatalog {
   instructor?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// GraphQL 쿼리 응답 타입 정의
+interface ListCourseCatalogsResponse {
+  listCourseCatalogs: {
+    items: CourseCatalog[];
+    nextToken: string | null;
+  };
 }
 
 // GraphQL query for Tnc-CourseCatalog table
@@ -58,11 +67,18 @@ const listCourseCatalogs = /* GraphQL */ `
 
 const CoursesManagement: React.FC = () => {
   const navigate = useNavigate();
-  const { t, tString } = useTypedTranslation(); // 다국어 지원 추가
+  const { t, tString } = useTypedTranslation(); 
   const [courses, setCourses] = useState<CourseCatalog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [client] = useState(() => generateClient());
+  
+  // Amplify Gen 2 API 클라이언트 생성
+  const client = generateClient();
+
+  // 페이지 이동 함수를 메모이제이션
+  const navigateToCreateCourse = useCallback(() => {
+    navigate('/instructor/courses/create');
+  }, [navigate]);
 
   // 컴포넌트 마운트 시 한 번만 실행되는 useEffect
   useEffect(() => {
@@ -75,14 +91,12 @@ const CoursesManagement: React.FC = () => {
         await getCurrentUser();
         
         console.log('API 호출 시작...');
-        const response = await client.graphql({
-          query: listCourseCatalogs, // 변경된 쿼리 사용
+        const response = await client.graphql<GraphQLQuery<ListCourseCatalogsResponse>>({
+          query: listCourseCatalogs, 
           variables: {
             limit: 100,
             filter: {
-              // 필요에 따라 필터링 조건 추가
-              // 예: 현재 강사가 담당하는 과정만 필터링
-              // instructorId: { eq: currentUser.id }
+              // 필요한 필터링 조건 추가
             }
           },
           authMode: 'userPool'
@@ -90,9 +104,8 @@ const CoursesManagement: React.FC = () => {
         
         console.log('API 응답:', response);
 
-        // 응답 데이터 처리
-        const responseAny: any = response;
-        const courseItems = responseAny.data?.listCourseCatalogs?.items || []; // 변경된 응답 경로
+        // 타입 안전하게 응답 데이터 처리
+        const courseItems = response.data?.listCourseCatalogs?.items || [];
         
         if (courseItems && courseItems.length > 0) {
           setCourses(courseItems);
@@ -146,10 +159,6 @@ const CoursesManagement: React.FC = () => {
     checkAuthAndFetchCourses();
   }, []); // 빈 배열로 초기 렌더링 시 한 번만 실행
 
-  const navigateToCreateCourse = () => {
-    navigate('/instructor/courses/create');
-  };
-
   // 상태에 따른 배지 색상 결정
   const getStatusColor = (status: string): "green" | "blue" | "grey" => {
     switch(status.toUpperCase()) {
@@ -169,10 +178,10 @@ const CoursesManagement: React.FC = () => {
   }
 
   return (
-    <Container
-      header={
+    <Container>
+      <SpaceBetween size="l">
         <Header
-          variant="h2"
+          variant="h1"
           description={t('courses.description')}
           actions={
             <Button variant="primary" onClick={navigateToCreateCourse}>
@@ -182,9 +191,7 @@ const CoursesManagement: React.FC = () => {
         >
           {t('courses.title')}
         </Header>
-      }
-    >
-      <SpaceBetween size="l">
+        
         {error && (
           <Box color="text-status-error">
             <span role="img" aria-label="error">⚠️</span> {error}

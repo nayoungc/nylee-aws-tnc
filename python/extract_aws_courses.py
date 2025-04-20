@@ -10,12 +10,6 @@ from collections import defaultdict
 def generate_short_id(length=6):
     """
     간결한 ID 생성 (6자 알파벳+숫자 조합)
-    
-    Args:
-        length: ID 길이
-        
-    Returns:
-        str: 생성된 ID
     """
     chars = string.ascii_uppercase + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
@@ -23,12 +17,6 @@ def generate_short_id(length=6):
 def extract_course_data(docx_path):
     """
     .docx 파일에서 과정 정보를 추출하는 함수
-    
-    Args:
-        docx_path (str): .docx 파일 경로
-        
-    Returns:
-        tuple: (과정 정보 목록, 모듈/실습 정보 목록)
     """
     print(f"문서 제목: {docx_path}")
     
@@ -80,12 +68,6 @@ def extract_course_data(docx_path):
 def extract_course_information_improved(doc):
     """
     개선된 방식으로 문서에서 과정 정보 추출
-    
-    Args:
-        doc: 문서 객체
-        
-    Returns:
-        list: 과정 정보 목록
     """
     courses = []
     used_ids = set()  # ID 중복 방지
@@ -252,39 +234,61 @@ def extract_course_sections(doc, course, start_table_index):
     for field in ["description", "objectives", "audience", "prerequisites"]:
         course[field] = course[field].strip()
 
+def extract_module_title_description(text):
+    """
+    모듈 텍스트에서 타이틀과 설명 분리
+    
+    Args:
+        text: 모듈 텍스트
+        
+    Returns:
+        tuple: (타이틀, 설명)
+    """
+    # 1. 줄바꿈으로 분리
+    if '\n' in text:
+        lines = text.split('\n', 1)
+        return lines[0].strip(), lines[1].strip()
+    
+    # 2. 콜론으로 분리 (여러 줄에 걸친 콜론이 아닌 경우만)
+    elif ':' in text and len(text.split('\n')) == 1:
+        parts = text.split(':', 1)
+        return parts[0].strip(), parts[1].strip()
+    
+    # 3. 분리할 수 없으면 전체를 타이틀로 간주
+    else:
+        return text.strip(), ""
+
 def extract_modules_and_labs(doc, course, start_table_index):
     """
     과정에 대한 모듈 및 실습 정보 추출 (일차 정보 포함)
     """
     modules = []
     labs = []
-    current_day = None  # 현재 처리 중인 일차
+    current_day = None
     
-    # 모듈 및 실습 패턴
-    module_patterns = [
-        r'모듈\s*(\d+)[:\s-]\s*(.+?)(?=\n|\$)',
-        r'Module\s*(\d+)[:\s-]\s*(.+?)(?=\n|\$)'
-    ]
+    # 모듈, 일차, 실습 패턴
+    day_pattern = r'(\d+)일\s*차'
+    # 모듈 패턴 - 불릿 포인트 포함
+    module_pattern = r'(?:•|\*|-)?\s*모듈\s*(\d+)[:\s-]\s*(.+)'
+    lab_pattern = r'(?:•|\*|-)?\s*(실습|핸즈온\s*랩|Lab)[:\s-]?\s*(.+)'
     
-    day_patterns = [
-        r'(\d+)일\s*차\s*[:：]?\s*(.+?)(?=\n|\$)',
-        r'Day\s*(\d+)\s*[:：]?\s*(.+?)(?=\n|\$)'
-    ]
-    
-    lab_patterns = [
-        r'실습\s*(\d+)[:\s-]\s*(.+?)(?=\n|\$)',
-        r'Lab\s*(\d+)[:\s-]\s*(.+?)(?=\n|\$)',
-        r'핸즈온\s*랩\s*(\d*)[:\s-]?\s*(.+?)(?=\n|\$)'
-    ]
+    # 설명 불릿 패턴
+    desc_bullet_pattern = r'(?:o|○|◦|·|▪)?\s*(.+)'
     
     # 과정 개요 섹션 찾기
     in_outline_section = False
+    current_module = None
+    current_module_description = []
+    
     search_range = min(len(doc.paragraphs), start_table_index + 500)
     
     for i in range(start_table_index, search_range):
         if i < len(doc.paragraphs):
             text = doc.paragraphs[i].text.strip()
             
+            if not text:
+                continue
+                
             # 과정 개요 섹션 확인
             if "과정 개요" in text or "교육 과정 개요" in text:
                 in_outline_section = True
@@ -294,43 +298,89 @@ def extract_modules_and_labs(doc, course, start_table_index):
                 # 개요 섹션 종료 조건
                 if any(pattern in text for pattern in ["과정 마무리", "리소스", "사후 평가"]):
                     in_outline_section = False
+                    
+                    # 마지막 모듈 추가
+                    if current_module and current_module_description:
+                        current_module["module_description"] = '\n'.join(current_module_description)
+                        modules.append(current_module)
+                        current_module = None
+                        current_module_description = []
+                    
                     break
-                
+                    
                 # 일차 정보 확인
-                day_found = False
-                for pattern in day_patterns:
-                    match = re.match(pattern, text, re.IGNORECASE)
-                    if match:
-                        current_day = match.group(1)
-                        day_found = True
-                        break
-                
-                if day_found:
+                day_match = re.search(day_pattern, text)
+                if day_match:
+                    current_day = day_match.group(1)
                     continue
                 
-                # 모듈 정보 추출
-                for pattern in module_patterns:
-                    for match in re.finditer(pattern, text, re.IGNORECASE):
-                        module_num = match.group(1)
-                        module_title = match.group(2).strip()
-                        if module_title and len(module_title) < 200:
-                            modules.append({
-                                "module_number": module_num,
-                                "module_title": module_title,
-                                "day": current_day  # 일차 정보 추가
-                            })
+                # 모듈 정보 확인 (불릿 포인트 포함)
+                module_match = re.search(module_pattern, text, re.IGNORECASE)
+                if module_match:
+                    # 이전 모듈이 있으면 저장
+                    if current_module:
+                        current_module["module_description"] = '\n'.join(current_module_description)
+                        modules.append(current_module)
+                        current_module_description = []
+                        
+                    module_num = module_match.group(1)
+                    module_text = module_match.group(2).strip()
+                    
+                    # 모듈 텍스트에서 타이틀과 설명 분리
+                    module_title, module_description = extract_module_title_description(module_text)
+                    
+                    # 새 모듈 생성
+                    current_module = {
+                        "module_number": module_num,
+                        "module_title": module_title,
+                        "module_description": "",
+                        "day": current_day
+                    }
+                    
+                    # 모듈 설명이 있으면 추가
+                    if module_description:
+                        current_module_description.append(module_description)
+                    continue
                 
-                # 실습 정보 추출
-                for pattern in lab_patterns:
-                    for match in re.finditer(pattern, text, re.IGNORECASE):
-                        lab_num = match.group(1) if match.group(1) else "N/A"
-                        lab_title = match.group(2).strip()
-                        if lab_title and len(lab_title) < 200:
-                            labs.append({
-                                "lab_number": lab_num,
-                                "lab_title": lab_title,
-                                "day": current_day  # 일차 정보 추가
-                            })
+                # 다음 모듈 또는 다른 섹션이 시작되는지 확인
+                if text.startswith('•') or text.startswith('*') or text.startswith('-'):
+                    # 새로운 주요 불릿이 시작되고 모듈 또는 실습이 아니면
+                    if not any(keyword in text.lower() for keyword in ["모듈", "실습", "핸즈온"]):
+                        # 현재 모듈이 있으면 저장하고 다음으로 넘어감
+                        if current_module:
+                            current_module["module_description"] = '\n'.join(current_module_description)
+                            modules.append(current_module)
+                            current_module = None
+                            current_module_description = []
+                
+                # 실습 정보 확인
+                lab_match = re.search(lab_pattern, text, re.IGNORECASE)
+                if lab_match:
+                    lab_title = lab_match.group(2).strip()
+                    labs.append({
+                        "lab_number": extract_lab_number(text),
+                        "lab_title": lab_title,
+                        "day": current_day
+                    })
+                    continue
+                
+                # 현재 모듈이 있으면 설명에 텍스트 추가
+                if current_module:
+                    # 불릿 포인트 설명 확인
+                    desc_match = re.search(desc_bullet_pattern, text)
+                    if desc_match:
+                        desc_text = desc_match.group(1).strip()
+                        
+                        # o, ○ 등의 불릿으로 시작하면 들여쓰기 추가
+                        if re.match(r'o|○|◦|·|▪', text[:2]):
+                            current_module_description.append(f"o\t{desc_text}")
+                        else:
+                            current_module_description.append(desc_text)
+    
+    # 마지막 모듈 추가
+    if current_module and current_module_description:
+        current_module["module_description"] = '\n'.join(current_module_description)
+        modules.append(current_module)
     
     # 모듈/실습 테이블 확인
     for i, table in enumerate(doc.tables):
@@ -339,25 +389,20 @@ def extract_modules_and_labs(doc, course, start_table_index):
             modules.extend(table_modules)
             labs.extend(table_labs)
     
-    # 중복 제거
+    # 중복 제거 및 모듈 정보 정리
     unique_modules = []
-    seen_module_titles = set()
+    seen_module_numbers = set()
+    
     for module in modules:
-        key = f"{module['module_number']}:{module['module_title']}"
-        if key not in seen_module_titles:
-            seen_module_titles.add(key)
+        # 모듈 번호 기준으로 중복 제거
+        key = f"{module['day']}:{module['module_number']}" if module['day'] else module['module_number']
+        
+        if key not in seen_module_numbers and module['module_title']:
+            seen_module_numbers.add(key)
             unique_modules.append(module)
     
-    unique_labs = []
-    seen_lab_titles = set()
-    for lab in labs:
-        key = f"{lab['lab_number']}:{lab['lab_title']}"
-        if key not in seen_lab_titles:
-            seen_lab_titles.add(key)
-            unique_labs.append(lab)
-    
     course["modules"] = unique_modules
-    course["labs"] = unique_labs
+    course["labs"] = labs
 
 def is_module_table(table):
     """
@@ -379,17 +424,20 @@ def extract_modules_labs_from_table(table, current_day=None):
     """
     headers = [cell.text.strip().lower() for cell in table.rows[0].cells]
     
-    # 헤더에서 모듈, 실습, 일차 열의 인덱스 찾기
+    # 헤더에서 모듈, 내용, 설명, 실습, 일차 열의 인덱스 찾기
     module_index = None
-    module_content_index = None
+    title_index = None
+    description_index = None
     lab_index = None
     day_index = None
     
     for i, header in enumerate(headers):
         if '모듈' in header:
             module_index = i
-        elif any(word in header for word in ['주제', '내용', '제목']):
-            module_content_index = i
+        elif any(word in header for word in ['제목', '주제']):
+            title_index = i
+        elif any(word in header for word in ['설명', '내용', '세부 내용']):
+            description_index = i
         elif '실습' in header:
             lab_index = i
         elif '일차' in header or 'day' in header:
@@ -419,16 +467,44 @@ def extract_modules_labs_from_table(table, current_day=None):
             
         # 모듈 정보 추출
         if module_index is not None and module_index < len(cells):
-            module_name = cells[module_index]
-            if module_name:
-                module_content = ""
-                if module_content_index is not None and module_content_index < len(cells):
-                    module_content = cells[module_content_index]
+            module_text = cells[module_index]
+            if module_text:
+                # 모듈 번호 추출
+                module_number = extract_module_number(module_text)
+                
+                # 모듈 제목과 설명
+                module_title = ""
+                module_description = ""
+                
+                # 제목과 설명이 별도 열에 있는 경우
+                if title_index is not None and title_index < len(cells):
+                    module_title = cells[title_index].strip()
+                    
+                    if description_index is not None and description_index < len(cells):
+                        module_description = cells[description_index].strip()
+                # 제목과 설명이 모듈 열에 함께 있는 경우
+                elif ":" in module_text or "\n" in module_text:
+                    module_title, module_description = extract_module_title_description(module_text)
+                # 그 외 제목만 있는 경우
+                else:
+                    module_title = module_text.strip()
+                
+                # 불릿 포인트 형식 처리
+                if module_description:
+                    formatted_desc = []
+                    for line in module_description.split('\n'):
+                        line = line.strip()
+                        if line.startswith('o') or line.startswith('○') or line.startswith('•'):
+                            formatted_desc.append(f"o\t{line[1:].strip()}")
+                        else:
+                            formatted_desc.append(line)
+                    module_description = '\n'.join(formatted_desc)
                 
                 modules.append({
-                    "module_number": extract_module_number(module_name),
-                    "module_title": module_content or module_name,
-                    "day": day  # 일차 정보 추가
+                    "module_number": module_number,
+                    "module_title": module_title,
+                    "module_description": module_description,
+                    "day": day
                 })
         
         # 실습 정보 추출
@@ -438,7 +514,7 @@ def extract_modules_labs_from_table(table, current_day=None):
                 labs.append({
                     "lab_number": extract_lab_number(lab_content),
                     "lab_title": lab_content,
-                    "day": day  # 일차 정보 추가
+                    "day": day
                 })
     
     return modules, labs
@@ -460,12 +536,6 @@ def extract_lab_number(lab_text):
 def prepare_dynamodb_items(courses):
     """
     추출된 과정 정보를 DynamoDB 테이블 형식으로 변환
-    
-    Args:
-        courses: 추출된 과정 정보 목록
-        
-    Returns:
-        tuple: (과정 카탈로그 아이템 목록, 모듈/실습 아이템 목록)
     """
     course_catalog_items = []
     module_lab_items = []
@@ -475,7 +545,7 @@ def prepare_dynamodb_items(courses):
         
         # 1. Tnc-CourseCatalog 테이블용 아이템
         course_item = {
-            'id': course_id,  # 기본 키
+            'id': course_id,
             'courseId': course_id,
             'courseName': course['courseName'],
             'description': course['description'],
@@ -495,12 +565,13 @@ def prepare_dynamodb_items(courses):
         for i, module in enumerate(course.get('modules', [])):
             module_id = f"{course_id}#module#{i+1}"
             module_item = {
-                'id': module_id,  # 기본 키
+                'id': module_id,
                 'courseId': course_id,
                 'courseName': course['courseName'],
                 'moduleNumber': module['module_number'],
                 'moduleTitle': module['module_title'],
-                'day': module.get('day', ''),  # 일차 정보
+                'moduleDescription': module.get('module_description', ''),
+                'day': module.get('day', ''),
                 'type': 'module',
                 'createdAt': course['createdAt'],
                 'updatedAt': course['updatedAt']
@@ -511,12 +582,12 @@ def prepare_dynamodb_items(courses):
         for i, lab in enumerate(course.get('labs', [])):
             lab_id = f"{course_id}#lab#{i+1}"
             lab_item = {
-                'id': lab_id,  # 기본 키
+                'id': lab_id,
                 'courseId': course_id,
                 'courseName': course['courseName'],
                 'labNumber': lab['lab_number'],
                 'labTitle': lab['lab_title'],
-                'day': lab.get('day', ''),  # 일차 정보
+                'day': lab.get('day', ''),
                 'type': 'lab',
                 'createdAt': course['createdAt'],
                 'updatedAt': course['updatedAt']
@@ -525,13 +596,9 @@ def prepare_dynamodb_items(courses):
     
     return course_catalog_items, module_lab_items
 
-def save_to_json_files(course_catalog_items, module_lab_items):
+def save_to_json_files(course_catalog_items, module_lab_items, courses):
     """
     추출된 정보를 JSON 파일로 저장
-    
-    Args:
-        course_catalog_items: 과정 카탈로그 아이템 목록
-        module_lab_items: 모듈/실습 아이템 목록
     """
     # JSON 직렬화 처리를 위한 도우미 함수
     def json_serial(obj):
@@ -543,46 +610,46 @@ def save_to_json_files(course_catalog_items, module_lab_items):
     with open('courses_catalog.json', 'w', encoding='utf-8') as f:
         json.dump(course_catalog_items, f, ensure_ascii=False, indent=2, default=json_serial)
     
-    # 2. 모듈/실습 정보 저장
+    # 2. 모듈/실습 정보 저장 (DynamoDB 형식)
     with open('courses_modules_labs.json', 'w', encoding='utf-8') as f:
         json.dump(module_lab_items, f, ensure_ascii=False, indent=2, default=json_serial)
     
+    # 3. 원본 형식의 모듈 정보 저장
+    modules_data = []
+    for course in courses:
+        for module in course.get('modules', []):
+            modules_data.append({
+                'courseId': course['courseId'],
+                'courseName': course['courseName'],
+                'moduleNumber': module['module_number'],
+                'moduleTitle': module['module_title'],
+                'moduleDescription': module.get('module_description', ''),
+                'day': module.get('day', '')
+            })
+    
+    with open('modules_original.json', 'w', encoding='utf-8') as f:
+        json.dump(modules_data, f, ensure_ascii=False, indent=2, default=json_serial)
+    
+    # 4. 원본 형식의 실습 정보 저장
+    labs_data = []
+    for course in courses:
+        for lab in course.get('labs', []):
+            labs_data.append({
+                'courseId': course['courseId'],
+                'courseName': course['courseName'],
+                'labNumber': lab['lab_number'],
+                'labTitle': lab['lab_title'],
+                'day': lab.get('day', '')
+            })
+    
+    with open('labs_original.json', 'w', encoding='utf-8') as f:
+        json.dump(labs_data, f, ensure_ascii=False, indent=2, default=json_serial)
+    
     print(f"\n파일 저장 완료:")
     print(f"- 과정 카탈로그: courses_catalog.json ({len(course_catalog_items)}개 항목)")
-    print(f"- 모듈/실습 정보: courses_modules_labs.json ({len(module_lab_items)}개 항목)")
-
-def upload_to_dynamodb(course_catalog_items, module_lab_items):
-    """
-    아이템을 DynamoDB 테이블에 업로드
-    
-    Args:
-        course_catalog_items: Tnc-CourseCatalog 테이블용 아이템 목록
-        module_lab_items: Tnc-CourseCatalog-Modules 테이블용 아이템 목록
-    """
-    try:
-        # DynamoDB 클라이언트 초기화
-        dynamodb = boto3.resource('dynamodb')
-        course_table = dynamodb.Table('Tnc-CourseCatalog')
-        module_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
-        
-        print("\n=== DynamoDB 업로드 중 ===")
-        
-        # 1. 과정 카탈로그 정보 업로드
-        for item in course_catalog_items:
-            course_table.put_item(Item=item)
-        print(f"{len(course_catalog_items)}개 과정 정보 업로드 완료")
-        
-        # 2. 모듈/실습 정보 업로드
-        for item in module_lab_items:
-            module_table.put_item(Item=item)
-        print(f"{len(module_lab_items)}개 모듈/실습 정보 업로드 완료")
-        
-        print("\nDynamoDB 업로드 완료!")
-        
-    except Exception as e:
-        print(f"DynamoDB 업로드 중 오류 발생: {str(e)}")
-        import traceback
-        traceback.print_exc()
+    print(f"- 모듈/실습 정보(DynamoDB): courses_modules_labs.json ({len(module_lab_items)}개 항목)")
+    print(f"- 모듈 정보(원본): modules_original.json ({len(modules_data)}개 항목)")
+    print(f"- 실습 정보(원본): labs_original.json ({len(labs_data)}개 항목)")
 
 def main():
     """메인 실행 함수"""
@@ -596,6 +663,17 @@ def main():
         
         # 과정 정보 추출 및 파일로 저장
         course_catalog_items, module_lab_items = extract_course_data(file_path)
+        
+        # 추출된 데이터 요약 표시
+        print("\n=== 추출된 모듈 샘플 (첫 3개) ===")
+        for item in module_lab_items[:3]:
+            if item['type'] == 'module':
+                print(f"과정: {item['courseName']}")
+                print(f"모듈 번호: {item['moduleNumber']}")
+                print(f"모듈 제목: {item['moduleTitle']}")
+                print(f"모듈 설명: {item['moduleDescription'][:100]}...")
+                print(f"일차: {item['day']}")
+                print("---")
         
         # JSON 파일 저장 후 확인 단계 수행
         if course_catalog_items and module_lab_items:

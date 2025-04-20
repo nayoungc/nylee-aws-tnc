@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchUserAttributes, signOut, getCurrentUser, UserAttributeKey } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
+
 import {
   TopNavigation,
   Button,

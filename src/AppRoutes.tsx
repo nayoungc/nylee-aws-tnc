@@ -31,14 +31,12 @@ import ReportGenerator from './pages/instructor/ReportGenerator';
 import AdminPage from './pages/admin/AdminPage';
 import CourseCatalog from './pages/admin/CourseCatalogTab';
 
-
 // 교육생용 페이지 컴포넌트
 import SurveyPage from './pages/courses/SurveyPage';
 import PreQuizPage from './pages/courses/PreQuizPage';
 import PostQuizPage from './pages/courses/PostQuizPage';
 import CourseHome from './pages/courses/CourseHome';
 import CourseList from './pages/courses/CourseList';
-
 
 // 레이아웃 컴포넌트
 import AuthLayout from './layouts/AuthLayout';
@@ -47,12 +45,12 @@ import MainLayout from './layouts/MainLayout';
 // 리디렉션을 위한 별도 컴포넌트들
 const CoursesHomeRedirect = () => {
   const { courseId } = useParams();
-  return <Navigate to={`/course/\${courseId}`} replace />;
+  return <Navigate to={`/tnc/\${courseId}`} replace />;
 };
 
 const CoursePathRedirect = () => {
   const { courseId, path } = useParams();
-  return <Navigate to={`/course/\${courseId}/\${path}`} replace />;
+  return <Navigate to={`/tnc/\${courseId}/\${path}`} replace />;
 };
 
 const AppRoutes: React.FC = () => {
@@ -179,14 +177,14 @@ const AppRoutes: React.FC = () => {
       setAuthenticated(false);
       setUserAttributes(null);
 
-      // 공개 경로 목록
+      // 공개 경로 목록 (수정: /courses 제거, /tnc 관련 경로 추가)
       const publicPaths = [
         '/signin', '/signup', '/confirm-signup', '/forgot-password',
-        '/new-password', '/aws-tnc'
+        '/new-password', '/tnc'
       ];
 
-      // 공개 경로 패턴 (시작 부분만 체크)
-      const publicPathPatterns = ['/aws-tnc/'];
+      // 공개 경로 패턴 (시작 부분만 체크) - /tnc/ 패턴 추가
+      const publicPathPatterns = ['/tnc/'];
 
       // 현재 경로가 공개 경로인지 체크
       const isPublicPath =
@@ -281,7 +279,6 @@ const AppRoutes: React.FC = () => {
     </ProtectedRoute>
   );
 
-
   return (
     <Routes>
       {/* 인증 페이지 라우트 - AuthLayout만 사용 */}
@@ -306,7 +303,21 @@ const AppRoutes: React.FC = () => {
         authenticated ? <Navigate to="/" /> : <AuthLayout><NewPassword /></AuthLayout>
       } />
 
-      {/* 루트 리디렉션 */}
+      {/* 공개 과정 라우트 - /courses 제거 및 /tnc 경로 추가 */}
+      <Route path="/tnc" element={
+        <MainLayout>
+          <CourseList />
+        </MainLayout>
+      } />
+      
+      {/* 과정 상세 페이지 - /tnc/:courseId 형식으로 변경 */}
+      <Route path="/tnc/:courseId" element={
+        <MainLayout>
+          <CourseHome />
+        </MainLayout>
+      } />
+
+      {/* 루트 리디렉션 - /courses를 /tnc로 변경 */}
       <Route
         path="/"
         element={
@@ -316,26 +327,17 @@ const AppRoutes: React.FC = () => {
             ) : userAttributes?.profile === 'instructor' ? (
               <Navigate to="/instructor/dashboard" />
             ) : (
-              <Navigate to="/courses" />
+              <Navigate to="/tnc" /> // 로그인하지 않은 사용자는 /tnc로
             )
           ) : (
-            <Navigate to="/courses" /> // 로그인하지 않은 사용자는 과정 목록으로
+            <Navigate to="/tnc" /> // 로그인하지 않은 사용자는 /tnc로
           )
         }
       />
 
-      {/* 공개 과정 라우트 - MainLayout 사용 */}
-      <Route path="/courses" element={
-        <MainLayout>
-          <CourseList />
-        </MainLayout>
-      } />
-
-      <Route path="/courses/:courseId" element={
-        <MainLayout>
-          <CourseHome />
-        </MainLayout>
-      } />
+      {/* /courses 경로에서 /tnc로 리디렉션 */}
+      <Route path="/courses" element={<Navigate to="/tnc" replace />} />
+      <Route path="/courses/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
 
       {/* 강사용 페이지 (URL 구조 변경) */}
       <Route path="/instructor">
@@ -366,9 +368,8 @@ const AppRoutes: React.FC = () => {
       {/* 관리자 라우트 - 관리자만 접근 가능 */}
       <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
 
-      {/* 교육생 기능용 라우트 */}
-      <Route path="/course/:courseId">
-        <Route index element={<MainLayout><CourseHome /></MainLayout>} />
+      {/* 교육생 기능용 라우트 - /tnc 경로로 변경 */}
+      <Route path="/tnc/:courseId">
         <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
         <Route path="quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
       </Route>
@@ -378,9 +379,13 @@ const AppRoutes: React.FC = () => {
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
 
-      {/* 교육생 페이지 리디렉션 */}
-      <Route path="/student/:courseId" element={<CoursesHomeRedirect />} />
-      <Route path="/student/:courseId/:path" element={<CoursePathRedirect />} />
+      {/* 교육생 페이지 리디렉션 - /tnc 경로로 변경 */}
+      <Route path="/student/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
+      <Route path="/student/:courseId/:path" element={<Navigate to={`/tnc/\${useParams().courseId}/\${useParams().path}`} replace />} />
+
+      {/* 이전 /course 패턴을 /tnc로 리디렉션 */}
+      <Route path="/course/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
+      <Route path="/course/:courseId/:path" element={<Navigate to={`/tnc/\${useParams().courseId}/\${useParams().path}`} replace />} />
 
       {/* 404 라우트 */}
       <Route path="*" element={<Navigate to="/" replace />} />
