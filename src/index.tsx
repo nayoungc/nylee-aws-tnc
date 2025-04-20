@@ -1,26 +1,21 @@
-// src/index.tsx
 import './styles/theme.css';
 import './styles/auth.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-import { Amplify } from 'aws-amplify';
-import { resourceConfig } from './amplifyconfiguration';
-
-// Amplify Gen 2 설정 적용
-Amplify.configure(resourceConfig);
-
-console.log('Amplify 현재 설정:', Amplify.getConfig());
-
 // i18n 초기화
 import './i18n';
 
-// API 설정 가져오기
-import { configureAmplify } from './api-config';
+// 단일 Amplify 설정 방식으로 수정
+import { Amplify } from 'aws-amplify';
+// api-config.ts에서 설정 객체만 가져오기 (configure 호출 없이)
+import { awsConfig } from './api-config';
 
-// Amplify 초기화
-configureAmplify();
+// 단 한 번만 configure 호출
+Amplify.configure(awsConfig);
+
+console.log('Amplify 설정 완료:', Amplify.getConfig());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
