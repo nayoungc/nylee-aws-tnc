@@ -129,11 +129,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
             }
           ]
         },
-        // 과정 카탈로그는 모든 사용자에게 표시 (URL 변경)
+        // 과정 카탈로그는 모든 사용자에게 표시
         {
           type: 'link',
           text: t('nav.course_catalog'),
-          href: '/tnc' // /courses에서 /tnc로 변경
+          href: '/tnc'
         }
       ];
     }

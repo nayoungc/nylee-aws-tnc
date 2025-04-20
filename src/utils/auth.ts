@@ -1,72 +1,47 @@
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
+import type { GraphQLQuery, GraphQLResult } from '@aws-amplify/api';
 
 // 인증된 API 클라이언트 반환 함수
 export const getAuthenticatedApiClient = async () => {
-    try {
-      // 인증 확인만 수행
-      await getCurrentUser();
-      
-      // API 클라이언트 생성 및 반환
-      return generateClient();
-    } catch (error) {
-      console.error('인증된 API 클라이언트 생성 오류:', error);
-      throw new Error('API 접근을 위한 인증이 필요합니다.');
-    }
-  };
+  try {
+    // 인증 확인만 수행
+    await getCurrentUser();
+    
+    // API 클라이언트 생성 및 반환
+    return generateClient();
+  } catch (error) {
+    console.error('인증된 API 클라이언트 생성 오류:', error);
+    throw new Error('API 접근을 위한 인증이 필요합니다.');
+  }
+};
 
 // GraphQL 쿼리 실행 헬퍼 함수
-export const executeGraphQL = async <T>(
-    query: string,
-    variables?: Record<string, any>,
-    authMode: 'apiKey' | 'userPool' | 'iam' | 'oidc' | 'lambda' = 'userPool'
-  ): Promise<T> => {
-    try {
-      const client = await getAuthenticatedApiClient();
-      
-      // any 타입으로 처리하여 타입 오류 회피
-      const result: any = await client.graphql({
-        query,
-        variables,
-        authMode
-      });
-      
-      // 결과 확인
-      if (!result || !result.data) {
-        throw new Error('GraphQL 응답에 데이터가 없습니다');
-      }
-      
-      // 데이터 반환
-      return result.data as T;
-    } catch (error) {
-      console.error('GraphQL 쿼리 실행 오류:', error);
-      throw error;
-    }
-  };
-
-  // 로그인 함수
-export const handleSignIn = async (username: string, password: string) => {
+export const executeGraphQL = async <T = any>(
+  query: string,
+  variables?: Record<string, any>,
+  authMode: 'apiKey' | 'userPool' | 'iam' | 'oidc' | 'lambda' = 'userPool'
+): Promise<T> => {
   try {
-    const { signIn } = await import('aws-amplify/auth');
-    const result = await signIn({
-      username,
-      password
+    const client = await getAuthenticatedApiClient();
+    
+    // any로 타입 캐스팅하여 타입 오류 우회
+    const response = await client.graphql({
+      query,
+      // @ts-ignore - variables 타입 오류 무시
+      variables,
+      authMode
     });
     
-    return {
-      success: true,
-      data: result,
-      message: '로그인에 성공했습니다.',
-      isComplete: result.isSignedIn,
-      nextStep: result.nextStep
-    };
+    // 응답 데이터 확인 및 반환
+    if (response && 'data' in response && response.data) {
+      return response.data as T;
+    } else {
+      throw new Error('GraphQL 응답에 데이터가 없습니다');
+    }
   } catch (error) {
-    console.error('로그인 오류:', error);
-    return {
-      success: false,
-      error,
-      message: error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.'
-    };
+    console.error('GraphQL 쿼리 실행 오류:', error);
+    throw error;
   }
 };
 
@@ -103,6 +78,32 @@ export const handleSignUp = async (username: string, password: string, email: st
   }
 };
 
+// 로그인 함수
+export const handleSignIn = async (username: string, password: string) => {
+  try {
+    const { signIn } = await import('aws-amplify/auth');
+    const result = await signIn({
+      username,
+      password
+    });
+    
+    return {
+      success: true,
+      data: result,
+      message: '로그인에 성공했습니다.',
+      isComplete: result.isSignedIn,
+      nextStep: result.nextStep
+    };
+  } catch (error) {
+    console.error('로그인 오류:', error);
+    return {
+      success: false,
+      error,
+      message: error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.'
+    };
+  }
+};
+
 // 확인 코드 확인 함수
 export const handleConfirmSignUp = async (username: string, confirmationCode: string) => {
   try {
@@ -112,11 +113,15 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
       confirmationCode
     });
     
+    // AWS Amplify v6에서는 상태를 isSignUpComplete로 확인
+    const isCompleted = result.isSignUpComplete;
+    
     return {
       success: true,
       data: result,
       message: '이메일 확인이 완료되었습니다. 이제 로그인할 수 있습니다.',
-      isComplete: result.isSignUpComplete
+      isComplete: isCompleted,
+      nextStep: result.nextStep
     };
   } catch (error) {
     console.error('확인 코드 확인 오류:', error);

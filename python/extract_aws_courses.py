@@ -197,11 +197,11 @@ def extract_course_sections(doc, course, start_table_index):
     과정에 대한 섹션별 내용 추출 (설명, 목표, 대상 등)
     """
     section_patterns = {
-        "description": ["과정\s*설명", "코스\s*설명", "과정에\s*대한\s*설명"],
-        "objectives": ["과정\s*목표", "학습\s*목표", "교육\s*목표"],
-        "audience": ["대상\s*수강생", "수강\s*대상", "교육\s*대상"],
-        "prerequisites": ["수강\s*전\s*권장\s*사항", "사전\s*필수\s*조건", "선수\s*지식"]
-    }
+    "description": [r"과정\s*설명", r"코스\s*설명", r"과정에\s*대한\s*설명"],
+    "objectives": [r"과정\s*목표", r"학습\s*목표", r"교육\s*목표"],
+    "audience": [r"대상\s*수강생", r"수강\s*대상", r"교육\s*대상"],
+    "prerequisites": [r"수강\s*전\s*권장\s*사항", r"사전\s*필수\s*조건", r"선수\s*지식"]
+}
     
     # 테이블 다음부터 일정 범위의 문단 검색
     section = None
@@ -383,13 +383,13 @@ def extract_modules_and_labs(doc, course, start_table_index):
                 # 실습 정보 확인
                 lab_match = re.search(lab_pattern, text, re.IGNORECASE)
                 if lab_match:
-                    lab_title = lab_match.group(2).strip() if lab_match.group(2) else text
-                    labs.append({
-                        "lab_number": extract_lab_number(text),
-                        "lab_title": lab_title,
-                        "day": current_day
-                    })
-                    continue
+                    lab_number, lab_title = extract_labs(text)
+                    if lab_title:  # 제목이 추출된 경우에만 추가
+                        labs.append({
+                            "lab_number": lab_number if lab_number else extract_lab_number(text),
+                            "lab_title": lab_title,
+                            "day": current_day
+                        })
                 
                 # 모듈이 없는데 "모듈 N"으로 시작하면 새 모듈 생성
                 if not current_module and text.strip().startswith("모듈 "):
@@ -634,15 +634,21 @@ def extract_modules_labs_from_table(table, current_day=None):
                     "day": day
                 })
         
-        # 실습 정보 추출
-        if lab_index is not None and lab_index < len(cells):
-            lab_content = cells[lab_index]
-            if lab_content:
-                labs.append({
-                    "lab_number": extract_lab_number(lab_content),
-                    "lab_title": lab_content,
-                    "day": day
-                })
+        # 실습 정보 추출 부분 수정
+    if lab_index is not None and lab_index < len(cells):
+        lab_content = cells[lab_index].strip()
+        if lab_content:
+            lab_number, lab_title = extract_labs(lab_content)
+            if not lab_number:  # 번호가 추출되지 않았다면
+                lab_number = extract_lab_number(lab_content)
+            if not lab_title:   # 제목이 추출되지 않았다면
+                lab_title = lab_content
+                
+            labs.append({
+                "lab_number": lab_number,
+                "lab_title": lab_title,
+                "day": day
+            })
     
     return modules, labs
 
@@ -722,6 +728,34 @@ def prepare_dynamodb_items(courses):
             module_lab_items.append(lab_item)
     
     return course_catalog_items, module_lab_items
+
+def extract_labs(text):
+    """
+    실습 정보를 더 정확히 추출하는 개선된 함수
+    """
+    # 실습 패턴을 더 정확하게 정의
+    lab_pattern = r'(?:•|\*|-)?\s*(?:실습|핸즈온\s*랩|Lab)\s*(\d+)?[:\s-]?\s*(.+)'
+    match = re.search(lab_pattern, text, re.IGNORECASE)
+    
+    if match:
+        lab_number = match.group(1) if match.group(1) else extract_lab_number(text)
+        lab_title = match.group(2).strip()
+        return lab_number, lab_title
+    return None, None
+
+def extract_modules_and_labs(doc, course, start_table_index):
+    # 기존 코드...
+    
+    # 실습 정보 확인 부분 수정
+    lab_match = re.search(lab_pattern, text, re.IGNORECASE)
+    if lab_match:
+        lab_number, lab_title = extract_labs(text)
+        if lab_number and lab_title:
+            labs.append({
+                "lab_number": lab_number,
+                "lab_title": lab_title,
+                "day": current_day
+            })
 
 def save_to_json_files(course_catalog_items, module_lab_items, courses):
     """
