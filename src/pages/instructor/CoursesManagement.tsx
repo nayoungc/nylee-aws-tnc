@@ -12,7 +12,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
-import { useTypedTranslation } from '../../utils/i18n-utils'; // 다국어 지원 추가
+import { useTypedTranslation } from '@utils/i18n-utils'; // 다국어 지원 추가
+
 
 // CourseCatalog 테이블에 맞는 타입 정의
 interface CourseCatalog {

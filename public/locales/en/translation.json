@@ -996,6 +996,28 @@
       "report_created": "Report has been successfully created.",
       "no_download_url": "Download link not available for this report.",
       "confirm_delete": "Are you sure you want to delete this report? This action cannot be undone."
+    },
+    "quiz_creator": {
+      "course_selection": {
+        "title": "Course Selection",
+        "course": "Select Course",
+        "placeholder": "Select a course",
+        "no_courses": "No Courses Available",
+        "create_course": "No courses are available. Please create a course first."
+      },
+      "quiz_type_selection": {
+        "label": "Quiz Type"
+      },
+      "loading": {
+        "courses": "Loading courses..."
+      },
+      "validation": {
+        "course_required": "Please select a course before saving the quiz"
+      },
+      "errors": {
+        "course_load": "Error loading course list:",
+        "course_load_message": "Failed to load courses. Please try again later."
+      }
     }
   }
 }

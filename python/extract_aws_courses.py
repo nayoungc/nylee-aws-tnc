@@ -1,10 +1,24 @@
 import docx
 import re
 import boto3
-import uuid
+import string
+import random
 import json
 from datetime import datetime
 from collections import defaultdict
+
+def generate_short_id(length=6):
+    """
+    간결한 ID 생성 (6자 알파벳+숫자 조합)
+    
+    Args:
+        length: ID 길이
+        
+    Returns:
+        str: 생성된 ID
+    """
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
 
 def extract_course_data(docx_path):
     """
@@ -51,7 +65,7 @@ def extract_course_data(docx_path):
     # 추출 결과 요약 출력
     print(f"\n=== 추출된 과정 정보 요약 (총 {len(course_info)}개) ===")
     for i, course in enumerate(course_info):
-        print(f"{i+1}. {course['courseName']}")
+        print(f"{i+1}. {course['courseName']} (ID: {course['courseId']})")
         print(f"   - 모듈: {len(course.get('modules', []))}개")
         print(f"   - 실습: {len(course.get('labs', []))}개")
     
@@ -74,6 +88,7 @@ def extract_course_information_improved(doc):
         list: 과정 정보 목록
     """
     courses = []
+    used_ids = set()  # ID 중복 방지
     
     # 2-행 테이블에서 과정명 및 기본 정보 후보 찾기
     course_candidates = []
@@ -97,7 +112,10 @@ def extract_course_information_improved(doc):
     
     # 각 과정 후보에 대해 전체 정보 추출
     for candidate in course_candidates:
-        course_id = str(uuid.uuid4())
+        # 고유한 6자리 코스 ID 생성
+        course_id = generate_unique_course_id(used_ids)
+        used_ids.add(course_id)
+        
         course = {
             "courseId": course_id,
             "id": course_id,  # DynamoDB 기본 키로 사용
@@ -122,9 +140,18 @@ def extract_course_information_improved(doc):
         extract_modules_and_labs(doc, course, candidate["table_index"])
         
         courses.append(course)
-        print(f"과정 정보 추출 완료: {course['courseName']}")
+        print(f"과정 정보 추출 완료: {course['courseName']} (ID: {course_id})")
     
     return courses
+
+def generate_unique_course_id(used_ids, length=6):
+    """
+    중복되지 않는 고유한 코스 ID 생성
+    """
+    while True:
+        new_id = generate_short_id(length)
+        if new_id not in used_ids:
+            return new_id
 
 def find_course_name_before_table(doc, table, table_idx):
     """
@@ -227,16 +254,21 @@ def extract_course_sections(doc, course, start_table_index):
 
 def extract_modules_and_labs(doc, course, start_table_index):
     """
-    과정에 대한 모듈 및 실습 정보 추출
+    과정에 대한 모듈 및 실습 정보 추출 (일차 정보 포함)
     """
     modules = []
     labs = []
+    current_day = None  # 현재 처리 중인 일차
     
     # 모듈 및 실습 패턴
     module_patterns = [
         r'모듈\s*(\d+)[:\s-]\s*(.+?)(?=\n|\$)',
-        r'Module\s*(\d+)[:\s-]\s*(.+?)(?=\n|\$)',
-        r'(\d+)일\s*차\s*[:：]?\s*(.+?)(?=\n|\$)'
+        r'Module\s*(\d+)[:\s-]\s*(.+?)(?=\n|\$)'
+    ]
+    
+    day_patterns = [
+        r'(\d+)일\s*차\s*[:：]?\s*(.+?)(?=\n|\$)',
+        r'Day\s*(\d+)\s*[:：]?\s*(.+?)(?=\n|\$)'
     ]
     
     lab_patterns = [
@@ -264,7 +296,19 @@ def extract_modules_and_labs(doc, course, start_table_index):
                     in_outline_section = False
                     break
                 
-                # 모듈 및 실습 정보 추출
+                # 일차 정보 확인
+                day_found = False
+                for pattern in day_patterns:
+                    match = re.match(pattern, text, re.IGNORECASE)
+                    if match:
+                        current_day = match.group(1)
+                        day_found = True
+                        break
+                
+                if day_found:
+                    continue
+                
+                # 모듈 정보 추출
                 for pattern in module_patterns:
                     for match in re.finditer(pattern, text, re.IGNORECASE):
                         module_num = match.group(1)
@@ -272,9 +316,11 @@ def extract_modules_and_labs(doc, course, start_table_index):
                         if module_title and len(module_title) < 200:
                             modules.append({
                                 "module_number": module_num,
-                                "module_title": module_title
+                                "module_title": module_title,
+                                "day": current_day  # 일차 정보 추가
                             })
                 
+                # 실습 정보 추출
                 for pattern in lab_patterns:
                     for match in re.finditer(pattern, text, re.IGNORECASE):
                         lab_num = match.group(1) if match.group(1) else "N/A"
@@ -282,13 +328,14 @@ def extract_modules_and_labs(doc, course, start_table_index):
                         if lab_title and len(lab_title) < 200:
                             labs.append({
                                 "lab_number": lab_num,
-                                "lab_title": lab_title
+                                "lab_title": lab_title,
+                                "day": current_day  # 일차 정보 추가
                             })
     
     # 모듈/실습 테이블 확인
     for i, table in enumerate(doc.tables):
         if i > start_table_index and is_module_table(table):
-            table_modules, table_labs = extract_modules_labs_from_table(table)
+            table_modules, table_labs = extract_modules_labs_from_table(table, current_day)
             modules.extend(table_modules)
             labs.extend(table_labs)
     
@@ -326,16 +373,17 @@ def is_module_table(table):
     module_keywords = ['모듈', '주제', '내용', '실습']
     return any(keyword in header_texts for keyword in module_keywords)
 
-def extract_modules_labs_from_table(table):
+def extract_modules_labs_from_table(table, current_day=None):
     """
-    테이블에서 모듈과 실습 정보 추출
+    테이블에서 모듈과 실습 정보 추출 (일차 정보 포함)
     """
     headers = [cell.text.strip().lower() for cell in table.rows[0].cells]
     
-    # 헤더에서 모듈과 실습 열의 인덱스 찾기
+    # 헤더에서 모듈, 실습, 일차 열의 인덱스 찾기
     module_index = None
     module_content_index = None
     lab_index = None
+    day_index = None
     
     for i, header in enumerate(headers):
         if '모듈' in header:
@@ -344,6 +392,8 @@ def extract_modules_labs_from_table(table):
             module_content_index = i
         elif '실습' in header:
             lab_index = i
+        elif '일차' in header or 'day' in header:
+            day_index = i
     
     modules = []
     labs = []
@@ -356,6 +406,17 @@ def extract_modules_labs_from_table(table):
         if not any(cells):
             continue
             
+        # 행에서 일차 정보 추출
+        row_day = None
+        if day_index is not None and day_index < len(cells):
+            day_text = cells[day_index]
+            day_match = re.search(r'(\d+)[일차]*', day_text)
+            if day_match:
+                row_day = day_match.group(1)
+        
+        # 일차 정보가 없으면 현재 일차 사용
+        day = row_day or current_day
+            
         # 모듈 정보 추출
         if module_index is not None and module_index < len(cells):
             module_name = cells[module_index]
@@ -366,7 +427,8 @@ def extract_modules_labs_from_table(table):
                 
                 modules.append({
                     "module_number": extract_module_number(module_name),
-                    "module_title": module_content or module_name
+                    "module_title": module_content or module_name,
+                    "day": day  # 일차 정보 추가
                 })
         
         # 실습 정보 추출
@@ -375,7 +437,8 @@ def extract_modules_labs_from_table(table):
             if lab_content:
                 labs.append({
                     "lab_number": extract_lab_number(lab_content),
-                    "lab_title": lab_content
+                    "lab_title": lab_content,
+                    "day": day  # 일차 정보 추가
                 })
     
     return modules, labs
@@ -437,6 +500,7 @@ def prepare_dynamodb_items(courses):
                 'courseName': course['courseName'],
                 'moduleNumber': module['module_number'],
                 'moduleTitle': module['module_title'],
+                'day': module.get('day', ''),  # 일차 정보
                 'type': 'module',
                 'createdAt': course['createdAt'],
                 'updatedAt': course['updatedAt']
@@ -452,6 +516,7 @@ def prepare_dynamodb_items(courses):
                 'courseName': course['courseName'],
                 'labNumber': lab['lab_number'],
                 'labTitle': lab['lab_title'],
+                'day': lab.get('day', ''),  # 일차 정보
                 'type': 'lab',
                 'createdAt': course['createdAt'],
                 'updatedAt': course['updatedAt']
