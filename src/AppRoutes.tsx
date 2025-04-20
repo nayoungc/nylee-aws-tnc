@@ -29,7 +29,7 @@ import SurveyManagement from './pages/instructor/SurveyManagement';
 import SurveyCreator from './pages/instructor/SurveyCreator';
 import ReportGenerator from './pages/instructor/ReportGenerator';
 import AdminPage from './pages/admin/AdminPage';
-import CourseCatalog from './pages/admin/CourseCatalogTab';
+import CourseCatalog from './pages/instructor/CourseCatalog';
 
 // 교육생용 페이지 컴포넌트
 import SurveyPage from './pages/courses/SurveyPage';

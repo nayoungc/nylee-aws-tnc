@@ -5,6 +5,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
+// import { Amplify } from 'aws-amplify';
+// import { resourceConfig } from './amplifyconfiguration';
+
+// Amplify.configure(resourceConfig);
+
+
 // i18n 초기화
 import './i18n';
 
