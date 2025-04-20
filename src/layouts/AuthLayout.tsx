@@ -1,7 +1,7 @@
 // src/layouts/AuthLayout.tsx
 import React, { ReactNode } from 'react';
 import { Container, SpaceBetween } from '@cloudscape-design/components';
-import SimpleHeader from '../components/SimpleHeader'; // 간소화된 헤더 컴포넌트
+import SimpleHeader from '@components/SimpleHeader'; // 간소화된 헤더 컴포넌트
 
 interface AuthLayoutProps {
   children: ReactNode;

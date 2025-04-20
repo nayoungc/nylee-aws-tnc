@@ -1,12 +1,10 @@
-// src/components/SimpleHeader.tsx
+// src/components/SimpleHeader.tsx 수정
 import React from 'react';
 import { TopNavigation } from '@cloudscape-design/components';
 import { useTypedTranslation } from '../utils/i18n-utils';
-import { useNavigate } from 'react-router-dom';
 
 const SimpleHeader: React.FC = () => {
   const { tString, i18n } = useTypedTranslation();
-  const navigate = useNavigate();
   
   // 언어 변경 핸들러
   const changeLanguage = (languageCode: string) => {
@@ -18,13 +16,13 @@ const SimpleHeader: React.FC = () => {
       identity={{
         href: '/',
         title: tString('app.title'),
+        // 로고를 제거하거나 다른 이미지 사용
         logo: {
-          src: '/images/aws.png',
+          src: '/images/aws-minimal.png', // 더 간소화된 로고
           alt: tString('app.title')
         }
       }}
       utilities={[
-        // 언어 선택기만 표시
         {
           type: 'button',
           text: i18n.language === 'ko' ? '🇰🇷 한국어' : '🇺🇸 English',

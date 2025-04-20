@@ -1,7 +1,7 @@
 // src/layouts/MainLayout.tsx
 import React, { useEffect, useState } from 'react';
-import { 
-  AppLayout, 
+import {
+  AppLayout,
   SideNavigation,
   SideNavigationProps  // 추가: SideNavigationProps 타입 가져오기
 } from '@cloudscape-design/components';
@@ -58,7 +58,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     getUserRole();
   }, []);
 
-  // 네비게이션 아이템 생성 함수 - Cloudscape의 타입 사용
   // 네비게이션 아이템 생성 함수 - Cloudscape의 타입 사용
   const getNavigationItems = (): SideNavigationProps.Item[] => {
     // 로그인하지 않은 사용자 또는 일반 학생용 메뉴 (공개 메뉴만 표시)
@@ -143,9 +142,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     // admin 사용자만을 위한 추가 메뉴
     if (userRole === 'admin') {
       navItems.push({
-        type: 'link',
-        text: t('nav.admin') || '관리자 페이지',
-        href: '/admin'
+        type: 'section',
+        text: t('nav.admin_section') || '관리자 메뉴',
+        items: [
+          {
+            type: 'link',
+            text: t('nav.admin_dashboard') || '관리자 대시보드',
+            href: '/admin'
+          },
+          {
+            type: 'link',
+            text: t('nav.user_management') || '사용자 관리',
+            href: '/admin/users'
+          },
+          {
+            type: 'link',
+            text: t('nav.system_settings') || '시스템 설정',
+            href: '/admin/settings'
+          }
+        ]
       });
     }
 
@@ -158,7 +173,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       <div id="header">
         <Header />
       </div>
-      
+
       <AppLayout
         navigation={
           <SideNavigation

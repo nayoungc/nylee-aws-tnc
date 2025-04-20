@@ -130,10 +130,21 @@ def process_document(document_text):
 
 # 파일에서 텍스트 읽어오기 (여기서는 document_text 변수에 문서 내용이 있다고 가정)
 def extract_course_info_from_file(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
-        document_text = f.read()
+    # 여러 인코딩을 시도합니다
+    encodings = ['utf-8', 'cp949', 'euc-kr', 'latin-1']
     
-    return process_document(document_text)
+    for encoding in encodings:
+        try:
+            with open(filename, 'r', encoding=encoding) as f:
+                document_text = f.read()
+            print(f"파일을 성공적으로 열었습니다. 사용된 인코딩: {encoding}")
+            return process_document(document_text)
+        except UnicodeDecodeError:
+            print(f"{encoding} 인코딩으로 파일을 읽을 수 없습니다. 다른 인코딩을 시도합니다.")
+            continue
+    
+    # 모든 인코딩 시도 실패
+    raise ValueError("지원하는 인코딩으로 파일을 읽을 수 없습니다.")
 
 # 사용 예시
 # results = extract_course_info_from_file('aws_courses.txt')
@@ -142,29 +153,29 @@ def extract_course_info_from_file(filename):
 def main(document_text):
     return process_document(document_text)
 
-# 결과를 엑셀로 저장하는 추가 기능
-# def save_to_excel(courses, filename='aws_course_outlines.xlsx'):
-#     with pd.ExcelWriter(filename) as writer:
-#         for course in courses:
-#             course_name = course['과정명']
+#결과를 엑셀로 저장하는 추가 기능
+def save_to_excel(courses, filename='aws_course_outlines.xlsx'):
+    with pd.ExcelWriter(filename) as writer:
+        for course in courses:
+            course_name = course['과정명']
             
-#             if "일자별 모듈" in course:
-#                 # 일자별로 시트 생성
-#                 for day, modules in course["일자별 모듈"].items():
-#                     df = pd.DataFrame(modules)
-#                     # 실습 리스트를 문자열로 변환
-#                     df['실습'] = df['실습'].apply(lambda x: ', '.join(x) if x else '없음')
-#                     sheet_name = f"{course_name[:20]}_{day}"[:31]  # 엑셀 시트명 길이 제한
-#                     df.to_excel(writer, sheet_name=sheet_name, index=False)
-#             else:
-#                 # 단일 시트로 생성
-#                 df = pd.DataFrame(course["모듈"])
-#                 # 실습 리스트를 문자열로 변환
-#                 df['실습'] = df['실습'].apply(lambda x: ', '.join(x) if x else '없음')
-#                 sheet_name = f"{course_name[:30]}"
-#                 df.to_excel(writer, sheet_name=sheet_name, index=False)
+            if "일자별 모듈" in course:
+                # 일자별로 시트 생성
+                for day, modules in course["일자별 모듈"].items():
+                    df = pd.DataFrame(modules)
+                    # 실습 리스트를 문자열로 변환
+                    df['실습'] = df['실습'].apply(lambda x: ', '.join(x) if x else '없음')
+                    sheet_name = f"{course_name[:20]}_{day}"[:31]  # 엑셀 시트명 길이 제한
+                    #df.to_excel(writer, sheet_name=sheet_name, index=False)
+            else:
+                # 단일 시트로 생성
+                df = pd.DataFrame(course["모듈"])
+                # 실습 리스트를 문자열로 변환
+                df['실습'] = df['실습'].apply(lambda x: ', '.join(x) if x else '없음')
+                sheet_name = f"{course_name[:30]}"
+                #df.to_excel(writer, sheet_name=sheet_name, index=False)
     
-#     print(f"\n과정 개요가 {filename}에 저장되었습니다.")
+    print(f"\n과정 개요가 {filename}에 저장되었습니다.")
 
 file_path = 'AWS TnC_ILT_DILT.docx'
 results = extract_course_info_from_file(file_path)

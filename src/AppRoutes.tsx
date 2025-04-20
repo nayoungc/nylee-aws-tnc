@@ -284,7 +284,7 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* 인증 페이지 라우트 */}
+      {/* 인증 페이지 라우트 - AuthLayout만 사용 */}
       <Route path="/signin" element={
         authenticated ?
           (userAttributes?.profile === 'admin' ?
@@ -324,7 +324,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* 공개 과정 라우트 - 로그인 필요 없음 */}
+      {/* 공개 과정 라우트 - MainLayout 사용 */}
       <Route path="/courses" element={
         <MainLayout>
           <CourseList />
