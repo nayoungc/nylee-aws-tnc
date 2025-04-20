@@ -158,7 +158,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           
           // 가능한 응답 키 확인
           const responseKey = 
-            data.listTncCourseCatalogs ? 'listTncCourseCatalogs' :
+            data.listourseCatalogs ? 'listCourseCatalogs' :
             data.listCourseCatalogs ? 'listCourseCatalogs' :
             data.listCourses ? 'listCourses' : 
             Object.keys(data)[0]; // 또는 첫 번째 키 사용
