@@ -1,4 +1,4 @@
-// 과정 카탈로그 쿼리
+// CourseCatalog 쿼리
 export const listCourseCatalogs = /* GraphQL */ `
   query ListCourseCatalogs(
     \$filter: ModelCourseCatalogFilterInput
@@ -8,11 +8,14 @@ export const listCourseCatalogs = /* GraphQL */ `
     listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         id
-        title
-        description
-        duration
+        course_id
+        course_name
         level
-        category
+        duration
+        delivery_method
+        description
+        objectives
+        target_audience
         createdAt
         updatedAt
       }
@@ -25,18 +28,21 @@ export const getCourseCatalog = /* GraphQL */ `
   query GetCourseCatalog(\$id: ID!) {
     getCourseCatalog(id: \$id) {
       id
-      title
-      description
-      duration
+      course_id
+      course_name
       level
-      category
+      duration
+      delivery_method
+      description
+      objectives
+      target_audience
       createdAt
       updatedAt
     }
   }
 `;
 
-// 고객사 쿼리
+// Customer 쿼리
 export const listCustomers = /* GraphQL */ `
   query ListCustomers(
     \$filter: ModelCustomerFilterInput
@@ -66,7 +72,7 @@ export const getCustomer = /* GraphQL */ `
   }
 `;
 
-// 강사 쿼리
+// Instructor 쿼리
 export const listInstructors = /* GraphQL */ `
   query ListInstructors(
     \$filter: ModelInstructorFilterInput
@@ -80,6 +86,7 @@ export const listInstructors = /* GraphQL */ `
         email
         status
         profile
+        cognitoId
         createdAt
         updatedAt
       }
@@ -96,72 +103,9 @@ export const getInstructor = /* GraphQL */ `
       email
       status
       profile
+      cognitoId
       createdAt
       updatedAt
-    }
-  }
-`;
-
-// 필터 쿼리 - 상태별 강사 조회
-export const instructorsByStatus = /* GraphQL */ `
-  query InstructorsByStatus(
-    \$status: String
-    \$sortDirection: ModelSortDirection
-    \$filter: ModelInstructorFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    instructorsByStatus(
-      status: \$status
-      sortDirection: \$sortDirection
-      filter: \$filter
-      limit: \$limit
-      nextToken: \$nextToken
-    ) {
-      items {
-        id
-        name
-        email
-        status
-        profile
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-// 검색 쿼리 예시 - 과정 카탈로그 검색
-export const searchCourseCatalogs = /* GraphQL */ `
-  query SearchCourseCatalogs(
-    \$filter: SearchableCourseCatalogFilterInput
-    \$sort: [SearchableCourseCatalogSortInput]
-    \$limit: Int
-    \$nextToken: String
-    \$from: Int
-    \$aggregates: [SearchableCourseCatalogAggregationInput]
-  ) {
-    searchCourseCatalogs(
-      filter: \$filter
-      sort: \$sort
-      limit: \$limit
-      nextToken: \$nextToken
-      from: \$from
-      aggregates: \$aggregates
-    ) {
-      items {
-        id
-        title
-        description
-        duration
-        level
-        category
-        createdAt
-        updatedAt
-      }
-      nextToken
-      total
     }
   }
 `;

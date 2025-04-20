@@ -1,4 +1,4 @@
-// 과정 카탈로그 뮤테이션
+// CourseCatalog 뮤테이션
 export const createCourseCatalog = /* GraphQL */ `
   mutation CreateCourseCatalog(
     \$input: CreateCourseCatalogInput!
@@ -6,11 +6,14 @@ export const createCourseCatalog = /* GraphQL */ `
   ) {
     createCourseCatalog(input: \$input, condition: \$condition) {
       id
-      title
-      description
-      duration
+      course_id
+      course_name
       level
-      category
+      duration
+      delivery_method
+      description
+      objectives
+      target_audience
       createdAt
       updatedAt
     }
@@ -24,11 +27,14 @@ export const updateCourseCatalog = /* GraphQL */ `
   ) {
     updateCourseCatalog(input: \$input, condition: \$condition) {
       id
-      title
-      description
-      duration
+      course_id
+      course_name
       level
-      category
+      duration
+      delivery_method
+      description
+      objectives
+      target_audience
       createdAt
       updatedAt
     }
@@ -42,15 +48,15 @@ export const deleteCourseCatalog = /* GraphQL */ `
   ) {
     deleteCourseCatalog(input: \$input, condition: \$condition) {
       id
-      title
-      description
+      course_id
+      course_name
       createdAt
       updatedAt
     }
   }
 `;
 
-// 고객사 뮤테이션
+// Customer 뮤테이션
 export const createCustomer = /* GraphQL */ `
   mutation CreateCustomer(
     \$input: CreateCustomerInput!
@@ -93,7 +99,7 @@ export const deleteCustomer = /* GraphQL */ `
   }
 `;
 
-// 강사 뮤테이션
+// Instructor 뮤테이션
 export const createInstructor = /* GraphQL */ `
   mutation CreateInstructor(
     \$input: CreateInstructorInput!
@@ -105,6 +111,7 @@ export const createInstructor = /* GraphQL */ `
       email
       status
       profile
+      cognitoId
       createdAt
       updatedAt
     }
@@ -122,6 +129,7 @@ export const updateInstructor = /* GraphQL */ `
       email
       status
       profile
+      cognitoId
       createdAt
       updatedAt
     }

@@ -1,10 +1,12 @@
-// src/models/Course.ts
 export interface CourseCatalog {
   id?: string;
-  title: string;
-  description?: string;
-  duration?: number;
+  course_name: string;
   level?: string;
-  category?: string;
-
+  duration?: string;
+  delivery_method?: string;
+  description?: string;
+  objectives?: string[];
+  target_audience?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }

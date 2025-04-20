@@ -1,15 +1,18 @@
-// 과정 카탈로그 구독
+// CourseCatalog 구독
 export const onCreateCourseCatalog = /* GraphQL */ `
   subscription OnCreateCourseCatalog(
     \$filter: ModelSubscriptionCourseCatalogFilterInput
   ) {
     onCreateCourseCatalog(filter: \$filter) {
       id
-      title
-      description
-      duration
+      course_id
+      course_name
       level
-      category
+      duration
+      delivery_method
+      description
+      objectives
+      target_audience
       createdAt
       updatedAt
     }
@@ -22,11 +25,14 @@ export const onUpdateCourseCatalog = /* GraphQL */ `
   ) {
     onUpdateCourseCatalog(filter: \$filter) {
       id
-      title
-      description
-      duration
+      course_id
+      course_name
       level
-      category
+      duration
+      delivery_method
+      description
+      objectives
+      target_audience
       createdAt
       updatedAt
     }
@@ -39,16 +45,19 @@ export const onDeleteCourseCatalog = /* GraphQL */ `
   ) {
     onDeleteCourseCatalog(filter: \$filter) {
       id
-      title
+      course_id
+      course_name
       createdAt
       updatedAt
     }
   }
 `;
 
-// 고객사 구독
+// Customer 구독
 export const onCreateCustomer = /* GraphQL */ `
-  subscription OnCreateCustomer(\$filter: ModelSubscriptionCustomerFilterInput) {
+  subscription OnCreateCustomer(
+    \$filter: ModelSubscriptionCustomerFilterInput
+  ) {
     onCreateCustomer(filter: \$filter) {
       id
       name
@@ -59,7 +68,9 @@ export const onCreateCustomer = /* GraphQL */ `
 `;
 
 export const onUpdateCustomer = /* GraphQL */ `
-  subscription OnUpdateCustomer(\$filter: ModelSubscriptionCustomerFilterInput) {
+  subscription OnUpdateCustomer(
+    \$filter: ModelSubscriptionCustomerFilterInput
+  ) {
     onUpdateCustomer(filter: \$filter) {
       id
       name
@@ -70,7 +81,9 @@ export const onUpdateCustomer = /* GraphQL */ `
 `;
 
 export const onDeleteCustomer = /* GraphQL */ `
-  subscription OnDeleteCustomer(\$filter: ModelSubscriptionCustomerFilterInput) {
+  subscription OnDeleteCustomer(
+    \$filter: ModelSubscriptionCustomerFilterInput
+  ) {
     onDeleteCustomer(filter: \$filter) {
       id
       name
@@ -80,7 +93,7 @@ export const onDeleteCustomer = /* GraphQL */ `
   }
 `;
 
-// 강사 구독
+// Instructor 구독
 export const onCreateInstructor = /* GraphQL */ `
   subscription OnCreateInstructor(
     \$filter: ModelSubscriptionInstructorFilterInput
@@ -91,6 +104,7 @@ export const onCreateInstructor = /* GraphQL */ `
       email
       status
       profile
+      cognitoId
       createdAt
       updatedAt
     }
@@ -107,6 +121,7 @@ export const onUpdateInstructor = /* GraphQL */ `
       email
       status
       profile
+      cognitoId
       createdAt
       updatedAt
     }
