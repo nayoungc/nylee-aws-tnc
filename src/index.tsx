@@ -10,9 +10,15 @@ import './i18n';
 import { Amplify } from 'aws-amplify';
 import awsExports from './aws-exports';
 
-// 단일 Amplify 설정 적용
+// 기본 설정 적용
 Amplify.configure(awsExports);
-console.log('Amplify 설정 완료:', Amplify.getConfig());
+
+// 설정 로그 - 자세한 로그로 API 설정 확인
+console.log('Amplify 설정 완료:', JSON.stringify({
+  Auth: Amplify.getConfig().Auth,
+  API: Amplify.getConfig().API,
+  api: (awsExports as any).api // 소문자 api 확인
+}, null, 2));
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

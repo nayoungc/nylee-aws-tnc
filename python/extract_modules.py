@@ -43,17 +43,9 @@ def load_json_data():
 
 def import_data_to_dynamodb():
     """DynamoDB에 데이터 임포트"""
-    
-    # AWS 자격 증명 설정 (실제 환경에서는 IAM 역할 또는 환경 변수 사용 권장)
-    # 필요한 경우 아래 줄을 주석 해제하고 자격 증명을 입력하세요
-    # session = boto3.Session(
-    #     aws_access_key_id='YOUR_ACCESS_KEY',
-    #     aws_secret_access_key='YOUR_SECRET_KEY',
-    #     region_name='ap-northeast-2'  # 리전은 필요에 따라 변경하세요
-    # )
-    
+
     # 기본 세션 사용 (환경 변수 또는 IAM 역할에서 자격 증명 가져옴)
-    session = boto3.Session(region_name='ap-northeast-2')  # 리전은 필요에 따라 변경하세요
+    session = boto3.Session(region_name='us-east-1')  # 리전은 필요에 따라 변경하세요
     
     # DynamoDB 리소스 생성
     dynamodb = session.resource('dynamodb')
@@ -74,10 +66,10 @@ def import_data_to_dynamodb():
         dynamodb_client.create_table(
             TableName=course_table_name,
             KeySchema=[
-                {'AttributeName': 'course_id', 'KeyType': 'HASH'}  # 파티션 키
+                {'AttributeName': 'id', 'KeyType': 'HASH'}  # 파티션 키
             ],
             AttributeDefinitions=[
-                {'AttributeName': 'course_id', 'AttributeType': 'S'}
+                {'AttributeName': 'id', 'AttributeType': 'S'}
             ],
             ProvisionedThroughput={'ReadCapacityUnits': 5, 'WriteCapacityUnits': 5}
         )
@@ -124,6 +116,9 @@ def import_data_to_dynamodb():
     # 과정 데이터 삽입
     print("과정 데이터 삽입 중...")
     for course in courses_data:
+        # id 필드 추가
+        course['id'] = course['course_id']  # id 필드 추가
+        
         # DynamoDB는 Decimal 형식을 사용하므로 JSON을 DynamoDB 형식으로 변환
         course_item = json.loads(json.dumps(course), parse_float=Decimal)
         course_table.put_item(Item=course_item)
@@ -132,6 +127,9 @@ def import_data_to_dynamodb():
     # 모듈 데이터 삽입
     print("모듈 데이터 삽입 중...")
     for module in modules_data:
+        # id 필드 추가
+        module['id'] = module['module_id']  # id 필드 추가
+        
         module_item = json.loads(json.dumps(module), parse_float=Decimal)
         module_table.put_item(Item=module_item)
     print(f"{len(modules_data)}개의 모듈 데이터 삽입 완료")
