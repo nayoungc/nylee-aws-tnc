@@ -30,6 +30,7 @@ import SurveyCreator from './pages/instructor/SurveyCreator';
 import ReportGenerator from './pages/instructor/ReportGenerator';
 import AdminPage from './pages/admin/AdminPage';
 import CourseCatalog from './pages/instructor/CourseCatalog';
+import Analytics from './pages/instructor/Analytics';
 
 // 교육생용 페이지 컴포넌트
 import SurveyPage from './pages/courses/SurveyPage';
@@ -361,7 +362,7 @@ const AppRoutes: React.FC = () => {
         <Route path="analytics">
           <Route path="comparison" element={<InstructorRoute><div>사전/사후 비교 분석</div></InstructorRoute>} />
           <Route path="reports" element={<InstructorRoute><ReportGenerator /></InstructorRoute>} />
-          <Route path="insights" element={<InstructorRoute><div>과정별 인사이트</div></InstructorRoute>} />
+          <Route path="insights" element={<InstructorRoute><Analytics/></InstructorRoute>} />
         </Route>
       </Route>
 
@@ -371,7 +372,9 @@ const AppRoutes: React.FC = () => {
       {/* 교육생 기능용 라우트 - /tnc 경로로 변경 */}
       <Route path="/tnc/:courseId">
         <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
-        <Route path="quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
+        <Route path="pre-quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
+        <Route path="post-quiz" element={<MainLayout><PostQuizPage /></MainLayout>} />
+        <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
       </Route>
 
       {/* 이전 URL 경로 리디렉션 */}
