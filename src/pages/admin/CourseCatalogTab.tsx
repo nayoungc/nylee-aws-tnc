@@ -18,7 +18,6 @@ import {
     Alert
 } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
-import { Amplify } from 'aws-amplify';
 import { useTypedTranslation } from '../../utils/i18n-utils';
 
 // Define Course interface based on DynamoDB schema

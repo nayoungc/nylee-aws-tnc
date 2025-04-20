@@ -1,14 +1,7 @@
 import React from 'react';
 import {
-  Container,
-  Header,
   SpaceBetween,
-  Box,
-  Button,
-  Cards,
   Grid,
-  ColumnLayout,
-  SegmentedControl
 } from '@cloudscape-design/components';
 import TextFilter from '@cloudscape-design/components/text-filter';
 import Select from '@cloudscape-design/components/select';

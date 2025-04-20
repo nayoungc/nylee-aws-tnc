@@ -16,7 +16,7 @@ import {
     Grid,
     Alert
 } from '@cloudscape-design/components';
-import MainLayout from '../components/MainLayout';
+import MainLayout from '../layouts/MainLayout';
 
 // 강의자 타입
 interface Instructor {
