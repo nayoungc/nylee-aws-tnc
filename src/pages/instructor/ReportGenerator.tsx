@@ -1,5 +1,5 @@
 // pages/instructor/ReportGenerator.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Container,
   Header,
@@ -13,7 +13,6 @@ import {
   Table,
   Cards,
   ColumnLayout,
-  ContentLayout,
   Alert,
   Badge,
   Spinner,
@@ -115,7 +114,7 @@ export default function ReportGenerator() {
   const [loadingCourses, setLoadingCourses] = useState<boolean>(true);
   const [loadingReports, setLoadingReports] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("generate");
+  const [activeTabId, setActiveTabId] = useState<string>("generate");
   const [previewData, setPreviewData] = useState<any>(null);
   const [client] = useState(() => generateClient());
 
@@ -349,7 +348,7 @@ export default function ReportGenerator() {
       fetchReports();
       
       // 보고서 탭으로 전환
-      setActiveTab('reports');
+      setActiveTabId('reports');
       
     } catch (error) {
       console.error(t('reports.errors.generation'), error);
@@ -371,7 +370,7 @@ export default function ReportGenerator() {
           };
           
           setGeneratedReports(prev => [newReport, ...prev]);
-          setActiveTab('reports');
+          setActiveTabId('reports');
           alert(t('reports.alerts.report_created'));
         }, 2000);
       }
@@ -413,10 +412,10 @@ export default function ReportGenerator() {
   
   // 미리보기가 필요할 때 데이터를 가져옵니다
   useEffect(() => {
-    if (selectedCourse && activeTab === 'preview') {
+    if (selectedCourse && activeTabId === 'preview') {
       fetchPreviewData();
     }
-  }, [selectedCourse, activeTab]);
+  }, [selectedCourse, activeTabId]);
 
   const getStatusLabel = (status: string) => {
     switch(status) {
@@ -427,10 +426,315 @@ export default function ReportGenerator() {
     }
   };
 
-  return (
-    <ContentLayout>
+  // 각 탭 컴포넌트 메모이제이션
+  const generateTabContent = useMemo(() => (
+    <Container header={<Header variant="h2">{t('reports.report_settings')}</Header>}>
       <SpaceBetween size="l">
-        <Header variant="h1">{t('reports.title')}</Header>
+        <FormField label={t('reports.select_course')}>
+          <Select
+            selectedOption={selectedCourse}
+            onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
+            options={courses}
+            placeholder={tString('reports.course_placeholder')}
+            filteringType="auto"
+            statusType={loadingCourses ? "loading" : "finished"}
+            loadingText={tString('reports.loading_courses')}
+            empty={
+              <Box textAlign="center" color="inherit">
+                <b>{t('reports.no_courses.title')}</b>
+                <Box padding={{ bottom: "xs" }}>
+                  {t('reports.no_courses.message')}
+                </Box>
+              </Box>
+            }
+          />
+        </FormField>
+        
+        <FormField label={t('reports.report_type')}>
+          <Cards
+            cardDefinition={{
+              header: item => item.title,
+              sections: [
+                {
+                  id: "description",
+                  content: item => item.description
+                }
+              ]
+            }}
+            cardsPerRow={[
+              { cards: 1 },
+              { minWidth: 500, cards: 2 }
+            ]}
+            items={reportTypes}
+            selectedItems={reportTypes.filter(item => item.id === selectedReportType)}
+            selectionType="single"
+            onSelectionChange={({ detail }) => 
+              detail.selectedItems.length > 0 && 
+              setSelectedReportType(detail.selectedItems[0].id)
+            }
+            trackBy="id"
+          />
+        </FormField>
+        
+        <ColumnLayout columns={2}>
+          <FormField label={t('reports.start_date')}>
+            <DatePicker
+              onChange={({ detail }) => detail.value && setStartDate(detail.value)}
+              value={startDate ? startDate.split('T')[0] : ''}
+              placeholder="YYYY/MM/DD"
+              i18nStrings={{
+                nextMonthAriaLabel: tString('common.date.next_month'),
+                previousMonthAriaLabel: tString('common.date.previous_month'),
+                todayAriaLabel: tString('common.date.today')
+              }}
+            />
+          </FormField>
+          
+          <FormField label={t('reports.end_date')}>
+            <DatePicker
+              onChange={({ detail }) => detail.value && setEndDate(detail.value)}
+              value={endDate ? endDate.split('T')[0] : ''}
+              placeholder="YYYY/MM/DD"
+              i18nStrings={{
+                nextMonthAriaLabel: tString('common.date.next_month'),
+                previousMonthAriaLabel: tString('common.date.previous_month'),
+                todayAriaLabel: tString('common.date.today')
+              }}
+            />
+          </FormField>
+        </ColumnLayout>
+        
+        <FormField label={t('reports.format')}>
+          <SegmentedControl
+            selectedId={selectedFormat}
+            onChange={({ detail }) => setSelectedFormat(detail.selectedId)}
+            options={reportFormats.map(format => ({
+              id: format.id,
+              text: format.label
+            }))}
+          />
+        </FormField>
+        
+        <SpaceBetween direction="horizontal" size="xs">
+          <Button 
+            onClick={() => setActiveTabId('preview')}
+            disabled={!selectedCourse}
+          >
+            {t('reports.buttons.preview')}
+          </Button>
+          <Button
+            variant="primary"
+            loading={generating}
+            onClick={generateReport}
+            disabled={!selectedCourse}
+          >
+            {t('reports.buttons.generate')}
+          </Button>
+        </SpaceBetween>
+      </SpaceBetween>
+    </Container>
+  ), [courses, selectedCourse, selectedReportType, startDate, endDate, selectedFormat, generating, loadingCourses]);
+
+  const previewTabContent = useMemo(() => (
+    <Container header={<Header variant="h2">{t('reports.preview_title')}</Header>}>
+      {!selectedCourse ? (
+        <Box textAlign="center" color="inherit" padding="l">
+          <b>{t('reports.preview_select_course.title')}</b>
+          <p>{t('reports.preview_select_course.message')}</p>
+        </Box>
+      ) : !previewData ? (
+        <Box textAlign="center" padding="l">
+          <Spinner size="large" />
+          <p>{t('reports.loading_data')}</p>
+        </Box>
+      ) : (
+        <SpaceBetween size="l">
+          <Header variant="h3">{selectedCourse.label} - {t('reports.preview_subtitle')}</Header>
+          
+          {selectedReportType === 'quiz-comparison' && (
+            <SpaceBetween size="l">
+              <Header variant="h3">{t('reports.quiz_comparison')}</Header>
+              
+              {/* Cloudscape BarChart 사용 */}
+              <BarChart
+                series={[
+                  {
+                    title: t('reports.pre_quiz'),
+                    type: "bar",
+                    data: previewData.quizComparison.labels.map((label: string, i: number) => ({
+                      x: label,
+                      y: previewData.quizComparison.preSeries[i]
+                    })),
+                  },
+                  {
+                    title: t('reports.post_quiz'),
+                    type: "bar",
+                    data: previewData.quizComparison.labels.map((label: string, i: number) => ({
+                      x: label,
+                      y: previewData.quizComparison.postSeries[i]
+                    })),
+                  }
+                ]}
+                yDomain={[0, 100]}
+                i18nStrings={{
+                  filterLabel: tString('common.filter'),
+                  filterPlaceholder: tString('common.filter'),
+                  filterSelectedAriaLabel: tString('common.selected'),
+                  legendAriaLabel: tString('common.legend'),
+                  chartAriaRoleDescription: tString('common.chart.bar'),
+                  xAxisAriaRoleDescription: tString('common.chart.xAxis'),
+                  yAxisAriaRoleDescription: tString('common.chart.yAxis')
+                }}
+                ariaLabel={tString('reports.quiz_comparison')}
+                height={400}
+                hideFilter
+              />
+              
+              <Box variant="awsui-key-label">{t('reports.average_improvement')}: {previewData.quizComparison.averageImprovement}</Box>
+            </SpaceBetween>
+          )}
+          
+          {selectedReportType === 'survey-analysis' && (
+            <SpaceBetween size="l">
+              <Header variant="h3">{t('reports.survey_analysis')}</Header>
+              
+              {/* Cloudscape PieChart 사용 */}
+              <div style={{ height: "400px" }}>
+                <PieChart
+                  data={previewData.surveyAnalysis.satisfaction.labels.map((label: string, i: number) => ({
+                    title: label,
+                    value: previewData.surveyAnalysis.satisfaction.data[i]
+                  }))}
+                  detailPopoverContent={(datum, sum) => [
+                    { key: t('reports.responses'), value: datum.value },
+                    { key: t('reports.percentage'), value: `\${((datum.value / sum) * 100).toFixed(1)}%` }
+                  ]}
+                  segmentDescription={(datum, sum) => 
+                    `\${datum.title}: \${((datum.value / sum) * 100).toFixed(1)}%`
+                  }
+                  i18nStrings={{
+                    detailsValue: tString('common.value'),
+                    detailsPercentage: tString('common.percentage'),
+                    filterLabel: tString('common.filter'),
+                    filterPlaceholder: tString('common.filter'),
+                    filterSelectedAriaLabel: tString('common.selected'),
+                    legendAriaLabel: tString('common.legend'),
+                    chartAriaRoleDescription: tString('common.chart.pie')
+                  }}
+                  ariaLabel={tString('reports.survey_analysis')}
+                  hideFilter
+                  size="large"
+                />
+              </div>
+              
+              <Box variant="awsui-key-label">{t('reports.recommendation_score')}: {previewData.surveyAnalysis.recommendationScore}/10</Box>
+              <SpaceBetween size="s">
+                <Box variant="awsui-key-label">{t('reports.top_opinions')}:</Box>
+                <ul>
+                  {previewData.surveyAnalysis.topComments.map((comment: string, index: number) => (
+                    <li key={index}>{comment}</li>
+                  ))}
+                </ul>
+              </SpaceBetween>
+            </SpaceBetween>
+          )}
+        </SpaceBetween>
+      )}
+    </Container>
+  ), [selectedCourse, previewData, selectedReportType]);
+
+  const reportsTabContent = useMemo(() => (
+    <Container header={<Header variant="h2" counter={`(\${generatedReports.length}개)`}>{t('reports.generated_reports')}</Header>}>
+      <Table
+        items={generatedReports}
+        loading={loadingReports}
+        loadingText={tString('reports.loading_reports')}
+        columnDefinitions={[
+          {
+            id: "title",
+            header: t('reports.columns.title'),
+            cell: item => item.title,
+            sortingField: "title"
+          },
+          {
+            id: "type",
+            header: t('reports.columns.type'),
+            cell: item => {
+              const reportType = reportTypes.find(type => type.id === item.type);
+              return reportType?.title || item.type;
+            }
+          },
+          {
+            id: "courseName",
+            header: t('reports.columns.course'),
+            cell: item => item.courseName
+          },
+          {
+            id: "format",
+            header: t('reports.columns.format'),
+            cell: item => item.format.toUpperCase()
+          },
+          {
+            id: "status",
+            header: t('reports.columns.status'),
+            cell: item => (
+              <Badge color={
+                item.status === 'completed' ? 'green' : 
+                item.status === 'in-progress' ? 'blue' : 'red'
+              }>
+                {getStatusLabel(item.status)}
+              </Badge>
+            )
+          },
+          {
+            id: "createdAt",
+            header: t('reports.columns.created_date'),
+            cell: item => new Date(item.createdAt).toLocaleDateString()
+          },
+          {
+            id: "actions",
+            header: t('reports.columns.actions'),
+            cell: item => (
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button
+                  disabled={item.status !== 'completed'}
+                  onClick={() => downloadReport(item)}
+                  iconName="download"
+                >
+                  {t('reports.buttons.download')}
+                </Button>
+                <Button
+                  onClick={() => deleteReport(item.id)}
+                  iconName="remove"
+                >
+                  {t('reports.buttons.delete')}
+                </Button>
+              </SpaceBetween>
+            )
+          }
+        ]}
+        empty={
+          <Box textAlign="center" color="inherit">
+            <b>{t('reports.no_reports.title')}</b>
+            <Box padding={{ bottom: "s" }}>
+              {t('reports.no_reports.message')}
+            </Box>
+          </Box>
+        }
+        sortingDisabled
+      />
+    </Container>
+  ), [generatedReports, loadingReports]);
+
+  return (
+    <Container>
+      <SpaceBetween size="l">
+        <Header
+          variant="h1"
+          description={t('reports.description')}
+        >
+          {t('reports.title')}
+        </Header>
         
         {error && (
           <Alert type="error">
@@ -439,320 +743,27 @@ export default function ReportGenerator() {
         )}
         
         <Tabs
-          activeTabId={activeTab}
-          onChange={({ detail }) => setActiveTab(detail.activeTabId)}
+          activeTabId={activeTabId}
+          onChange={({ detail }) => setActiveTabId(detail.activeTabId)}
           tabs={[
             {
               id: "generate",
               label: t('reports.tabs.generate'),
-              content: (
-                <Container header={<Header variant="h2">{t('reports.report_settings')}</Header>}>
-                  <SpaceBetween size="l">
-                    <FormField label={t('reports.select_course')}>
-                      <Select
-                        selectedOption={selectedCourse}
-                        onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
-                        options={courses}
-                        placeholder={tString('reports.course_placeholder')}
-                        filteringType="auto"
-                        statusType={loadingCourses ? "loading" : "finished"}
-                        loadingText={tString('reports.loading_courses')}
-                        empty={
-                          <Box textAlign="center" color="inherit">
-                            <b>{t('reports.no_courses.title')}</b>
-                            <Box padding={{ bottom: "xs" }}>
-                              {t('reports.no_courses.message')}
-                            </Box>
-                          </Box>
-                        }
-                      />
-                    </FormField>
-                    
-                    <FormField label={t('reports.report_type')}>
-                      <Cards
-                        cardDefinition={{
-                          header: item => item.title,
-                          sections: [
-                            {
-                              id: "description",
-                              content: item => item.description
-                            }
-                          ]
-                        }}
-                        cardsPerRow={[
-                          { cards: 1 },
-                          { minWidth: 500, cards: 2 }
-                        ]}
-                        items={reportTypes}
-                        selectedItems={reportTypes.filter(item => item.id === selectedReportType)}
-                        selectionType="single"
-                        onSelectionChange={({ detail }) => 
-                          detail.selectedItems.length > 0 && 
-                          setSelectedReportType(detail.selectedItems[0].id)
-                        }
-                        trackBy="id"
-                      />
-                    </FormField>
-                    
-                    <ColumnLayout columns={2}>
-                      <FormField label={t('reports.start_date')}>
-                        <DatePicker
-                          onChange={({ detail }) => detail.value && setStartDate(detail.value)}
-                          value={startDate ? startDate.split('T')[0] : ''}
-                          placeholder="YYYY/MM/DD"
-                          i18nStrings={{
-                            nextMonthAriaLabel: tString('common.date.next_month'),
-                            previousMonthAriaLabel: tString('common.date.previous_month'),
-                            todayAriaLabel: tString('common.date.today')
-                          }}
-                        />
-                      </FormField>
-                      
-                      <FormField label={t('reports.end_date')}>
-                        <DatePicker
-                          onChange={({ detail }) => detail.value && setEndDate(detail.value)}
-                          value={endDate ? endDate.split('T')[0] : ''}
-                          placeholder="YYYY/MM/DD"
-                          i18nStrings={{
-                            nextMonthAriaLabel: tString('common.date.next_month'),
-                            previousMonthAriaLabel: tString('common.date.previous_month'),
-                            todayAriaLabel: tString('common.date.today')
-                          }}
-                        />
-                      </FormField>
-                    </ColumnLayout>
-                    
-                    <FormField label={t('reports.format')}>
-                      <SegmentedControl
-                        selectedId={selectedFormat}
-                        onChange={({ detail }) => setSelectedFormat(detail.selectedId)}
-                        options={reportFormats.map(format => ({
-                          id: format.id,
-                          text: format.label
-                        }))}
-                      />
-                    </FormField>
-                    
-                    <SpaceBetween direction="horizontal" size="xs">
-                      <Button 
-                        onClick={() => setActiveTab('preview')}
-                        disabled={!selectedCourse}
-                      >
-                        {t('reports.buttons.preview')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        loading={generating}
-                        onClick={generateReport}
-                        disabled={!selectedCourse}
-                      >
-                        {t('reports.buttons.generate')}
-                      </Button>
-                    </SpaceBetween>
-                  </SpaceBetween>
-                </Container>
-              ),
+              content: generateTabContent
             },
             {
               id: "preview",
               label: t('reports.tabs.preview'),
-              content: (
-                <Container header={<Header variant="h2">{t('reports.preview_title')}</Header>}>
-                  {!selectedCourse ? (
-                    <Box textAlign="center" color="inherit" padding="l">
-                      <b>{t('reports.preview_select_course.title')}</b>
-                      <p>{t('reports.preview_select_course.message')}</p>
-                    </Box>
-                  ) : !previewData ? (
-                    <Box textAlign="center" padding="l">
-                      <Spinner size="large" />
-                      <p>{t('reports.loading_data')}</p>
-                    </Box>
-                  ) : (
-                    <SpaceBetween size="l">
-                      <Header variant="h3">{selectedCourse.label} - {t('reports.preview_subtitle')}</Header>
-                      
-                      {selectedReportType === 'quiz-comparison' && (
-                        <SpaceBetween size="l">
-                          <Header variant="h3">{t('reports.quiz_comparison')}</Header>
-                          
-                          {/* Cloudscape BarChart 사용 */}
-                          <BarChart
-                            series={[
-                              {
-                                title: t('reports.pre_quiz'),
-                                type: "bar",
-                                data: previewData.quizComparison.labels.map((label: string, i: number) => ({
-                                  x: label,
-                                  y: previewData.quizComparison.preSeries[i]
-                                })),
-                              },
-                              {
-                                title: t('reports.post_quiz'),
-                                type: "bar",
-                                data: previewData.quizComparison.labels.map((label: string, i: number) => ({
-                                  x: label,
-                                  y: previewData.quizComparison.postSeries[i]
-                                })),
-                              }
-                            ]}
-                            yDomain={[0, 100]}
-                            i18nStrings={{
-                              filterLabel: tString('common.filter'),
-                              filterPlaceholder: tString('common.filter'),
-                              filterSelectedAriaLabel: tString('common.selected'),
-                              legendAriaLabel: tString('common.legend'),
-                              chartAriaRoleDescription: tString('common.chart.bar'),
-                              xAxisAriaRoleDescription: tString('common.chart.xAxis'),
-                              yAxisAriaRoleDescription: tString('common.chart.yAxis')
-                            }}
-                            ariaLabel={tString('reports.quiz_comparison')}
-                            height={400}
-                            hideFilter
-                          />
-                          
-                          <Box variant="awsui-key-label">{t('reports.average_improvement')}: {previewData.quizComparison.averageImprovement}</Box>
-                        </SpaceBetween>
-                      )}
-                      
-                      {selectedReportType === 'survey-analysis' && (
-                        <SpaceBetween size="l">
-                          <Header variant="h3">{t('reports.survey_analysis')}</Header>
-                          
-                          {/* Cloudscape PieChart 사용 */}
-                          <div style={{ height: "400px" }}>
-                            <PieChart
-                              data={previewData.surveyAnalysis.satisfaction.labels.map((label: string, i: number) => ({
-                                title: label,
-                                value: previewData.surveyAnalysis.satisfaction.data[i]
-                              }))}
-                              detailPopoverContent={(datum, sum) => [
-                                { key: t('reports.responses'), value: datum.value },
-                                { key: t('reports.percentage'), value: `\${((datum.value / sum) * 100).toFixed(1)}%` }
-                              ]}
-                              segmentDescription={(datum, sum) => 
-                                `\${datum.title}: \${((datum.value / sum) * 100).toFixed(1)}%`
-                              }
-                              i18nStrings={{
-                                detailsValue: tString('common.value'),
-                                detailsPercentage: tString('common.percentage'),
-                                filterLabel: tString('common.filter'),
-                                filterPlaceholder: tString('common.filter'),
-                                filterSelectedAriaLabel: tString('common.selected'),
-                                legendAriaLabel: tString('common.legend'),
-                                chartAriaRoleDescription: tString('common.chart.pie')
-                              }}
-                              ariaLabel={tString('reports.survey_analysis')}
-                              hideFilter
-                              size="large"
-                            />
-                          </div>
-                          
-                          <Box variant="awsui-key-label">{t('reports.recommendation_score')}: {previewData.surveyAnalysis.recommendationScore}/10</Box>
-                          <SpaceBetween size="s">
-                            <Box variant="awsui-key-label">{t('reports.top_opinions')}:</Box>
-                            <ul>
-                              {previewData.surveyAnalysis.topComments.map((comment: string, index: number) => (
-                                <li key={index}>{comment}</li>
-                              ))}
-                            </ul>
-                          </SpaceBetween>
-                        </SpaceBetween>
-                      )}
-                    </SpaceBetween>
-                  )}
-                </Container>
-              )
+              content: previewTabContent
             },
             {
               id: "reports",
               label: t('reports.tabs.generated'),
-              content: (
-                <Container header={<Header variant="h2" counter={`(\${generatedReports.length}개)`}>{t('reports.generated_reports')}</Header>}>
-                  <Table
-                    items={generatedReports}
-                    loading={loadingReports}
-                    loadingText={tString('reports.loading_reports')}
-                    columnDefinitions={[
-                      {
-                        id: "title",
-                        header: t('reports.columns.title'),
-                        cell: item => item.title,
-                        sortingField: "title"
-                      },
-                      {
-                        id: "type",
-                        header: t('reports.columns.type'),
-                        cell: item => {
-                          const reportType = reportTypes.find(type => type.id === item.type);
-                          return reportType?.title || item.type;
-                        }
-                      },
-                      {
-                        id: "courseName",
-                        header: t('reports.columns.course'),
-                        cell: item => item.courseName
-                      },
-                      {
-                        id: "format",
-                        header: t('reports.columns.format'),
-                        cell: item => item.format.toUpperCase()
-                      },
-                      {
-                        id: "status",
-                        header: t('reports.columns.status'),
-                        cell: item => (
-                          <Badge color={
-                            item.status === 'completed' ? 'green' : 
-                            item.status === 'in-progress' ? 'blue' : 'red'
-                          }>
-                            {getStatusLabel(item.status)}
-                          </Badge>
-                        )
-                      },
-                      {
-                        id: "createdAt",
-                        header: t('reports.columns.created_date'),
-                        cell: item => new Date(item.createdAt).toLocaleDateString()
-                      },
-                      {
-                        id: "actions",
-                        header: t('reports.columns.actions'),
-                        cell: item => (
-                          <SpaceBetween direction="horizontal" size="xs">
-                            <Button
-                              disabled={item.status !== 'completed'}
-                              onClick={() => downloadReport(item)}
-                              iconName="download"
-                            >
-                              {t('reports.buttons.download')}
-                            </Button>
-                            <Button
-                              onClick={() => deleteReport(item.id)}
-                              iconName="remove"
-                            >
-                              {t('reports.buttons.delete')}
-                            </Button>
-                          </SpaceBetween>
-                        )
-                      }
-                    ]}
-                    empty={
-                      <Box textAlign="center" color="inherit">
-                        <b>{t('reports.no_reports.title')}</b>
-                        <Box padding={{ bottom: "s" }}>
-                          {t('reports.no_reports.message')}
-                        </Box>
-                      </Box>
-                    }
-                    sortingDisabled
-                  />
-                </Container>
-              )
+              content: reportsTabContent
             }
           ]}
         />
       </SpaceBetween>
-    </ContentLayout>
+    </Container>
   );
 }

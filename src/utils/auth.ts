@@ -70,7 +70,40 @@ export const handleSignIn = async (username: string, password: string) => {
   }
 };
 
-// 확인 코드 확인 함수
+// 회원가입 함수
+export const handleSignUp = async (username: string, password: string, email: string, attributes?: Record<string, string>) => {
+  try {
+    const { signUp } = await import('aws-amplify/auth');
+    const userAttributes = {
+      email,
+      ...attributes
+    };
+    
+    const result = await signUp({
+      username,
+      password,
+      options: {
+        userAttributes
+      }
+    });
+    
+    return {
+      success: true,
+      data: result,
+      message: '회원가입에 성공했습니다. 이메일을 확인하여 가입을 완료해주세요.',
+      isComplete: result.isSignUpComplete,
+      nextStep: result.nextStep
+    };
+  } catch (error) {
+    console.error('회원가입 오류:', error);
+    return {
+      success: false,
+      error,
+      message: error instanceof Error ? error.message : '회원가입 중 오류가 발생했습니다.'
+    };
+  }
+};
+
 // 확인 코드 확인 함수
 export const handleConfirmSignUp = async (username: string, confirmationCode: string) => {
   try {
