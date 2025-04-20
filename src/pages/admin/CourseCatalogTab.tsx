@@ -1,4 +1,3 @@
-// src/pages/admin/CourseCatalogTab.tsx
 import React, { useState, useEffect } from 'react';
 import {
     Table,
@@ -15,151 +14,124 @@ import {
     Textarea,
     Checkbox,
     DatePicker,
-    Alert
+    Alert,
+    Multiselect
 } from '@cloudscape-design/components';
 import { generateClient } from 'aws-amplify/api';
 import { useTypedTranslation } from '../../utils/i18n-utils';
+import {
+    listCourseCatalogs,
+    getCourseCatalog
+} from '../../graphql/queries';
+import {
+    createCourseCatalog,
+    updateCourseCatalog,
+    deleteCourseCatalog
+} from '../../graphql/mutations';
 
-// Define Course interface based on DynamoDB schema
-interface Course {
+// 백엔드 스키마와 일치하는 인터페이스
+interface CourseCatalog {
     id?: string;
-    title: string;
+    course_id: string;
+    course_name: string;
     description?: string;
-    duration?: number;
+    duration?: string;
     level?: string;
-    price?: number;
-    category?: string;
-    publishedDate?: string;
-    isActive?: boolean;
+    delivery_method?: string;
+    objectives?: string[];
+    target_audience?: string[];
     createdAt?: string;
     updatedAt?: string;
 }
 
-// GraphQL operations for Tnc-CourseCatalog table
-const listCourses = /* GraphQL */ `
-  query ListCourses(
-    \$filter: ModelTncCourseCatalogFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listTncCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        title
-        description
-        duration
-        level
-        price
-        category
-        publishedDate
-        isActive
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
+// UI에 표시할 뷰 모델
+interface CourseViewModel {
+    id: string;
+    course_id: string;
+    course_name: string;
+    title: string; // course_name과 동일 (UI 호환성용)
+    description?: string;
+    duration?: string;
+    level?: string;
+    delivery_method?: string;
+    objectives?: string[];
+    target_audience?: string[];
+    // UI 추가 필드
+    status?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
 
-const getCourse = /* GraphQL */ `
-  query GetCourse(\$id: ID!) {
-    getTncCourseCatalog(id: \$id) {
-      id
-      title
-      description
-      duration
-      level
-      price
-      category
-      publishedDate
-      isActive
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-const createCourse = /* GraphQL */ `
-  mutation CreateCourse(\$input: CreateTncCourseCatalogInput!) {
-    createTncCourseCatalog(input: \$input) {
-      id
-      title
-      description
-      duration
-      level
-      price
-      category
-      publishedDate
-      isActive
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-const updateCourse = /* GraphQL */ `
-  mutation UpdateCourse(\$input: UpdateTncCourseCatalogInput!) {
-    updateTncCourseCatalog(input: \$input) {
-      id
-      title
-      description
-      duration
-      level
-      price
-      category
-      publishedDate
-      isActive
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-const deleteCourse = /* GraphQL */ `
-  mutation DeleteCourse(\$input: DeleteTncCourseCatalogInput!) {
-    deleteTncCourseCatalog(input: \$input) {
-      id
-      title
-    }
-  }
-`;
-
-// GraphQL response interfaces
+// GraphQL 응답 인터페이스
 interface GraphQLResponse<T> {
     data?: T;
     errors?: any[];
 }
 
-interface ListCoursesResponse {
-    listTncCourseCatalogs: {
-        items: Course[];
+interface ListCourseCatalogsResponse {
+    listCourseCatalogs: {
+        items: CourseCatalog[];
         nextToken?: string;
     };
 }
 
-interface GetCourseResponse {
-    getTncCourseCatalog: Course;
+interface GetCourseCatalogResponse {
+    getCourseCatalog: CourseCatalog;
 }
 
-interface CreateCourseResponse {
-    createTncCourseCatalog: Course;
+interface CreateCourseCatalogResponse {
+    createCourseCatalog: CourseCatalog;
 }
 
-interface UpdateCourseResponse {
-    updateTncCourseCatalog: Course;
+interface UpdateCourseCatalogResponse {
+    updateCourseCatalog: CourseCatalog;
 }
 
-interface DeleteCourseResponse {
-    deleteTncCourseCatalog: Course;
+interface DeleteCourseCatalogResponse {
+    deleteCourseCatalog: CourseCatalog;
 }
+
+// 백엔드 데이터를 UI 뷰모델로 변환하는 함수
+const mapToViewModel = (course: CourseCatalog): CourseViewModel => {
+    return {
+        id: course.id || '',
+        course_id: course.course_id || '',
+        course_name: course.course_name || '',
+        title: course.course_name || '', // UI 호환성용
+        description: course.description,
+        duration: course.duration,
+        level: course.level,
+        delivery_method: course.delivery_method,
+        objectives: course.objectives || [],
+        target_audience: course.target_audience || [],
+        status: 'ACTIVE', // UI용 기본값
+        createdAt: course.createdAt,
+        updatedAt: course.updatedAt
+    };
+};
+
+// UI 뷰모델을 백엔드 데이터로 변환하는 함수
+const mapToBackendModel = (viewModel: CourseViewModel): CourseCatalog => {
+    return {
+        id: viewModel.id,
+        course_id: viewModel.course_id,
+        course_name: viewModel.course_name,
+        description: viewModel.description,
+        duration: viewModel.duration,
+        level: viewModel.level,
+        delivery_method: viewModel.delivery_method,
+        objectives: viewModel.objectives,
+        target_audience: viewModel.target_audience
+    };
+};
 
 const CourseCatalogTab: React.FC = () => {
     const { tString, t } = useTypedTranslation();
 
-    // State management
-    const [courses, setCourses] = useState<Course[]>([]);
+    // 상태 관리
+    const [courses, setCourses] = useState<CourseViewModel[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
+    const [currentCourse, setCurrentCourse] = useState<CourseViewModel | null>(null);
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
     const [filterText, setFilterText] = useState<string>('');
@@ -167,55 +139,93 @@ const CourseCatalogTab: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [nextToken, setNextToken] = useState<string | null>(null);
 
-    // Create API client
+    // 목표와 대상 청중을 위한 선택 옵션
+    const [objectiveOptions, setObjectiveOptions] = useState<{ label: string, value: string }[]>([]);
+    const [audienceOptions, setAudienceOptions] = useState<{ label: string, value: string }[]>([]);
+
+    // API 클라이언트 생성
     const client = generateClient();
 
-    // Fetch courses from DynamoDB
+    // DynamoDB에서 과정 목록 가져오기
     const fetchCourses = async () => {
         setLoading(true);
         setError(null);
 
         try {
             const result = await client.graphql({
-                query: listCourses,
+                query: listCourseCatalogs,
                 variables: {
                     limit: 100,
                     nextToken: nextToken
                 },
                 authMode: 'userPool'
-            }) as GraphQLResponse<ListCoursesResponse>;
+            }) as GraphQLResponse<ListCourseCatalogsResponse>;
 
-            if (result.data?.listTncCourseCatalogs?.items) {
-                setCourses(result.data.listTncCourseCatalogs.items);
-                setNextToken(result.data.listTncCourseCatalogs.nextToken || null);
+            if (result.data?.listCourseCatalogs?.items) {
+                // 백엔드 데이터를 뷰모델로 변환
+                const viewModels = result.data.listCourseCatalogs.items.map(mapToViewModel);
+                setCourses(viewModels);
+                setNextToken(result.data.listCourseCatalogs.nextToken || null);
+
+                // 모든 과정에서 고유 목표 및 대상 청중 수집
+                const allObjectives = new Set<string>();
+                const allAudiences = new Set<string>();
+
+                result.data.listCourseCatalogs.items.forEach(course => {
+                    course.objectives?.forEach(obj => allObjectives.add(obj));
+                    course.target_audience?.forEach(audience => allAudiences.add(audience));
+                });
+
+                setObjectiveOptions(Array.from(allObjectives).map(obj => ({ label: obj, value: obj })));
+                setAudienceOptions(Array.from(allAudiences).map(audience => ({ label: audience, value: audience })));
             }
         } catch (err) {
             console.error(t('admin.courses.error_loading'), err);
             setError(t('admin.courses.error_loading'));
-            
-            // If in dev environment, provide sample data
+
+            // 개발 환경에서는 샘플 데이터 제공
             if (process.env.NODE_ENV === 'development') {
                 setCourses([
                     {
                         id: '1',
+                        course_id: 'AWS-CP',
+                        course_name: 'AWS Cloud Practitioner',
                         title: 'AWS Cloud Practitioner',
                         description: 'Fundamental AWS concepts',
-                        duration: 20,
+                        duration: '20',
                         level: 'BEGINNER',
-                        price: 29.99,
-                        category: 'Cloud',
-                        isActive: true
+                        delivery_method: 'Online',
+                        objectives: ['Learn AWS basics', 'Understand cloud concepts'],
+                        target_audience: ['Beginners', 'IT Professionals'],
+                        status: 'ACTIVE'
                     },
                     {
                         id: '2',
+                        course_id: 'AWS-SAA',
+                        course_name: 'AWS Solutions Architect',
                         title: 'AWS Solutions Architect',
                         description: 'Advanced architecture patterns',
-                        duration: 40,
+                        duration: '40',
                         level: 'ADVANCED',
-                        price: 49.99,
-                        category: 'Architecture',
-                        isActive: true
+                        delivery_method: 'Blended',
+                        objectives: ['Design resilient architectures', 'Design high-performance architectures'],
+                        target_audience: ['Architects', 'Cloud Engineers'],
+                        status: 'ACTIVE'
                     }
+                ]);
+
+                setObjectiveOptions([
+                    { label: 'Learn AWS basics', value: 'Learn AWS basics' },
+                    { label: 'Understand cloud concepts', value: 'Understand cloud concepts' },
+                    { label: 'Design resilient architectures', value: 'Design resilient architectures' },
+                    { label: 'Design high-performance architectures', value: 'Design high-performance architectures' }
+                ]);
+
+                setAudienceOptions([
+                    { label: 'Beginners', value: 'Beginners' },
+                    { label: 'IT Professionals', value: 'IT Professionals' },
+                    { label: 'Architects', value: 'Architects' },
+                    { label: 'Cloud Engineers', value: 'Cloud Engineers' }
                 ]);
             }
         } finally {
@@ -223,54 +233,61 @@ const CourseCatalogTab: React.FC = () => {
         }
     };
 
-    // Load data on component mount
+    // 컴포넌트 마운트 시 데이터 로드
     useEffect(() => {
         fetchCourses();
     }, []);
 
-    // Filter items based on search text
+    // 검색 텍스트 기반 필터링
     const filteredItems = courses.filter(course =>
         !filterText ||
-        course.title?.toLowerCase().includes(filterText.toLowerCase()) ||
+        course.course_name.toLowerCase().includes(filterText.toLowerCase()) ||
         course.description?.toLowerCase().includes(filterText.toLowerCase()) ||
-        course.category?.toLowerCase().includes(filterText.toLowerCase())
+        course.course_id.toLowerCase().includes(filterText.toLowerCase())
     );
 
-    // Pagination settings
+    // 페이지네이션 설정
     const PAGE_SIZE = 10;
     const paginatedItems = filteredItems.slice(
         (currentPageIndex - 1) * PAGE_SIZE,
         currentPageIndex * PAGE_SIZE
     );
 
-    // Create new course
+    // 새 과정 생성
     const handleCreateCourse = () => {
-        setCurrentCourse({
+        const newCourse: CourseViewModel = {
+            id: '',
+            course_id: '',
+            course_name: '',
             title: '',
             description: '',
-            duration: 0,
+            duration: '',
             level: 'BEGINNER',
-            price: 0,
-            category: '',
-            isActive: true
-        });
+            delivery_method: '',
+            objectives: [],
+            target_audience: [],
+            status: 'ACTIVE'
+        };
+        setCurrentCourse(newCourse);
         setIsModalVisible(true);
     };
 
-    // Edit existing course
-    const handleEditCourse = async (course: Course) => {
+    // 기존 과정 수정
+    const handleEditCourse = async (course: CourseViewModel) => {
         setLoading(true);
         try {
-            // Get the latest course data
+            // 최신 과정 데이터 가져오기
             if (course.id) {
                 const result = await client.graphql({
-                    query: getCourse,
+                    query: getCourseCatalog,
                     variables: { id: course.id },
                     authMode: 'userPool'
-                }) as GraphQLResponse<GetCourseResponse>;
-                
-                if (result.data?.getTncCourseCatalog) {
-                    setCurrentCourse({ ...result.data.getTncCourseCatalog });
+                }) as GraphQLResponse<GetCourseCatalogResponse>;
+
+                if (result.data?.getCourseCatalog) {
+                    // 백엔드 데이터를 뷰모델로 변환
+                    const viewModel = mapToViewModel(result.data.getCourseCatalog);
+                    setCurrentCourse(viewModel);
                 } else {
                     setCurrentCourse({ ...course });
                 }
@@ -284,72 +301,77 @@ const CourseCatalogTab: React.FC = () => {
         }
     };
 
-    // Show delete confirmation modal
-    const handleDeleteCourseClick = (course: Course) => {
+    // 삭제 확인 모달 표시
+    const handleDeleteCourseClick = (course: CourseViewModel) => {
         setCurrentCourse(course);
         setIsDeleteModalVisible(true);
     };
 
-    // Save course (create or update)
+    // 과정 저장 (생성 또는 수정)
     const handleSaveCourse = async () => {
-        if (!currentCourse || !currentCourse.title) return;
+        if (!currentCourse || !currentCourse.course_name || !currentCourse.course_id) return;
 
         setLoading(true);
         setError(null);
 
         try {
+            // 뷰모델을 백엔드 모델로 변환
+            const backendModel = mapToBackendModel(currentCourse);
+
             if (currentCourse.id) {
-                // Update existing course
-                const courseInput = {
-                    id: currentCourse.id,
-                    title: currentCourse.title,
-                    description: currentCourse.description,
-                    duration: currentCourse.duration,
-                    level: currentCourse.level,
-                    price: currentCourse.price,
-                    category: currentCourse.category,
-                    publishedDate: currentCourse.publishedDate,
-                    isActive: currentCourse.isActive
-                };
-
+                // 기존 과정 수정
                 const result = await client.graphql({
-                    query: updateCourse,
-                    variables: { input: courseInput },
+                    query: updateCourseCatalog,
+                    variables: {
+                        input: {
+                            id: backendModel.id,
+                            course_id: backendModel.course_id,
+                            course_name: backendModel.course_name,
+                            description: backendModel.description,
+                            duration: backendModel.duration,
+                            level: backendModel.level,
+                            delivery_method: backendModel.delivery_method,
+                            objectives: backendModel.objectives,
+                            target_audience: backendModel.target_audience
+                        }
+                    },
                     authMode: 'userPool'
-                }) as GraphQLResponse<UpdateCourseResponse>;
+                }) as GraphQLResponse<UpdateCourseCatalogResponse>;
 
-                // Update state with updated course
-                if (result.data?.updateTncCourseCatalog) {
+                // 수정된 과정으로 상태 업데이트
+                if (result.data?.updateCourseCatalog) {
+                    const updatedViewModel = mapToViewModel(result.data.updateCourseCatalog);
                     setCourses(prevCourses =>
-                        prevCourses.map(c => c.id === currentCourse.id ? result.data!.updateTncCourseCatalog : c)
+                        prevCourses.map(c => c.id === currentCourse.id ? updatedViewModel : c)
                     );
                 }
             } else {
-                // Create new course
-                const courseInput = {
-                    title: currentCourse.title,
-                    description: currentCourse.description,
-                    duration: currentCourse.duration,
-                    level: currentCourse.level,
-                    price: currentCourse.price,
-                    category: currentCourse.category,
-                    publishedDate: currentCourse.publishedDate,
-                    isActive: currentCourse.isActive
-                };
-
+                // 새 과정 생성
                 const result = await client.graphql({
-                    query: createCourse,
-                    variables: { input: courseInput },
+                    query: createCourseCatalog,
+                    variables: {
+                        input: {
+                            course_id: backendModel.course_id,
+                            course_name: backendModel.course_name,
+                            description: backendModel.description,
+                            duration: backendModel.duration,
+                            level: backendModel.level,
+                            delivery_method: backendModel.delivery_method,
+                            objectives: backendModel.objectives,
+                            target_audience: backendModel.target_audience
+                        }
+                    },
                     authMode: 'userPool'
-                }) as GraphQLResponse<CreateCourseResponse>;
+                }) as GraphQLResponse<CreateCourseCatalogResponse>;
 
-                // Add new course to state
-                if (result.data?.createTncCourseCatalog) {
-                    setCourses(prevCourses => [...prevCourses, result.data!.createTncCourseCatalog]);
+                // 새 과정을 상태에 추가
+                if (result.data?.createCourseCatalog) {
+                    const newViewModel = mapToViewModel(result.data.createCourseCatalog);
+                    setCourses(prevCourses => [...prevCourses, newViewModel]);
                 }
             }
 
-            // Close modal
+            // 모달 닫기
             setIsModalVisible(false);
             setCurrentCourse(null);
         } catch (err) {
@@ -360,7 +382,7 @@ const CourseCatalogTab: React.FC = () => {
         }
     };
 
-    // Delete course
+    // 과정 삭제
     const handleDeleteCourse = async () => {
         if (!currentCourse?.id) return;
 
@@ -369,21 +391,21 @@ const CourseCatalogTab: React.FC = () => {
 
         try {
             const result = await client.graphql({
-                query: deleteCourse,
+                query: deleteCourseCatalog,
                 variables: {
                     input: { id: currentCourse.id }
                 },
                 authMode: 'userPool'
-            }) as GraphQLResponse<DeleteCourseResponse>;
+            }) as GraphQLResponse<DeleteCourseCatalogResponse>;
 
-            if (result.data?.deleteTncCourseCatalog) {
-                // Remove deleted course
+            if (result.data?.deleteCourseCatalog) {
+                // 삭제된 과정 제거
                 setCourses(prevCourses =>
                     prevCourses.filter(c => c.id !== currentCourse.id)
                 );
             }
 
-            // Close modal
+            // 모달 닫기
             setIsDeleteModalVisible(false);
             setCurrentCourse(null);
         } catch (err) {
@@ -412,7 +434,7 @@ const CourseCatalogTab: React.FC = () => {
             )}
 
             <SpaceBetween size="l">
-                {/* Header and search tools */}
+                {/* 헤더 및 검색 도구 */}
                 <Box>
                     <SpaceBetween direction="horizontal" size="m">
                         <Header
@@ -439,22 +461,22 @@ const CourseCatalogTab: React.FC = () => {
                     </SpaceBetween>
                 </Box>
 
-                {/* Course table */}
+                {/* 과정 테이블 */}
                 <Table
                     loading={loading}
                     items={paginatedItems}
                     columnDefinitions={[
                         {
-                            id: "title",
-                            header: t('admin.courses.column.title'),
-                            cell: item => item.title,
-                            sortingField: "title"
+                            id: "course_id",
+                            header: t('admin.courses.column.course_id'),
+                            cell: item => item.course_id,
+                            sortingField: "course_id"
                         },
                         {
-                            id: "category",
-                            header: t('admin.courses.column.category'),
-                            cell: item => item.category || "-",
-                            sortingField: "category"
+                            id: "course_name",
+                            header: t('admin.courses.column.title'),
+                            cell: item => item.course_name,
+                            sortingField: "course_name"
                         },
                         {
                             id: "duration",
@@ -468,14 +490,9 @@ const CourseCatalogTab: React.FC = () => {
                             cell: item => getLevelLabel(item.level || '')
                         },
                         {
-                            id: "price",
-                            header: t('admin.courses.column.price'),
-                            cell: item => item.price ? `\${item.price.toLocaleString()}\${t('admin.courses.currency')}` : "-"
-                        },
-                        {
-                            id: "status",
-                            header: t('admin.courses.column.status'),
-                            cell: item => item.isActive ? t('admin.common.active') : t('admin.common.inactive')
+                            id: "delivery_method",
+                            header: t('admin.courses.column.delivery_method'),
+                            cell: item => item.delivery_method || "-"
                         },
                         {
                             id: "actions",
@@ -535,7 +552,7 @@ const CourseCatalogTab: React.FC = () => {
                 />
             </SpaceBetween>
 
-            {/* Add/edit course modal */}
+            {/* 과정 추가/수정 모달 */}
             <Modal
                 visible={isModalVisible}
                 onDismiss={() => setIsModalVisible(false)}
@@ -555,21 +572,32 @@ const CourseCatalogTab: React.FC = () => {
             >
                 {currentCourse && (
                     <SpaceBetween size="l">
-                        <FormField label={t('admin.courses.form.title')} errorText={!currentCourse.title ? t('admin.courses.form.title_required') : undefined}>
+                        <FormField
+                            label={t('admin.courses.form.course_id')}
+                            errorText={!currentCourse.course_id ? t('admin.courses.form.course_id_required') : undefined}
+                        >
                             <Input
-                                value={currentCourse.title}
+                                value={currentCourse.course_id}
                                 onChange={({ detail }) =>
-                                    setCurrentCourse(prev => prev ? ({ ...prev, title: detail.value }) : null)
+                                    setCurrentCourse(prev => prev ? ({ ...prev, course_id: detail.value }) : null)
                                 }
                             />
                         </FormField>
 
-                        <FormField label={t('admin.courses.form.category')}>
+                        <FormField
+                            label={t('admin.courses.form.title')}
+                            errorText={!currentCourse.course_name ? t('admin.courses.form.title_required') : undefined}
+                        >
                             <Input
-                                value={currentCourse.category || ''}
-                                onChange={({ detail }) =>
-                                    setCurrentCourse(prev => prev ? ({ ...prev, category: detail.value }) : null)
-                                }
+                                value={currentCourse.course_name}
+                                onChange={({ detail }) => {
+                                    const value = detail.value;
+                                    setCurrentCourse(prev => prev ? ({
+                                        ...prev,
+                                        course_name: value,
+                                        title: value // title과 course_name 동기화
+                                    }) : null);
+                                }}
                             />
                         </FormField>
 
@@ -585,22 +613,19 @@ const CourseCatalogTab: React.FC = () => {
 
                         <FormField label={t('admin.courses.form.duration')}>
                             <Input
-                                type="number"
-                                value={currentCourse.duration?.toString() || '0'}
+                                value={currentCourse.duration || ''}
                                 onChange={({ detail }) =>
-                                    setCurrentCourse(prev => prev ? ({ ...prev, duration: parseInt(detail.value, 10) || 0 }) : null)
+                                    setCurrentCourse(prev => prev ? ({ ...prev, duration: detail.value }) : null)
                                 }
                             />
                         </FormField>
 
                         <FormField label={t('admin.courses.form.level')}>
                             <Select
-                                selectedOption={
-                                    {
-                                        label: getLevelLabel(currentCourse.level || 'BEGINNER'),
-                                        value: currentCourse.level || 'BEGINNER'
-                                    }
-                                }
+                                selectedOption={{
+                                    label: getLevelLabel(currentCourse.level || 'BEGINNER'),
+                                    value: currentCourse.level || 'BEGINNER'
+                                }}
                                 onChange={({ detail }) =>
                                     setCurrentCourse(prev => prev ? ({ ...prev, level: detail.selectedOption.value }) : null)
                                 }
@@ -612,39 +637,97 @@ const CourseCatalogTab: React.FC = () => {
                             />
                         </FormField>
 
-                        <FormField label={t('admin.courses.form.price')}>
+                        <FormField label={t('admin.courses.form.delivery_method')}>
                             <Input
-                                type="number"
-                                value={currentCourse.price?.toString() || '0'}
+                                value={currentCourse.delivery_method || ''}
                                 onChange={({ detail }) =>
-                                    setCurrentCourse(prev => prev ? ({ ...prev, price: parseFloat(detail.value) || 0 }) : null)
+                                    setCurrentCourse(prev => prev ? ({ ...prev, delivery_method: detail.value }) : null)
                                 }
                             />
                         </FormField>
 
-                        <FormField label={t('admin.courses.form.published_date')}>
-                            <DatePicker
-                                value={currentCourse.publishedDate || ''}
-                                onChange={({ detail }) =>
-                                    setCurrentCourse(prev => prev ? ({ ...prev, publishedDate: detail.value }) : null)
+                        <FormField label={t('admin.courses.form.objectives')}>
+                            <Multiselect
+                                selectedOptions={
+                                    currentCourse.target_audience?.map(audience => ({ label: audience, value: audience })) || []
                                 }
-                                placeholder="YYYY-MM-DD"
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(prev => prev ? ({
+                                        ...prev,
+                                        target_audience: detail.selectedOptions
+                                            .map(option => option.value)
+                                            .filter((value): value is string => value !== undefined)
+                                    }) : null)
+                                }
+                                options={audienceOptions}
+                                placeholder={tString('admin.courses.form.select_audience')}
+
+                                // 필터링 관련
+                                filteringType="auto"
+                                filteringPlaceholder={tString('admin.courses.form.search_audience')}
+
+                                // 옵션 생성 관련 속성은 타입 단언 사용
+                                {...({
+                                    allowCreation: true,
+                                    createTokens: [',', ';', 'Enter'],
+                                    createOptionText: tString('admin.courses.form.create_new'),
+                                } as any)}
+
+                                // 기본 i18nStrings만 유지
+                                i18nStrings={{
+                                    selectAllText: tString('admin.common.select_all'),
+                                    tokenLimitShowMore: tString('admin.common.show_more'),
+                                    tokenLimitShowFewer: tString('admin.common.show_fewer')
+                                }}
+
+                                // 접근성 관련
+                                ariaLabel={tString('admin.courses.form.target_audience')}
                             />
                         </FormField>
 
-                        <Checkbox
-                            checked={currentCourse.isActive || false}
-                            onChange={({ detail }) =>
-                                setCurrentCourse(prev => prev ? ({ ...prev, isActive: detail.checked }) : null)
-                            }
-                        >
-                            {t('admin.courses.form.active')}
-                        </Checkbox>
+                        <FormField label={t('admin.courses.form.target_audience')}>
+                            <Multiselect
+                                selectedOptions={
+                                    currentCourse.target_audience?.map(audience => ({ label: audience, value: audience })) || []
+                                }
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(prev => prev ? ({
+                                        ...prev,
+                                        target_audience: detail.selectedOptions
+                                            .map(option => option.value)
+                                            .filter((value): value is string => value !== undefined)
+                                    }) : null)
+                                }
+                                options={audienceOptions}
+                                placeholder={tString('admin.courses.form.select_audience')}
+
+                                // 필터링 관련
+                                filteringType="auto"
+                                filteringPlaceholder={tString('admin.courses.form.search_audience')}
+
+                                // 옵션 생성 관련 속성은 타입 단언 사용
+                                {...({
+                                    allowCreation: true,
+                                    createTokens: [',', ';', 'Enter'],
+                                    createOptionText: tString('admin.courses.form.create_new'),
+                                } as any)}
+
+                                // 기본 i18nStrings만 유지
+                                i18nStrings={{
+                                    selectAllText: tString('admin.common.select_all'),
+                                    tokenLimitShowMore: tString('admin.common.show_more'),
+                                    tokenLimitShowFewer: tString('admin.common.show_fewer')
+                                }}
+
+                                // 접근성 관련
+                                ariaLabel={tString('admin.courses.form.target_audience')}
+                            />
+                        </FormField>
                     </SpaceBetween>
                 )}
             </Modal>
 
-            {/* Delete confirmation modal */}
+            {/* 삭제 확인 모달 */}
             <Modal
                 visible={isDeleteModalVisible}
                 onDismiss={() => setIsDeleteModalVisible(false)}
@@ -663,7 +746,7 @@ const CourseCatalogTab: React.FC = () => {
                 }
             >
                 <Box variant="p">
-                    {t('admin.courses.delete_confirm', { title: currentCourse?.title })}
+                    {t('admin.courses.delete_confirm', { title: currentCourse?.course_name })}
                 </Box>
             </Modal>
         </Box>

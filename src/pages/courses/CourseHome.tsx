@@ -79,7 +79,7 @@ const CourseHome: React.FC = () => {
           title: 'AWS Cloud Essentials Workshop',
           description: 'A hands-on introduction to core AWS services and best practices.',
           instructor: 'Sarah Johnson',
-          date: '2023년 10월 18일',
+          date: '2025년 10월 18일',
           time: '09:00 - 17:00',
           location: '서울 강남구 테헤란로 231, 캠퍼스 3층',
           materials: [

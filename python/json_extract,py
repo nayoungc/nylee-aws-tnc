@@ -1,0 +1,467 @@
+import os
+import json
+import re
+from docx import Document
+from docx.document import Document as DocumentType
+from docx.table import Table
+
+# 워드 파일 경로
+DOCX_FILE_PATH = "AWS TnC_ILT_DILT.docx"
+
+def extract_structured_data(file_path):
+    """워드 문서에서 구조화된 데이터 추출"""
+    try:
+        doc = Document(file_path)
+        data = []
+        
+        # 문서 구조를 순회하며 내용 추출
+        for element in doc.element.body:
+            if element.tag.endswith('p'):  # 단락
+                paragraph = doc.paragraphs[len(data)]
+                text = paragraph.text.strip()
+                if text:
+                    # 단락 형식 정보 추가
+                    style_name = paragraph.style.name if paragraph.style else "Normal"
+                    data.append({
+                        'type': 'paragraph',
+                        'text': text,
+                        'style': style_name,
+                        'bold': any(run.bold for run in paragraph.runs if run.text.strip()),
+                        'heading': style_name.startswith('Heading') or style_name == 'Title'
+                    })
+            elif element.tag.endswith('tbl'):  # 테이블
+                table_data = []
+                for row in doc.tables[len(table_data)].rows:
+                    row_data = [cell.text.strip() for cell in row.cells]
+                    if any(row_data):  # 빈 행 제외
+                        table_data.append(row_data)
+                data.append({
+                    'type': 'table',
+                    'data': table_data
+                })
+        
+        return data
+    except Exception as e:
+        print(f"워드 파일 읽기 오류: {str(e)}")
+        return []
+
+def create_dummy_modules():
+    """테스트용 더미 모듈 생성"""
+    print("테스트용 더미 모듈 데이터를 생성합니다.")
+    dummy_modules = []
+    
+    # AWS 과정 ID 목록
+    course_ids = [
+        "AWS-CPE", "AWS-ARCH", "AWS-SE", "AWS-DEVOPS", "AWS-SEC", 
+        "AWS-DEV", "AWS-TE", "AWS-WABP", "AWS-DW", "AWS-DSVS",
+        "AWS-BDLAS", "AWS-MIG", "AWS-MLOPS", "AWS-REKS"
+    ]
+    
+    # 각 과정별로 모듈과 실습 생성
+    for course_id in course_ids:
+        # 각 과정마다 5-8개의 모듈 생성
+        num_modules = min(8, 5 + hash(course_id) % 4)  # 5-8개 사이의 모듈 수
+        
+        for i in range(1, num_modules + 1):
+            # 모듈 추가
+            module = {
+                'module_id': f"{course_id}-M{i}",
+                'course_id': course_id,
+                'module_number': i,
+                'module_name': f"모듈 {i}: {course_id} 핵심 개념" if i > 1 else f"모듈 {i}: 과정 소개",
+                'module_type': '강의',
+                'module_description': f"{course_id} 과정의 {i}번째 모듈에서는 관련 핵심 개념과 서비스를 학습합니다."
+            }
+            dummy_modules.append(module)
+            
+            # 홀수 번호 모듈마다 실습 추가
+            if i % 2 == 1 and i < num_modules:
+                lab = {
+                    'module_id': f"{course_id}-LAB{i}",
+                    'course_id': course_id,
+                    'module_number': f"LAB{i}",
+                    'module_name': f"실습 {i}: {course_id} 실습 환경 구성" if i == 1 else f"실습 {i}: 핵심 서비스 구현",
+                    'module_type': '실습',
+                    'module_description': f"{course_id} 과정의 {i}번째 실습입니다. 학습한 내용을 실제로 적용합니다."
+                }
+                dummy_modules.append(lab)
+    
+    return dummy_modules
+
+def manual_extract_modules():
+    """문서 분석 결과를 바탕으로 모듈 및 실습 정보 수동 추출"""
+    aws_modules = []
+    
+    # AWS-CPE (AWS Cloud Practitioner Essentials) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-CPE-M1',
+            'course_id': 'AWS-CPE',
+            'module_number': 1,
+            'module_name': 'Amazon Web Services 소개',
+            'module_type': '강의',
+            'module_description': 'AWS 용어집, AWS 기초, 클라우드 컴퓨팅이란 무엇입니까?, 클라우드 컴퓨팅 유형, AWS를 이용한 클라우드 컴퓨팅'
+        },
+        {
+            'module_id': 'AWS-CPE-M2',
+            'course_id': 'AWS-CPE',
+            'module_number': 2,
+            'module_name': '클라우드 컴퓨팅',
+            'module_type': '강의',
+            'module_description': 'AWS에서의 컴퓨팅, AWS 컴퓨팅 블로그, AWS 컴퓨팅 서비스, 실습 자습서: 컴퓨팅, 카테고리 심층 분석: 서버리스, AWS 고객 사례: 서버리스'
+        },
+        {
+            'module_id': 'AWS-CPE-M3',
+            'course_id': 'AWS-CPE',
+            'module_number': 3,
+            'module_name': '글로벌 인프라 및 안정성',
+            'module_type': '강의',
+            'module_description': '글로벌 인프라, AWS 글로벌 인프라의 대화형 맵, 리전 및 가용 영역, AWS 네트워킹 및 콘텐츠 전송 블로그'
+        },
+        {
+            'module_id': 'AWS-CPE-M4',
+            'course_id': 'AWS-CPE',
+            'module_number': 4,
+            'module_name': '네트워킹',
+            'module_type': '강의',
+            'module_description': 'AWS의 네트워킹 및 콘텐츠 전송, AWS 네트워킹 및 콘텐츠 전송 블로그, Amazon Virtual Private Cloud, Amazon VPC는 무엇입니까?, Amazon VPC 작동 방식'
+        },
+        {
+            'module_id': 'AWS-CPE-M5',
+            'course_id': 'AWS-CPE',
+            'module_number': 5,
+            'module_name': '스토리지 및 데이터베이스',
+            'module_type': '강의',
+            'module_description': 'AWS 기반 클라우드 스토리지, AWS 스토리지 블로그, 실습 자습서: 스토리지, AWS 고객 사례: 스토리지'
+        },
+        {
+            'module_id': 'AWS-CPE-LAB1',
+            'course_id': 'AWS-CPE',
+            'module_number': 'LAB1',
+            'module_name': 'Amazon Simple Storage Service(S3) 입문',
+            'module_type': '실습',
+            'module_description': 'S3 버킷 생성 및 객체 업로드, 액세스 제어 설정, S3 기본 기능 실습'
+        },
+        {
+            'module_id': 'AWS-CPE-LAB2',
+            'course_id': 'AWS-CPE',
+            'module_number': 'LAB2',
+            'module_name': 'AWS Lambda 입문',
+            'module_type': '실습',
+            'module_description': '서버리스 함수 생성 및 구성, 이벤트 트리거 설정, Lambda 함수 테스트'
+        },
+        {
+            'module_id': 'AWS-CPE-LAB3',
+            'course_id': 'AWS-CPE',
+            'module_number': 'LAB3',
+            'module_name': 'Amazon CloudFront 입문',
+            'module_type': '실습',
+            'module_description': 'CloudFront 배포 생성, 원본 설정, 캐싱 정책 구성, 엣지 위치 이해'
+        }
+    ])
+
+    # AWS-ARCH (Architecting on AWS) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-ARCH-M1',
+            'course_id': 'AWS-ARCH',
+            'module_number': 1,
+            'module_name': '아키텍팅 기본 사항',
+            'module_type': '강의',
+            'module_description': 'AWS 서비스 및 인프라, 인프라 모델, AWS API 도구, 인프라 보안, Well-Architected Framework'
+        },
+        {
+            'module_id': 'AWS-ARCH-M2',
+            'course_id': 'AWS-ARCH',
+            'module_number': 2,
+            'module_name': '계정 보안',
+            'module_type': '강의',
+            'module_description': '보안 주체, 자격증 기반 정책 및 리소스 기반 정책, 계정 페더레이션, 다중 계정 관리 소개'
+        },
+        {
+            'module_id': 'AWS-ARCH-M3',
+            'course_id': 'AWS-ARCH',
+            'module_number': 3,
+            'module_name': '네트워킹 1부',
+            'module_type': '강의',
+            'module_description': 'IP 주소 지정, Amazon Virtual Private Cloud(VPC), 패턴 및 할당량, 라우팅, 인터넷 액세스, NACL(네트워크 액세스 제어 목록), 보안 그룹'
+        },
+        {
+            'module_id': 'AWS-ARCH-M4',
+            'course_id': 'AWS-ARCH',
+            'module_number': 4,
+            'module_name': '컴퓨팅',
+            'module_type': '강의',
+            'module_description': 'Amazon Elastic Cloud Compute(EC2), EC2 인스턴스 및 인스턴스 선택, AWS 기반 고성능 컴퓨팅, Lambda와 EC2의 사용 시기'
+        },
+        {
+            'module_id': 'AWS-ARCH-LAB1',
+            'course_id': 'AWS-ARCH',
+            'module_number': 'LAB1',
+            'module_name': 'AWS API 도구를 사용한 EC2 인스턴스 배포 살펴보기',
+            'module_type': '실습',
+            'module_description': 'AWS Management Console과 CLI를 활용한 EC2 인스턴스 배포 실습'
+        },
+        {
+            'module_id': 'AWS-ARCH-LAB2',
+            'course_id': 'AWS-ARCH',
+            'module_number': 'LAB2',
+            'module_name': 'Amazon VPC 인프라 구축',
+            'module_type': '실습',
+            'module_description': 'VPC, 서브넷, 라우팅 테이블, 인터넷 게이트웨이 등 네트워크 인프라 구축'
+        }
+    ])
+
+    # AWS-TE (AWS Technical Essentials) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-TE-M1',
+            'course_id': 'AWS-TE',
+            'module_number': 1,
+            'module_name': 'Amazon Web Services 소개',
+            'module_type': '강의',
+            'module_description': '클라우드 컴퓨팅 소개, AWS Cloud Services 소개, AWS 클라우드 보안, AWS IAM 소개'
+        },
+        {
+            'module_id': 'AWS-TE-M2',
+            'course_id': 'AWS-TE',
+            'module_number': 2,
+            'module_name': 'AWS 컴퓨팅',
+            'module_type': '강의',
+            'module_description': 'AWS의 컴퓨팅 서비스, Amazon Elastic Compute Cloud 소개, Amazon EC2 인스턴스 수명 주기, AWS 컨테이너 서비스, 서버리스란 무엇입니까?, Introduction to AWS Lambda'
+        },
+        {
+            'module_id': 'AWS-TE-LAB1',
+            'course_id': 'AWS-TE',
+            'module_number': 'LAB1',
+            'module_name': 'AWS Identity and Access Management(IAM) 소개',
+            'module_type': '실습',
+            'module_description': 'IAM 사용자 생성, 그룹 관리, 정책 연결 및 권한 테스트'
+        },
+        {
+            'module_id': 'AWS-TE-LAB2',
+            'course_id': 'AWS-TE',
+            'module_number': 'LAB2',
+            'module_name': 'VPC를 생성하고 Amazon EC2에서 기업 디렉터리 애플리케이션 다시 시작',
+            'module_type': '실습',
+            'module_description': 'VPC 생성, 서브넷 구성, 라우팅 설정, EC2 인스턴스 시작 및 애플리케이션 배포'
+        }
+    ])
+
+    # AWS-DEVOPS (DevOps Engineering on AWS) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-DEVOPS-M1',
+            'course_id': 'AWS-DEVOPS',
+            'module_number': 1,
+            'module_name': 'DevOps 소개',
+            'module_type': '강의',
+            'module_description': 'DevOps 개요, DevOps 사례'
+        },
+        {
+            'module_id': 'AWS-DEVOPS-M2',
+            'course_id': 'AWS-DEVOPS',
+            'module_number': 2,
+            'module_name': 'AWS 명령줄 인터페이스',
+            'module_type': '강의',
+            'module_description': '설치 및 구성, 명령줄 옵션'
+        },
+        {
+            'module_id': 'AWS-DEVOPS-LAB1',
+            'course_id': 'AWS-DEVOPS',
+            'module_number': 'LAB1',
+            'module_name': 'AWS CLI 실습',
+            'module_type': '실습',
+            'module_description': 'AWS CLI 설치 및 기본 명령어 사용법'
+        },
+        {
+            'module_id': 'AWS-DEVOPS-LAB2',
+            'course_id': 'AWS-DEVOPS',
+            'module_number': 'LAB2',
+            'module_name': 'AWS Config를 사용하여 자동화된 AWS IAM 정책 테스트를 구축 및 실행',
+            'module_type': '실습',
+            'module_description': 'AWS Config 룰 설정, IAM 정책 테스트, 규정 준수 확인'
+        }
+    ])
+
+    # AWS-SE (AWS Security Essentials) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-SE-M1',
+            'course_id': 'AWS-SE',
+            'module_number': 1,
+            'module_name': 'AWS 기반 보안',
+            'module_type': '강의',
+            'module_description': 'AWS 클라우드의 보안 설계 원칙, AWS 공동 책임 모델'
+        },
+        {
+            'module_id': 'AWS-SE-M2',
+            'course_id': 'AWS-SE',
+            'module_number': 2,
+            'module_name': '클라우드의 보안',
+            'module_type': '강의',
+            'module_description': 'AWS 글로벌 인프라, 데이터 센터 보안, 규정 준수 및 거버넌스'
+        },
+        {
+            'module_id': 'AWS-SE-LAB1',
+            'course_id': 'AWS-SE',
+            'module_number': 'LAB1',
+            'module_name': '보안 정책 소개',
+            'module_type': '실습',
+            'module_description': 'IAM 정책 생성, 역할 기반 액세스 제어 구성, 권한 경계 설정'
+        },
+        {
+            'module_id': 'AWS-SE-LAB2',
+            'course_id': 'AWS-SE',
+            'module_number': 'LAB2',
+            'module_name': '보안 그룹으로 VPC 리소스 보호',
+            'module_type': '실습',
+            'module_description': '보안 그룹 생성 및 구성, 네트워크 액세스 제어 목록 설정, 트래픽 필터링'
+        }
+    ])
+
+    # AWS-DEV (Developing on AWS) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-DEV-M1',
+            'course_id': 'AWS-DEV',
+            'module_number': 1,
+            'module_name': '과정 개요',
+            'module_type': '강의',
+            'module_description': '안내 사항, 수강생 리소스, 어젠다, 소개'
+        },
+        {
+            'module_id': 'AWS-DEV-M2',
+            'course_id': 'AWS-DEV',
+            'module_number': 2,
+            'module_name': 'AWS에 웹 애플리케이션 구축',
+            'module_type': '강의',
+            'module_description': '이 과정 중에 구축할 애플리케이션의 아키텍처 설명, 웹 애플리케이션 구축에 필요한 AWS 서비스 탐색'
+        },
+        {
+            'module_id': 'AWS-DEV-M3',
+            'course_id': 'AWS-DEV',
+            'module_number': 3,
+            'module_name': 'AWS에서 개발 시작하기',
+            'module_type': '강의',
+            'module_description': 'AWS 서비스에 프로그래밍 방식으로 액세스하는 방법 설명, 일부 프로그래밍 패턴 및 AWS SDK와 AWS CLI 내에서 이 패턴이 효율성을 제공하는 방법 나열'
+        },
+        {
+            'module_id': 'AWS-DEV-LAB1',
+            'course_id': 'AWS-DEV',
+            'module_number': 'LAB1',
+            'module_name': '개발자 환경 구성',
+            'module_type': '실습',
+            'module_description': '개발자 환경에 연결, IDE와 AWS CLI가 설치되어 있고 애플리케이션 프로파일을 사용하도록 구성되어 있는지 확인'
+        },
+        {
+            'module_id': 'AWS-DEV-LAB2',
+            'course_id': 'AWS-DEV',
+            'module_number': 'LAB2',
+            'module_name': 'Amazon S3를 사용한 솔루션 개발',
+            'module_type': '실습',
+            'module_description': 'AWS SDK와 AWS CLI를 사용하여 프로그래밍 방식으로 Amazon S3와 상호 작용'
+        }
+    ])
+
+    # AWS-WABP (AWS Well-Architected Best Practices) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-WABP-M1',
+            'course_id': 'AWS-WABP',
+            'module_number': 1,
+            'module_name': 'Well-Architected 소개',
+            'module_type': '강의',
+            'module_description': 'AWS Well-Architected의 간략한 역사, AWS Well-Architected 핵심 요소, 설계 원칙, AWS Well-Architected Framework 적용, AWS Well-Architected Tool'
+        },
+        {
+            'module_id': 'AWS-WABP-M2',
+            'course_id': 'AWS-WABP',
+            'module_number': 2,
+            'module_name': '운영 우수성',
+            'module_type': '강의',
+            'module_description': '운영 우수성 설계 원칙, 사례 연구'
+        },
+        {
+            'module_id': 'AWS-WABP-LAB1',
+            'course_id': 'AWS-WABP',
+            'module_number': 'LAB1',
+            'module_name': '운영 우수성',
+            'module_type': '실습',
+            'module_description': '운영 우수성 원칙 적용, 케이스 스터디 분석, 개선 계획 수립'
+        },
+        {
+            'module_id': 'AWS-WABP-LAB2',
+            'course_id': 'AWS-WABP',
+            'module_number': 'LAB2',
+            'module_name': '안정성',
+            'module_type': '실습',
+            'module_description': '안정성 원칙 적용, 복원력 있는 아키텍처 설계, 장애 대응 전략 수립'
+        }
+    ])
+
+    # AWS-DSVS (Developing Serverless Solutions on AWS) 모듈 및 실습
+    aws_modules.extend([
+        {
+            'module_id': 'AWS-DSVS-M1',
+            'course_id': 'AWS-DSVS',
+            'module_number': 1,
+            'module_name': '서버리스 방식 고려',
+            'module_type': '강의',
+            'module_description': '최신 서버리스 애플리케이션 구축을 위한 모범 사례, 이벤트 중심 설계, 이벤트 중심 서버리스 애플리케이션을 지원하는 AWS 서비스'
+        },
+        {
+            'module_id': 'AWS-DSVS-M2',
+            'course_id': 'AWS-DSVS',
+            'module_number': 2,
+            'module_name': 'API 기반 개발 및 동기식 이벤트 소스',
+            'module_type': '강의',
+            'module_description': '표준 요청/응답 API 기반 웹 애플리케이션의 특성, Amazon API Gateway가 서버리스 애플리케이션에 어떻게 적합한지 이해'
+        },
+        {
+            'module_id': 'AWS-DSVS-LAB1',
+            'course_id': 'AWS-DSVS',
+            'module_number': 'LAB1',
+            'module_name': '간단한 서버리스 애플리케이션 배포',
+            'module_type': '실습',
+            'module_description': 'Lambda 함수 생성, API Gateway 연결, 서버리스 애플리케이션 배포 및 테스트'
+        },
+        {
+            'module_id': 'AWS-DSVS-LAB2',
+            'course_id': 'AWS-DSVS',
+            'module_number': 'LAB2',
+            'module_name': 'Amazon EventBridge를 사용한 메시지 팬아웃',
+            'module_type': '실습',
+            'module_description': 'EventBridge 이벤트 버스 생성, 이벤트 규칙 설정, 이벤트 처리 Lambda 함수 구성'
+        }
+    ])
+
+    return aws_modules
+
+def create_modules_json_from_manual():
+    """수동 추출한 모듈 정보를 modules.json으로 저장"""
+    modules_data = manual_extract_modules()
+    
+    # modules.json 파일에 저장
+    with open('modules.json', 'w', encoding='utf-8') as f:
+        json.dump(modules_data, f, ensure_ascii=False, indent=4)
+    
+    print(f"{len(modules_data)}개의 모듈/실습 정보가 modules.json에 저장되었습니다.")
+    return True
+
+def main():
+    try:
+        print("AWS 교육 과정 모듈 정보 추출 프로그램을 시작합니다.")
+        
+        # 직접 추출한 모듈 정보로 JSON 파일 생성
+        success = create_modules_json_from_manual()
+        
+        if success:
+            print("모듈 정보 추출 및 JSON 생성 완료!")
+        else:
+            print("모듈 정보 추출 실패")
+    except Exception as e:
+        print(f"오류 발생: {str(e)}")
+
+if __name__ == "__main__":
+    main()
