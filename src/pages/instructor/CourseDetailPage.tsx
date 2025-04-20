@@ -22,7 +22,7 @@ import { GraphQLQuery } from 'aws-amplify/api';
 
 
 // 상대 경로로 정의된 쿼리 가져오기
-import { getCourse } from '../../graphql/queries';
+import { getCourseCatalog } from '@graphql/queries';
 
 // StatusIndicator의 타입 정의
 type StatusIndicatorType = "success" | "warning" | "error" | "info" | "stopped" | "in-progress" | "loading";
@@ -139,7 +139,7 @@ const CourseDetailPage: React.FC = () => {
         setLoading(true);
         // Gen 2에 맞는 방식으로 수정
         const { data } = await client.graphql<GraphQLQuery<GetCourseQuery>>({
-          query: getCourse,
+          query: getCourseCatalog,
           variables: { id: courseId },
           authMode: 'userPool' // 인증 모드 명시적 지정
         });
