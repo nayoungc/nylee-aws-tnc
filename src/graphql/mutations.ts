@@ -1,4 +1,5 @@
 // src/graphql/mutations.ts
+
 // CourseCatalog 뮤테이션
 export const createCourseCatalog = /* GraphQL */ `
   mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {

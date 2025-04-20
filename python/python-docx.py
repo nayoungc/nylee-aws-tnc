@@ -112,6 +112,9 @@ def analyze_with_bedrock_module(section_text, course_id):
             region_name=BEDROCK_REGION
         )
         
+        # 모델 ID 정의 - 이 부분이 누락되었습니다
+        model_id = 'anthropic.claude-instant-v1'
+        
         # 프롬프트 작성 - Claude 형식에 맞게 수정
         prompt_content = f"""
         다음은 AWS 교육 과정 '{course_id}'의 내용입니다. 이 텍스트를 분석하여 교육 모듈과 실습에 대한 정보를 추출해주세요.

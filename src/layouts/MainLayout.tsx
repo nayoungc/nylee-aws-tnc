@@ -59,15 +59,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
 
   // 네비게이션 아이템 생성 함수 - Cloudscape의 타입 사용
   const getNavigationItems = (): SideNavigationProps.Item[] => {
-    // 로그인하지 않은 사용자 또는 일반 학생용 메뉴 (공개 메뉴만 표시)
-    let navItems: SideNavigationProps.Item[] = [
-      {
-        type: 'link',
-        text: t('nav.course_catalog'),
-        href: '/tnc' // /courses에서 /tnc로 변경
-      }
-    ];
-
+    let navItems: SideNavigationProps.Item[] = [];
+    
     // instructor 또는 admin 사용자를 위한 메뉴
     if (userRole === 'instructor' || userRole === 'admin') {
       navItems = [
@@ -128,12 +121,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
               href: '/instructor/analytics/insights'
             }
           ]
-        },
-        // 과정 카탈로그는 모든 사용자에게 표시
-        {
-          type: 'link',
-          text: t('nav.course_catalog'),
-          href: '/tnc'
         }
       ];
     }
@@ -146,6 +133,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
         href: '/admin'
       });
     }
+
+    // 공개 메뉴 - 모든 사용자에게 별도 섹션으로 표시
+    navItems.push({
+      type: 'section',
+      text: t('nav.public_resources'),
+      items: [
+        {
+          type: 'link',
+          text: t('nav.course_catalog'),
+          href: '/tnc'
+        },
+        {
+          type: 'link',
+          text: t('nav.tnccourses'),
+          href: '/tnc/courses'
+        }
+      ]
+    });
 
     return navItems;
   };

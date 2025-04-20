@@ -25,7 +25,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         alignItems: 'center',
         backgroundColor: 'var(--color-background-layout-main)'
       }}>
-        <div style={{ width: '100%', maxWidth: '650px' }}>
+        <div style={{ width: '100%', maxWidth: '600px' }}>
           <Container>
             <SpaceBetween size="l">
               {children}

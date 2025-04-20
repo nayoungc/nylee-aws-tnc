@@ -1,12 +1,10 @@
 // src/graphql/queries.ts
-
-// 과정 카탈로그 리스트
 export const listCourseCatalogs = /* GraphQL */ `
-  query ListCourses {
-    listCourses {
+  query ListTncCourseCatalogs {
+    listTncCourseCatalogs {
       items {
-        course_id: id
-        course_name: title
+        course_id
+        course_name
         level
         duration
         delivery_method
@@ -18,6 +16,25 @@ export const listCourseCatalogs = /* GraphQL */ `
     }
   }
 `;
+
+// // 예시 2: 실제 쿼리 이름이 getTncCourses인 경우
+// export const listCourseCatalogs = /* GraphQL */ `
+//   query GetTncCourses {
+//     getTncCourses {
+//       items {
+//         course_id
+//         course_name
+//         level
+//         duration
+//         delivery_method
+//         description
+//         objectives
+//         target_audience
+//       }
+//       nextToken
+//     }
+//   }
+// `;
 
 export const getCourseCatalog = /* GraphQL */ `
   query GetCourseCatalog(\$id: ID!) {
