@@ -640,5 +640,125 @@
     "admin": "Administrator",
     "instructor": "Instructor",
     "student": "Student"
+  },
+  "quiz_management": {
+    "title": "Quiz Management",
+    "course_selection": "Select Course",
+    "course_placeholder": "Select a course",
+    "quiz_type": "Quiz Type",
+    "select_quiz_type": "Select quiz type",
+    "pre_quiz": "Pre-Quiz",
+    "post_quiz": "Post-Quiz",
+    "sync_with_pre_quiz": "Configure post-quiz identical to pre-quiz",
+    "existing_quizzes": "Existing Quizzes",
+    "existing_quiz_description": "{{type}} quiz list for the selected course",
+    "question_number": "Question {{number}}",
+    "correct_answer": "Correct Answer",
+    "errors": {
+      "graphql_query": "GraphQL query error:",
+      "course_load": "Error loading course list:",
+      "response_format": "Response data doesn't match the expected format:",
+      "quiz_generation": "Error generating quiz:"
+    },
+    "empty_states": {
+      "no_courses": "No Courses Available",
+      "register_course": "There are no available courses. Please register a course first.",
+      "no_quizzes": "No Quizzes Available",
+      "create_new_quiz": "There are no quizzes for this course and type. Create a new quiz."
+    },
+    "actions": {
+      "create_quiz": "Create Quiz",
+      "ai_generate": "Generate with AI",
+      "copy_from_pre": "Copy from Pre-Quiz",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "create_with_questions": "Create Quiz with these Questions"
+    },
+    "columns": {
+      "title": "Title",
+      "question_count": "Question Count",
+      "created_at": "Created Date",
+      "actions": "Actions"
+    },
+    "loading": {
+      "courses": "Loading courses...",
+      "quizzes": "Loading quizzes..."
+    },
+    "modal": {
+      "ai_generation": "AI {{type}} Quiz Generation",
+      "generating": "Analyzing course materials and generating quiz...",
+      "generated_count": "There are {{count}} generated questions. You can edit them as needed."
+    }
+  },
+  "quiz_creator": {
+    "default_course": "Course",
+    "pre_quiz": "Pre-Quiz",
+    "post_quiz": "Post-Quiz",
+    "default_description": "This quiz is designed to assess knowledge before/after the course.",
+    "sections": {
+      "quiz_info": "Quiz Information",
+      "questions_count": "Quiz Questions ({{count}})",
+      "question_list": "Question List"
+    },
+    "meta": {
+      "title_label": "Quiz Title",
+      "title_placeholder": "Enter quiz title",
+      "description_label": "Description",
+      "description_placeholder": "Enter quiz description to show to students",
+      "time_limit": "Time Limit (minutes)",
+      "pass_score": "Pass Score (%)",
+      "shuffle_questions": "Shuffle Questions",
+      "shuffle_options": "Shuffle Options",
+      "show_feedback": "Show Immediate Feedback"
+    },
+    "labels": {
+      "question": "Question",
+      "options": "Options",
+      "correct_answer": "Correct Answer",
+      "correct": "Correct"
+    },
+    "placeholders": {
+      "question": "Enter your question here",
+      "option": "Option {{number}}"
+    },
+    "question_number": "Question {{number}}",
+    "hints": {
+      "click_to_edit": "Click on a card to edit the question"
+    },
+    "empty_states": {
+      "no_questions": "No Questions",
+      "add_instructions": "Click the 'Add Question' button to create quiz questions"
+    },
+    "validation": {
+      "question_required": "Please enter the question content",
+      "options_required": "Please fill in all option choices",
+      "min_question_required": "At least one question is required to save the quiz"
+    },
+    "errors": {
+      "save_error": "Error saving quiz:",
+      "save_error_message": "An error occurred while saving the quiz. Please try again."
+    },
+    "actions": {
+      "add_question": "Add Question",
+      "add_option": "Add Option",
+      "save_question": "Save Question",
+      "cancel": "Cancel",
+      "cancel_return": "Cancel & Return",
+      "save_quiz": "Save Quiz",
+      "return_to_management": "Return to Quiz Management"
+    },
+    "modal": {
+      "edit_question": "Edit Question",
+      "add_question": "Add New Question",
+      "save_success": "Quiz Saved Successfully"
+    },
+    "messages": {
+      "save_success": "Your quiz has been successfully saved."
+    },
+    "loading": {
+      "questions": "Loading questions..."
+    }
   }
 }

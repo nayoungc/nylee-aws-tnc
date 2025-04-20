@@ -640,5 +640,125 @@
     "admin": "관리자",
     "instructor": "강사",
     "student": "학생"
+  },
+  "quiz_management": {
+    "title": "퀴즈 관리",
+    "course_selection": "과정 선택",
+    "course_placeholder": "과정을 선택하세요",
+    "quiz_type": "퀴즈 유형",
+    "select_quiz_type": "퀴즈 유형 선택",
+    "pre_quiz": "사전 퀴즈",
+    "post_quiz": "사후 퀴즈",
+    "sync_with_pre_quiz": "사후 퀴즈를 사전 퀴즈와 동일하게 설정",
+    "existing_quizzes": "기존 퀴즈",
+    "existing_quiz_description": "선택한 과정의 {{type}} 퀴즈 목록",
+    "question_number": "질문 {{number}}",
+    "correct_answer": "정답",
+    "errors": {
+      "graphql_query": "GraphQL 쿼리 오류:",
+      "course_load": "과정 목록 로딩 오류:",
+      "response_format": "응답 데이터가 예상 형식과 맞지 않습니다:",
+      "quiz_generation": "퀴즈 생성 오류:"
+    },
+    "empty_states": {
+      "no_courses": "사용 가능한 과정 없음",
+      "register_course": "사용 가능한 과정이 없습니다. 과정을 먼저 등록하세요.",
+      "no_quizzes": "사용 가능한 퀴즈 없음",
+      "create_new_quiz": "이 과정 및 유형에 대한 퀴즈가 없습니다. 새 퀴즈를 생성하세요."
+    },
+    "actions": {
+      "create_quiz": "퀴즈 만들기",
+      "ai_generate": "AI로 생성하기",
+      "copy_from_pre": "사전 퀴즈에서 복사",
+      "view": "보기",
+      "edit": "편집",
+      "delete": "삭제",
+      "cancel": "취소",
+      "create_with_questions": "이 문제들로 퀴즈 만들기"
+    },
+    "columns": {
+      "title": "제목",
+      "question_count": "문항 수",
+      "created_at": "생성 일자",
+      "actions": "작업"
+    },
+    "loading": {
+      "courses": "과정을 불러오는 중...",
+      "quizzes": "퀴즈를 불러오는 중..."
+    },
+    "modal": {
+      "ai_generation": "AI {{type}} 퀴즈 생성",
+      "generating": "과정 자료를 분석하여 퀴즈를 생성하고 있습니다...",
+      "generated_count": "생성된 {{count}}개의 문제가 있습니다. 필요에 맞게 수정할 수 있습니다."
+    }
+  },
+  "quiz_creator": {
+    "default_course": "과정",
+    "pre_quiz": "사전 퀴즈",
+    "post_quiz": "사후 퀴즈",
+    "default_description": "이 퀴즈는 과정 전/후의 지식을 평가하기 위해 설계되었습니다.",
+    "sections": {
+      "quiz_info": "퀴즈 정보",
+      "questions_count": "퀴즈 문항 ({{count}}개)",
+      "question_list": "문항 목록"
+    },
+    "meta": {
+      "title_label": "퀴즈 제목",
+      "title_placeholder": "퀴즈 제목을 입력하세요",
+      "description_label": "설명",
+      "description_placeholder": "학생들에게 보여줄 퀴즈 설명을 입력하세요",
+      "time_limit": "시간 제한 (분)",
+      "pass_score": "합격 점수 (%)",
+      "shuffle_questions": "문항 순서 섞기",
+      "shuffle_options": "보기 순서 섞기",
+      "show_feedback": "즉시 피드백 표시"
+    },
+    "labels": {
+      "question": "질문",
+      "options": "보기",
+      "correct_answer": "정답",
+      "correct": "정답"
+    },
+    "placeholders": {
+      "question": "질문을 여기에 입력하세요",
+      "option": "보기 {{number}}"
+    },
+    "question_number": "문제 {{number}}",
+    "hints": {
+      "click_to_edit": "카드를 클릭하여 문제를 수정할 수 있습니다"
+    },
+    "empty_states": {
+      "no_questions": "문항 없음",
+      "add_instructions": "'문항 추가' 버튼을 클릭하여 퀴즈 문항을 생성하세요"
+    },
+    "validation": {
+      "question_required": "질문 내용을 입력해주세요",
+      "options_required": "모든 보기를 입력해주세요",
+      "min_question_required": "퀴즈를 저장하려면 최소 한 개의 문항이 필요합니다"
+    },
+    "errors": {
+      "save_error": "퀴즈 저장 오류:",
+      "save_error_message": "퀴즈 저장 중 오류가 발생했습니다. 다시 시도해주세요."
+    },
+    "actions": {
+      "add_question": "문항 추가",
+      "add_option": "보기 추가",
+      "save_question": "문항 저장",
+      "cancel": "취소",
+      "cancel_return": "취소 후 돌아가기",
+      "save_quiz": "퀴즈 저장",
+      "return_to_management": "퀴즈 관리로 돌아가기"
+    },
+    "modal": {
+      "edit_question": "문항 편집",
+      "add_question": "새 문항 추가",
+      "save_success": "퀴즈가 성공적으로 저장됨"
+    },
+    "messages": {
+      "save_success": "퀴즈가 성공적으로 저장되었습니다."
+    },
+    "loading": {
+      "questions": "문항을 불러오는 중..."
+    }
   }
 }

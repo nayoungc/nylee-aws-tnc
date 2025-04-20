@@ -1,3 +1,4 @@
+// pages/instructor/QuizManagement.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   Button, 
@@ -41,7 +42,7 @@ interface QuizGenerationResponse {
   questions: Question[];
 }
 
-// GraphQL 쿼리 정의 - 이스케이프 문자 제거
+// GraphQL 쿼리 정의
 const listCourseCatalogs = /* GraphQL */ `
   query ListCourseCatalogs(
     \$filter: ModelCourseCatalogFilterInput
@@ -85,7 +86,7 @@ export default function QuizManagement() {
   const [existingQuizzes, setExistingQuizzes] = useState<any[]>([]);
   const [quizType, setQuizType] = useState<'pre' | 'post'>('pre');
   const [syncQuizzes, setSyncQuizzes] = useState<boolean>(false);
-  // Amplify Gen 2에 맞는 클라이언트 생성 방식
+  // Amplify Gen 2에 맞는 클라이언트 생성
   const [client] = useState(() => generateClient());
   
   // 페이지 로드 시 과정 목록 가져오기
