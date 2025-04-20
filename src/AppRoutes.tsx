@@ -33,11 +33,11 @@ import CourseCatalog from './pages/admin/CourseCatalogTab';
 
 
 // 교육생용 페이지 컴포넌트
-import StudentHome from './pages/StudentHome';
-import StudentCourseHome from './pages/student/StudentCourseHome';
-import SurveyPage from './pages/student/SurveyPage';
-import PreQuizPage from './pages/student/PreQuizPage';
-import PostQuizPage from './pages/student/PostQuizPage';
+import SurveyPage from './pages/courses/SurveyPage';
+import PreQuizPage from './pages/courses/PreQuizPage';
+import PostQuizPage from './pages/courses/PostQuizPage';
+import CourseHome from './pages/courses/CourseHome'; 
+
 
 // 레이아웃 컴포넌트
 import AuthLayout from './layouts/AuthLayout';
@@ -287,8 +287,7 @@ const AppRoutes: React.FC = () => {
         authenticated ? <Navigate to="/" /> : <AuthLayout><NewPassword /></AuthLayout>
       } />
 
-      {/* 루트 리디렉션 */}
-      <Route
+      {/* 루트 리디렉션 */}      <Route
         path="/"
         element={
           authenticated ? (
@@ -298,18 +297,30 @@ const AppRoutes: React.FC = () => {
               <Navigate to="/courses" />
             )
           ) : (
-            <Navigate to="/courses" />
+            <Navigate to="/signin" /> // 이 부분을 수정 - 로그인 안된 경우 로그인 페이지로
           )
         }
       />
+      {/* 공개 접근 가능한 과정 페이지 */}
+      <Route path="/courses" element={
+        <ProtectedRoute
+          authenticated={authenticated}
+          redirectPath="/signin"
+          requiredRole="student" // 또는 권한 체크를 하지 않도록 수정
+          userAttributes={userAttributes}
+        >
+          <MainLayout><CourseHome /></MainLayout>
+        </ProtectedRoute>
+      } />
+  
       
       {/* 공개 접근 가능한 과정 페이지 */}
-      <Route path="/courses" element={<MainLayout><StudentHome /></MainLayout>} />
+      <Route path="/courses" element={<MainLayout><CourseHome /></MainLayout>} />
       
       {/* 통합된 과정 경로 - 상세 및 교육생 기능 */}
       <Route path="/course/:courseId">
         {/* 과정 홈페이지 */}
-        <Route index element={<MainLayout><StudentCourseHome /></MainLayout>} />
+        <Route index element={<MainLayout><CourseHome /></MainLayout>} />
         {/* 교육생 평가 페이지 */}
         <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
         <Route path="quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
