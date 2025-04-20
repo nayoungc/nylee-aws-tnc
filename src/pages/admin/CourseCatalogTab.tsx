@@ -18,7 +18,7 @@ import {
 import { generateClient } from 'aws-amplify/api';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import {
-    listCourseCatalogs,
+    listCourseCatalog,
     getCourseCatalog
 } from '@graphql/queries';
 import {
@@ -151,7 +151,7 @@ const CourseCatalogTab: React.FC = () => {
 
         try {
             const result = await client.graphql({
-                query: listCourseCatalogs,
+                query: listCourseCatalog,
                 variables: {
                     limit: 100,
                     nextToken: nextToken
