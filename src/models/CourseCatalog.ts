@@ -1,3 +1,4 @@
+// src/models/CourseCatalog.ts
 export interface CourseCatalog {
   id?: string;
   course_name: string;

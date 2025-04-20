@@ -1,8 +1,9 @@
+// amplify/data/resource.ts
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
 const schema = a.schema({
   // 과정 카탈로그 모델
-  TncCourseCatalog: a
+  CourseCatalog: a
     .model({
       id: a.id(), 
       course_id: a.string().required(), // AWS-GOE와 같은 고유 코스 ID
@@ -17,7 +18,7 @@ const schema = a.schema({
     .authorization(allow => [allow.authenticated()]),
 
   // 고객사 모델 - 단순 구조
-  TncCustomer: a
+  Customer: a
     .model({
       id: a.id(),
       name: a.string().required()

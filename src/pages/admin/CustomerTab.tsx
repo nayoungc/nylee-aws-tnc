@@ -96,9 +96,7 @@ const CustomerTab: React.FC = () => {
   // 필터링된 아이템
   const filteredItems = customers.filter(customer => 
     !filterText || 
-    customer.name?.toLowerCase().includes(filterText.toLowerCase()) ||
-    customer.contactPerson?.toLowerCase().includes(filterText.toLowerCase()) ||
-    customer.email?.toLowerCase().includes(filterText.toLowerCase())
+    customer.name?.toLowerCase().includes(filterText.toLowerCase())
   );
   
   // 페이지당 아이템 수
@@ -112,12 +110,6 @@ const CustomerTab: React.FC = () => {
   const handleCreateCustomer = () => {
     setCurrentCustomer({
       name: '',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      address: '',
-      status: 'ACTIVE',
-      joinDate: new Date().toISOString().split('T')[0]
     });
     setIsModalVisible(true);
   };
@@ -147,12 +139,6 @@ const CustomerTab: React.FC = () => {
         const customerInput = {
           id: currentCustomer.id,
           name: currentCustomer.name,
-          contactPerson: currentCustomer.contactPerson,
-          email: currentCustomer.email,
-          phone: currentCustomer.phone,
-          address: currentCustomer.address,
-          status: currentCustomer.status,
-          joinDate: currentCustomer.joinDate
         };
 
         const result = await client.graphql({
@@ -172,12 +158,6 @@ const CustomerTab: React.FC = () => {
         // 새 고객사 생성
         const customerInput = {
           name: currentCustomer.name,
-          contactPerson: currentCustomer.contactPerson,
-          email: currentCustomer.email,
-          phone: currentCustomer.phone,
-          address: currentCustomer.address,
-          status: currentCustomer.status,
-          joinDate: currentCustomer.joinDate
         };
 
         const result = await client.graphql({
@@ -285,32 +265,6 @@ const CustomerTab: React.FC = () => {
               sortingField: "name"
             },
             {
-              id: "contactPerson",
-              header: t('admin.customers.column.contact_person'),
-              cell: item => item.contactPerson || "-",
-              sortingField: "contactPerson"
-            },
-            {
-              id: "email",
-              header: t('admin.customers.column.email'),
-              cell: item => item.email || "-"
-            },
-            {
-              id: "phone",
-              header: t('admin.customers.column.phone'),
-              cell: item => item.phone || "-"
-            },
-            {
-              id: "status",
-              header: t('admin.customers.column.status'),
-              cell: item => item.status === 'ACTIVE' ? t('admin.common.active') : t('admin.common.inactive')
-            },
-            {
-              id: "joinDate",
-              header: t('admin.customers.column.join_date'),
-              cell: item => item.joinDate || "-"
-            },
-            {
               id: "actions",
               header: t('admin.common.actions'),
               cell: item => (
@@ -396,71 +350,6 @@ const CustomerTab: React.FC = () => {
                 }
               />
             </FormField>
-            
-            <FormField label={t('admin.customers.form.contact_person')}>
-              <Input
-                value={currentCustomer.contactPerson || ''}
-                onChange={({ detail }) =>
-                  setCurrentCustomer(prev => prev ? ({...prev, contactPerson: detail.value}) : null)
-                }
-              />
-            </FormField>
-            
-            <FormField label={t('admin.customers.form.email')}>
-              <Input
-                type="email"
-                value={currentCustomer.email || ''}
-                onChange={({ detail }) =>
-                  setCurrentCustomer(prev => prev ? ({...prev, email: detail.value}) : null)
-                }
-              />
-            </FormField>
-            
-            <FormField label={t('admin.customers.form.phone')}>
-              <Input
-                type="text"
-                value={currentCustomer.phone || ''}
-                onChange={({ detail }) =>
-                  setCurrentCustomer(prev => prev ? ({...prev, phone: detail.value}) : null)
-                }
-              />
-            </FormField>
-            
-            <FormField label={t('admin.customers.form.address')}>
-              <Input
-                value={currentCustomer.address || ''}
-                onChange={({ detail }) =>
-                  setCurrentCustomer(prev => prev ? ({...prev, address: detail.value}) : null)
-                }
-              />
-            </FormField>
-            
-            <FormField label={t('admin.customers.form.status')}>
-            <Select
-                selectedOption={
-                    { 
-                    label: currentCustomer.status === 'ACTIVE' ? tString('admin.common.active') : tString('admin.common.inactive'),
-                    value: currentCustomer.status || 'ACTIVE'
-                    }
-                }
-                onChange={({ detail }) =>
-                    setCurrentCustomer(prev => prev ? ({...prev, status: detail.selectedOption.value}) : null)
-                }
-                options={[
-                    { label: tString('admin.common.active'), value: 'ACTIVE' },
-                    { label: tString('admin.common.inactive'), value: 'INACTIVE' }
-                ]}
-                />
-            </FormField>
-            
-            <FormField label={tString('admin.customers.form.join_date')}>
-                <DatePicker
-                    value={currentCustomer.joinDate || ''}
-                    onChange={({ detail }) =>
-                    setCurrentCustomer(prev => prev ? ({...prev, joinDate: detail.value}) : null)
-                    }
-                />
-                </FormField>
           </SpaceBetween>
         )}
       </Modal>

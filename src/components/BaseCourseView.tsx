@@ -1,4 +1,3 @@
-// src/components/BaseCourseView.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -16,29 +15,48 @@ import { useTypedTranslation } from '@utils/i18n-utils';
 import { executeGraphQL } from '@utils/auth';
 import { listCourseCatalogs } from '@graphql/queries';
 
-// 타입 정의
+// 백엔드 스키마와 일치하는 타입 정의
 export interface CourseCatalog {
   id: string;
-  title: string;
+  course_name: string;
   description?: string;
   level?: string;
-  category?: string;
-  duration?: number;
-  status: string;
-  price?: number;
-  instructor?: string;
+  duration?: string;
+  delivery_method?: string;
+  objectives?: string[];
+  target_audience?: string[];
   createdAt?: string;
   updatedAt?: string;
+  // UI 표시용 추가 필드
+  status?: string;
 }
 
-// 응답 타입 - 서버 API 구조에 맞게 수정
+// 응답 타입 정의
 export interface ListCourseCatalogsResponse {
   // 여러 가능한 응답 키를 처리할 수 있도록 인덱스 시그니처 사용
   [key: string]: {
-    items: CourseCatalog[];
+    items: any[]; // 원시 API 응답 타입 (매핑 전)
     nextToken: string | null;
   };
 }
+
+// 데이터 매핑 함수 - API 응답을 UI 모델로 변환
+const mapToCourseViewModel = (item: any): CourseCatalog => {
+  return {
+    id: item.id,
+    course_name: item.course_name || item.title || '',
+    description: item.description || '',
+    level: item.level || '',
+    duration: item.duration || '',
+    delivery_method: item.delivery_method || '',
+    objectives: item.objectives || [],
+    target_audience: item.target_audience || [],
+    // UI에 필요한 추가 필드 - 필요시 기본값 설정
+    status: item.status || 'ACTIVE',
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt
+  };
+};
 
 // BaseCourseView의 props 인터페이스
 interface BaseCourseViewProps {
@@ -107,16 +125,15 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         // 개발 환경에서만 샘플 데이터 제공
         if (process.env.NODE_ENV === 'development') {
           setCourses([
-            { 
+            mapToCourseViewModel({ 
               id: '1', 
-              title: '타임아웃 - 샘플 과정', 
+              course_name: '타임아웃 - 샘플 과정', 
               description: '타임아웃으로 인한 샘플 데이터입니다.',
               level: '입문',
               category: '기타',
-              duration: 0,
+              duration: '0',
               status: 'ACTIVE',
-              price: 0
-            }
+            })
           ]);
         }
       }, 15000); // 15초 타임아웃
@@ -137,7 +154,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           console.log('API 응답:', data);
           
           // 3. 응답 데이터 처리 - 여러 가능한 키 처리
-          let courseItems: CourseCatalog[] = [];
+          let rawItems: any[] = [];
           
           // 가능한 응답 키 확인
           const responseKey = 
@@ -146,12 +163,13 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
             data.listCourses ? 'listCourses' : 
             Object.keys(data)[0]; // 또는 첫 번째 키 사용
           
-          if (data[responseKey]?.items) {
-            courseItems = data[responseKey].items;
-          }
+          console.log('응답 키:', responseKey);
           
-          if (courseItems && courseItems.length > 0) {
-            setCourses(courseItems);
+          if (data[responseKey]?.items) {
+            rawItems = data[responseKey].items;
+            // 데이터 매핑 적용
+            const mappedItems = rawItems.map(mapToCourseViewModel);
+            setCourses(mappedItems);
           } else {
             setCourses([]);
           }
@@ -178,26 +196,24 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         // 개발 환경에서만 샘플 데이터 사용
         if (process.env.NODE_ENV === 'development') {
           setCourses([
-            { 
+            mapToCourseViewModel({
               id: '1', 
-              title: 'AWS Cloud Practitioner Essentials', 
+              course_name: 'AWS Cloud Practitioner Essentials', 
               description: 'Learn the fundamentals of AWS Cloud',
               level: 'Beginner',
               category: 'Cloud',
-              duration: 8,
+              duration: '8',
               status: 'ACTIVE', 
-              price: 99 
-            },
-            { 
+            }),
+            mapToCourseViewModel({ 
               id: '2', 
-              title: 'AWS Solutions Architect Associate', 
+              course_name: 'AWS Solutions Architect Associate', 
               description: 'Learn advanced AWS architecture concepts',
               level: 'Intermediate',
               category: 'Architecture',
-              duration: 24,
+              duration: '24',
               status: 'ACTIVE', 
-              price: 149 
-            }
+            })
           ]);
         }
       } finally {
@@ -209,7 +225,8 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   }, [t, initialCourses]);
 
   // 상태에 따른 배지 색상 결정
-  const getStatusColor = (status: string): "green" | "blue" | "grey" => {
+  const getStatusColor = (status?: string): "green" | "blue" | "grey" => {
+    if (!status) return 'grey';
     switch(status.toUpperCase()) {
       case 'ACTIVE': return 'green';
       case 'COMPLETED': return 'blue';
@@ -287,9 +304,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           cardDefinition={{
             header: item => (
               <SpaceBetween size="xxs">
-                <div>{item.title}</div>
+                <div>{item.course_name}</div>
                 <Badge color={getStatusColor(item.status)}>
-                  {item.status}
+                  {item.status || 'ACTIVE'}
                 </Badge>
               </SpaceBetween>
             ),
@@ -304,9 +321,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
                 content: item => (
                   <SpaceBetween size="xs">
                     <div>{t('courses.level')}: {item.level || t('courses.not_specified')}</div>
-                    <div>{t('courses.category')}: {item.category || t('courses.not_specified')}</div>
                     <div>{t('courses.duration')}: {item.duration ? `\${item.duration} \${t('courses.hours')}` : t('courses.not_specified')}</div>
-                    <div>{t('courses.price')}: {item.price ? `\${item.price} \${t('courses.currency')}` : t('courses.free')}</div>
                   </SpaceBetween>
                 )
               },
