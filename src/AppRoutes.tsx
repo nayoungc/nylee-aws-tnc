@@ -184,8 +184,8 @@ const AppRoutes: React.FC = () => {
         '/new-password', '/tnc'
       ];
 
-      // 공개 경로 패턴 (시작 부분만 체크) - /tnc/ 패턴 추가
-      const publicPathPatterns = ['/tnc/'];
+      // 공개 경로 패턴 (시작 부분만 체크) - /tnc/ 패턴과 /pre-quiz/, /post-quiz/, /survey/ 패턴 추가
+      const publicPathPatterns = ['/tnc/', '/pre-quiz/', '/post-quiz/', '/survey/'];
 
       // 현재 경로가 공개 경로인지 체크
       const isPublicPath =
@@ -310,11 +310,30 @@ const AppRoutes: React.FC = () => {
           <CourseList />
         </MainLayout>
       } />
-      
+
       {/* 과정 상세 페이지 - /tnc/:courseId 형식으로 변경 */}
       <Route path="/tnc/:courseId" element={
         <MainLayout>
           <CourseHome />
+        </MainLayout>
+      } />
+
+      {/* 새로 추가: 직접 평가 페이지 접근 라우트 */}
+      <Route path="/pre-quiz/:id" element={
+        <MainLayout>
+          <PreQuizPage />
+        </MainLayout>
+      } />
+
+      <Route path="/post-quiz/:id" element={
+        <MainLayout>
+          <PostQuizPage />
+        </MainLayout>
+      } />
+
+      <Route path="/survey/:id" element={
+        <MainLayout>
+          <SurveyPage />
         </MainLayout>
       } />
 
@@ -336,7 +355,7 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* /courses 경로에서 /tnc로 리디렉션 */}
+      {/* /courses 경로에서 /tnc로 리디렉션 - 백슬래시 제거 */}
       <Route path="/courses" element={<Navigate to="/tnc" replace />} />
       <Route path="/courses/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
 
@@ -362,7 +381,7 @@ const AppRoutes: React.FC = () => {
         <Route path="analytics">
           <Route path="comparison" element={<InstructorRoute><div>사전/사후 비교 분석</div></InstructorRoute>} />
           <Route path="reports" element={<InstructorRoute><ReportGenerator /></InstructorRoute>} />
-          <Route path="insights" element={<InstructorRoute><Analytics/></InstructorRoute>} />
+          <Route path="insights" element={<InstructorRoute><Analytics /></InstructorRoute>} />
         </Route>
       </Route>
 
@@ -374,7 +393,6 @@ const AppRoutes: React.FC = () => {
         <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
         <Route path="pre-quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
         <Route path="post-quiz" element={<MainLayout><PostQuizPage /></MainLayout>} />
-        <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
       </Route>
 
       {/* 이전 URL 경로 리디렉션 */}
@@ -382,11 +400,11 @@ const AppRoutes: React.FC = () => {
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
 
-      {/* 교육생 페이지 리디렉션 - /tnc 경로로 변경 */}
+      {/* 교육생 페이지 리디렉션 - /tnc 경로로 변경 (백슬래시 제거) */}
       <Route path="/student/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
       <Route path="/student/:courseId/:path" element={<Navigate to={`/tnc/\${useParams().courseId}/\${useParams().path}`} replace />} />
 
-      {/* 이전 /course 패턴을 /tnc로 리디렉션 */}
+      {/* 이전 /course 패턴을 /tnc로 리디렉션 (백슬래시 제거) */}
       <Route path="/course/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
       <Route path="/course/:courseId/:path" element={<Navigate to={`/tnc/\${useParams().courseId}/\${useParams().path}`} replace />} />
 

@@ -153,21 +153,21 @@ const CourseHome: React.FC = () => {
   // 수정된 부분: 평가 유형에 따라 다른 페이지로 이동
   const navigateToAssessment = (assessment: Assessment) => {
     if (!assessment.isActive) return;
-
+  
     // 평가 유형에 따라 다른 경로로 이동
     switch (assessment.type) {
       case 'pre-quiz':
-        navigate(`/pre-quiz/\${assessment.id}`);  // 백슬래시 제거
+        navigate(`/pre-quiz/\${assessment.id}`);
         break;
       case 'post-quiz':
-        navigate(`/post-quiz/\${assessment.id}`);  // 백슬래시 제거
+        navigate(`/post-quiz/\${assessment.id}`);
         break;
       case 'survey':
-        navigate(`/survey/\${assessment.id}`);  // 백슬래시 제거
+        navigate(`/survey/\${assessment.id}`);
         break;
       default:
         // 기존 기본 경로
-        navigate(`/assessment/\${assessment.type}/\${assessment.id}`);  // 백슬래시 제거
+        navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
     }
   };
 
