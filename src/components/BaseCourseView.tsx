@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { executeGraphQL } from '@utils/auth';
-import { listCourseCatalogs } from '@graphql/queries';
+import { listCourseCatalog } from '@graphql/queries';
 
 // 백엔드 스키마와 일치하는 타입 정의
 export interface CourseCatalog {
@@ -147,7 +147,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         try {
           // 2. 정의된 쿼리 사용
           const data = await executeGraphQL<ListCourseCatalogsResponse>(
-            listCourseCatalogs, 
+            listCourseCatalog,  // 수정된 쿼리명
             { limit: 100 }
           );
           
@@ -158,10 +158,10 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           
           // 가능한 응답 키 확인
           const responseKey = 
-            data.listourseCatalogs ? 'listCourseCatalogs' :
+            data.listCourseCatalog ? 'listCourseCatalog' :  // 단수형 추가
             data.listCourseCatalogs ? 'listCourseCatalogs' :
             data.listCourses ? 'listCourses' : 
-            Object.keys(data)[0]; // 또는 첫 번째 키 사용
+            Object.keys(data)[0];
           
           console.log('응답 키:', responseKey);
           

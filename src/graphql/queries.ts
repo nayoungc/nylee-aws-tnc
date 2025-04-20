@@ -1,8 +1,7 @@
 // CourseCatalog 쿼리
-export const listCourseCatalogs = /* GraphQL */ `
-  query ListCourseCatalogs(
-    \$limit: Int
-    \$nextToken: String
+export const listCourseCatalog = /* GraphQL */ `
+  query ListCourseCatalog(\$limit: Int, \$nextToken: String) {
+    listCourseCatalog(limit: \$limit, nextToken: \$nextToken) {
   ) {
     listCourseCatalogs(limit: \$limit, nextToken: \$nextToken) {
       items {

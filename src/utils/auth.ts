@@ -98,8 +98,7 @@ export const executeGraphQL = async <T>(
         console.log('샘플 데이터로 대체합니다');
         
         // 쿼리 내용에 따른 샘플 데이터 제공
-        if (query.includes('listTncCourseCatalogs') || 
-            query.includes('listCourseCatalogs') ||
+        if (query.includes('listCourseCatalogs') ||
             query.includes('listCourses')) {
           
           // 샘플 코스 데이터
@@ -122,7 +121,6 @@ export const executeGraphQL = async <T>(
           // 모든 가능한 키 이름에 대해 샘플 데이터 제공
           // 주석 처리된 코드 복원
           return {
-            listTncCourseCatalogs: mockData.listCourses,
             listCourseCatalogs: mockData.listCourses,
             //listCourses: mockData.listCourses, // 이 줄을 복원
             ...mockData
