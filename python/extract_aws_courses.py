@@ -360,21 +360,19 @@ def extract_modules_labs_from_table(table, current_day=None):
                     "day": day
                 })
         
-        # 실습 정보 추출 부분 수정
-    if lab_index is not None and lab_index < len(cells):
-        lab_content = cells[lab_index].strip()
-        if lab_content:
-            lab_number, lab_title = extract_labs(lab_content)
-            if not lab_number:  # 번호가 추출되지 않았다면
-                lab_number = extract_lab_number(lab_content)
-            if not lab_title:   # 제목이 추출되지 않았다면
-                lab_title = lab_content
+        # 실습 정보 추출
+        if lab_index is not None and lab_index < len(cells):
+            lab_content = cells[lab_index].strip()
+            if lab_content:
+                lab_number, lab_title = extract_labs(lab_content)
                 
-            labs.append({
-                "lab_number": lab_number,
-                "lab_title": lab_title,
-                "day": day
-            })
+                # 유효한 실습 제목인지 검증
+                if lab_title and "을 통해 강력한 스토리지 솔루션" not in lab_title:
+                    labs.append({
+                        "lab_number": lab_number if lab_number else "N/A",
+                        "lab_title": lab_title,
+                        "day": day
+                    })
     
     return modules, labs
 
@@ -457,16 +455,29 @@ def prepare_dynamodb_items(courses):
 
 def extract_labs(text):
     """
-    실습 정보를 더 정확히 추출하는 개선된 함수
+    실습 텍스트에서 번호와 제목을 정확히 추출
     """
-    # 실습 패턴을 더 정확하게 정의
-    lab_pattern = r'(?:•|\*|-)?\s*(?:실습|핸즈온\s*랩|Lab)\s*(\d+)?[:\s-]?\s*(.+)'
-    match = re.search(lab_pattern, text, re.IGNORECASE)
+    # 일반적인 실습 패턴
+    lab_patterns = [
+        r'(?:•|\*|-)?\s*실습\s*(\d+)?\s*[:-]\s*(.+)',  # 실습 1: 제목
+        r'(?:•|\*|-)?\s*핸즈온\s*랩\s*(\d+)?\s*[:-]\s*(.+)',  # 핸즈온 랩 1: 제목
+        r'(?:•|\*|-)?\s*Lab\s*(\d+)?\s*[:-]\s*(.+)'  # Lab 1: 제목
+    ]
     
-    if match:
-        lab_number = match.group(1) if match.group(1) else extract_lab_number(text)
-        lab_title = match.group(2).strip() if match.group(2) else text
-        return lab_number, lab_title
+    for pattern in lab_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            lab_number = match.group(1) if match.group(1) else "N/A"
+            lab_title = match.group(2).strip() if match.group(2) else ""
+            
+            # 실습 제목이 존재하는지 추가 검증
+            if lab_title and len(lab_title) > 3 and not lab_title.startswith("을 통해"):
+                return lab_number, lab_title
+    
+    # 패턴이 맞지 않으면 전체 텍스트를 제목으로 간주
+    if "실습" in text or "Lab" in text or "핸즈온" in text:
+        return "N/A", text.strip()
+    
     return None, None
 
 def extract_modules_and_labs(doc, course, start_table_index):
@@ -592,13 +603,15 @@ def extract_modules_and_labs(doc, course, start_table_index):
                     }
                     continue
                 
+                # 실습 관련 패턴
+                lab_pattern = r'(?:•|\*|-)?\s*(?:실습|핸즈온\s*랩|Lab).*'
+
                 # 실습 정보 확인
-                lab_match = re.search(lab_pattern, text, re.IGNORECASE)
-                if lab_match:
+                if re.search(lab_pattern, text, re.IGNORECASE):
                     lab_number, lab_title = extract_labs(text)
-                    if lab_title:  # 제목이 추출된 경우에만 추가
+                    if lab_title and "을 통해 강력한 스토리지 솔루션" not in lab_title:
                         labs.append({
-                            "lab_number": lab_number if lab_number else extract_lab_number(text),
+                            "lab_number": lab_number,
                             "lab_title": lab_title,
                             "day": current_day
                         })
@@ -831,6 +844,26 @@ def upload_to_dynamodb(course_catalog_items, module_lab_items):
         print(f"DynamoDB 업로드 중 오류 발생: {str(e)}")
         import traceback
         traceback.print_exc()
+
+def validate_labs(labs):
+    """
+    중복 또는 잘못된 실습 정보 검증 및 필터링
+    """
+    validated = []
+    seen_titles = set()
+    
+    for lab in labs:
+        title = lab["lab_title"]
+        # 중복 제거 및 유효성 검사
+        if (title not in seen_titles and 
+            title and 
+            "을 통해 강력한 스토리지 솔루션" not in title and
+            len(title) > 3):
+            
+            seen_titles.add(title)
+            validated.append(lab)
+    
+    return validated
 
 def main():
     """메인 실행 함수"""

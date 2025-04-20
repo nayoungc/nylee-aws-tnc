@@ -315,3 +315,25 @@ export const updateUserAttributes = async (attributes: Record<string, string>) =
     };
   }
 };
+
+// 토큰 새로 고침 함수 추가
+export const refreshAuthToken = async () => {
+  try {
+    // Amplify Gen 2에서는 fetchAuthSession을 사용하여 토큰 갱신
+    const { fetchAuthSession } = await import('aws-amplify/auth');
+    const session = await fetchAuthSession({ forceRefresh: true });
+    
+    return {
+      success: true,
+      session,
+      message: '인증 토큰이 성공적으로 갱신되었습니다.'
+    };
+  } catch (error) {
+    console.error('토큰 갱신 오류:', error);
+    return {
+      success: false,
+      error,
+      message: error instanceof Error ? error.message : '인증 토큰 갱신 중 오류가 발생했습니다.'
+    };
+  }
+};
