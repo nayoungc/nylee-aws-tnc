@@ -1,10 +1,10 @@
 // CourseCatalog 쿼리
 export const listTncCourseCatalogs = /* GraphQL */ `
-  query ListTncCourseCatalogs(
+  query ListCourseCatalogs(
     \$limit: Int
     \$nextToken: String
   ) {
-    listTncCourseCatalogs(limit: \$limit, nextToken: \$nextToken) {
+    listCourseCatalogs(limit: \$limit, nextToken: \$nextToken) {
       items {
         id
         course_id
