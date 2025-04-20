@@ -238,3 +238,62 @@ export const getInstructor = /* GraphQL */ `
     }
   }
 `;
+
+// export const listCourseCatalogs = /* GraphQL */ `
+//   query ListCourseCatalogs(
+//     \$filter: ModelCourseCatalogFilterInput
+//     \$limit: Int
+//     \$nextToken: String
+//   ) {
+//     listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+//       items {
+//         id
+//         title
+//         description
+//         status
+//         createdAt
+//         updatedAt
+//       }
+//       nextToken
+//     }
+//   }
+// `;
+
+// export const getCourseCatalog = /* GraphQL */ `
+//   query GetCourseCatalog(\$id: ID!) {
+//     getCourseCatalog(id: \$id) {
+//       id
+//       title
+//       description
+//       status
+//       createdAt
+//       updatedAt
+//     }
+//   }
+// `;
+
+export const listQuizzes = /* GraphQL */ `
+  query ListQuizzes(
+    \$filter: ModelQuizFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listQuizzes(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        courseId
+        courseName
+        quizType
+        meta {
+          title
+          description
+          timeLimit
+          passScore
+        }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

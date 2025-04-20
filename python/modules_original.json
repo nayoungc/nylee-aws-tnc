@@ -1,0 +1,2162 @@
+[
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "QDJ7RI",
+    "courseName": "Advanced AWS Well-Architected Best Practices",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "RA6TF7",
+    "courseName": "AWS Well-Architected Best Practices Intermediate - L200 과정 수강",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "M5NJ41",
+    "courseName": "Amazon SageMaker Studio for Data Scientists",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "EJ0NMA",
+    "courseName": "AWS Technical Essentials (1일 간의 AWS 강사 주도 과정)",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "BD5XPX",
+    "courseName": "Architecting on AWS",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "A93NCT",
+    "courseName": "AWS Cloud Essentials for Business Leaders",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "GPOKME",
+    "courseName": "이 과정은 또한 AWS Certified Cloud Practitioner 시험을 준비하는 데 도움이 됩니다.",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "S2XO5Y",
+    "courseName": "AWS Migration Essentials",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "HY504T",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "5U7GVL",
+    "courseName": "AWS Security Essentials",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "6ZVZ52",
+    "courseName": "AWS에 대한 최소한의 실무 지식을 갖춘 보안 전문가",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "IYOHHS",
+    "courseName": "AWS Technical Essentials",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "POEJAD",
+    "courseName": "이전에 클라우드 컴퓨팅이나 AWS를 사용해 본 적은 없어도 됨",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "RJXR0G",
+    "courseName": "AWS Well-Architected Best Practices",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "JCPTMH",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "NZC94O",
+    "courseName": "이 과정의 수강생들은 토론을 통해 직접 AWS 아키텍처의 모범사례를 논의하고 검토할 수 있는 역량을 검증할 수 있습니다.",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "0NCGBN",
+    "courseName": "핵심 AWS 설계 및 아키텍처에 대한 지식 (과정: Architecting on AWS)",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "AHXJES",
+    "courseName": "Building Batch Data Analytics Solutions on AWS",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "FYUPUX",
+    "courseName": "Building Data Lakes on AWS 또는 Getting Started with AWS Glue 이수",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "FXIHXG",
+    "courseName": "Building Data Analytics Solutions Using Amazon Redshift",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "TAFHJ4",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "ZD0J1Y",
+    "courseName": "Building Data Lakes on AWS",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "P740YS",
+    "courseName": "AWS Technical Essentials 강의실 교육 과정 수료",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "5IYUZQ",
+    "courseName": "Build Modern Applications with AWS NoSQL Databases",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "FXEKZ5",
+    "courseName": "AWS Lambda 및 Amazon API Gateway 데이터베이스 서비스에 대한 지식",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "SO6GWE",
+    "courseName": "Building Streaming Data Analytics Solutions on AWS",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "SIJLQA",
+    "courseName": "Building Data Lakes on AWS 이수",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "HB0GK0",
+    "courseName": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "O5KLQP",
+    "courseName": "Data Warehousing on AWS",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "2",
+    "moduleTitle": "2일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "5",
+    "moduleTitle": "Amazon EBS를 사용하여 블록 스토리지 솔루션 구현",
+    "moduleDescription": "EBS 볼륨 생성 및 관리\nEBS 스냅샷 생성, 관리 및 복제\n스냅샷에서 데이터 복원\n핸즈온랩: EBS 성능 랩\n",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "6",
+    "moduleTitle": "파일 스토리지 및 Amazon EFS",
+    "moduleDescription": "클라우드 기반 파일 스토리지\nAmazon EFS 개요\nAmazon EFS 액세스\nAmazon EFS 보안 유지 및 보호\n핸즈온랩: EC2, Lambda 및 ECS로 EFS 사용\n",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "7",
+    "moduleTitle": "Amazon FSx를 사용한 클라우드 파일 스토리지",
+    "moduleDescription": "Amazon FSx 개요\nAmazon FSx for Windows File Server\nAmazon FSx for NetAPP ONTAP\nAmazon FSx for OpenZFS\nAmazon FSx for Lustre\n핸즈온랩: FSx OpenZFS 및 FSx Lustre 사용",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "3",
+    "moduleTitle": "3일 차",
+    "moduleDescription": "",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "8",
+    "moduleTitle": "하이브리드 및 엣지 클라우드 스토리지",
+    "moduleDescription": "온프레미스 및 서드 파티 연결\n하이브리드 및 엣지 클라우드 스토리지 개요\nAWS Storage Gateway 소개\nAWS Storage Gateway 아키텍처\nAWS Snow Family\n",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "9",
+    "moduleTitle": "AWS로 데이터 이동",
+    "moduleDescription": "AWS로 데이터 이동\nAWS DataSync 사용\nAWS Transfer Family 구현\n핸즈온랩: DataSync 및 S3 File Gateway를 사용하여 데이터 이동\n",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "10",
+    "moduleTitle": "AWS를 사용한 백업 및 재해 복구",
+    "moduleDescription": "데이터 보호 전략 설계\nAWS Backup 소개\nAWS Backup 사용\nAWS DRS 사용\n핸즈온랩: AWS Backup 계획 생성\n",
+    "day": null
+  },
+  {
+    "courseId": "7KJYT0",
+    "courseName": "Designing and Implementing Storage on AWS",
+    "moduleNumber": "11",
+    "moduleTitle": "AWS 스토리지 모니터링, 자동화 및 최적화",
+    "moduleDescription": "관측 기능 서비스\nAmazon S3 관측 기능 도구\nAmazon EBS 관측 기능 도구\nAmazon CloudWatch\nAWS CloudTrail\n핸즈온랩: 스토리지 환경 모니터링 및 자동화",
+    "day": null
+  }
+]

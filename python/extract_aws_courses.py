@@ -778,6 +778,39 @@ def save_to_json_files(course_catalog_items, module_lab_items, courses):
     print(f"- 모듈 정보(원본): modules_original.json ({len(modules_data)}개 항목)")
     print(f"- 실습 정보(원본): labs_original.json ({len(labs_data)}개 항목)")
 
+def upload_to_dynamodb(course_catalog_items, module_lab_items):
+    """
+    아이템을 DynamoDB 테이블에 업로드
+    
+    Args:
+        course_catalog_items: Tnc-CourseCatalog 테이블용 아이템 목록
+        module_lab_items: Tnc-CourseCatalog-Modules 테이블용 아이템 목록
+    """
+    try:
+        # DynamoDB 클라이언트 초기화
+        dynamodb = boto3.resource('dynamodb')
+        course_table = dynamodb.Table('Tnc-CourseCatalog')
+        module_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
+        
+        print("\n=== DynamoDB 업로드 중 ===")
+        
+        # 1. 과정 카탈로그 정보 업로드
+        for item in course_catalog_items:
+            course_table.put_item(Item=item)
+        print(f"{len(course_catalog_items)}개 과정 정보 업로드 완료")
+        
+        # 2. 모듈/실습 정보 업로드
+        for item in module_lab_items:
+            module_table.put_item(Item=item)
+        print(f"{len(module_lab_items)}개 모듈/실습 정보 업로드 완료")
+        
+        print("\nDynamoDB 업로드 완료!")
+        
+    except Exception as e:
+        print(f"DynamoDB 업로드 중 오류 발생: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
 def main():
     """메인 실행 함수"""
     try:

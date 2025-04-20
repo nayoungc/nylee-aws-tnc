@@ -1042,5 +1042,88 @@
       "no_download_url": "이 보고서에 대한 다운로드 링크가 없습니다.",
       "confirm_delete": "이 보고서를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
     }
+  },
+  "quiz_creator": {
+    "default_course": "과정",
+    "pre_quiz": "사전 평가 퀴즈",
+    "post_quiz": "사후 평가 퀴즈",
+    "default_description": "이 퀴즈는 해당 주제에 대한 지식을 평가합니다.",
+    "sections": {
+      "quiz_info": "퀴즈 정보",
+      "questions_count": "문제 ({{count}}개)",
+      "question_list": "문제 목록"
+    },
+    "meta": {
+      "title_label": "퀴즈 제목",
+      "title_placeholder": "퀴즈 제목을 입력하세요",
+      "description_label": "퀴즈 설명",
+      "description_placeholder": "이 퀴즈에 대한 설명을 입력하세요",
+      "time_limit": "제한 시간(분)",
+      "pass_score": "합격 점수(%)",
+      "shuffle_questions": "문제 섞기",
+      "shuffle_options": "보기 섞기",
+      "show_feedback": "퀴즈 후 피드백 표시"
+    },
+    "course_selection": {
+      "title": "과정 선택",
+      "course": "과정 선택",
+      "placeholder": "과정을 선택하세요",
+      "no_courses": "사용 가능한 과정이 없습니다",
+      "create_course": "과정 관리에서 먼저 과정을 생성해주세요"
+    },
+    "quiz_type_selection": {
+      "label": "퀴즈 유형"
+    },
+    "actions": {
+      "add_question": "문제 추가",
+      "add_option": "보기 추가",
+      "save_question": "문제 저장",
+      "cancel": "취소",
+      "cancel_return": "취소 및 돌아가기",
+      "save_quiz": "퀴즈 저장",
+      "return_to_management": "퀴즈 관리로 돌아가기"
+    },
+    "labels": {
+      "question": "문제",
+      "options": "보기",
+      "correct": "정답",
+      "correct_answer": "정답"
+    },
+    "placeholders": {
+      "question": "여기에 문제를 입력하세요",
+      "option": "보기 {{number}}"
+    },
+    "modal": {
+      "edit_question": "문제 수정",
+      "add_question": "문제 추가",
+      "save_success": "퀴즈가 성공적으로 저장되었습니다"
+    },
+    "validation": {
+      "question_required": "문제 내용이 필요합니다",
+      "options_required": "모든 보기에는 값이 있어야 합니다",
+      "min_question_required": "퀴즈에는 최소한 하나의 문제가 있어야 합니다",
+      "course_required": "과정을 먼저 선택해주세요"
+    },
+    "empty_states": {
+      "no_questions": "추가된 문제가 없습니다",
+      "add_instructions": "첫 문제를 생성하기 위해 '문제 추가' 버튼을 클릭하세요"
+    },
+    "hints": {
+      "click_to_edit": "문제를 클릭하여 수정하기"
+    },
+    "question_number": "문제 {{number}}",
+    "messages": {
+      "save_success": "퀴즈가 성공적으로 저장되었습니다. 이제 퀴즈 관리 페이지로 돌아갈 수 있습니다."
+    },
+    "loading": {
+      "courses": "과정 불러오는 중...",
+      "questions": "문제 불러오는 중..."
+    },
+    "errors": {
+      "save_error": "퀴즈 저장 오류",
+      "save_error_message": "퀴즈를 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.",
+      "course_load": "과정 로딩 오류",
+      "course_load_message": "과정을 불러오는 중 문제가 발생했습니다. 페이지를 새로고침하거나 나중에 다시 시도해주세요."
+    }
   }
 }
