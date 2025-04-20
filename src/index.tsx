@@ -5,10 +5,14 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-// import { Amplify } from 'aws-amplify';
-// import { resourceConfig } from './amplifyconfiguration';
+import { Amplify } from 'aws-amplify';
+import { resourceConfig } from './amplifyconfiguration';
 
-// Amplify.configure(resourceConfig);
+// Amplify Gen 2 설정 적용
+Amplify.configure(resourceConfig);
+
+console.log('Amplify 현재 설정:', Amplify.getConfig());
+
 
 
 // i18n 초기화

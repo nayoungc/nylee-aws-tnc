@@ -198,6 +198,102 @@ def extract_metadata_from_table(table):
     
     return metadata
 
+def find_lab_tables(doc, start_index):
+    """
+    문서에서 실습 정보를 포함하는 테이블 식별
+    """
+    lab_tables = []
+    
+    for i, table in enumerate(doc.tables):
+        if i < start_index:
+            continue
+            
+        if len(table.rows) < 2:
+            continue
+            
+        # 표 내용 확인
+        contains_lab = False
+        for row in table.rows:
+            for cell in row.cells:
+                text = cell.text.lower().strip()
+                if "실습" in text or "lab" in text or "핸즈온" in text:
+                    contains_lab = True
+                    break
+            if contains_lab:
+                break
+        
+        if contains_lab:
+            lab_tables.append(table)
+    
+    return lab_tables
+
+def extract_labs_from_table(table, current_day=None):
+    """
+    테이블에서 실습 정보 추출 (개선된 버전)
+    """
+    labs = []
+    
+    # 헤더 행 분석
+    headers = []
+    if len(table.rows) > 0:
+        headers = [cell.text.lower().strip() for cell in table.rows[0].cells]
+    
+    # 실습 관련 열 찾기
+    lab_col_indexes = []
+    for i, header in enumerate(headers):
+        if "실습" in header or "lab" in header or "핸즈온" in header:
+            lab_col_indexes.append(i)
+    
+    # 실습 열이 발견되지 않으면 모든 셀 검사
+    if not lab_col_indexes:
+        for row_idx in range(1, len(table.rows)):  # 헤더 제외
+            for col_idx in range(len(table.rows[row_idx].cells)):
+                cell_text = table.rows[row_idx].cells[col_idx].text.strip()
+                lab_info = extract_lab_from_text(cell_text)
+                if lab_info:
+                    labs.append(lab_info)
+    else:
+        # 실습 열이 있으면 해당 열만 검사
+        for row_idx in range(1, len(table.rows)):  # 헤더 제외
+            for col_idx in lab_col_indexes:
+                if col_idx < len(table.rows[row_idx].cells):
+                    cell_text = table.rows[row_idx].cells[col_idx].text.strip()
+                    lab_info = extract_lab_from_text(cell_text)
+                    if lab_info:
+                        labs.append(lab_info)
+    
+    return labs
+
+def extract_lab_from_text(text):
+    """
+    텍스트에서 실습 정보 추출
+    """
+    if not text:
+        return None
+        
+    # 실습 패턴 적용
+    lab_patterns = [
+        r'실습\s*(\d+)\s*:\s*(.+)',           # 실습 1: 제목
+        r'실습\s*(\d+)\s*[-–]\s*(.+)',        # 실습 1 - 제목
+        r'핸즈온\s*랩\s*(\d+)\s*:\s*(.+)',    # 핸즈온 랩 1: 제목
+        r'Lab\s*(\d+)\s*:\s*(.+)'            # Lab 1: 제목
+    ]
+    
+    for pattern in lab_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            lab_number = match.group(1)
+            lab_title = match.group(2).strip()
+            
+            return {
+                "lab_number": lab_number,
+                "lab_title": lab_title,
+                "full_text": text,
+                "day": None
+            }
+    
+    return None
+
 def extract_course_sections(doc, course, start_table_index):
     """
     과정에 대한 섹션별 내용 추출 (설명, 목표, 대상 등)
@@ -777,6 +873,74 @@ def extract_modules_and_labs(doc, course, start_table_index):
     course["modules"] = unique_modules
     course["labs"] = labs
 
+def extract_labs_improved(doc, course, start_table_index):
+    """
+    과정 개요 섹션에서 실습 정보를 정확하게 추출
+    """
+    labs = []
+    
+    # 더 정확한 실습 패턴
+    lab_patterns = [
+        r'실습\s*(\d+)\s*:\s*(.+)',           # 실습 1: 제목
+        r'실습\s*(\d+)\s*[-–]\s*(.+)',        # 실습 1 - 제목
+        r'핸즈온\s*랩\s*(\d+)\s*:\s*(.+)',    # 핸즈온 랩 1: 제목
+        r'Lab\s*(\d+)\s*:\s*(.+)'            # Lab 1: 제목
+    ]
+    
+    # 과정 개요 섹션 찾기
+    in_outline_section = False
+    
+    print(f"\n[디버깅] '{course['courseName']}' 과정의 실습 정보 추출 시작")
+    search_range = min(len(doc.paragraphs), start_table_index + 800)
+    
+    for i in range(start_table_index, search_range):
+        if i < len(doc.paragraphs):
+            text = doc.paragraphs[i].text.strip()
+            
+            if not text:
+                continue
+                
+            # 과정 개요 섹션 시작 확인
+            if "과정 개요" in text or "교육 과정 개요" in text:
+                in_outline_section = True
+                print(f"[디버깅] 과정 개요 섹션 발견: {text}")
+                continue
+                
+            if in_outline_section:
+                # 개요 섹션 종료 조건
+                if any(pattern in text for pattern in ["과정 마무리", "리소스", "사후 평가"]):
+                    print("[디버깅] 과정 개요 섹션 종료")
+                    in_outline_section = False
+                    break
+                    
+                # 각 라인에서 실습 패턴 확인
+                for pattern in lab_patterns:
+                    match = re.search(pattern, text, re.IGNORECASE)
+                    if match:
+                        lab_number = match.group(1)
+                        lab_title = match.group(2).strip()
+                        
+                        print(f"[디버깅] 실습 발견: 실습 {lab_number}: {lab_title[:40]}...")
+                        labs.append({
+                            "lab_number": lab_number,
+                            "lab_title": lab_title,
+                            "full_text": text,  # 디버깅용 전체 텍스트 저장
+                            "day": None  # 일차 정보는 별도로 처리
+                        })
+                        break
+    
+    # 표에서도 실습 정보 추출
+    print("\n[디버깅] 표에서 실습 정보 추출 시작")
+    lab_tables = find_lab_tables(doc, start_table_index)
+    
+    for table in lab_tables:
+        table_labs = extract_labs_from_table(table, None)
+        if table_labs:
+            labs.extend(table_labs)
+            print(f"[디버깅] 표에서 {len(table_labs)}개 실습 발견")
+    
+    print(f"[디버깅] 총 {len(labs)}개 실습 정보 추출 완료")
+    return labs
 
 def save_to_json_files(course_catalog_items, module_lab_items, courses):
     """
@@ -866,22 +1030,19 @@ def upload_to_dynamodb(course_catalog_items, module_lab_items):
         import traceback
         traceback.print_exc()
 
-def validate_labs(labs):
+def validate_and_deduplicate_labs(labs):
     """
-    중복 또는 잘못된 실습 정보 검증 및 필터링
+    실습 정보 검증 및 중복 제거
     """
     validated = []
-    seen_titles = set()
+    seen_pairs = set()  # (과정명, 실습번호) 조합으로 중복 체크
     
     for lab in labs:
-        title = lab["lab_title"]
-        # 중복 제거 및 유효성 검사
-        if (title not in seen_titles and 
-            title and 
-            "을 통해 강력한 스토리지 솔루션" not in title and
-            len(title) > 3):
-            
-            seen_titles.add(title)
+        key = (lab["courseName"], lab["labNumber"])
+        
+        # 유효성 및 중복 검사
+        if key not in seen_pairs and lab["labTitle"] and len(lab["labTitle"]) > 3:
+            seen_pairs.add(key)
             validated.append(lab)
     
     return validated

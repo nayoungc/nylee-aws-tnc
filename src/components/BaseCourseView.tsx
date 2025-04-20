@@ -1,4 +1,4 @@
-// BaseCourseView.tsx - 공통 로직을 담은 기본 컴포넌트
+// BaseCourseView.tsx - 수정된 버전
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -16,7 +16,7 @@ import { useTypedTranslation } from '@utils/i18n-utils';
 import { executeGraphQL } from '@utils/auth';
 import { listCourseCatalogs } from '@graphql/queries';
 
-// 공통 타입 정의
+// 타입 정의 (이전과 동일)
 export interface CourseCatalog {
   id: string;
   title: string;
@@ -41,20 +41,35 @@ export interface ListCourseCatalogsResponse {
 interface BaseCourseViewProps {
   title: string;
   description: string;
-  createPath: string;
-  managePath: string; // 예: /instructor/courses/ 또는 /course/
-  viewPath: string;   // 수강생 뷰 경로
-  showCreateButton?: boolean;
+  
+  // 모드와 권한 관련 프로퍼티
+  isReadOnly?: boolean;          // 읽기 전용 모드 (카탈로그 뷰)
+  isAdminView?: boolean;         // 관리자 뷰 여부
+  
+  // 경로 설정
+  createPath?: string;           // 생성 페이지 경로 (관리자만)
+  managePath: string;            // 관리 페이지 기본 경로
+  viewPath: string;              // 학습자 뷰 경로
+  
+  // 버튼 표시 제어
+  showCreateButton?: boolean;    // 생성 버튼 표시 여부
+  showManageButton?: boolean;    // 관리 버튼 표시 여부
+  showViewButton?: boolean;      // 학습자 뷰 버튼 표시 여부
+  
   additionalActions?: React.ReactNode;
 }
 
 export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   title,
   description,
-  createPath,
+  isReadOnly = false,
+  isAdminView = false,
+  createPath = '',
   managePath,
   viewPath,
-  showCreateButton = true,
+  showCreateButton = false,
+  showManageButton = true,
+  showViewButton = true,
   additionalActions
 }) => {
   const navigate = useNavigate();
@@ -65,7 +80,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
 
   // 페이지 이동 함수
   const navigateToCreateCourse = useCallback(() => {
-    navigate(createPath);
+    if (createPath) navigate(createPath);
   }, [navigate, createPath]);
 
   useEffect(() => {
@@ -163,6 +178,34 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     );
   }
 
+  // 버튼 액션 섹션 렌더링
+  const renderActionButtons = (item: CourseCatalog) => {
+    return (
+      <SpaceBetween direction="horizontal" size="xs">
+        {/* 관리 버튼은 관리자 뷰이고 showManageButton이 true일 때만 표시 */}
+        {isAdminView && showManageButton && (
+          <Button onClick={() => navigate(`\${managePath}\${item.id}`)}>
+            {t('courses.manage')}
+          </Button>
+        )}
+        
+        {/* 학습자 뷰 버튼 */}
+        {showViewButton && (
+          <Button iconName="external" onClick={() => navigate(`\${viewPath}\${item.id}`)}>
+            {t('courses.view_student')}
+          </Button>
+        )}
+        
+        {/* 읽기 전용이 아닌 경우에만 등록 버튼 표시 */}
+        {!isReadOnly && (
+          <Button variant="normal">
+            {t('courses.enroll')}
+          </Button>
+        )}
+      </SpaceBetween>
+    );
+  };
+
   return (
     <Container>
       <SpaceBetween size="l">
@@ -172,7 +215,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           actions={
             <SpaceBetween direction="horizontal" size="xs">
               {additionalActions}
-              {showCreateButton && (
+              
+              {/* 관리자 뷰이고 showCreateButton이 true인 경우에만 생성 버튼 표시 */}
+              {isAdminView && showCreateButton && createPath && (
                 <Button variant="primary" onClick={navigateToCreateCourse}>
                   {t('courses.create_button')}
                 </Button>
@@ -218,16 +263,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
               },
               {
                 id: "actions",
-                content: item => (
-                  <SpaceBetween direction="horizontal" size="xs">
-                    <Button onClick={() => navigate(`\${managePath}\${item.id}`)}>
-                      {t('courses.manage')}
-                    </Button>
-                    <Button iconName="external" onClick={() => navigate(`\${viewPath}\${item.id}`)}>
-                      {t('courses.view_student')}
-                    </Button>
-                  </SpaceBetween>
-                )
+                content: renderActionButtons
               }
             ]
           }}
@@ -243,7 +279,11 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
               <Box padding={{ bottom: "s" }} variant="p" color="inherit">
                 {t('courses.empty.description')}
               </Box>
-              <Button onClick={navigateToCreateCourse}>{t('courses.create_button')}</Button>
+              {isAdminView && showCreateButton && createPath && (
+                <Button onClick={navigateToCreateCourse}>
+                  {t('courses.create_button')}
+                </Button>
+              )}
             </Box>
           }
         />
