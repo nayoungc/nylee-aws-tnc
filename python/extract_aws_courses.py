@@ -1,35 +1,67 @@
 import docx
 import pandas as pd
 import re
-import time
 import json
-from collections import defaultdict
-import boto3
 import uuid
 from datetime import datetime
-from boto3.dynamodb.conditions import Key, Attr
-from decimal import Decimal
+import time
+from collections import defaultdict  # 이 라인 추가
 
-def extract_comprehensive_course_info(file_path):
+def extract_course_outline_with_modules_labs(file_path):
     """
-    .docx 파일에서 과정 정보, 설명, 목표, 대상, 권장 사항, 개요, 모듈, 실습명을 추출하는 함수
-    (Digital Classroom 과정 제외)
+    .docx 파일에서 과정 개요를 추출하고, 모듈 및 실습 정보를 파싱하는 함수
     
     Args:
         file_path (str): .docx 파일 경로
         
     Returns:
-        dict: 추출된 과정 정보를 담은 딕셔너리
+        dict: 과정별 개요, 모듈, 실습 정보
     """
     print(f"문서 제목: {file_path}")
     
     # 문서 열기
     doc = docx.Document(file_path)
     print(f"문서를 불러왔습니다.")
-    
-    # 기본 정보 출력
     print(f"문단 수: {len(doc.paragraphs)}")
     print(f"표 수: {len(doc.tables)}")
+    
+    # 결과를 저장할 딕셔너리
+    result = {
+        "course_outlines": {},  # 과정별 개요 전체 내용
+        "courses": [],          # 과정 기본 정보
+        "all_modules": {},      # 과정별 모듈 정보
+        "all_labs": {}          # 과정별 실습 정보
+    }
+    
+    # 과정명 추출을 위해 2줄짜리 표 찾기
+    courses = extract_course_names_from_tables(doc)
+    print(f"추출된 과정 수: {len(courses)}")
+    
+    # 고유한 과정명 목록 생성
+    unique_course_names = []
+    for course in courses:
+        if course["course_name"] not in unique_course_names and course["course_name"] != "과정명 추출 실패":
+            if "Digital Classroom" not in course["course_name"]:
+                unique_course_names.append(course["course_name"])
+    
+    result["courses"] = courses
+    
+    print("\n### 과정 개요 및 모듈/실습 정보 추출 중 ###")
+    
+    # 과정 개요와 모듈/실습 정보 추출
+    outlines_with_modules_labs = extract_outlines_with_modules_labs(doc, unique_course_names)
+    
+    result["course_outlines"] = outlines_with_modules_labs["outlines"]
+    result["all_modules"] = outlines_with_modules_labs["modules"]
+    result["all_labs"] = outlines_with_modules_labs["labs"]
+    
+    return result
+
+def extract_course_names_from_tables(doc):
+    """
+    2줄짜리 표에서 과정명 추출
+    """
+    courses = []
     
     # 문서 요소 순차적으로 추출 (문단과 표의 실제 순서 파악)
     doc_elements = []
@@ -46,24 +78,10 @@ def extract_comprehensive_course_info(file_path):
         print(f"요소 정렬 중 오류: {e}")
         print("문서 요소를 원래 순서대로 유지합니다.")
     
-    # 결과를 저장할 딕셔너리
-    result = {
-        "courses": [],
-        "course_details": {},
-        "course_modules": {},
-        "course_labs": {},
-        "course_outlines": {}
-    }
-    
-    # 1. 2줄짜리 표 찾기 및 해당 표 바로 직전 문단에서 과정명 추출
-    print("\n### 2줄짜리 표와 직전 과정명 추출 중 ###")
-    
-    courses = []
     for i, (elem_type, elem_idx, elem) in enumerate(doc_elements):
         if elem_type == "table" and len(elem.rows) == 2:
             table = elem
             table_idx = elem_idx
-            # print(f"\n2줄짜리 표 발견 (표 #{table_idx+1})")
             
             # 과정명 추출: 표 바로 직전 문단 확인
             course_name = "과정명 추출 실패"
@@ -79,12 +97,12 @@ def extract_comprehensive_course_info(file_path):
                     # AWS 과정명 패턴 확인
                     if is_aws_course_name(text):
                         course_name = text
-                        # print(f"  직전 문단에서 과정명 발견: '{course_name}'")
+                        #print(f"과정명 발견: '{course_name}'")
                         break
             
             # Digital Classroom 과정 제외
             if "Digital Classroom" in course_name:
-                # print(f"  Digital Classroom 과정 제외: '{course_name}'")
+                # print(f"Digital Classroom 과정 제외: '{course_name}'")
                 continue
                 
             try:
@@ -126,40 +144,230 @@ def extract_comprehensive_course_info(file_path):
                 }
                 
                 courses.append(course_info)
-                # print(f"  추출 정보: 과정명='{course_name}', 레벨='{level}', 소요 시간='{duration}'")
                 
             except Exception as e:
                 print(f"표 {table_idx+1} 처리 중 오류 발생: {str(e)}")
     
-    # 고유한 과정명 목록 생성
-    unique_course_names = []
-    for course in courses:
-        if course["course_name"] not in unique_course_names and course["course_name"] != "과정명 추출 실패":
-            unique_course_names.append(course["course_name"])
+    return courses
+
+def extract_outlines_with_modules_labs(doc, course_names):
+    """
+    문서에서 과정 개요, 모듈 및 실습 정보를 함께 추출
     
-    result["courses"] = courses
+    Args:
+        doc: 문서 객체
+        course_names: 과정명 목록
+        
+    Returns:
+        dict: 과정별 개요, 모듈, 실습 정보
+    """
+    outlines = {}
+    all_modules = {}
+    all_labs = {}
     
-    # 2. 과정 세부 정보 추출 (설명, 목표, 대상, 권장 사항)
-    print("\n### 과정 세부 정보 추출 중 ###")
-    course_details = extract_course_details(doc, unique_course_names)
-    result["course_details"] = course_details
+    # 과정 개요 및 관련 섹션 패턴
+    outline_patterns = {
+        "start": [r'과정\s*개요', r'교육\s*과정\s*개요'],
+        "end": [r'과정\s*마무리', r'리소스', r'사후\s*평가', r'모듈\s*15', r'모듈\s*16']
+    }
     
-    # 3. 모듈명 추출
-    print("\n### 모듈명 추출 중 ###")
-    course_modules = extract_modules(doc, exclude_digital_classroom=True, course_names=unique_course_names)
-    result["course_modules"] = course_modules
+    # 모듈 및 실습 패턴
+    module_patterns = [
+        r'^모듈\s*(\d+)[:\s-]\s*(.+)',              # 모듈 1: 제목
+        r'^Module\s*(\d+)[:\s-]\s*(.+)',            # Module 1: 제목
+        r'^(\d+)일\s*차\s*[:：]?\s*(.+)'           # 1일 차: 제목
+    ]
     
-    # 4. 실습명 추출
-    print("\n### 실습명 추출 중 ###")
-    course_labs = extract_labs(doc, exclude_digital_classroom=True, course_names=unique_course_names)
-    result["course_labs"] = course_labs
+    lab_patterns = [
+        r'^실습\s*(\d+)[:\s-]\s*(.+)',              # 실습 1: 제목
+        r'^Lab\s*(\d+)[:\s-]\s*(.+)',               # Lab 1: 제목
+        r'^핸즈온\s*랩\s*(\d*)[:\s-]?\s*(.+)'      # 핸즈온랩: 제목
+    ]
     
-    # 5. 과정 개요 추출
-    print("\n### 과정 개요 추출 중 ###")
-    course_outlines = extract_course_outlines(doc, unique_course_names)
-    result["course_outlines"] = course_outlines
+    # 현재 처리 중인 과정과 상태
+    current_course = None
+    collecting_outline = False
+    current_outline = []
     
-    return result
+    # 각 과정별 모듈 및 실습 정보
+    course_modules = defaultdict(list)
+    course_labs = defaultdict(list)
+    
+    # 1차 과정 개요 추출
+    print("\n=== 과정 개요 섹션 추출 중 ===")
+    
+    for para in doc.paragraphs:
+        text = para.text.strip()
+        print(f"text = {text}")
+        if not text:
+            continue
+        
+        # 과정명 확인
+        matched_course = None
+        if is_aws_course_name(text):
+            for course_name in course_names:
+                if text == course_name or (len(course_name) > 10 and (course_name in text or text in course_name)):
+                    matched_course = course_name
+                    break
+        
+        # 새 과정 발견
+        if matched_course:
+            # 이전 과정의 개요 저장
+            if current_course and collecting_outline and current_outline:
+                outline_text = '\n'.join(current_outline)
+                outlines[current_course] = outline_text
+                
+                # 개요에서 모듈과 실습 정보 추출
+                modules, labs = extract_modules_labs_from_outline(outline_text)
+                if modules:
+                    course_modules[current_course] = modules
+                if labs:
+                    course_labs[current_course] = labs
+            
+            current_course = matched_course
+            collecting_outline = False
+            current_outline = []
+            continue
+        
+        # 개요 섹션 시작 확인
+        if current_course and not collecting_outline:
+            for pattern in outline_patterns["start"]:
+                if re.search(pattern, text, re.IGNORECASE):
+                    collecting_outline = True
+                    print(f"'{current_course}' 과정 개요 추출 시작")
+                   
+                    break
+            
+            if collecting_outline:
+                continue  # 시작 헤더는 개요에 포함하지 않음
+        
+        # 개요 섹션 끝 확인
+        if current_course and collecting_outline:
+            end_section = False
+            for pattern in outline_patterns["end"]:
+                if re.search(pattern, text, re.IGNORECASE) and not any(re.match(p, text, re.IGNORECASE) for p in sum([module_patterns, lab_patterns], [])):
+                    end_section = True
+                    break
+            
+            if end_section:
+                collecting_outline = False
+                print(f"'{current_course}' 과정 개요 추출 완료")
+                continue
+        
+        # 개요 내용 수집
+        if current_course and collecting_outline:
+            current_outline.append(text)
+    
+    # 마지막 과정의 개요 저장
+    if current_course and collecting_outline and current_outline:
+        outline_text = '\n'.join(current_outline)
+        outlines[current_course] = outline_text
+        
+        # 개요에서 모듈과 실습 정보 추출
+        modules, labs = extract_modules_labs_from_outline(outline_text)
+        if modules:
+            course_modules[current_course] = modules
+        if labs:
+            course_labs[current_course] = labs
+    
+    # 2차 모듈 및 실습 정보 직접 추출 및 확인
+    print("\n=== 모듈 및 실습 정보 추출 중 ===")
+    
+    for course_name, outline in outlines.items():
+        print(f"outline = {outline}")
+         
+        # 이미 추출된 정보가 있는지 확인
+        if course_name not in course_modules or not course_modules[course_name]:
+            # 개요에서 직접 추출 시도
+            modules, labs = extract_modules_labs_from_outline(outline)
+            if modules:
+                print(f"'{course_name}'에서 {len(modules)}개 모듈 추출")
+                course_modules[course_name] = modules
+            if labs:
+                print(f"'{course_name}'에서 {len(labs)}개 실습 추출")
+                course_labs[course_name] = labs
+    
+    # 결과 저장
+    all_modules.update(course_modules)
+    all_labs.update(course_labs)
+    
+    # 모듈 및 실습 정보 요약 출력
+    print("\n=== 추출된 모듈 및 실습 정보 요약 ===")
+    modules_count = sum(len(modules) for modules in course_modules.values())
+    labs_count = sum(len(labs) for labs in course_labs.values())
+    print(f"총 {len(course_modules)}개 과정에서 {modules_count}개 모듈과 {labs_count}개 실습 추출")
+    
+    return {
+        "outlines": outlines,
+        "modules": course_modules,
+        "labs": course_labs
+    }
+
+def extract_modules_labs_from_outline(outline_text):
+    """
+    과정 개요 텍스트에서 모듈 및 실습 정보를 추출
+    
+    Args:
+        outline_text (str): 과정 개요 텍스트
+        
+    Returns:
+        tuple: (모듈 목록, 실습 목록)
+    """
+    modules = []
+    labs = []
+    
+    # 모듈 패턴
+    module_patterns = [
+        r'^모듈\s*(\d+)[:\s-]\s*(.+)',              # 모듈 1: 제목
+        r'^Module\s*(\d+)[:\s-]\s*(.+)',            # Module 1: 제목
+        r'^(\d+)일\s*차\s*[:：]?\s*(.+)'           # 1일 차: 제목
+    ]
+    
+    # 실습 패턴
+    lab_patterns = [
+        r'^실습\s*(\d+)[:\s-]\s*(.+)',              # 실습 1: 제목
+        r'^Lab\s*(\d+)[:\s-]\s*(.+)',               # Lab 1: 제목
+        r'^핸즈온\s*랩\s*(\d*)[:\s-]?\s*(.+)'      # 핸즈온랩: 제목
+    ]
+    
+    lines = outline_text.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        
+        # 모듈 패턴 확인
+        for pattern in module_patterns:
+            match = re.match(pattern, line, re.IGNORECASE)
+            if match:
+                module_num = match.group(1)
+                module_title = match.group(2).strip()
+                
+                # 모듈명이 너무 길거나 불릿 포인트로 시작하면 제외
+                if len(module_title) < 200 and not module_title.startswith('•'):
+                    modules.append({
+                        "module_number": module_num,
+                        "module_title": module_title
+                    })
+                break
+        
+        # 실습 패턴 확인
+        for pattern in lab_patterns:
+            match = re.match(pattern, line, re.IGNORECASE)
+            if match:
+                lab_num = match.group(1) if match.group(1) else "N/A"
+                lab_title = match.group(2).strip()
+                
+                # 실습명이 너무 길거나 불릿 포인트로 시작하면 제외
+                if len(lab_title) < 200 and not lab_title.startswith('•'):
+                    labs.append({
+                        "lab_number": lab_num,
+                        "lab_title": lab_title
+                    })
+                break
+    
+    return modules, labs
 
 def is_aws_course_name(text):
     """
@@ -207,329 +415,6 @@ def is_aws_course_name(text):
     
     return False
 
-def extract_course_details(doc, course_names):
-    """
-    문서에서 과정 설명, 목표, 대상, 권장 사항 추출
-    
-    Args:
-        doc: 문서 객체
-        course_names: 과정명 목록
-        
-    Returns:
-        dict: 과정별 상세 정보
-    """
-    details = {}
-    
-    # 과정 상세 정보 섹션 헤더 패턴
-    section_patterns = {
-        "description": [r'과정\s*설명', r'개요'],
-        "objectives": [r'과정\s*목표', r'교육\s*목표', r'이\s?과정\s?에서\s?배우게\s?될\s?내용'],
-        "audience": [r'수강\s*대상', r'교육\s*대상', r'이\s?과정의\s?대상은\s?다음과\s?같습니다'],
-        "prerequisites": [r'수강\s*전\s*권장\s*사항', r'선수\s*과목', r'이\s?과정을\s?수강하려면\s?다음\s?조건을\s?갖추는\s?것이\s?좋습니다']
-    }
-    
-    # 현재 처리 중인 과정과 섹션
-    current_course = None
-    current_section = None
-    current_content = []
-    
-    # 문단 순회
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if not text:
-            continue
-        
-        # 과정명 확인
-        matched_course = None
-        if is_aws_course_name(text):
-            for course_name in course_names:
-                if text == course_name or (len(course_name) > 10 and (course_name in text or text in course_name)):
-                    matched_course = course_name
-                    break
-        
-        # 새 과정 발견
-        if matched_course:
-            # 이전 과정의 섹션 저장
-            if current_course and current_section and current_content:
-                if current_course not in details:
-                    details[current_course] = {}
-                details[current_course][current_section] = '\n'.join(current_content)
-            
-            current_course = matched_course
-            current_section = None
-            current_content = []
-            continue
-        
-        # 현재 과정이 설정된 상태에서 섹션 헤더 확인
-        if current_course:
-            matched_section = None
-            for section, patterns in section_patterns.items():
-                for pattern in patterns:
-                    if re.search(pattern, text, re.IGNORECASE):
-                        matched_section = section
-                        break
-                if matched_section:
-                    break
-            
-            # 새 섹션 헤더 발견
-            if matched_section:
-                # 이전 섹션 내용 저장
-                if current_section and current_content:
-                    if current_course not in details:
-                        details[current_course] = {}
-                    details[current_course][current_section] = '\n'.join(current_content)
-                
-                current_section = matched_section
-                current_content = []
-                continue
-            
-            # 현재 섹션에 내용 추가
-            if current_section:
-                # 불릿 포인트 형태 정리
-                text = re.sub(r'^\s*[•\-]\s*', '• ', text)  # 불릿 포인트 통일
-                current_content.append(text)
-    
-    # 마지막 과정/섹션 저장
-    if current_course and current_section and current_content:
-        if current_course not in details:
-            details[current_course] = {}
-        details[current_course][current_section] = '\n'.join(current_content)
-    
-    return details
-
-def extract_course_outlines(doc, course_names):
-    """
-    문서에서 과정 개요 추출
-    
-    Args:
-        doc: 문서 객체
-        course_names: 과정명 목록
-        
-    Returns:
-        dict: 과정별 개요 정보
-    """
-    outlines = {}
-    
-    # 과정 개요 시작/끝 패턴
-    outline_start_patterns = [r'과정\s*개요', r'교육\s*과정\s*개요']
-    outline_end_patterns = [r'과정\s*마무리', r'리소스', r'사후\s*평가']
-    
-    # 현재 과정과 개요 수집 상태
-    current_course = None
-    collecting_outline = False
-    current_outline = []
-    
-    # 문단 순회
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if not text:
-            continue
-        
-        # 과정명 확인
-        matched_course = None
-        if is_aws_course_name(text):
-            for course_name in course_names:
-                if text == course_name or (len(course_name) > 10 and (course_name in text or text in course_name)):
-                    matched_course = course_name
-                    break
-        
-        # 새 과정 발견
-        if matched_course:
-            # 이전 과정의 개요 저장
-            if current_course and collecting_outline and current_outline:
-                outlines[current_course] = '\n'.join(current_outline)
-            
-            current_course = matched_course
-            collecting_outline = False
-            current_outline = []
-            continue
-        
-        # 개요 섹션 시작 확인
-        if current_course and not collecting_outline:
-            for pattern in outline_start_patterns:
-                if re.search(pattern, text, re.IGNORECASE):
-                    collecting_outline = True
-                    break
-            
-            if collecting_outline:
-                continue  # 시작 헤더는 개요에 포함하지 않음
-        
-        # 개요 섹션 끝 확인
-        if current_course and collecting_outline:
-            for pattern in outline_end_patterns:
-                if re.search(pattern, text, re.IGNORECASE):
-                    collecting_outline = False
-                    break
-            
-            if not collecting_outline:
-                continue  # 종료 헤더는 개요에 포함하지 않음
-        
-        # 개요 내용 수집
-        if current_course and collecting_outline:
-            # 모듈 헤더 형식 표준화
-            text = re.sub(r'^모듈\s*(\d+)[:\s-]', r'모듈 \1: ', text)
-            current_outline.append(text)
-    
-    # 마지막 과정의 개요 저장
-    if current_course and collecting_outline and current_outline:
-        outlines[current_course] = '\n'.join(current_outline)
-    
-    return outlines
-
-def extract_modules(doc, exclude_digital_classroom=True, course_names=None):
-    """
-    문서에서 모듈 정보 추출
-    
-    Args:
-        doc: 문서 객체
-        exclude_digital_classroom: Digital Classroom 과정 제외 여부
-        course_names: 이미 식별된 과정명 목록
-        
-    Returns:
-        dict: 과정별 모듈 정보
-    """
-    modules = {}
-    current_course = None
-    current_modules = []
-    
-    # 과정명 목록이 제공된 경우 우선 확인
-    course_list = []
-    if course_names:
-        course_list = [name for name in course_names if name != "과정명 추출 실패"]
-    
-    # 모듈 패턴
-    module_pattern = re.compile(r'모듈\s*(\d+)[:\s-]\s*(.+)', re.IGNORECASE)
-    module_pattern_eng = re.compile(r'Module\s*(\d+)[:\s-]\s*(.+)', re.IGNORECASE)
-    module_day_pattern = re.compile(r'(\d+)일\s*차\s*[:：]?\s*(.+)', re.IGNORECASE)  # "1일 차: 내용" 형태
-    
-    # 현재 과정명 찾기
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if not text:
-            continue
-        
-        # 과정명으로 보이는 문단 확인
-        if is_aws_course_name(text):
-            # Digital Classroom 과정 제외
-            if exclude_digital_classroom and "Digital Classroom" in text:
-                current_course = None  # 현재 과정 초기화
-                current_modules = []
-                continue
-            
-            # 이미 식별된 과정명 중에 있는지 확인
-            matched_course = None
-            if course_list:
-                for course in course_list:
-                    # 정확히 일치하는 과정명 또는 유사한 과정명 확인
-                    if course == text or (len(course) > 10 and (course in text or text in course)):
-                        matched_course = course
-                        break
-            
-            # 이전 과정의 모듈을 저장
-            if current_course and current_modules:
-                modules[current_course] = current_modules
-            
-            # 새 과정 시작
-            current_course = matched_course if matched_course else text
-            current_modules = []
-            continue
-        
-        # 모듈 패턴 확인
-        module_match = module_pattern.match(text) or module_pattern_eng.match(text) or module_day_pattern.match(text)
-        if module_match and current_course:
-            module_num = module_match.group(1)
-            module_title = module_match.group(2).strip()
-            
-            # 모듈명이 너무 길거나 불릿 포인트로 시작하면 제외
-            if len(module_title) < 200 and not module_title.startswith('•'):
-                current_modules.append({
-                    "module_number": module_num,
-                    "module_title": module_title
-                })
-    
-    # 마지막 과정의 모듈 저장
-    if current_course and current_modules:
-        modules[current_course] = current_modules
-    
-    return modules
-
-def extract_labs(doc, exclude_digital_classroom=True, course_names=None):
-    """
-    문서에서 실습 정보 추출
-    
-    Args:
-        doc: 문서 객체
-        exclude_digital_classroom: Digital Classroom 과정 제외 여부
-        course_names: 이미 식별된 과정명 목록
-        
-    Returns:
-        dict: 과정별 실습 정보
-    """
-    labs = {}
-    current_course = None
-    current_labs = []
-    
-    # 과정명 목록이 제공된 경우 우선 확인
-    course_list = []
-    if course_names:
-        course_list = [name for name in course_names if name != "과정명 추출 실패"]
-    
-    # 실습 패턴
-    lab_pattern = re.compile(r'실습\s*(\d+)[:\s-]\s*(.+)', re.IGNORECASE)
-    lab_pattern_eng = re.compile(r'Lab\s*(\d+)[:\s-]\s*(.+)', re.IGNORECASE)
-    hands_on_pattern = re.compile(r'핸즈온\s*랩\s*(\d*)[:\s-]?\s*(.+)', re.IGNORECASE)  # "핸즈온랩: 제목" 형태
-    
-    # 현재 과정명 찾기
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if not text:
-            continue
-        
-        # 과정명으로 보이는 문단 확인
-        if is_aws_course_name(text):
-            # Digital Classroom 과정 제외
-            if exclude_digital_classroom and "Digital Classroom" in text:
-                current_course = None  # 현재 과정 초기화
-                current_labs = []
-                continue
-            
-            # 이미 식별된 과정명 중에 있는지 확인
-            matched_course = None
-            if course_list:
-                for course in course_list:
-                    # 정확히 일치하는 과정명 또는 유사한 과정명 확인
-                    if course == text or (len(course) > 10 and (course in text or text in course)):
-                        matched_course = course
-                        break
-            
-            # 이전 과정의 실습을 저장
-            if current_course and current_labs:
-                labs[current_course] = current_labs
-            
-            # 새 과정 시작
-            current_course = matched_course if matched_course else text
-            current_labs = []
-            continue
-        
-        # 실습 패턴 확인
-        lab_match = lab_pattern.match(text) or lab_pattern_eng.match(text) or hands_on_pattern.match(text)
-        if lab_match and current_course:
-            lab_num = lab_match.group(1) if lab_match.group(1) else "N/A"
-            lab_title = lab_match.group(2).strip()
-            
-            # 실습명이 너무 길거나 불릿 포인트로 시작하면 제외
-            if len(lab_title) < 200 and not lab_title.startswith('•'):
-                current_labs.append({
-                    "lab_number": lab_num,
-                    "lab_title": lab_title
-                })
-    
-    # 마지막 과정의 실습 저장
-    if current_course and current_labs:
-        labs[current_course] = current_labs
-    
-    return labs
-
 def save_to_files(result):
     """
     추출된 데이터를 파일로 저장
@@ -538,48 +423,48 @@ def save_to_files(result):
         result: 추출된 정보
     """
     courses = result["courses"]
-    course_details = result["course_details"]
-    course_modules = result["course_modules"]
-    course_labs = result["course_labs"]
     course_outlines = result["course_outlines"]
+    all_modules = result["all_modules"]
+    all_labs = result["all_labs"]
     
     # Digital Classroom 과정 필터링
     filtered_courses = [info for info in courses if "Digital Classroom" not in info["course_name"]]
     
-    # 1. 과정 정보만 담은 파일 생성 (courses_info.json)
+    # 1. 과정 정보 (courses_info.json)
     courses_data = []
     for info in filtered_courses:
         course_name = info["course_name"]
         if course_name == "과정명 추출 실패":
             continue
         
+        # 과정 개요 가져오기
+        outline = course_outlines.get(course_name, "")
+        print(f"과정 개요 : {outline}")
+
         course_dict = {
             "courseId": str(uuid.uuid4()),  # 각 과정에 고유 ID 부여
             "courseName": course_name,
             "level": info["level"] if info["level"] else "",
             "duration": info["duration"] if info["duration"] else "",
             "deliveryMethod": info["delivery_method"] if info.get("delivery_method") else "",
-            "description": course_details.get(course_name, {}).get("description", ""),
-            "objectives": course_details.get(course_name, {}).get("objectives", ""),
-            "audience": course_details.get(course_name, {}).get("audience", ""),
-            "prerequisites": course_details.get(course_name, {}).get("prerequisites", ""),
-            "outline": course_outlines.get(course_name, ""),
+            "outline": outline,
             "createdAt": datetime.now().isoformat(),
             "updatedAt": datetime.now().isoformat()
         }
         courses_data.append(course_dict)
     
-    # 2. 모듈과 실습 정보를 담은 파일 생성 (modules_labs_info.json)
+    # 2. 모듈과 실습 정보 (modules_labs_info.json)
     modules_labs_data = []
     
+    print(f"courses_data : {courses_data}")
     # 모든 과정에 대해 모듈과 실습 정보 추가
     for course_dict in courses_data:
         course_name = course_dict["courseName"]
         course_id = course_dict["courseId"]
         
         # 모듈 정보 추가
-        if course_name in course_modules:
-            for idx, module in enumerate(course_modules[course_name]):
+        if course_name in all_modules:
+            for idx, module in enumerate(all_modules[course_name]):
                 module_id = f"{course_id}#module#{idx+1}"
                 module_item = {
                     "courseId": course_id,
@@ -594,8 +479,8 @@ def save_to_files(result):
                 modules_labs_data.append(module_item)
         
         # 실습 정보 추가
-        if course_name in course_labs:
-            for idx, lab in enumerate(course_labs[course_name]):
+        if course_name in all_labs:
+            for idx, lab in enumerate(all_labs[course_name]):
                 lab_id = f"{course_id}#lab#{idx+1}"
                 lab_item = {
                     "courseId": course_id,
@@ -612,76 +497,80 @@ def save_to_files(result):
     # JSON 형식으로 저장
     with open("courses_info.json", "w", encoding="utf-8") as f:
         json.dump(courses_data, f, ensure_ascii=False, indent=2)
-    print("과정 정보를 'courses_info.json'에 저장했습니다.")
+    print(f"과정 정보를 'courses_info.json'에 저장했습니다. (총 {len(courses_data)}개 과정)")
     
     with open("modules_labs_info.json", "w", encoding="utf-8") as f:
         json.dump(modules_labs_data, f, ensure_ascii=False, indent=2)
-    print("모듈과 실습 정보를 'modules_labs_info.json'에 저장했습니다.")
+    print(f"모듈과 실습 정보를 'modules_labs_info.json'에 저장했습니다. (총 {len(modules_labs_data)}개 항목)")
+    
+    # 디버깅용 추가 정보 저장
+    # 개요 전체 내용과 추출된 모듈/실습 정보 저장
+    debug_data = {
+        "outlines": {},
+        "extracted_modules": {},
+        "extracted_labs": {}
+    }
+    
+    for course_name in all_modules.keys():
+        if course_name in course_outlines:
+            debug_data["outlines"][course_name] = course_outlines[course_name]
+            debug_data["extracted_modules"][course_name] = all_modules.get(course_name, [])
+            debug_data["extracted_labs"][course_name] = all_labs.get(course_name, [])
+    
+    with open("debug_outlines_modules_labs.json", "w", encoding="utf-8") as f:
+        json.dump(debug_data, f, ensure_ascii=False, indent=2)
+    print(f"디버깅용 상세 정보를 'debug_outlines_modules_labs.json'에 저장했습니다.")
 
-def save_to_dynamodb(region_name='ap-northeast-2'):
+def print_sample_course_outline(result):
     """
-    저장된 JSON 파일을 읽어 DynamoDB에 저장하는 함수
+    샘플 과정의 개요와 추출된 모듈/실습 정보를 출력
     
     Args:
-        region_name (str): AWS 리전 이름
+        result: 추출된 정보
     """
-    try:
-        # 과정 정보 로드
-        with open("courses_info.json", "r", encoding="utf-8") as f:
-            courses_data = json.load(f)
-        
-        # 모듈 및 실습 정보 로드
-        with open("modules_labs_info.json", "r", encoding="utf-8") as f:
-            modules_labs_data = json.load(f)
-            
-        print(f"총 {len(courses_data)}개 과정 정보와 {len(modules_labs_data)}개 모듈/실습 항목을 로드했습니다.")
-    except Exception as e:
-        print(f"JSON 파일 로드 중 오류 발생: {str(e)}")
-        return False
+    course_outlines = result["course_outlines"]
+    all_modules = result["all_modules"]
+    all_labs = result["all_labs"]
     
-    # AWS 세션 및 DynamoDB 클라이언트 생성
-    try:
-        session = boto3.Session(region_name=region_name)
-        dynamodb = session.resource('dynamodb')
-        
-        # 테이블 참조
-        catalog_table = dynamodb.Table('Tnc-CourseCatalog')
-        modules_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
-        
-        print("AWS DynamoDB에 연결했습니다.")
-    except Exception as e:
-        print(f"AWS 연결 중 오류 발생: {str(e)}")
-        return False
+    # 모듈이 있는 과정 찾기
+    sample_course = None
+    for course, modules in all_modules.items():
+        if modules:
+            sample_course = course
+            break
     
-    # 사용자 확인
-    confirmation = input("\nDynamoDB에 데이터를 저장하시겠습니까? (y/n): ")
-    if confirmation.lower() != 'y':
-        print("저장이 취소되었습니다.")
-        return False
+    if not sample_course:
+        print("\n모듈이 추출된 과정이 없습니다.")
+        return
     
-    # 과정 정보 저장
-    print("\n=== 과정 정보 저장 중 ===")
-    course_success = 0
-    for course in courses_data:
-        try:
-            catalog_table.put_item(Item=course)
-            course_success += 1
-            # print(f"과정 '{course['courseName']}' 저장 완료")
-        except Exception as e:
-            print(f"과정 '{course['courseName']}' 저장 중 오류: {str(e)}")
+    print(f"\n=== 샘플 과정: {sample_course} ===")
     
-    # 모듈 및 실습 정보 저장
-    print("\n=== 모듈 및 실습 정보 저장 중 ===")
-    module_lab_success = 0
-    for item in modules_labs_data:
-        try:
-            modules_table.put_item(Item=item)
-            module_lab_success += 1
-        except Exception as e:
-            print(f"항목 저장 중 오류: {str(e)}")
+    # 과정 개요 출력 (처음 15줄만)
+    outline = course_outlines.get(sample_course, "")
+    outline_lines = outline.split('\n')
+    print("\n[과정 개요] (처음 15줄)")
+    for line in outline_lines[:15]:
+        print(line)
+    if len(outline_lines) > 15:
+        print(f"... 외 {len(outline_lines) - 15}줄")
     
-    print(f"\n저장 완료: {course_success}/{len(courses_data)} 과정, {module_lab_success}/{len(modules_labs_data)} 모듈/실습 항목")
-    return True
+    # 추출된 모듈 정보 출력
+    modules = all_modules.get(sample_course, [])
+    print(f"\n[추출된 모듈] (총 {len(modules)}개)")
+    for i, module in enumerate(modules):
+        print(f"모듈 {module['module_number']}: {module['module_title']}")
+        if i >= 9:  # 최대 10개만 표시
+            print(f"... 외 {len(modules) - 10}개 모듈")
+            break
+    
+    # 추출된 실습 정보 출력
+    labs = all_labs.get(sample_course, [])
+    print(f"\n[추출된 실습] (총 {len(labs)}개)")
+    for i, lab in enumerate(labs):
+        print(f"실습 {lab['lab_number']}: {lab['lab_title']}")
+        if i >= 9:  # 최대 10개만 표시
+            print(f"... 외 {len(labs) - 10}개 실습")
+            break
 
 def main():
     """메인 실행 함수"""
@@ -695,18 +584,16 @@ def main():
         
         # 과정 정보 추출
         start_time = time.time()
-        result = extract_comprehensive_course_info(file_path)
+        result = extract_course_outline_with_modules_labs(file_path)
         end_time = time.time()
         
         print(f"\n처리 완료! 소요 시간: {end_time - start_time:.2f}초")
         
+        # 샘플 과정 정보 출력
+        print_sample_course_outline(result)
+        
         # 추출된 데이터를 2개 파일로 저장
         save_to_files(result)
-        
-        # DynamoDB 저장 여부 확인
-        # store_to_db = input("\nDynamoDB에 저장하시겠습니까? (y/n): ")
-        # if store_to_db.lower() == 'y':
-        #     save_to_dynamodb()
         
     except Exception as e:
         print(f"오류 발생: {str(e)}")

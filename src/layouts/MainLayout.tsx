@@ -59,12 +59,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   }, []);
 
   // 네비게이션 아이템 생성 함수 - Cloudscape의 타입 사용
+  // 네비게이션 아이템 생성 함수 - Cloudscape의 타입 사용
   const getNavigationItems = (): SideNavigationProps.Item[] => {
-    // 기본 메뉴 (모든 사용자)
+    // 로그인하지 않은 사용자 또는 일반 학생용 메뉴 (공개 메뉴만 표시)
     let navItems: SideNavigationProps.Item[] = [
       {
         type: 'link',
-        text: t('nav.course_catalog') || 'Course Catalog',
+        text: t('nav.course_catalog') || '과정 카탈로그',
         href: '/courses'
       }
     ];
@@ -74,65 +75,66 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       navItems = [
         {
           type: 'link',
-          text: t('nav.dashboard') || 'Dashboard',
+          text: t('nav.dashboard') || '대시보드',
           href: '/instructor/dashboard'
         },
         {
           type: 'section',
-          text: t('nav.course_management') || 'Course Management',
+          text: t('nav.course_management') || '과정 관리',
           items: [
             {
               type: 'link',
-              text: t('nav.courses') || 'Courses',
+              text: t('nav.courses') || '과정 목록',
               href: '/instructor/courses'
             },
             {
               type: 'link',
-              text: t('nav.catalog') || 'Course Catalog',
+              text: t('nav.catalog') || '과정 카탈로그',
               href: '/instructor/courses/catalog'
             }
           ]
         },
         {
           type: 'section',
-          text: t('nav.assessment_tools') || 'Assessment Tools',
+          text: t('nav.assessment_tools') || '평가 도구',
           items: [
             {
               type: 'link',
-              text: t('nav.quiz') || 'Quiz',
+              text: t('nav.quiz') || '퀴즈',
               href: '/instructor/assessments/quiz'
             },
             {
               type: 'link',
-              text: t('nav.survey') || 'Survey',
+              text: t('nav.survey') || '설문조사',
               href: '/instructor/assessments/survey'
             }
           ]
         },
         {
           type: 'section',
-          text: t('nav.analytics') || 'Analytics & Reports',
+          text: t('nav.analytics') || '분석 및 보고서',
           items: [
             {
               type: 'link',
-              text: t('nav.quiz_comparison') || 'Pre/Post Comparison',
+              text: t('nav.quiz_comparison') || '사전/사후 비교',
               href: '/instructor/analytics/comparison'
             },
             {
               type: 'link',
-              text: t('nav.reports') || 'Reports',
+              text: t('nav.reports') || '보고서',
               href: '/instructor/analytics/reports'
             },
             {
               type: 'link',
-              text: t('nav.insights') || 'Course Insights',
+              text: t('nav.insights') || '과정 인사이트',
               href: '/instructor/analytics/insights'
             }
           ]
         },
+        // 과정 카탈로그는 모든 사용자에게 표시
         {
           type: 'link',
-          text: t('nav.course_catalog') || 'Course Catalog',
+          text: t('nav.course_catalog') || '과정 카탈로그',
           href: '/courses'
         }
       ];
@@ -142,7 +144,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     if (userRole === 'admin') {
       navItems.push({
         type: 'link',
-        text: t('nav.admin') || 'Administration',
+        text: t('nav.admin') || '관리자 페이지',
         href: '/admin'
       });
     }

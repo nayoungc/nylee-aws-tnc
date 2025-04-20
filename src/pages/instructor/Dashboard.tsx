@@ -1,5 +1,4 @@
-// pages/Dashboard.tsx
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Container,
   Header,
@@ -10,20 +9,13 @@ import {
   ColumnLayout,
   Badge,
   StatusIndicator,
-  Grid
+  Grid,
+  BarChart, // 바차트 추가
+  PieChart  // 파이차트 추가
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
-
-// 수정: Cloudscape의 Tiles 컴포넌트 속성에 맞게 정의
-interface QuickActionDefinition {
-  value: string;
-  label: string;
-  description?: string;
-  disabled?: boolean;
-}
+import { useTypedTranslation } from '@utils/i18n-utils'; // 수정됨: 커스텀 훅 사용
 
 interface QuickAction {
   id: string;
@@ -34,51 +26,64 @@ interface QuickAction {
 }
 
 const Dashboard: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, tString } = useTypedTranslation(); // 수정됨: 커스텀 훅 사용
   const navigate = useNavigate();
-  const [client] = useState(() => generateClient());
-
-  
-  // 안전한 번역 함수를 생성
-  const tStr = (key: string, options?: any): string => {
-    const result = t(key, options);
-    return typeof result === 'string' ? result : String(result);
-  };
+  const client = generateClient();
 
   // Sample data for statistics
   const sessionStats = [
-    { title: tStr('dashboard.stats.active_sessions'), value: "12", trend: "up", change: tStr('dashboard.stats.change.week_up', { count: 3 }) },
-    { title: tStr('dashboard.stats.total_students'), value: "487", trend: "up", change: tStr('dashboard.stats.change.month_up', { count: 42 }) },
-    { title: tStr('dashboard.stats.completion_rate'), value: "87%", trend: "up", change: tStr('dashboard.stats.change.quarter_up', { count: 5 }) },
-    { title: tStr('dashboard.stats.quiz_completion'), value: "93%", trend: "neutral", change: tStr('dashboard.stats.change.same') }
+    { 
+      title: tString('dashboard.stats.active_sessions'), 
+      value: "12", 
+      trend: "up", 
+      change: tString('dashboard.stats.change.week_up', { count: 3 }) 
+    },
+    { 
+      title: tString('dashboard.stats.total_students'), 
+      value: "487", 
+      trend: "up", 
+      change: tString('dashboard.stats.change.month_up', { count: 42 }) 
+    },
+    { 
+      title: tString('dashboard.stats.completion_rate'), 
+      value: "87%", 
+      trend: "up", 
+      change: tString('dashboard.stats.change.quarter_up', { count: 5 }) 
+    },
+    { 
+      title: tString('dashboard.stats.quiz_completion'), 
+      value: "93%", 
+      trend: "neutral", 
+      change: tString('dashboard.stats.change.same') 
+    }
   ];
 
   // Upcoming sessions data
   const upcomingSessions = [
     {
       id: "1",
-      title: tStr('dashboard.sessions.courses.practitioner'),
+      title: tString('dashboard.sessions.courses.practitioner'),
       status: "scheduled",
-      description: tStr('dashboard.sessions.descriptions.practitioner'),
-      date: tStr('dashboard.sessions.date.today', { start: '2:00 PM', end: '4:00 PM' }),
+      description: tString('dashboard.sessions.descriptions.practitioner'),
+      date: tString('dashboard.sessions.date.today', { start: '2:00 PM', end: '4:00 PM' }),
       participants: 25,
       preparationComplete: true
     },
     {
       id: "2",
-      title: tStr('dashboard.sessions.courses.architect'),
+      title: tString('dashboard.sessions.courses.architect'),
       status: "scheduled",
-      description: tStr('dashboard.sessions.descriptions.architect'),
-      date: tStr('dashboard.sessions.date.tomorrow', { start: '10:00 AM', end: '1:00 PM' }),
+      description: tString('dashboard.sessions.descriptions.architect'),
+      date: tString('dashboard.sessions.date.tomorrow', { start: '10:00 AM', end: '1:00 PM' }),
       participants: 18,
       preparationComplete: false
     },
     {
       id: "3", 
-      title: tStr('dashboard.sessions.courses.developer'),
+      title: tString('dashboard.sessions.courses.developer'),
       status: "live",
-      description: tStr('dashboard.sessions.descriptions.developer'),
-      date: tStr('dashboard.sessions.date.live_now'),
+      description: tString('dashboard.sessions.descriptions.developer'),
+      date: tString('dashboard.sessions.date.live_now'),
       participants: 22,
       preparationComplete: true
     }
@@ -87,121 +92,78 @@ const Dashboard: React.FC = () => {
   // Course progress data for chart
   const courseProgressData = [
     {
-      title: tStr('dashboard.charts.course_completion'),
+      title: tString('dashboard.charts.course_completion'),
       type: "bar" as const,
       data: [
-        { x: tStr('dashboard.charts.courses.cloud_practitioner'), y: 75 },
-        { x: tStr('dashboard.charts.courses.solutions_architect'), y: 45 },
-        { x: tStr('dashboard.charts.courses.developer'), y: 60 },
-        { x: tStr('dashboard.charts.courses.devops'), y: 30 },
-        { x: tStr('dashboard.charts.courses.security'), y: 85 }
+        { x: tString('dashboard.charts.courses.cloud_practitioner'), y: 75 },
+        { x: tString('dashboard.charts.courses.solutions_architect'), y: 45 },
+        { x: tString('dashboard.charts.courses.developer'), y: 60 },
+        { x: tString('dashboard.charts.courses.devops'), y: 30 },
+        { x: tString('dashboard.charts.courses.security'), y: 85 }
       ]
     }
   ];
 
   // Student participation data for pie chart
   const studentParticipationData = [
-    { title: tStr('dashboard.charts.participation.active'), value: 68 },
-    { title: tStr('dashboard.charts.participation.at_risk'), value: 22 },
-    { title: tStr('dashboard.charts.participation.inactive'), value: 10 }
+    { title: tString('dashboard.charts.participation.active'), value: 68 },
+    { title: tString('dashboard.charts.participation.at_risk'), value: 22 },
+    { title: tString('dashboard.charts.participation.inactive'), value: 10 }
   ];
 
-  // Quick action tiles - Cloudscape Tiles 컴포넌트에 맞게 수정
-  const quickActionTiles: QuickActionDefinition[] = [
-    {
-      value: "create-course",
-      label: tStr('dashboard.quick_actions.create_course.title'),
-      description: tStr('dashboard.quick_actions.create_course.description')
-    },
-    {
-      value: "generate-quiz",
-      label: tStr('dashboard.quick_actions.generate_quiz.title'),
-      description: tStr('dashboard.quick_actions.generate_quiz.description')
-    },
-    {
-      value: "view-reports",
-      label: tStr('dashboard.quick_actions.view_reports.title'),
-      description: tStr('dashboard.quick_actions.view_reports.description')
-    },
-    {
-      value: "manage-materials",
-      label: tStr('dashboard.quick_actions.manage_materials.title'),
-      description: tStr('dashboard.quick_actions.manage_materials.description')
-    }
-  ];
-
-  // 바차트를 위한 i18n 문자열 객체
-  const barChartI18nStrings = {
-    filterLabel: tStr('dashboard.charts.filter_label'),
-    filterPlaceholder: tStr('dashboard.charts.filter_placeholder'),
-    filterSelectedAriaLabel: tStr('dashboard.charts.filter_selected'),
-    legendAriaLabel: tStr('dashboard.charts.legend'),
-    chartAriaRoleDescription: tStr('dashboard.charts.bar_chart_description'),
-    xAxisAriaRoleDescription: tStr('dashboard.charts.x_axis'),
-    yAxisAriaRoleDescription: tStr('dashboard.charts.y_axis')
-  };
-
-  // 파이차트를 위한 i18n 문자열 객체
-  const pieChartI18nStrings = {
-    detailsValue: tStr('dashboard.charts.details_value'),
-    detailsPercentage: tStr('dashboard.charts.details_percentage'),
-    filterLabel: tStr('dashboard.charts.filter_label'),
-    filterPlaceholder: tStr('dashboard.charts.filter_placeholder'),
-    filterSelectedAriaLabel: tStr('dashboard.charts.filter_selected'),
-    legendAriaLabel: tStr('dashboard.charts.legend'),
-    chartAriaRoleDescription: tStr('dashboard.charts.pie_chart_description'),
-    segmentAriaRoleDescription: tStr('dashboard.charts.segment_description')
-  };
-
+  // Quick actions
   const quickActions: QuickAction[] = [
     {
       id: 'create-course',
-      title: tStr('dashboard.quick_actions.create_course.title'),
-      description: tStr('dashboard.quick_actions.create_course.description'),
+      title: tString('dashboard.quick_actions.create_course.title'),
+      description: tString('dashboard.quick_actions.create_course.description'),
       icon: '➕',
       path: '/instructor/courses/create'
     },
     {
       id: 'generate-quiz',
-      title: tStr('dashboard.quick_actions.generate_quiz.title'),
-      description: tStr('dashboard.quick_actions.generate_quiz.description'),
+      title: tString('dashboard.quick_actions.generate_quiz.title'),
+      description: tString('dashboard.quick_actions.generate_quiz.description'),
       icon: '📝',
       path: '/instructor/assessments/quiz-creator'
     },
     {
       id: 'view-reports',
-      title: tStr('dashboard.quick_actions.view_reports.title'),
-      description: tStr('dashboard.quick_actions.view_reports.description'),
+      title: tString('dashboard.quick_actions.view_reports.title'),
+      description: tString('dashboard.quick_actions.view_reports.description'),
       icon: '📊',
       path: '/instructor/analytics/reports'
     },
     {
       id: 'manage-materials',
-      title: tStr('dashboard.quick_actions.manage_materials.title'),
-      description: tStr('dashboard.quick_actions.manage_materials.description'),
+      title: tString('dashboard.quick_actions.manage_materials.title'),
+      description: tString('dashboard.quick_actions.manage_materials.description'),
       icon: '📚',
       path: '/instructor/courses'
     }
   ];
 
-  
+  // 바차트를 위한 i18n 문자열 객체
+  const barChartI18nStrings = {
+    filterLabel: tString('dashboard.charts.filter_label'),
+    filterPlaceholder: tString('dashboard.charts.filter_placeholder'),
+    filterSelectedAriaLabel: tString('dashboard.charts.filter_selected'),
+    legendAriaLabel: tString('dashboard.charts.legend'),
+    chartAriaRoleDescription: tString('dashboard.charts.bar_chart_description'),
+    xAxisAriaRoleDescription: tString('dashboard.charts.x_axis'),
+    yAxisAriaRoleDescription: tString('dashboard.charts.y_axis')
+  };
 
-  // 퀵액션 선택 핸들러
-  const handleQuickActionSelect = (detail: { value: string }) => {
-    switch (detail.value) {
-      case "create-course":
-        navigate("/instructor/courses/create");
-        break;
-      case "generate-quiz":
-        navigate("/instructor/assessments/quiz-creator");
-        break;
-      case "view-reports":
-        navigate("/instructor/analytics/reports");
-        break;
-      case "manage-materials":
-        navigate("/instructor/courses");
-        break;
-    }
+  // 파이차트를 위한 i18n 문자열 객체
+  const pieChartI18nStrings = {
+    detailsValue: tString('dashboard.charts.details_value'),
+    detailsPercentage: tString('dashboard.charts.details_percentage'),
+    filterLabel: tString('dashboard.charts.filter_label'),
+    filterPlaceholder: tString('dashboard.charts.filter_placeholder'),
+    filterSelectedAriaLabel: tString('dashboard.charts.filter_selected'),
+    legendAriaLabel: tString('dashboard.charts.legend'),
+    chartAriaRoleDescription: tString('dashboard.charts.pie_chart_description'),
+    segmentAriaRoleDescription: tString('dashboard.charts.segment_description')
   };
 
   return (
@@ -239,11 +201,11 @@ const Dashboard: React.FC = () => {
                 iconName="add-plus" 
                 onClick={() => navigate("/instructor/sessions/create")}
               >
-                {tStr('dashboard.sessions.create_button')}
+                {tString('dashboard.sessions.create_button')}
               </Button>
             }
           >
-            {tStr('dashboard.sections.sessions')}
+            {tString('dashboard.sections.sessions')}
           </Header>
         }
       >
@@ -253,7 +215,7 @@ const Dashboard: React.FC = () => {
               <SpaceBetween size="xs">
                 <Box>{item.title}</Box>
                 {item.status === "live" && (
-                  <Badge color="red">{tStr('dashboard.sessions.live_badge')}</Badge>
+                  <Badge color="red">{tString('dashboard.sessions.live_badge')}</Badge>
                 )}
               </SpaceBetween>
             ),
@@ -264,7 +226,7 @@ const Dashboard: React.FC = () => {
               },
               {
                 id: 'date',
-                header: tStr('dashboard.sessions.when'),
+                header: tString('dashboard.sessions.when'),
                 content: (item) => (
                   <StatusIndicator type={item.status === "live" ? "error" : "pending"}>
                     {item.date}
@@ -273,17 +235,17 @@ const Dashboard: React.FC = () => {
               },
               {
                 id: 'participants',
-                header: tStr('dashboard.sessions.participants'),
-                content: (item) => tStr('dashboard.sessions.registered_count', { count: item.participants })
+                header: tString('dashboard.sessions.participants'),
+                content: (item) => tString('dashboard.sessions.registered_count', { count: item.participants })
               },
               {
                 id: 'preparation',
-                header: tStr('dashboard.sessions.preparation'),
+                header: tString('dashboard.sessions.preparation'),
                 content: (item) => (
                   <StatusIndicator type={item.preparationComplete ? "success" : "warning"}>
                     {item.preparationComplete ? 
-                      tStr('dashboard.sessions.preparation_ready') : 
-                      tStr('dashboard.sessions.preparation_needed')}
+                      tString('dashboard.sessions.preparation_ready') : 
+                      tString('dashboard.sessions.preparation_needed')}
                   </StatusIndicator>
                 )
               },
@@ -293,15 +255,15 @@ const Dashboard: React.FC = () => {
                   <SpaceBetween direction="horizontal" size="xs">
                     {item.status === "live" ? (
                       <Button variant="primary" iconName="external">
-                        {tStr('dashboard.sessions.actions.join')}
+                        {tString('dashboard.sessions.actions.join')}
                       </Button>
                     ) : (
                       <Button variant="normal" iconName="edit">
-                        {tStr('dashboard.sessions.actions.edit')}
+                        {tString('dashboard.sessions.actions.edit')}
                       </Button>
                     )}
                     <Button iconName="view-full">
-                      {tStr('dashboard.sessions.actions.materials')}
+                      {tString('dashboard.sessions.actions.materials')}
                     </Button>
                   </SpaceBetween>
                 )
@@ -315,21 +277,21 @@ const Dashboard: React.FC = () => {
           items={upcomingSessions}
           empty={
             <Box textAlign="center" color="inherit">
-              <b>{tStr('dashboard.sessions.empty.title')}</b>
+              <b>{tString('dashboard.sessions.empty.title')}</b>
               <Box padding={{ bottom: "s" }} variant="p" color="inherit">
-                {tStr('dashboard.sessions.empty.description')}
+                {tString('dashboard.sessions.empty.description')}
               </Box>
-              <Button iconName="add-plus">{tStr('dashboard.sessions.create_button')}</Button>
+              <Button iconName="add-plus">{tString('dashboard.sessions.create_button')}</Button>
             </Box>
           }
         />
       </Container>
 
       <ColumnLayout columns={2}>
-        {/* Quick Actions - 간단한 Grid와 Box를 사용 */}
+        {/* Quick Actions */}
         <Container
           header={
-            <Header variant="h2">{tStr('dashboard.sections.quick_actions')}</Header>
+            <Header variant="h2">{tString('dashboard.sections.quick_actions')}</Header>
           }
         >
           <Grid
@@ -355,7 +317,7 @@ const Dashboard: React.FC = () => {
                     {action.description}
                   </Box>
                   <Button fullWidth onClick={() => navigate(action.path)}>
-                    {tStr('dashboard.quick_actions.go')}
+                    {tString('dashboard.quick_actions.go')}
                   </Button>
                 </SpaceBetween>
               </Box>
@@ -363,8 +325,53 @@ const Dashboard: React.FC = () => {
           </Grid>
         </Container>
         
-        {/* Recent Activity 부분 코드 유지... */}
+        {/* 차트 추가 */}
+        <Container
+          header={
+            <Header variant="h2">{tString('dashboard.charts.course_completion')}</Header>
+          }
+        >
+          <BarChart
+            series={[
+              {
+                title: tString('dashboard.charts.course_completion'),
+                type: "bar",
+                data: courseProgressData[0].data
+              }
+            ]}
+            i18nStrings={barChartI18nStrings}
+            ariaLabel={tString('dashboard.charts.course_completion')}
+            height={300}
+            xScaleType="categorical"
+            yDomain={[0, 100]}
+            hideFilter
+          />
+        </Container>
       </ColumnLayout>
+
+      {/* 학생 참여 파이 차트 */}
+      <Container
+        header={
+          <Header variant="h2">{tString('dashboard.charts.participation.active')}</Header>
+        }
+      >
+        <PieChart
+          data={studentParticipationData}
+          detailPopoverContent={(datum, sum) => [
+            { key: tString('dashboard.charts.details_value'), value: datum.value },
+            { 
+              key: tString('dashboard.charts.details_percentage'), 
+              value: `\${((datum.value / sum) * 100).toFixed(0)}%` 
+            }
+          ]}
+          segmentDescription={(datum, sum) => 
+            `\${datum.title}: \${datum.value} (\${((datum.value / sum) * 100).toFixed(0)}%)`
+          }
+          i18nStrings={pieChartI18nStrings}
+          size="large"
+          hideFilter
+        />
+      </Container>
     </SpaceBetween>
   );
 };

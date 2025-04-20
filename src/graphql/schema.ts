@@ -1,5 +1,20 @@
+// src/graphql/schema.ts
 export const schema = /* GraphQL */ `
-  type Course @model @auth(rules: [{allow: private}]) {
+  // 스키마 버전과 필요한 스칼라 타입 정의 추가
+  schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+  }
+
+  # 누락된 스칼라 타입 정의 추가
+  scalar AWSDateTime
+  scalar AWSJSON
+  scalar AWSEmail
+  scalar AWSPhone
+  scalar AWSIPAddress
+
+  type CourseCatalog @model @auth(rules: [{allow: private}]) {
     id: ID!
     title: String!
     description: String
@@ -7,8 +22,74 @@ export const schema = /* GraphQL */ `
     level: String
     price: Float
     category: String
-    publishedDate: AWSDateTime
-    isActive: Boolean
+    status: String
+    version: String
+    createdAt: AWSDateTime
+    updatedAt: AWSDateTime
+    modules: [CourseCatalogModule] @hasMany(indexName: "byCatalog", fields: ["id"])
+  }
+
+  type CourseCatalogModule @model @auth(rules: [{allow: private}]) {
+    id: ID!
+    catalogID: ID! @index(name: "byCatalog", sortKeyFields: ["order"])
+    title: String!
+    description: String
+    duration: Int
+    order: Int
+    catalog: CourseCatalog @belongsTo(fields: ["catalogID"])
+    exercises: [Exercise] @hasMany(indexName: "byModule", fields: ["id"])
+  }
+
+  type Exercise @model @auth(rules: [{allow: private}]) {
+    id: ID!
+    moduleID: ID! @index(name: "byModule", sortKeyFields: ["order"])
+    title: String!
+    description: String
+    type: String
+    durationMinutes: Int
+    order: Int
+    module: CourseCatalogModule @belongsTo(fields: ["moduleID"])
+  }
+
+  type Course @model @auth(rules: [{allow: private}]) {
+    id: ID!
+    catalogID: ID! @index(name: "byCatalog")
+    title: String!
+    description: String
+    startDate: AWSDateTime!
+    endDate: AWSDateTime!
+    location: String
+    isOnline: Boolean
+    maxStudents: Int
+    instructorID: ID! @index(name: "byInstructor")
+    instructorName: String
+    customerID: ID! @index(name: "byCustomer")
+    customerName: String
+    tags: [String]
+    catalog: CourseCatalog @belongsTo(fields: ["catalogID"])
+    instructor: Instructor @belongsTo(fields: ["instructorID"])
+    customer: Customer @belongsTo(fields: ["customerID"])
+    announcements: [Announcement] @hasMany(indexName: "byCourse", fields: ["id"])
+    assessments: [Assessment] @hasMany(indexName: "byCourse", fields: ["id"])
+  }
+
+  type Announcement @model @auth(rules: [{allow: private}]) {
+    id: ID!
+    courseID: ID! @index(name: "byCourse")
+    title: String!
+    content: String!
+    createdAt: AWSDateTime
+    course: Course @belongsTo(fields: ["courseID"])
+  }
+
+  type Assessment @model @auth(rules: [{allow: private}]) {
+    id: ID!
+    courseID: ID! @index(name: "byCourse")
+    name: String!
+    type: String! # pre-quiz, post-quiz, survey
+    status: String! # active, completed, draft
+    dueDate: AWSDateTime
+    course: Course @belongsTo(fields: ["courseID"])
   }
 
   type Customer @model @auth(rules: [{allow: private}]) {
@@ -20,9 +101,9 @@ export const schema = /* GraphQL */ `
     address: String
     status: String
     joinDate: AWSDateTime
+    courses: [Course] @hasMany(indexName: "byCustomer", fields: ["id"])
   }
 
-  # 강사 정보 - Cognito와 연동
   type Instructor @model @auth(rules: [{allow: private}]) {
     id: ID!
     cognitoId: String!
@@ -33,18 +114,6 @@ export const schema = /* GraphQL */ `
     bio: String
     status: String
     joinDate: AWSDateTime
-  }
-
-  # 과정 카탈로그
-  type CourseCatalog @model @auth(rules: [{allow: private}]) {
-    id: ID!
-    title: String!
-    description: String
-    level: String
-    category: String
-    status: String
-    version: String
-    createdAt: AWSDateTime
-    updatedAt: AWSDateTime
+    courses: [Course] @hasMany(indexName: "byInstructor", fields: ["id"])
   }
 `;

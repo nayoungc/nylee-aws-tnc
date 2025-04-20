@@ -269,11 +269,29 @@ const AppRoutes: React.FC = () => {
     </ProtectedRoute>
   );
 
-  return(
+  // 관리자 전용 라우트를 위한 래퍼 컴포넌트
+  const AdminRoute = ({ children }: { children: React.ReactNode }) => (
+    <ProtectedRoute
+      authenticated={authenticated}
+      redirectPath="/signin"
+      requiredRole="admin"
+      userAttributes={userAttributes}
+    >
+      <MainLayout>{children}</MainLayout>
+    </ProtectedRoute>
+  );
+
+
+  return (
     <Routes>
-      {/* 인증 페이지 라우트 - AuthLayout을 각 라우트의 element 안에 포함시켜 children 전달 */}
+      {/* 인증 페이지 라우트 */}
       <Route path="/signin" element={
-        authenticated ? <Navigate to="/" /> : <AuthLayout><SignIn /></AuthLayout>
+        authenticated ?
+          (userAttributes?.profile === 'admin' ?
+            <Navigate to="/admin" /> :
+            <Navigate to="/instructor/dashboard" />
+          ) :
+          <AuthLayout><SignIn /></AuthLayout>
       } />
       <Route path="/signup" element={
         authenticated ? <Navigate to="/" /> : <AuthLayout><SignUp /></AuthLayout>
@@ -293,39 +311,31 @@ const AppRoutes: React.FC = () => {
         path="/"
         element={
           authenticated ? (
-            userAttributes?.profile === 'instructor' || userAttributes?.profile === 'admin' ? (
+            userAttributes?.profile === 'admin' ? (
+              <Navigate to="/admin" />
+            ) : userAttributes?.profile === 'instructor' ? (
               <Navigate to="/instructor/dashboard" />
             ) : (
               <Navigate to="/courses" />
             )
           ) : (
-            <Navigate to="/signin" />
+            <Navigate to="/courses" /> // 로그인하지 않은 사용자는 과정 목록으로
           )
         }
       />
 
-      {/* 과정 목록 페이지 (CoursesList) */}
+      {/* 공개 과정 라우트 - 로그인 필요 없음 */}
       <Route path="/courses" element={
         <MainLayout>
           <CourseList />
         </MainLayout>
       } />
 
-      {/* 과정 상세 페이지 (CourseHome) */}
       <Route path="/courses/:courseId" element={
         <MainLayout>
           <CourseHome />
         </MainLayout>
       } />
-
-      {/* 통합된 과정 경로 - 상세 및 교육생 기능 */}
-      <Route path="/course/:courseId">
-        {/* 과정 홈페이지 */}
-        <Route index element={<MainLayout><CourseHome /></MainLayout>} />
-        {/* 교육생 평가 페이지 */}
-        <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
-        <Route path="quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
-      </Route>
 
       {/* 강사용 페이지 (URL 구조 변경) */}
       <Route path="/instructor">
@@ -347,47 +357,28 @@ const AppRoutes: React.FC = () => {
 
         {/* 분석 및 보고서 */}
         <Route path="analytics">
-          <Route path="comparison" element={
-            <InstructorRoute>
-              <div>사전/사후 비교 분석</div>
-            </InstructorRoute>
-          } />
-          <Route path="reports" element={
-            <InstructorRoute>
-              <ReportGenerator />
-            </InstructorRoute>
-          } />
-          <Route path="insights" element={
-            <InstructorRoute>
-              <div>과정별 인사이트</div>
-            </InstructorRoute>
-          } />
+          <Route path="comparison" element={<InstructorRoute><div>사전/사후 비교 분석</div></InstructorRoute>} />
+          <Route path="reports" element={<InstructorRoute><ReportGenerator /></InstructorRoute>} />
+          <Route path="insights" element={<InstructorRoute><div>과정별 인사이트</div></InstructorRoute>} />
         </Route>
       </Route>
 
-      {/* 관리자 라우트 */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute
-            authenticated={authenticated}
-            redirectPath="/signin"
-            requiredRole="admin"
-            userAttributes={userAttributes}
-          >
-            <MainLayout>
-              <AdminPage />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
+      {/* 관리자 라우트 - 관리자만 접근 가능 */}
+      <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
 
-      {/* 이전 URL 경로 리디렉션 - 단순 경로는 직접 처리 */}
+      {/* 교육생 기능용 라우트 */}
+      <Route path="/course/:courseId">
+        <Route index element={<MainLayout><CourseHome /></MainLayout>} />
+        <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
+        <Route path="quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
+      </Route>
+
+      {/* 이전 URL 경로 리디렉션 */}
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
 
-      {/* 교육생 페이지 리디렉션 - 별도 컴포넌트 사용 */}
+      {/* 교육생 페이지 리디렉션 */}
       <Route path="/student/:courseId" element={<CoursesHomeRedirect />} />
       <Route path="/student/:courseId/:path" element={<CoursePathRedirect />} />
 

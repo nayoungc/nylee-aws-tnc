@@ -1,8 +1,70 @@
-// src/graphql/queries.ts
+export const getCourseCatalog = /* GraphQL */ `
+  query GetCourseCatalog(\$id: ID!) {
+    getCourseCatalog(id: \$id) {
+      id
+      title
+      description
+      duration
+      level
+      price
+      category
+      status
+      version
+      createdAt
+      updatedAt
+      modules {
+        items {
+          id
+          title
+          description
+          duration
+          order
+          exercises {
+            items {
+              id
+              title
+              description
+              type
+              durationMinutes
+              order
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const listCourseCatalogs = /* GraphQL */ `
+  query ListCourseCatalogs(
+    \$filter: ModelCourseCatalogFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        title
+        description
+        level
+        duration
+        price
+        category
+        status
+        version
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
 export const getCourse = /* GraphQL */ `
   query GetCourse(\$id: ID!) {
     getCourse(id: \$id) {
       id
+      catalogID
       title
       description
       startDate
@@ -12,6 +74,8 @@ export const getCourse = /* GraphQL */ `
       maxStudents
       instructorID
       instructorName
+      customerID
+      customerName
       tags
       announcements {
         items {
@@ -41,6 +105,7 @@ export const listCourses = /* GraphQL */ `
     listCourses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         id
+        catalogID
         title
         description
         startDate
@@ -48,6 +113,7 @@ export const listCourses = /* GraphQL */ `
         location
         isOnline
         instructorName
+        customerName
         createdAt
         updatedAt
       }
@@ -56,28 +122,34 @@ export const listCourses = /* GraphQL */ `
   }
 `;
 
-export const listUserProfiles = /* GraphQL */ `
-  query ListUserProfiles(\$filter: ModelUserProfileFilterInput, \$limit: Int, \$nextToken: String) {
-    listUserProfiles(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+export const getCoursesByInstructor = /* GraphQL */ `
+  query GetCoursesByInstructor(
+    \$instructorID: ID!
+    \$sortDirection: ModelSortDirection
+    \$filter: ModelCourseFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    coursesByInstructorID(
+      instructorID: \$instructorID
+      sortDirection: \$sortDirection
+      filter: \$filter
+      limit: \$limit
+      nextToken: \$nextToken
+    ) {
       items {
         id
-        email
-        name
-        role
+        title
+        description
+        startDate
+        endDate
+        location
+        isOnline
+        customerName
         createdAt
         updatedAt
       }
       nextToken
-    }
-  }
-`;
-
-export const checkCourseEnrollment = /* GraphQL */ `
-  query CheckCourseEnrollment(\$courseId: ID!, \$email: String!) {
-    checkCourseEnrollment(courseId: \$courseId, email: \$email) {
-      hasAccess
-      enrollmentStatus
-      courseTitle
     }
   }
 `;
@@ -162,29 +234,6 @@ export const getInstructor = /* GraphQL */ `
       joinDate
       createdAt
       updatedAt
-    }
-  }
-`;
-
-export const listCourseCatalogs = /* GraphQL */ `
-  query ListCourseCatalogs(
-    \$filter: ModelCourseCatalogFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        title
-        description
-        level
-        category
-        status
-        version
-        createdAt
-        updatedAt
-      }
-      nextToken
     }
   }
 `;
