@@ -1,3 +1,4 @@
+// src/routes/instructor/CoursesManagement.tsx
 import React from 'react';
 import { BaseCourseView } from '@components/BaseCourseView';
 import { useTypedTranslation } from '@utils/i18n-utils';

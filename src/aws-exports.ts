@@ -14,7 +14,7 @@ const awsExports = {
     GraphQL: {
       endpoint: "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
       region: "us-east-1",
-      defaultAuthMode: "userPool" as const  // as const로 타입 문제 해결
+      defaultAuthMode: "userPool" as const
     }
   }
 };

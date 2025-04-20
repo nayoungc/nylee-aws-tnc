@@ -1,4 +1,4 @@
-// BaseCourseView.tsx - 수정된 버전
+// src/components/BaseCourseView.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -10,7 +10,6 @@ import {
   Badge,
   Spinner
 } from '@cloudscape-design/components';
-import { /* 나머지 임포트 */ } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
@@ -32,36 +31,37 @@ export interface CourseCatalog {
   updatedAt?: string;
 }
 
+// 응답 타입 - 서버 API 구조에 맞게 수정
 export interface ListCourseCatalogsResponse {
-  listCourseCatalogs: {
+  // 여러 가능한 응답 키를 처리할 수 있도록 인덱스 시그니처 사용
+  [key: string]: {
     items: CourseCatalog[];
     nextToken: string | null;
   };
 }
 
-// BaseCourseView의 props 인터페이스 (하나만 정의)
+// BaseCourseView의 props 인터페이스
 interface BaseCourseViewProps {
   title: string;
   description: string;
   
   // 모드와 권한 관련 프로퍼티
-  isReadOnly?: boolean;          // 읽기 전용 모드 (카탈로그 뷰)
-  isAdminView?: boolean;         // 관리자 뷰 여부
+  isReadOnly?: boolean;
+  isAdminView?: boolean;
   
   // 경로 설정
-  createPath?: string;           // 생성 페이지 경로 (관리자만)
-  managePath: string;            // 관리 페이지 기본 경로
-  viewPath: string;              // 학습자 뷰 경로
+  createPath?: string;
+  managePath: string;
+  viewPath: string;
   
   // 버튼 표시 제어
-  showCreateButton?: boolean;    // 생성 버튼 표시 여부
-  showManageButton?: boolean;    // 관리 버튼 표시 여부
-  showViewButton?: boolean;      // 학습자 뷰 버튼 표시 여부
+  showCreateButton?: boolean;
+  showManageButton?: boolean;
+  showViewButton?: boolean;
   
   additionalActions?: React.ReactNode;
-  courses?: CourseCatalog[];     // 외부에서 코스 데이터를 주입할 수 있는 선택적 props
+  courses?: CourseCatalog[];
 }
-
 
 export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   title,
@@ -74,11 +74,12 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   showCreateButton = false,
   showManageButton = true,
   showViewButton = true,
-  additionalActions
+  additionalActions,
+  courses: initialCourses
 }) => {
   const navigate = useNavigate();
   const { t, tString } = useTypedTranslation();
-  const [courses, setCourses] = useState<CourseCatalog[]>([]);
+  const [courses, setCourses] = useState<CourseCatalog[]>(initialCourses || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,9 +89,37 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   }, [navigate, createPath]);
 
   useEffect(() => {
+    // 이미 courses가 props로 제공된 경우 API 호출 생략
+    if (initialCourses && initialCourses.length > 0) {
+      setLoading(false);
+      return;
+    }
+
     const checkAuthAndFetchCourses = async () => {
       setLoading(true);
       setError(null);
+      
+      // 데이터 로딩 타임아웃 설정
+      const timeoutId = setTimeout(() => {
+        setLoading(false);
+        setError(t('courses.errors.timeout'));
+        
+        // 개발 환경에서만 샘플 데이터 제공
+        if (process.env.NODE_ENV === 'development') {
+          setCourses([
+            { 
+              id: '1', 
+              title: '타임아웃 - 샘플 과정', 
+              description: '타임아웃으로 인한 샘플 데이터입니다.',
+              level: '입문',
+              category: '기타',
+              duration: 0,
+              status: 'ACTIVE',
+              price: 0
+            }
+          ]);
+        }
+      }, 15000); // 15초 타임아웃
       
       try {
         // 1. 인증 확인
@@ -107,20 +136,36 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           
           console.log('API 응답:', data);
           
-          // 3. 응답 데이터 처리
-          const courseItems = data.listCourseCatalogs?.items || [];
+          // 3. 응답 데이터 처리 - 여러 가능한 키 처리
+          let courseItems: CourseCatalog[] = [];
+          
+          // 가능한 응답 키 확인
+          const responseKey = 
+            data.listTncCourseCatalogs ? 'listTncCourseCatalogs' :
+            data.listCourseCatalogs ? 'listCourseCatalogs' :
+            data.listCourses ? 'listCourses' : 
+            Object.keys(data)[0]; // 또는 첫 번째 키 사용
+          
+          if (data[responseKey]?.items) {
+            courseItems = data[responseKey].items;
+          }
           
           if (courseItems && courseItems.length > 0) {
             setCourses(courseItems);
           } else {
             setCourses([]);
           }
+          
+          // 타임아웃 제거
+          clearTimeout(timeoutId);
         } catch (graphqlError) {
           console.error('GraphQL 오류:', graphqlError);
+          clearTimeout(timeoutId);
           throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
         }
       } catch (error: any) {
         console.error('Course load error:', error);
+        clearTimeout(timeoutId);
         
         // 오류 처리
         if (error.name === 'UserUnAuthenticatedException' || 
@@ -161,7 +206,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     };
     
     checkAuthAndFetchCourses();
-  }, [t]);
+  }, [t, initialCourses]);
 
   // 상태에 따른 배지 색상 결정
   const getStatusColor = (status: string): "green" | "blue" | "grey" => {

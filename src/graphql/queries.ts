@@ -36,31 +36,6 @@ export const getCourseCatalog = /* GraphQL */ `
   }
 `;
 
-export const listCourseCatalogs = /* GraphQL */ `
-  query ListCourseCatalogs(
-    \$filter: ModelCourseCatalogFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        title
-        description
-        level
-        category
-        duration
-        status
-        price
-        instructor
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
 export const getCourse = /* GraphQL */ `
   query GetCourse(\$id: ID!) {
     getCourse(id: \$id) {
@@ -101,27 +76,27 @@ export const getCourse = /* GraphQL */ `
   }
 `;
 
-export const listCourses = /* GraphQL */ `
-  query ListCourses(\$filter: ModelCourseFilterInput, \$limit: Int, \$nextToken: String) {
-    listCourses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        catalogID
-        title
-        description
-        startDate
-        endDate
-        location
-        isOnline
-        instructorName
-        customerName
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
+// export const listCourses = /* GraphQL */ `
+//   query ListCourses(\$filter: ModelCourseFilterInput, \$limit: Int, \$nextToken: String) {
+//     listCourses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+//       items {
+//         id
+//         catalogID
+//         title
+//         description
+//         startDate
+//         endDate
+//         location
+//         isOnline
+//         instructorName
+//         customerName
+//         createdAt
+//         updatedAt
+//       }
+//       nextToken
+//     }
+//   }
+// `;
 
 export const getCoursesByInstructor = /* GraphQL */ `
   query GetCoursesByInstructor(
@@ -239,39 +214,6 @@ export const getInstructor = /* GraphQL */ `
   }
 `;
 
-// export const listCourseCatalogs = /* GraphQL */ `
-//   query ListCourseCatalogs(
-//     \$filter: ModelCourseCatalogFilterInput
-//     \$limit: Int
-//     \$nextToken: String
-//   ) {
-//     listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-//       items {
-//         id
-//         title
-//         description
-//         status
-//         createdAt
-//         updatedAt
-//       }
-//       nextToken
-//     }
-//   }
-// `;
-
-// export const getCourseCatalog = /* GraphQL */ `
-//   query GetCourseCatalog(\$id: ID!) {
-//     getCourseCatalog(id: \$id) {
-//       id
-//       title
-//       description
-//       status
-//       createdAt
-//       updatedAt
-//     }
-//   }
-// `;
-
 export const listQuizzes = /* GraphQL */ `
   query ListQuizzes(
     \$filter: ModelQuizFilterInput
@@ -290,6 +232,72 @@ export const listQuizzes = /* GraphQL */ `
           timeLimit
           passScore
         }
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+// 기존 오류 발생 쿼리
+export const listCourseCatalogsOriginal = /* GraphQL */ `
+  query ListTncCourseCatalogs(\$filter: ModelTncCourseCatalogFilterInput, \$limit: Int) {
+    listTncCourseCatalogs(filter: \$filter, limit: \$limit) {
+      items {
+        id
+        title
+        description
+        instructor
+        category
+        level
+        duration
+        status
+        price
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+// 변경된 쿼리 - 실제 서버 스키마에 맞게 이름 수정 필요
+export const listCourseCatalogs = /* GraphQL */ `
+  query ListCourses {
+    listCourses {
+      items {
+        id
+        title
+        description
+        instructor
+        category
+        level
+        duration
+        status
+        price
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+// 대체 쿼리
+export const listCourses = /* GraphQL */ `
+  query ListCourses {
+    listCourses {
+      items {
+        id
+        title
+        description
+        instructor
+        category
+        level
+        duration
+        status
+        price
         createdAt
         updatedAt
       }
