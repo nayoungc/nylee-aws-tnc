@@ -1,14 +1,26 @@
 /**
  * auth.ts - AWS Amplify 인증 관련 유틸리티 함수들
  * 
- * 이 파일은 AWS Amplify를 사용한 인증 관련 작업을 처리하는 함수들을 제공합니다.
+ * 이 파일은 AWS Amplify Gen 2를 사용한 인증 관련 작업을 처리하는 함수들을 제공합니다.
  * 로그인, 회원가입, 사용자 관리 및 GraphQL API 호출 관련 유틸리티를 포함합니다.
  */
 
-import { listCourseCatalog } from '@/graphql/queries';
+import { listCourseCatalogData } from '../graphql/client';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { 
+  getCurrentUser, 
+  signIn, 
+  signUp, 
+  confirmSignUp, 
+  resendSignUpCode, 
+  resetPassword, 
+  confirmResetPassword, 
+  signOut, 
+  fetchUserAttributes as amplifyFetchUserAttributes, 
+  updateUserAttributes as amplifyUpdateUserAttributes,
+  fetchAuthSession 
+} from 'aws-amplify/auth';
 
 /**
  * 인증 상태를 표현하는 열거형
@@ -60,10 +72,6 @@ export interface SignUpParams {
  * 
  * @returns 인증된 GraphQL API 클라이언트
  * @throws 인증되지 않았거나 API 클라이언트 생성 실패 시 오류 발생
- * @example
- * // 인증된 클라이언트로 API 호출
- * const client = await getAuthenticatedApiClient();
- * const result = await client.graphql({...});
  */
 export const getAuthenticatedApiClient = async () => {
   try {
@@ -87,22 +95,14 @@ export const getAuthenticatedApiClient = async () => {
  * @param authMode - 인증 방식 (기본: userPool)
  * @returns 쿼리 결과 데이터
  * @throws GraphQL 쿼리 실행 중 오류 발생 시 예외
- * @example
- * // 코스 목록 조회
- * const courses = await executeGraphQL<CoursesData>(
- *   `query ListCourses { listCourses { items { id title } } }`,
- *   {},
- *   'userPool'
- * );
  */
-// GraphQL 쿼리 실행 헬퍼 함수
 export const executeGraphQL = async <T>(
   query: string,
   variables?: Record<string, any>,
   authMode: 'apiKey' | 'userPool' | 'iam' | 'oidc' | 'lambda' = 'userPool'
 ): Promise<T> => {
   try {
-    // API 설정 확인 및 추가 (기존 코드와 동일)
+    // API 설정 확인 및 추가
     const config = Amplify.getConfig();
     
     if (!config.API || !config.API.GraphQL) {
@@ -122,22 +122,25 @@ export const executeGraphQL = async <T>(
       console.log('API 설정을 수동으로 추가했습니다.');
     }
     
-    // 클라이언트 생성
-    const client = generateClient();
-    
     try {
-      // 실제 API 호출 시도
-      const response = await client.graphql({
-        query,
-        variables,
-        authMode
-      });
-      
-      // 타입 가드 추가 (단일 검사로 통합)
-      if ('data' in response && response.data) {
-        return response.data as T;
+      // Gen 2 방식으로 API 호출
+      if (query.includes('listCourseCatalogData') || query.includes('listCourseCatalog')) {
+        const response = await listCourseCatalogData();
+        return response as unknown as T;
       } else {
-        throw new Error('GraphQL 응답에 데이터가 없습니다');
+        // 다른 쿼리의 경우 일반 GraphQL 클라이언트 사용
+        const client = generateClient();
+        const response = await client.graphql({
+          query,
+          variables,
+          authMode
+        });
+        
+        if ('data' in response && response.data) {
+          return response.data as T;
+        } else {
+          throw new Error('GraphQL 응답에 데이터가 없습니다');
+        }
       }
     } catch (graphqlError) {
       console.error('GraphQL 오류 발생:', graphqlError);
@@ -150,64 +153,55 @@ export const executeGraphQL = async <T>(
         
         console.log('샘플 데이터로 대체합니다');
         
-        // 쿼리 내용에 따른 샘플 데이터 제공
-        if (query.includes('listCourseCatalog') ||
-            query.includes('listCourses')) {
-          
-          // 샘플 코스 데이터
-          const mockData = {
-            listCourseCatalog: {
-              items: [
-                { 
-                  id: '1', 
-                  title: 'AWS Cloud Practitioner Essentials', 
-                  description: 'Learn the fundamentals of AWS Cloud',
-                  duration: '8 hours',
-                  level: 'Beginner',
-                  delivery_method: 'Online',
-                  objectives: ['Understand AWS core services', 'Learn cloud concepts'],
-                  target_audience: 'IT Professionals new to AWS',
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
-                },
-                { 
-                  id: '2', 
-                  title: 'AWS Solutions Architect Associate', 
-                  description: 'Prepare for the AWS Solutions Architect Associate certification',
-                  duration: '40 hours',
-                  level: 'Intermediate',
-                  delivery_method: 'Blended',
-                  objectives: ['Design resilient architectures', 'Design high-performing architectures'],
-                  target_audience: 'Solutions Architects',
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
-                },
-                { 
-                  id: '3', 
-                  title: 'DevOps on AWS', 
-                  description: 'Learn DevOps practices using AWS services',
-                  duration: '24 hours',
-                  level: 'Advanced',
-                  delivery_method: 'Instructor-led',
-                  objectives: ['Implement CI/CD on AWS', 'Automate infrastructure'],
-                  target_audience: 'DevOps Engineers',
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
-                }
-              ],
-              nextToken: null
-            }
-          };
-          
-          // 모든 가능한 키 이름에 대해 샘플 데이터 제공
-          return {
-            listCourseCatalogs: mockData.listCourseCatalog,  // listCourses로 대체
-            //listCourseCatalog: mockData.listCourseCatalog,   // 단수형 키도 지원
-            //listCourses: mockData.listCourses,         // 원래 키
-            //getCourseTemplate: mockData.listCourses.items[0], // 단일 항목 조회용
-            ...mockData
-          } as T;
-        }
+        // 샘플 코스 데이터
+        const mockData = {
+          listCourseCatalog: {
+            items: [
+              { 
+                id: '1', 
+                title: 'AWS Cloud Practitioner Essentials', 
+                description: 'Learn the fundamentals of AWS Cloud',
+                duration: '8 hours',
+                level: 'Beginner',
+                delivery_method: 'Online',
+                objectives: ['Understand AWS core services', 'Learn cloud concepts'],
+                target_audience: 'IT Professionals new to AWS',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              { 
+                id: '2', 
+                title: 'AWS Solutions Architect Associate', 
+                description: 'Prepare for the AWS Solutions Architect Associate certification',
+                duration: '40 hours',
+                level: 'Intermediate',
+                delivery_method: 'Blended',
+                objectives: ['Design resilient architectures', 'Design high-performing architectures'],
+                target_audience: 'Solutions Architects',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              { 
+                id: '3', 
+                title: 'DevOps on AWS', 
+                description: 'Learn DevOps practices using AWS services',
+                duration: '24 hours',
+                level: 'Advanced',
+                delivery_method: 'Instructor-led',
+                objectives: ['Implement CI/CD on AWS', 'Automate infrastructure'],
+                target_audience: 'DevOps Engineers',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              }
+            ],
+            nextToken: null
+          }
+        };
+        
+        return {
+          listCourseCatalogs: mockData.listCourseCatalog,
+          ...mockData
+        } as T;
       }
       
       // 샘플 데이터로 대체할 수 없는 경우 오류 전파
@@ -225,17 +219,9 @@ export const executeGraphQL = async <T>(
  * @param username - 사용자명
  * @param password - 비밀번호
  * @returns 로그인 결과 정보가 포함된 객체
- * @example
- * const result = await handleSignIn('user@example.com', 'password123');
- * if (result.success) {
- *   console.log('로그인 성공:', result.message);
- * } else {
- *   console.error('로그인 실패:', result.message);
- * }
  */
 export const handleSignIn = async (username: string, password: string) => {
   try {
-    const { signIn } = await import('aws-amplify/auth');
     const result = await signIn({
       username,
       password
@@ -276,22 +262,9 @@ export const handleSignIn = async (username: string, password: string) => {
  * 
  * @param params - 회원가입에 필요한 파라미터
  * @returns 회원가입 결과 정보가 포함된 객체
- * @example
- * const signupResult = await handleSignUp({
- *   username: 'user@example.com',
- *   password: 'securePassword123',
- *   email: 'user@example.com',
- *   options: {
- *     userAttributes: {
- *       name: 'John Doe',
- *       profile: 'instructor'
- *     }
- *   }
- * });
  */
 export const handleSignUp = async (params: SignUpParams) => {
   try {
-    const { signUp } = await import('aws-amplify/auth');
     const { username, password, email, phone, options = {} } = params;
     
     const userAttributes = {
@@ -332,15 +305,9 @@ export const handleSignUp = async (params: SignUpParams) => {
  * @param username - 사용자명
  * @param confirmationCode - 이메일로 받은 확인 코드
  * @returns 확인 코드 검증 결과 정보가 포함된 객체
- * @example
- * const confirmResult = await handleConfirmSignUp('user@example.com', '123456');
- * if (confirmResult.success) {
- *   // 확인 완료 처리
- * }
  */
 export const handleConfirmSignUp = async (username: string, confirmationCode: string) => {
   try {
-    const { confirmSignUp } = await import('aws-amplify/auth');
     const result = await confirmSignUp({
       username,
       confirmationCode
@@ -378,15 +345,9 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
  * 
  * @param username - 사용자명
  * @returns 코드 재전송 결과 정보가 포함된 객체
- * @example
- * const resendResult = await handleResendConfirmationCode('user@example.com');
- * if (resendResult.success) {
- *   console.log(resendResult.message);
- * }
  */
 export const handleResendConfirmationCode = async (username: string) => {
   try {
-    const { resendSignUpCode } = await import('aws-amplify/auth');
     const result = await resendSignUpCode({
       username
     });
@@ -413,15 +374,9 @@ export const handleResendConfirmationCode = async (username: string) => {
  * 
  * @param username - 사용자명
  * @returns 비밀번호 재설정 요청 결과 정보가 포함된 객체
- * @example
- * const resetRequest = await handleForgotPassword('user@example.com');
- * if (resetRequest.success) {
- *   // 코드 입력 화면으로 이동
- * }
  */
 export const handleForgotPassword = async (username: string) => {
   try {
-    const { resetPassword } = await import('aws-amplify/auth');
     const result = await resetPassword({ username });
     
     return {
@@ -447,15 +402,9 @@ export const handleForgotPassword = async (username: string) => {
  * @param newPassword - 새 비밀번호
  * @param confirmationCode - 이메일로 받은 확인 코드
  * @returns 비밀번호 재설정 결과 정보가 포함된 객체
- * @example
- * const resetResult = await handleConfirmForgotPassword('user@example.com', 'newPassword123', '123456');
- * if (resetResult.success) {
- *   // 로그인 페이지로 이동
- * }
  */
 export const handleConfirmForgotPassword = async (username: string, newPassword: string, confirmationCode: string) => {
   try {
-    const { confirmResetPassword } = await import('aws-amplify/auth');
     await confirmResetPassword({
       username,
       newPassword,
@@ -481,16 +430,9 @@ export const handleConfirmForgotPassword = async (username: string, newPassword:
  * 
  * @param global - 모든 기기에서 로그아웃 여부 (기본값: false)
  * @returns 로그아웃 결과 정보가 포함된 객체
- * @example
- * // 현재 기기만 로그아웃
- * const signOutResult = await handleSignOut();
- * 
- * // 모든 기기에서 로그아웃
- * const globalSignOutResult = await handleSignOut(true);
  */
 export const handleSignOut = async (global: boolean = false) => {
   try {
-    const { signOut } = await import('aws-amplify/auth');
     await signOut({ global });
     
     // 세션 스토리지에서 사용자 속성 정보 삭제
@@ -515,15 +457,9 @@ export const handleSignOut = async (global: boolean = false) => {
  * 현재 인증된 사용자 정보를 가져오는 함수
  * 
  * @returns 현재 인증된 사용자 정보가 포함된 객체
- * @example
- * const userResult = await fetchCurrentUser();
- * if (userResult.success) {
- *   console.log('현재 사용자:', userResult.user.username);
- * }
  */
 export const fetchCurrentUser = async () => {
   try {
-    const { getCurrentUser } = await import('aws-amplify/auth');
     const user = await getCurrentUser();
     
     return {
@@ -545,16 +481,10 @@ export const fetchCurrentUser = async () => {
  * 현재 인증된 사용자의 속성을 가져오는 함수
  * 
  * @returns 사용자 속성 정보가 포함된 객체
- * @example
- * const attributesResult = await fetchUserAttributes();
- * if (attributesResult.success) {
- *   console.log('사용자 이메일:', attributesResult.attributes.email);
- * }
  */
 export const fetchUserAttributes = async () => {
   try {
-    const { fetchUserAttributes } = await import('aws-amplify/auth');
-    const attributes = await fetchUserAttributes();
+    const attributes = await amplifyFetchUserAttributes();
     
     // 속성 정보를 세션 스토리지에 캐싱
     sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
@@ -580,16 +510,10 @@ export const fetchUserAttributes = async () => {
  * 
  * @param attributes - 업데이트할 속성 키-값 쌍
  * @returns 속성 업데이트 결과 정보가 포함된 객체
- * @example
- * const updateResult = await updateUserAttributes({
- *   name: 'New Name',
- *   'custom:role': 'instructor'
- * });
  */
 export const updateUserAttributes = async (attributes: Record<string, string>) => {
   try {
-    const { updateUserAttributes } = await import('aws-amplify/auth');
-    const result = await updateUserAttributes({
+    const result = await amplifyUpdateUserAttributes({
       userAttributes: attributes
     });
     
@@ -616,15 +540,9 @@ export const updateUserAttributes = async (attributes: Record<string, string>) =
  * 인증 토큰을 새로고침하는 함수
  * 
  * @returns 토큰 갱신 결과 정보가 포함된 객체
- * @example
- * const refreshResult = await refreshAuthToken();
- * if (refreshResult.success) {
- *   // 갱신된 토큰으로 API 호출
- * }
  */
 export const refreshAuthToken = async () => {
   try {
-    const { fetchAuthSession } = await import('aws-amplify/auth');
     const session = await fetchAuthSession({ forceRefresh: true });
     
     return {
@@ -646,13 +564,6 @@ export const refreshAuthToken = async () => {
  * 현재 사용자의 인증 상태를 확인하는 함수
  * 
  * @returns 현재 인증 상태 정보
- * @example
- * const authState = await getCurrentAuthState();
- * if (authState.isAuthenticated) {
- *   console.log('인증된 사용자:', authState.user.username);
- * } else {
- *   console.log('인증되지 않은 상태입니다');
- * }
  */
 export const getCurrentAuthState = async (): Promise<AuthState> => {
   try {
@@ -668,9 +579,6 @@ export const getCurrentAuthState = async (): Promise<AuthState> => {
         // 캐시 파싱 오류 무시하고 계속 진행
       }
     }
-    
-    // 인증 확인
-    const { getCurrentUser } = await import('aws-amplify/auth');
     
     try {
       const user = await getCurrentUser();
