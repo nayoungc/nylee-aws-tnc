@@ -98,19 +98,19 @@ const AppRoutes: React.FC = () => {
       } />
       
       <Route path="/signup" element={
-        authenticated ? <Navigate to="/" /> : <AuthLayout><SignUp /></AuthLayout>
+        isAuthenticated ? <Navigate to="/" /> : <AuthLayout><SignUp /></AuthLayout>
       } />
       
       <Route path="/confirm-signup" element={
-        authenticated ? <Navigate to="/" /> : <AuthLayout><ConfirmSignUp /></AuthLayout>
+        isAuthenticated ? <Navigate to="/" /> : <AuthLayout><ConfirmSignUp /></AuthLayout>
       } />
       
       <Route path="/forgot-password" element={
-        authenticated ? <Navigate to="/" /> : <AuthLayout><ForgotPassword /></AuthLayout>
+        isAuthenticated ? <Navigate to="/" /> : <AuthLayout><ForgotPassword /></AuthLayout>
       } />
       
       <Route path="/new-password" element={
-        authenticated ? <Navigate to="/" /> : <AuthLayout><NewPassword /></AuthLayout>
+        isAuthenticated ? <Navigate to="/" /> : <AuthLayout><NewPassword /></AuthLayout>
       } />
 
       {/* 공개 과정 라우트 */}
