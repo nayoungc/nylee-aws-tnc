@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { executeGraphQL } from '@utils/auth';
-import { listCourseCatalog } from '@graphql/queries';
+import { listCourseCatalogs } from '@graphql/queries';
 
 // 백엔드 스키마와 일치하는 타입 정의
 export interface CourseCatalog {
@@ -156,7 +156,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         try {
           // 2. 정의된 쿼리 사용 - DynamoDB 테이블 스키마에 맞게 filter 인자 제거
           const data = await executeGraphQL<listCourseCatalogResponse>(
-            listCourseCatalog,
+            listCourseCatalogs as string,
             { limit: 100 }
           );
           
