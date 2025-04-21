@@ -12,8 +12,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { executeGraphQL } from '@utils/auth';
-import { listCourseCatalogs } from '@graphql/queries';
+// 사용하지 않는 import 제거
+// import { executeGraphQL } from '@utils/auth';
+// import { listCourseCatalogs } from '@graphql/queries/courseCatalog';
+import { client } from '@graphql/api';
+// Amplify Gen 2 스키마 타입 가져오기 (필요한 경우)
+import type { Schema } from '../../amplify/data/resource';
 
 // 백엔드 스키마와 일치하는 타입 정의
 export interface CourseCatalog {
@@ -31,15 +35,6 @@ export interface CourseCatalog {
   status?: string;
   createdAt?: string;
   updatedAt?: string;
-}
-
-// 응답 타입 정의
-export interface listCourseCatalogResponse {
-  // 여러 가능한 응답 키를 처리할 수 있도록 인덱스 시그니처 사용
-  [key: string]: {
-    items: any[]; // 원시 API 응답 타입 (매핑 전)
-    nextToken: string | null;
-  };
 }
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
@@ -154,30 +149,23 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         console.log('API 호출 시작...');
         
         try {
-          // 2. 정의된 쿼리 사용 - DynamoDB 테이블 스키마에 맞게 filter 인자 제거
-          const data = await executeGraphQL<listCourseCatalogResponse>(
-            listCourseCatalogs as string,
-            { limit: 100 }
-          );
-          
+          // 2. Amplify Gen 2 API 호출 방식 사용
+          const { data, errors } = await client.models.CourseCatalog.list({
+            limit: 100,
+            // 필요한 경우 authMode 지정
+            // authMode: 'apiKey'
+          });
+
           console.log('API 응답:', data);
           
-          // 3. 응답 데이터 처리 - 여러 가능한 키 처리
-          let rawItems: any[] = [];
+          if (errors) {
+            console.error('GraphQL 오류:', errors);
+            throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
+          }
           
-          // 가능한 응답 키 확인
-          const responseKey = 
-            data.listCourseCatalog ? 'listCourseCatalog' :
-            data.listCourseCatalogs ? 'listCourseCatalogs' :
-            data.listCourses ? 'listCourses' : 
-            Object.keys(data)[0];
-          
-          console.log('응답 키:', responseKey);
-          
-          if (data[responseKey]?.items) {
-            rawItems = data[responseKey].items;
-            // 데이터 매핑 적용
-            const mappedItems = rawItems.map(mapToCourseViewModel);
+          // 3. 데이터가 있으면 매핑 후 상태 업데이트
+          if (data && Array.isArray(data)) {
+            const mappedItems = data.map(mapToCourseViewModel);
             setCourses(mappedItems);
           } else {
             setCourses([]);

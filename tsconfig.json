@@ -24,5 +24,8 @@
       "@graphql/*": ["src/graphql/*"]
     }
   },
-  "include": ["src", "src/types/**/*.d.ts", "craco.config.js"]
+  "include": ["src", "src/types/**/*.d.ts", "craco.config.js"],
+  "exclude": [
+    "**/resolvers/**/*.js"
+  ]
 }
