@@ -50,12 +50,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
         const session = await fetchAuthSession();
         if (session.tokens) {
           setAuthenticated(true);
-
+          
           // 사용자 속성 가져오기
           try {
             const user = await getCurrentUser();
             setUsername(user.username);
-
+            
             const attributes = await fetchUserAttributes();
             setUserAttributes(attributes);
           } catch (err) {
@@ -70,7 +70,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
         setUserAttributes(null);
       }
     };
-
+    
     checkAuth();
   }, []);
 
@@ -95,72 +95,72 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     return userAttributes?.profile || 'student';
   }, [userAttributes]);
 
-  // 사이드 메뉴 아이템 결정 - Cloudscape 타입에 맞게 수정
+  // 사이드 메뉴 아이템 결정 - 모든 사용자에게 퍼블릭 메뉴 표시
   const sideNavigationItems: SideNavigationProps.Item[] = useMemo(() => {
     // 기본 공개 메뉴 (모든 사용자에게 표시)
     const publicMenuItems: SideNavigationProps.Item[] = [
       { type: 'link', text: t('nav.course_list'), href: '/tnc' }
     ];
-
-    // 인증된 사용자 중 강사/관리자에게만 추가 메뉴 표시
-    if (authenticated) {
-      if (userRole === 'instructor' || userRole === 'admin') {
-        const assessmentItems: SideNavigationProps.Item[] = [
-          { type: 'link', text: t('nav.quiz_management'), href: '/instructor/assessments/quiz' },
-          { type: 'link', text: t('nav.survey_management'), href: '/instructor/assessments/survey' }
-        ];
-
-        const analyticsItems: SideNavigationProps.Item[] = [
-          { type: 'link', text: t('nav.reports'), href: '/instructor/analytics/reports' },
-          { type: 'link', text: t('nav.insights'), href: '/instructor/analytics/insights' },
-          {
-            type: 'link',
-            text: t('nav.comparison'),
-            href: '/instructor/analytics/comparison',
-            info: <Badge color="blue">New</Badge>
-          }
-        ];
-
-        const instructorItems: SideNavigationProps.Item[] = [
-          { type: 'link', text: t('nav.dashboard'), href: '/instructor/dashboard' },
-          { type: 'link', text: t('nav.course_management'), href: '/instructor/courses' },
-          {
-            type: 'section',
-            text: t('nav.assessments'),
-            items: assessmentItems
-          },
-          {
-            type: 'section',
-            text: t('nav.analytics'),
-            items: analyticsItems
-          }
-        ];
-
-        // 관리자 전용 메뉴
-        const adminItems: SideNavigationProps.Item[] = userRole === 'admin' ? [
-          {
-            type: 'section',
-            text: t('nav.admin'),
-            items: [
-              { type: 'link', text: t('nav.admin_page'), href: '/admin' }
-            ]
-          }
-        ] : [];
-
-        return [
-          ...publicMenuItems,
-          { type: 'divider' },
-          {
-            type: 'section',
-            text: t('nav.instructor_tools'),
-            items: instructorItems
-          },
-          ...adminItems
-        ];
-      }
+    
+    // 인증된 사용자만을 위한 추가 메뉴 준비
+    if (!authenticated) {
+      return publicMenuItems;
     }
 
-    // 인증되지 않은 사용자나 일반 교육생은 공개 메뉴만 표시
+    // 강사 또는 관리자인 경우 추가 메뉴
+    if (userRole === 'instructor' || userRole === 'admin') {
+      const instructorItems: SideNavigationProps.Item[] = [
+        { type: 'link', text: t('nav.dashboard'), href: '/instructor/dashboard' },
+        { type: 'link', text: t('nav.course_management'), href: '/instructor/courses' },
+        {
+          type: 'section',
+          text: t('nav.assessments'),
+          items: [
+            { type: 'link', text: t('nav.quiz_management'), href: '/instructor/assessments/quiz' },
+            { type: 'link', text: t('nav.survey_management'), href: '/instructor/assessments/survey' }
+          ]
+        },
+        {
+          type: 'section',
+          text: t('nav.analytics'),
+          items: [
+            { type: 'link', text: t('nav.reports'), href: '/instructor/analytics/reports' },
+            { type: 'link', text: t('nav.insights'), href: '/instructor/analytics/insights' },
+            {
+              type: 'link',
+              text: t('nav.comparison'),
+              href: '/instructor/analytics/comparison',
+              info: <Badge color="blue">New</Badge>
+            }
+          ]
+        }
+      ];
+
+      // 관리자 전용 메뉴
+      const adminItems: SideNavigationProps.Item[] = userRole === 'admin' ? [
+        {
+          type: 'section',
+          text: t('nav.admin'),
+          items: [
+            { type: 'link', text: t('nav.admin_page'), href: '/admin' }
+          ]
+        }
+      ] : [];
+
+      // 공개 메뉴 + 강사 메뉴 + 관리자 메뉴 (순서 변경 - 퍼블릭 메뉴를 먼저 표시)
+      return [
+        ...publicMenuItems,
+        { type: 'divider' },
+        {
+          type: 'section',
+          text: t('nav.instructor_tools'),
+          items: instructorItems
+        },
+        ...adminItems
+      ];
+    }
+    
+    // 일반 교육생은 공개 메뉴만 표시
     return publicMenuItems;
   }, [authenticated, userRole, t]);
 
@@ -171,12 +171,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
 
     if (path.startsWith('/tnc')) {
       items.push({ text: t('nav.course_list'), href: '/tnc' });
-
+      
       // 과정 상세 페이지인 경우
       const segments = path.split('/').filter(Boolean);
       if (segments.length > 1) {
         items.push({ text: t('common.course_detail'), href: `/tnc/\${segments[1]}` });
-
+        
         // 평가 페이지인 경우
         if (segments.length > 2) {
           const assessmentType = segments[2];
@@ -197,7 +197,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       items.push({ text: t('assessment.survey'), href: path });
     } else if (path.startsWith('/instructor')) {
       items.push({ text: t('nav.instructor_tools'), href: '/instructor/dashboard' });
-
+      
       const segments = path.split('/').filter(Boolean);
       if (segments.length > 1) {
         switch (segments[1]) {
@@ -222,9 +222,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
                   items.push({ text: t('nav.quiz_management'), href: path });
                   break;
                 case 'quiz-creator':
-                  items.push({
-                    text: t('nav.quiz_management'),
-                    href: '/instructor/assessments/quiz'
+                  items.push({ 
+                    text: t('nav.quiz_management'), 
+                    href: '/instructor/assessments/quiz' 
                   });
                   items.push({ text: t('assessment.create_quiz'), href: path });
                   break;
@@ -232,9 +232,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
                   items.push({ text: t('nav.survey_management'), href: path });
                   break;
                 case 'survey-creator':
-                  items.push({
-                    text: t('nav.survey_management'),
-                    href: '/instructor/assessments/survey'
+                  items.push({ 
+                    text: t('nav.survey_management'), 
+                    href: '/instructor/assessments/survey' 
                   });
                   items.push({ text: t('assessment.create_survey'), href: path });
                   break;
@@ -283,20 +283,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       text: tString('common.language'),
       iconName: 'globe',
       onClick: () => {
+        // 언어 전환 기능
         const currentLang = i18n.language;
         const newLang = currentLang === 'ko' ? 'en' : 'ko';
         i18n.changeLanguage(newLang);
       }
     };
-
+    
     // 인증된 사용자의 메뉴
     if (authenticated) {
       const userDropdown: TopNavigationProps.MenuDropdownUtility = {
         type: 'menu-dropdown',
         text: username,
         description: userRole === 'admin' ? tString('role.admin') :
-          userRole === 'instructor' ? tString('role.instructor') :
-            tString('role.student'),
+                     userRole === 'instructor' ? tString('role.instructor') : 
+                     tString('role.student'),
         iconName: 'user-profile',
         items: [
           { id: 'profile', text: tString('auth.profile'), href: '#profile' },
@@ -312,10 +313,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
                 href: "#",
                 external: true,
                 externalIconAriaLabel: tString('common.opens_in_new_tab')
-
               },
-              {
-                id: 'support',
+              { 
+                id: 'support', 
                 text: tString('common.support'),
                 href: '#support'
               },
@@ -331,14 +331,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
           { id: 'signout-divider', text: '', href: '#divider', disabled: true },
           { id: 'signout', text: tString('auth.sign_out'), href: '#signout' }
         ],
-        // 로그아웃 항목 클릭 처리를 위한 핸들러 추가
         onItemClick: (e) => {
           if (e.detail.id === 'signout') {
             setShowSignOutModal(true);
           }
         }
       };
-
+      
       return [languageButton, userDropdown];
     } else {
       // 로그인 버튼 (비인증 사용자용)
@@ -347,13 +346,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
         text: tString('auth.sign_in'),
         onClick: () => navigate('/signin')
       };
-
+      
       return [languageButton, signInButton];
     }
   };
 
   return (
     <>
+      {/* 로그아웃 확인 모달 */}
       <Modal
         visible={showSignOutModal}
         onDismiss={() => setShowSignOutModal(false)}
@@ -364,8 +364,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
               <Button variant="link" onClick={() => setShowSignOutModal(false)}>
                 {t('common.cancel')}
               </Button>
-              <Button
-                variant="primary"
+              <Button 
+                variant="primary" 
                 onClick={handleSignOut}
                 loading={loading}
               >
@@ -378,6 +378,27 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
         {t('auth.sign_out_message')}
       </Modal>
 
+      {/* 헤더 요소 - headerSelector에 의해 참조됨 */}
+      <div id="header">
+        <TopNavigation
+          identity={{
+            href: '/',
+            title: tString('app.title'),
+            logo: {
+              src: '/logo.png',
+              alt: tString('app.title')
+            }
+          }}
+          utilities={getTopNavigationUtilities()}
+          i18nStrings={{
+            searchIconAriaLabel: tString('common.search'),
+            searchDismissIconAriaLabel: tString('common.close_search'),
+            overflowMenuTriggerText: tString('common.more')
+          }}
+        />
+      </div>
+
+      {/* 메인 레이아웃 */}
       <AppLayout
         content={
           <SpaceBetween size="l">
@@ -396,7 +417,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
           <BreadcrumbGroup items={breadcrumbItems} />
         }
         navigation={
-          <SideNavigation
+          <SideNavigation 
             activeHref={location.pathname}
             header={{ text: tString('app.title'), href: '/' }}
             items={sideNavigationItems}
@@ -406,23 +427,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
         toolsHide={true}
         notifications={<div id="notifications" />}
         contentType="default"
-      />
-
-      <TopNavigation
-        identity={{
-          href: '/',
-          title: tString('app.title'),
-          logo: {
-            src: '/logo.png',
-            alt: tString('app.title')
-          }
-        }}
-        utilities={getTopNavigationUtilities()}
-        i18nStrings={{
-          searchIconAriaLabel: tString('common.search'),
-          searchDismissIconAriaLabel: tString('common.close_search'),
-          overflowMenuTriggerText: tString('common.more')
-        }}
       />
     </>
   );
