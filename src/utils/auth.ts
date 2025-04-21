@@ -1,36 +1,73 @@
-// src/utils/auth.ts
+/**
+ * auth.ts - AWS Amplify 인증 관련 유틸리티 함수들
+ * 
+ * 이 파일은 AWS Amplify를 사용한 인증 관련 작업을 처리하는 함수들을 제공합니다.
+ * 로그인, 회원가입, 사용자 관리 및 GraphQL API 호출 관련 유틸리티를 포함합니다.
+ */
+
+import { listCourseCatalog } from '@/graphql/queries';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
 
-// 인증 상태를 표현하는 타입 정의
+/**
+ * 인증 상태를 표현하는 열거형
+ */
 export enum AuthStateEnum {
+  /** 로그인된 상태 */
   SIGNED_IN = 'SIGNED_IN',
+  /** 로그아웃된 상태 */
   SIGNED_OUT = 'SIGNED_OUT',
+  /** 인증 상태 로딩 중 */
   LOADING = 'LOADING',
+  /** 인증 상태 오류 발생 */
   ERROR = 'ERROR'
 }
 
+/**
+ * 인증 상태 정보를 담는 인터페이스
+ */
 export interface AuthState {
+  /** 사용자 인증 여부 */
   isAuthenticated: boolean;
+  /** 인증된 사용자 정보 (인증된 경우만) */
   user?: any;
+  /** 인증 처리 중 발생한 오류 (오류 발생 시) */
   error?: Error;
 }
 
+/**
+ * 회원가입 시 필요한 매개변수 인터페이스
+ */
 export interface SignUpParams {
+  /** 사용자 아이디 */
   username: string;
+  /** 비밀번호 */
   password: string;
+  /** 이메일 주소 */
   email: string;
+  /** 전화번호 (선택) */
   phone?: string;
+  /** 추가 옵션 */
   options?: {
+    /** 추가 사용자 속성 */
     userAttributes?: Record<string, string>;
   };
 }
 
-// 인증된 API 클라이언트 반환 함수
+/**
+ * 인증된 API 클라이언트를 반환하는 함수
+ * 
+ * @returns 인증된 GraphQL API 클라이언트
+ * @throws 인증되지 않았거나 API 클라이언트 생성 실패 시 오류 발생
+ * @example
+ * // 인증된 클라이언트로 API 호출
+ * const client = await getAuthenticatedApiClient();
+ * const result = await client.graphql({...});
+ */
 export const getAuthenticatedApiClient = async () => {
   try {
-    // 인증 확인만 수행
+    // 인증 확인만 수행 - 인증되지 않은 경우 예외 발생
     await getCurrentUser();
     
     // API 클라이언트 생성 및 반환
@@ -41,7 +78,23 @@ export const getAuthenticatedApiClient = async () => {
   }
 };
 
-// GraphQL 쿼리 실행 헬퍼 함수
+/**
+ * GraphQL 쿼리를 실행하는 유틸리티 함수
+ * 
+ * @template T - 반환 데이터의 타입
+ * @param query - 실행할 GraphQL 쿼리 문자열
+ * @param variables - 쿼리에 사용될 변수 (선택)
+ * @param authMode - 인증 방식 (기본: userPool)
+ * @returns 쿼리 결과 데이터
+ * @throws GraphQL 쿼리 실행 중 오류 발생 시 예외
+ * @example
+ * // 코스 목록 조회
+ * const courses = await executeGraphQL<CoursesData>(
+ *   `query ListCourses { listCourses { items { id title } } }`,
+ *   {},
+ *   'userPool'
+ * );
+ */
 // GraphQL 쿼리 실행 헬퍼 함수
 export const executeGraphQL = async <T>(
   query: string,
@@ -103,26 +156,55 @@ export const executeGraphQL = async <T>(
           
           // 샘플 코스 데이터
           const mockData = {
-            listCourses: {
+            listCourseCatalog: {
               items: [
-                // 샘플 데이터 항목들 (기존과 동일)
                 { 
                   id: '1', 
                   title: 'AWS Cloud Practitioner Essentials', 
                   description: 'Learn the fundamentals of AWS Cloud',
-                  // ... 나머지 필드
+                  duration: '8 hours',
+                  level: 'Beginner',
+                  delivery_method: 'Online',
+                  objectives: ['Understand AWS core services', 'Learn cloud concepts'],
+                  target_audience: 'IT Professionals new to AWS',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
                 },
-                // ... 다른 샘플 항목들
+                { 
+                  id: '2', 
+                  title: 'AWS Solutions Architect Associate', 
+                  description: 'Prepare for the AWS Solutions Architect Associate certification',
+                  duration: '40 hours',
+                  level: 'Intermediate',
+                  delivery_method: 'Blended',
+                  objectives: ['Design resilient architectures', 'Design high-performing architectures'],
+                  target_audience: 'Solutions Architects',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                },
+                { 
+                  id: '3', 
+                  title: 'DevOps on AWS', 
+                  description: 'Learn DevOps practices using AWS services',
+                  duration: '24 hours',
+                  level: 'Advanced',
+                  delivery_method: 'Instructor-led',
+                  objectives: ['Implement CI/CD on AWS', 'Automate infrastructure'],
+                  target_audience: 'DevOps Engineers',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                }
               ],
               nextToken: null
             }
           };
           
           // 모든 가능한 키 이름에 대해 샘플 데이터 제공
-          // 주석 처리된 코드 복원
           return {
-            listCourseCatalogs: mockData.listCourses,
-            //listCourses: mockData.listCourses, // 이 줄을 복원
+            listCourseCatalogs: mockData.listCourseCatalog,  // listCourses로 대체
+            //listCourseCatalog: mockData.listCourseCatalog,   // 단수형 키도 지원
+            //listCourses: mockData.listCourses,         // 원래 키
+            //getCourseTemplate: mockData.listCourses.items[0], // 단일 항목 조회용
             ...mockData
           } as T;
         }
@@ -137,7 +219,20 @@ export const executeGraphQL = async <T>(
   }
 };
 
-// 로그인, 회원가입, 인증 관련 다른 함수들 (이전 코드에서 유지)
+/**
+ * 사용자 로그인을 처리하는 함수
+ * 
+ * @param username - 사용자명
+ * @param password - 비밀번호
+ * @returns 로그인 결과 정보가 포함된 객체
+ * @example
+ * const result = await handleSignIn('user@example.com', 'password123');
+ * if (result.success) {
+ *   console.log('로그인 성공:', result.message);
+ * } else {
+ *   console.error('로그인 실패:', result.message);
+ * }
+ */
 export const handleSignIn = async (username: string, password: string) => {
   try {
     const { signIn } = await import('aws-amplify/auth');
@@ -156,6 +251,18 @@ export const handleSignIn = async (username: string, password: string) => {
     };
   } catch (error) {
     console.error('로그인 오류:', error);
+    
+    // 이미 인증된 사용자 처리
+    if (error instanceof Error && 
+        error.name === 'UserAlreadyAuthenticatedException') {
+      return {
+        success: true,
+        message: '이미 로그인된 상태입니다.',
+        isSignedIn: true,
+        isComplete: true
+      };
+    }
+    
     return {
       success: false,
       error,
@@ -164,8 +271,24 @@ export const handleSignIn = async (username: string, password: string) => {
   }
 };
 
-
-// 회원가입 함수
+/**
+ * 회원가입을 처리하는 함수
+ * 
+ * @param params - 회원가입에 필요한 파라미터
+ * @returns 회원가입 결과 정보가 포함된 객체
+ * @example
+ * const signupResult = await handleSignUp({
+ *   username: 'user@example.com',
+ *   password: 'securePassword123',
+ *   email: 'user@example.com',
+ *   options: {
+ *     userAttributes: {
+ *       name: 'John Doe',
+ *       profile: 'instructor'
+ *     }
+ *   }
+ * });
+ */
 export const handleSignUp = async (params: SignUpParams) => {
   try {
     const { signUp } = await import('aws-amplify/auth');
@@ -191,7 +314,7 @@ export const handleSignUp = async (params: SignUpParams) => {
       message: '회원가입에 성공했습니다. 이메일을 확인하여 가입을 완료해주세요.',
       isComplete: result.isSignUpComplete,
       nextStep: result.nextStep,
-      isSignUpComplete: result.isSignUpComplete // 이 속성 추가
+      isSignUpComplete: result.isSignUpComplete
     };
   } catch (error) {
     console.error('회원가입 오류:', error);
@@ -203,7 +326,18 @@ export const handleSignUp = async (params: SignUpParams) => {
   }
 };
 
-// 확인 코드 확인 함수
+/**
+ * 회원가입 확인 코드를 검증하는 함수
+ * 
+ * @param username - 사용자명
+ * @param confirmationCode - 이메일로 받은 확인 코드
+ * @returns 확인 코드 검증 결과 정보가 포함된 객체
+ * @example
+ * const confirmResult = await handleConfirmSignUp('user@example.com', '123456');
+ * if (confirmResult.success) {
+ *   // 확인 완료 처리
+ * }
+ */
 export const handleConfirmSignUp = async (username: string, confirmationCode: string) => {
   try {
     const { confirmSignUp } = await import('aws-amplify/auth');
@@ -212,10 +346,7 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
       confirmationCode
     });
     
-    // isSignedIn 속성은 ConfirmSignUpOutput에 명시적으로 존재하지 않으므로
-    // 더 이상 result.isSignedIn을 참조하지 않고 다른 정보로 판단
-    
-    // 완료 여부로 판단
+    // 완료 여부 확인
     const isCompleted = result.isSignUpComplete;
     const isSignInStep = result.nextStep?.signUpStep === 'DONE';
     
@@ -225,9 +356,7 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
       message: '이메일 확인이 완료되었습니다. 이제 로그인할 수 있습니다.',
       isComplete: isCompleted,
       nextStep: result.nextStep,
-      // autoSignIn 속성을 제공 (이 부분이 해당 컴포넌트에서 사용됨)
       autoSignIn: {
-        // isSignedIn 값을 완료 여부와 단계 정보로 추론
         isSignedIn: isCompleted && isSignInStep
       }
     };
@@ -244,7 +373,17 @@ export const handleConfirmSignUp = async (username: string, confirmationCode: st
   }
 };
 
-// 확인 코드 재전송 함수
+/**
+ * 회원가입 확인 코드를 재전송하는 함수
+ * 
+ * @param username - 사용자명
+ * @returns 코드 재전송 결과 정보가 포함된 객체
+ * @example
+ * const resendResult = await handleResendConfirmationCode('user@example.com');
+ * if (resendResult.success) {
+ *   console.log(resendResult.message);
+ * }
+ */
 export const handleResendConfirmationCode = async (username: string) => {
   try {
     const { resendSignUpCode } = await import('aws-amplify/auth');
@@ -269,7 +408,17 @@ export const handleResendConfirmationCode = async (username: string) => {
   }
 };
 
-// 비밀번호 재설정 요청 함수
+/**
+ * 비밀번호 재설정 요청을 처리하는 함수
+ * 
+ * @param username - 사용자명
+ * @returns 비밀번호 재설정 요청 결과 정보가 포함된 객체
+ * @example
+ * const resetRequest = await handleForgotPassword('user@example.com');
+ * if (resetRequest.success) {
+ *   // 코드 입력 화면으로 이동
+ * }
+ */
 export const handleForgotPassword = async (username: string) => {
   try {
     const { resetPassword } = await import('aws-amplify/auth');
@@ -291,7 +440,19 @@ export const handleForgotPassword = async (username: string) => {
   }
 };
 
-// 비밀번호 재설정 확인 함수
+/**
+ * 비밀번호 재설정 확인 코드를 검증하고 새 비밀번호를 설정하는 함수
+ * 
+ * @param username - 사용자명
+ * @param newPassword - 새 비밀번호
+ * @param confirmationCode - 이메일로 받은 확인 코드
+ * @returns 비밀번호 재설정 결과 정보가 포함된 객체
+ * @example
+ * const resetResult = await handleConfirmForgotPassword('user@example.com', 'newPassword123', '123456');
+ * if (resetResult.success) {
+ *   // 로그인 페이지로 이동
+ * }
+ */
 export const handleConfirmForgotPassword = async (username: string, newPassword: string, confirmationCode: string) => {
   try {
     const { confirmResetPassword } = await import('aws-amplify/auth');
@@ -315,15 +476,30 @@ export const handleConfirmForgotPassword = async (username: string, newPassword:
   }
 };
 
-// 로그아웃 함수
+/**
+ * 사용자 로그아웃을 처리하는 함수
+ * 
+ * @param global - 모든 기기에서 로그아웃 여부 (기본값: false)
+ * @returns 로그아웃 결과 정보가 포함된 객체
+ * @example
+ * // 현재 기기만 로그아웃
+ * const signOutResult = await handleSignOut();
+ * 
+ * // 모든 기기에서 로그아웃
+ * const globalSignOutResult = await handleSignOut(true);
+ */
 export const handleSignOut = async (global: boolean = false) => {
   try {
     const { signOut } = await import('aws-amplify/auth');
     await signOut({ global });
     
+    // 세션 스토리지에서 사용자 속성 정보 삭제
+    sessionStorage.removeItem('userAttributes');
+    sessionStorage.removeItem('userAttributesTimestamp');
+    
     return {
       success: true,
-      message: '로그아웃되었습니다.'
+      message: global ? '모든 기기에서 로그아웃되었습니다.' : '로그아웃되었습니다.'
     };
   } catch (error) {
     console.error('로그아웃 오류:', error);
@@ -335,7 +511,16 @@ export const handleSignOut = async (global: boolean = false) => {
   }
 };
 
-// 현재 인증된 사용자 가져오기
+/**
+ * 현재 인증된 사용자 정보를 가져오는 함수
+ * 
+ * @returns 현재 인증된 사용자 정보가 포함된 객체
+ * @example
+ * const userResult = await fetchCurrentUser();
+ * if (userResult.success) {
+ *   console.log('현재 사용자:', userResult.user.username);
+ * }
+ */
 export const fetchCurrentUser = async () => {
   try {
     const { getCurrentUser } = await import('aws-amplify/auth');
@@ -356,11 +541,24 @@ export const fetchCurrentUser = async () => {
   }
 };
 
-// 사용자 속성 가져오기
+/**
+ * 현재 인증된 사용자의 속성을 가져오는 함수
+ * 
+ * @returns 사용자 속성 정보가 포함된 객체
+ * @example
+ * const attributesResult = await fetchUserAttributes();
+ * if (attributesResult.success) {
+ *   console.log('사용자 이메일:', attributesResult.attributes.email);
+ * }
+ */
 export const fetchUserAttributes = async () => {
   try {
     const { fetchUserAttributes } = await import('aws-amplify/auth');
     const attributes = await fetchUserAttributes();
+    
+    // 속성 정보를 세션 스토리지에 캐싱
+    sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
+    sessionStorage.setItem('userAttributesTimestamp', Date.now().toString());
     
     return {
       success: true,
@@ -377,13 +575,27 @@ export const fetchUserAttributes = async () => {
   }
 };
 
-// 사용자 속성 업데이트
+/**
+ * 사용자 속성을 업데이트하는 함수
+ * 
+ * @param attributes - 업데이트할 속성 키-값 쌍
+ * @returns 속성 업데이트 결과 정보가 포함된 객체
+ * @example
+ * const updateResult = await updateUserAttributes({
+ *   name: 'New Name',
+ *   'custom:role': 'instructor'
+ * });
+ */
 export const updateUserAttributes = async (attributes: Record<string, string>) => {
   try {
     const { updateUserAttributes } = await import('aws-amplify/auth');
     const result = await updateUserAttributes({
       userAttributes: attributes
     });
+    
+    // 캐시된 속성 정보 삭제하여 다음 호출 시 새로 가져오도록 함
+    sessionStorage.removeItem('userAttributes');
+    sessionStorage.removeItem('userAttributesTimestamp');
     
     return {
       success: true,
@@ -400,10 +612,18 @@ export const updateUserAttributes = async (attributes: Record<string, string>) =
   }
 };
 
-// 토큰 새로 고침 함수 추가
+/**
+ * 인증 토큰을 새로고침하는 함수
+ * 
+ * @returns 토큰 갱신 결과 정보가 포함된 객체
+ * @example
+ * const refreshResult = await refreshAuthToken();
+ * if (refreshResult.success) {
+ *   // 갱신된 토큰으로 API 호출
+ * }
+ */
 export const refreshAuthToken = async () => {
   try {
-    // Amplify Gen 2에서는 fetchAuthSession을 사용하여 토큰 갱신
     const { fetchAuthSession } = await import('aws-amplify/auth');
     const session = await fetchAuthSession({ forceRefresh: true });
     
@@ -422,26 +642,49 @@ export const refreshAuthToken = async () => {
   }
 };
 
-// 현재 인증 상태를 확인하는 함수
+/**
+ * 현재 사용자의 인증 상태를 확인하는 함수
+ * 
+ * @returns 현재 인증 상태 정보
+ * @example
+ * const authState = await getCurrentAuthState();
+ * if (authState.isAuthenticated) {
+ *   console.log('인증된 사용자:', authState.user.username);
+ * } else {
+ *   console.log('인증되지 않은 상태입니다');
+ * }
+ */
 export const getCurrentAuthState = async (): Promise<AuthState> => {
   try {
+    // 세션 스토리지에서 캐시된 인증 정보 확인
+    const cachedAuth = sessionStorage.getItem('authState');
+    const timestamp = sessionStorage.getItem('authStateTimestamp');
+    
+    // 5분 이내 캐시된 정보가 있으면 사용
+    if (cachedAuth && timestamp && (Date.now() - parseInt(timestamp) < 5 * 60 * 1000)) {
+      try {
+        return JSON.parse(cachedAuth) as AuthState;
+      } catch (e) {
+        // 캐시 파싱 오류 무시하고 계속 진행
+      }
+    }
+    
+    // 인증 확인
     const { getCurrentUser } = await import('aws-amplify/auth');
     
     try {
-      // 현재 인증된 사용자 정보 가져오기
       const user = await getCurrentUser();
-      return {
-        isAuthenticated: true,
-        user
-      };
+      const authState: AuthState = { isAuthenticated: true, user };
+      
+      // 결과 캐싱
+      sessionStorage.setItem('authState', JSON.stringify(authState));
+      sessionStorage.setItem('authStateTimestamp', Date.now().toString());
+      
+      return authState;
     } catch (error) {
-      // 사용자가 인증되지 않은 경우
-      return {
-        isAuthenticated: false
-      };
+      return { isAuthenticated: false };
     }
   } catch (error) {
-    // 다른 예상치 못한 오류가 발생한 경우
     console.error('인증 상태 확인 오류:', error);
     return {
       isAuthenticated: false,

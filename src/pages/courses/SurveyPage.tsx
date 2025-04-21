@@ -56,7 +56,7 @@ const SurveyPage: React.FC = () => {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const { id } = useParams<{ id: string }>();
-  console.log('Loading survey data for ID:', id);
+  console.log(`Loading survey data for ID: \${id}`);
 
 
 

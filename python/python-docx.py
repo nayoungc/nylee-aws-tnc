@@ -1,22 +1,152 @@
 import json
 import re
 import uuid
-import boto3
 import time
+import boto3
 from botocore.exceptions import ClientError
 from docx import Document  # python-docx 라이브러리 사용
 
-# Bedrock 클라이언트 설정
+# Bedrock 클라이언트 설정 - Claude 2 모델
 bedrock = boto3.client(
     service_name='bedrock-runtime',
-    region_name='us-east-1'  # 사용 중인 리전으로 변경하세요
+    region_name='us-east-1'
 )
 
 # DynamoDB 클라이언트 설정
-dynamodb = boto3.resource('dynamodb', region_name='us-east-1')  # 사용 중인 리전으로 변경하세요
-course_table = dynamodb.Table('Tnc-CourseCatalog')
-module_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 
+def recreate_tables():
+    """기존 테이블을 삭제하고 새로운 스키마로 다시 생성합니다"""
+    
+    # 기존 테이블 삭제
+    try:
+        course_table = dynamodb.Table('Tnc-CourseCatalog')
+        course_table.delete()
+        print("Tnc-CourseCatalog 테이블 삭제 중...")
+        course_table.meta.client.get_waiter('table_not_exists').wait(TableName='Tnc-CourseCatalog')
+        print("Tnc-CourseCatalog 테이블이 삭제되었습니다.")
+    except:
+        print("Tnc-CourseCatalog 테이블이 존재하지 않거나 삭제할 수 없습니다.")
+    
+    try:
+        module_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
+        module_table.delete()
+        print("Tnc-CourseCatalog-Modules 테이블 삭제 중...")
+        module_table.meta.client.get_waiter('table_not_exists').wait(TableName='Tnc-CourseCatalog-Modules')
+        print("Tnc-CourseCatalog-Modules 테이블이 삭제되었습니다.")
+    except:
+        print("Tnc-CourseCatalog-Modules 테이블이 존재하지 않거나 삭제할 수 없습니다.")
+    
+    # 과정 테이블 생성 (id: 파티션 키, title: 정렬 키)
+    dynamodb.create_table(
+        TableName='Tnc-CourseCatalog',
+        KeySchema=[
+            {
+                'AttributeName': 'id',
+                'KeyType': 'HASH'  # 파티션 키
+            },
+            {
+                'AttributeName': 'title',
+                'KeyType': 'RANGE'  # 정렬 키
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': 'id',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'title',
+                'AttributeType': 'S'
+            }
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 5,
+            'WriteCapacityUnits': 5
+        }
+    )
+    
+    # 모듈 테이블 생성 (courseId: 파티션 키, id: 정렬 키)
+    # LSI 1: moduleNumber를 정렬 키로 사용
+    # LSI 2: labNumber를 정렬 키로 사용 (실습 번호 기준 쿼리를 위해)
+    dynamodb.create_table(
+        TableName='Tnc-CourseCatalog-Modules',
+        KeySchema=[
+            {
+                'AttributeName': 'courseId',
+                'KeyType': 'HASH'  # 파티션 키
+            },
+            {
+                'AttributeName': 'id',
+                'KeyType': 'RANGE'  # 정렬 키
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': 'courseId',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'id',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'moduleNumber',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'labNumber',
+                'AttributeType': 'S'
+            }
+        ],
+        LocalSecondaryIndexes=[
+            {
+                'IndexName': 'ModuleNumberIndex',
+                'KeySchema': [
+                    {
+                        'AttributeName': 'courseId',
+                        'KeyType': 'HASH'
+                    },
+                    {
+                        'AttributeName': 'moduleNumber',
+                        'KeyType': 'RANGE'
+                    }
+                ],
+                'Projection': {
+                    'ProjectionType': 'ALL'
+                }
+            },
+            {
+                'IndexName': 'LabNumberIndex',
+                'KeySchema': [
+                    {
+                        'AttributeName': 'courseId',
+                        'KeyType': 'HASH'
+                    },
+                    {
+                        'AttributeName': 'labNumber',
+                        'KeyType': 'RANGE'
+                    }
+                ],
+                'Projection': {
+                    'ProjectionType': 'ALL'
+                }
+            }
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 5,
+            'WriteCapacityUnits': 5
+        }
+    )
+    
+    print("테이블 생성 중... 잠시 기다려주세요.")
+    
+    # 테이블 생성 완료 대기
+    dynamodb.meta.client.get_waiter('table_exists').wait(TableName='Tnc-CourseCatalog')
+    dynamodb.meta.client.get_waiter('table_exists').wait(TableName='Tnc-CourseCatalog-Modules')
+    
+    print("테이블이 성공적으로 생성되었습니다.")
+    
 def read_docx_file(file_path):
     """DOCX 파일을 읽어 텍스트 내용을 추출합니다"""
     try:
@@ -30,13 +160,8 @@ def read_docx_file(file_path):
         print(f"DOCX 파일 읽기 오류: {e}")
         return None
 
-def extract_text_from_document():
-    """문서에서 텍스트를 추출하는 대체 방법 (docx 파일을 읽을 수 없는 경우)"""
-    with open("aws_courses_content.txt", "r", encoding="utf-8") as f:
-        return f.read()
-
-def split_text_into_chunks(text, max_chunk_size=10000):
-    """긴 텍스트를 더 작은 청크로 분할합니다"""
+def split_text_into_chunks(text, max_chunk_size=4000):
+    """긴 텍스트를 더 작은 청크로 분할합니다 (Claude 2 제한에 맞게 청크 크기 감소)"""
     paragraphs = text.split('\n')
     chunks = []
     current_chunk = []
@@ -59,30 +184,26 @@ def split_text_into_chunks(text, max_chunk_size=10000):
     
     return chunks
 
-def safe_invoke_bedrock(prompt, max_retries=5, retry_delay=10):
-    """재시도 로직이 있는 Bedrock 모델 호출"""
+def safe_invoke_bedrock(prompt, max_retries=3, retry_delay=15):
+    """재시도 로직이 있는 Bedrock Claude 2 모델 호출"""
     retries = 0
     while retries < max_retries:
         try:
+            # Claude 2 모델 사용
             response = bedrock.invoke_model(
-                modelId='anthropic.claude-3-sonnet-20240229-v1:0',
+                modelId='anthropic.claude-v2',
                 contentType='application/json',
                 accept='application/json',
                 body=json.dumps({
-                    "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 8000,
+                    "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
+                    "max_tokens_to_sample": 4000,
                     "temperature": 0,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ]
+                    "top_p": 1
                 })
             )
             
             response_body = json.loads(response['body'].read().decode('utf-8'))
-            content = response_body['content'][0]['text']
+            content = response_body.get('completion')
             return content
         
         except ClientError as e:
@@ -164,14 +285,14 @@ def extract_course_info_from_chunks(chunks):
             all_courses.extend(chunk_courses)
             
             # API 제한을 방지하기 위한 지연
-            time.sleep(3)
+            time.sleep(5)
             
         except Exception as e:
             print(f"청크 {i+1} 처리 중 오류: {e}")
     
     return {"courses": all_courses}
 
-def extract_modules_and_labs_from_chunks(chunks):
+def extract_modules_and_labs_from_chunks(chunks, course_id_map):
     """여러 청크에서 모듈 및 실습 정보를 추출하고 결과 병합"""
     all_modules_and_labs = []
     
@@ -193,14 +314,18 @@ def extract_modules_and_labs_from_chunks(chunks):
                 {{
                     "id": "고유식별자",
                     "course_title": "과정명",
-                    "module_number": "모듈 번호",
+                    "moduleNumber": "모듈 번호",
                     "module_title": "모듈명",
-                    "lab_number": "실습 번호 (없으면 null)",
+                    "labNumber": "실습 번호 (없으면 '0')",
                     "lab_title": "실습명 (없으면 null)"
                 }},
                 ...
             ]
         }}
+        
+        주의: 
+        - moduleNumber 속성은 정확히 이 이름으로 추출해주세요.
+        - labNumber 속성은 정확히 이 이름으로 추출해주세요. 실습이 없는 경우 '0'으로 설정하세요.
         
         문서 청크:
         {chunk}
@@ -224,15 +349,40 @@ def extract_modules_and_labs_from_chunks(chunks):
             
             chunk_modules = json.loads(json_str).get('modules_and_labs', [])
             
-            # 고유 ID 추가
+            # 고유 ID 추가 및 courseId 추가
             for module in chunk_modules:
                 if 'id' not in module or not module['id']:
                     module['id'] = str(uuid.uuid4())
+                
+                # moduleNumber가 없으면 기본값 추가
+                if 'moduleNumber' not in module:
+                    module['moduleNumber'] = "0"
+                
+                # labNumber가 없으면 기본값 추가
+                if 'labNumber' not in module:
+                    module['labNumber'] = "0"
+                
+                # courseId 추가 - 과정 제목으로 courseId 매핑
+                course_title = module.get('course_title')
+                if course_title in course_id_map:
+                    module['courseId'] = course_id_map[course_title]
+                else:
+                    # 제목 일부가 일치하는 경우 찾기
+                    found = False
+                    for title, course_id in course_id_map.items():
+                        if title in course_title or course_title in title:
+                            module['courseId'] = course_id
+                            found = True
+                            break
+                    
+                    # 일치하는 과정을 찾지 못한 경우 기본 ID 사용
+                    if not found:
+                        module['courseId'] = "unknown"
             
             all_modules_and_labs.extend(chunk_modules)
             
             # API 제한을 방지하기 위한 지연
-            time.sleep(3)
+            time.sleep(5)
             
         except Exception as e:
             print(f"모듈/실습 청크 {i+1} 처리 중 오류: {e}")
@@ -247,14 +397,19 @@ def save_to_json(data, filename):
 
 def upload_to_dynamodb(courses_data, modules_data):
     """추출한 데이터를 DynamoDB에 업로드합니다"""
+    # 테이블 참조
+    course_table = dynamodb.Table('Tnc-CourseCatalog')
+    module_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
+    
     # 과정 정보 업로드
     course_count = 0
     for course in courses_data['courses']:
         try:
             course_table.put_item(Item=course)
             course_count += 1
+            print(f"과정 업로드 성공: {course['title']}")
         except ClientError as e:
-            print(f"과정 정보 업로드 실패: {e}")
+            print(f"과정 정보 업로드 실패 ({course.get('title')}): {e}")
     
     print(f"{course_count}개 과정 정보 업로드 완료")
     
@@ -264,26 +419,32 @@ def upload_to_dynamodb(courses_data, modules_data):
         try:
             module_table.put_item(Item=module)
             module_count += 1
+            if module.get('labNumber') != '0':
+                print(f"실습 업로드 성공: {module.get('course_title')} - {module.get('lab_title')} (실습 {module.get('labNumber')})")
+            else:
+                print(f"모듈 업로드 성공: {module.get('course_title')} - {module.get('module_title')}")
         except ClientError as e:
-            print(f"모듈 정보 업로드 실패: {e}")
+            print(f"모듈 정보 업로드 실패 ({module.get('module_title')}): {e}")
     
     print(f"{module_count}개 모듈/실습 정보 업로드 완료")
 
 def process_document(file_path):
     """문서를 처리하고 정보를 추출합니다"""
     try:
-        # DOCX 파일 읽기 시도
+        # 테이블 재생성
+        recreate_tables()
+        
+        # DOCX 파일 읽기
         print("DOCX 파일 읽기를 시도합니다...")
         document_content = read_docx_file(file_path)
         
-        # DOCX 파일 읽기 실패 시 대체 방법 사용
         if not document_content:
-            print("DOCX 파일을 읽을 수 없습니다. 대체 방법을 사용합니다...")
-            document_content = extract_text_from_document()
+            print("문서 내용을 읽을 수 없습니다.")
+            return
         
-        # 문서 내용을 청크로 분할
+        # 문서 내용을 청크로 분할 (Claude 2 제한에 맞게 청크 크기 조정)
         print("문서를 청크로 분할합니다...")
-        chunks = split_text_into_chunks(document_content)
+        chunks = split_text_into_chunks(document_content, max_chunk_size=4000)
         print(f"총 {len(chunks)}개의 청크로 분할되었습니다.")
         
         # 교육 과정 정보 추출 (청크별)
@@ -295,9 +456,16 @@ def process_document(file_path):
         
         save_to_json(courses_data, 'courses.json')
         
+        # 과정 ID와 제목 매핑 생성
+        course_id_map = {}
+        for course in courses_data['courses']:
+            course_id_map[course['title']] = course['id']
+        
+        print(f"과정 ID 매핑이 생성되었습니다. 총 {len(course_id_map)}개 과정")
+        
         # 모듈 및 실습 정보 추출 (청크별)
         print("모듈 및 실습 정보 추출 중...")
-        modules_data = extract_modules_and_labs_from_chunks(chunks)
+        modules_data = extract_modules_and_labs_from_chunks(chunks, course_id_map)
         save_to_json(modules_data, 'modules_and_labs.json')
         
         # DynamoDB에 업로드
@@ -307,13 +475,6 @@ def process_document(file_path):
         
     except Exception as e:
         print(f"처리 중 오류 발생: {e}")
-
-# 텍스트 파일에서 직접 읽는 방법
-def create_text_from_content(content_str):
-    """문서 내용을 텍스트 파일로 저장합니다"""
-    with open("aws_courses_content.txt", "w", encoding="utf-8") as f:
-        f.write(content_str)
-    print("파일에서 내용을 성공적으로 저장했습니다.")
 
 if __name__ == "__main__":
     # AWS TnC_ILT_DILT.docx 파일 경로
