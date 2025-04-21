@@ -3,21 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
-  Header,
   SpaceBetween,
   Box,
   Button,
-  FormField,
-  RadioGroup,
   Alert,
-  ProgressBar,
   Modal,
   Spinner,
-  StatusIndicator,
-  ColumnLayout,
-  Pagination
 } from '@cloudscape-design/components';
-import MainLayout from '../../layouts/MainLayout';
 
 // 타입 정의
 interface QuizOption {
@@ -59,6 +51,8 @@ const PreQuizPage: React.FC = () => {
   const [showConfirmExit, setShowConfirmExit] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
+  const { id } = useParams<{ id: string }>();
+
 
   // 퀴즈 상태
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,6 +75,8 @@ const PreQuizPage: React.FC = () => {
 
   const loadQuizData = async () => {
     setLoading(true);
+    console.log('Loading quiz data for ID:', id);
+
 
     try {
       // 실제 구현에서는 API 호출로 대체
@@ -316,55 +312,56 @@ const PreQuizPage: React.FC = () => {
     );
   }
 
-  return (
-    <>
-      {/* 퀴즈 탈출 확인 모달 */}
-      <Modal
-        visible={showConfirmExit}
-        onDismiss={() => setShowConfirmExit(false)}
-        header="Leave Quiz?"
-        footer={
-          <Box float="right">
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button variant="link" onClick={() => setShowConfirmExit(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={navigateBack}>
-                Leave
-              </Button>
-            </SpaceBetween>
-          </Box>
-        }
-      >
-        Your progress will not be saved. Are you sure you want to leave?
-      </Modal>
-
-      {/* 퀴즈 제출 확인 모달 */}
-      <Modal
-        visible={showSubmitConfirm}
-        onDismiss={() => setShowSubmitConfirm(false)}
-        header="Submit Quiz?"
-        footer={
-          <Box float="right">
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button variant="link" onClick={() => setShowSubmitConfirm(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setShowSubmitConfirm(false);
-                  handleSubmit();
-                }}
-              >
-                Submit
-              </Button>
-            </SpaceBetween>
-          </Box>
-        }
-      >
-        Are you sure you want to submit your answers? You won't be able to change them after submission.
-      </Modal>
+  // 메인 UI 반환
+return (
+  <>
+    {/* 퀴즈 탈출 확인 모달 */}
+    <Modal
+      visible={showConfirmExit}
+      onDismiss={() => setShowConfirmExit(false)}
+      header="Leave Quiz?"
+      footer={
+        <Box float="right">
+          <SpaceBetween direction="horizontal" size="xs">
+            <Button variant="link" onClick={() => setShowConfirmExit(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={navigateBack}>
+              Leave
+            </Button>
+          </SpaceBetween>
+        </Box>
+      }
+    >
+      Your progress will not be saved. Are you sure you want to leave?
+    </Modal>
+    
+    {/* 퀴즈 제출 확인 모달 */}
+    <Modal
+      visible={showSubmitConfirm}
+      onDismiss={() => setShowSubmitConfirm(false)}
+      header="Submit Quiz?"
+      footer={
+        <Box float="right">
+          <SpaceBetween direction="horizontal" size="xs">
+            <Button variant="link" onClick={() => setShowSubmitConfirm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={() => { 
+                setShowSubmitConfirm(false);
+                handleSubmit(); 
+              }}
+            >
+              Submit
+            </Button>
+          </SpaceBetween>
+        </Box>
+      }
+    >
+      Are you sure you want to submit your answers? You won't be able to change them after submission.
+    </Modal>
 
       <SpaceBetween size="l">
         {/* 나머지 내용 */}

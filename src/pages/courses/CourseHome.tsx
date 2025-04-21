@@ -114,7 +114,7 @@ const CourseHome: React.FC = () => {
           {
             id: '1',
             title: '사전 설문조사',
-            type: 'survey',
+            type: 'survey', // 이것이 'survey' 타입으로 되어있는지 확인
             description: '워크샵 참여자의 경험과 기대를 파악하기 위한 간단한 설문조사입니다.',
             isActive: true,
             estimatedTime: '5분',
@@ -135,7 +135,7 @@ const CourseHome: React.FC = () => {
             title: '사후 퀴즈',
             type: 'post-quiz',
             description: '워크샵 이후 지식 습득을 확인하기 위한 평가입니다.',
-            isActive: false,
+            isActive: true, // 수정: false → true로 변경하여 활성화
             estimatedTime: '15분',
             status: 'pending'
           }
@@ -151,9 +151,12 @@ const CourseHome: React.FC = () => {
   };
 
   // 수정된 부분: 평가 유형에 따라 다른 페이지로 이동
+  // navigateToAssessment 함수 수정
   const navigateToAssessment = (assessment: Assessment) => {
-    if (!assessment.isActive) return;
-  
+    // isActive 체크 제거 - 모두 활성화
+
+    console.log('Navigating to assessment:', assessment.type, assessment.id);
+
     // 평가 유형에 따라 다른 경로로 이동
     switch (assessment.type) {
       case 'pre-quiz':

@@ -390,19 +390,20 @@ const AppRoutes: React.FC = () => {
 
       {/* 교육생 기능용 라우트 - /tnc 경로로 변경 */}
       <Route path="/tnc/:courseId">
-        <Route path="survey" element={<MainLayout><SurveyPage /></MainLayout>} />
-        <Route path="pre-quiz" element={<MainLayout><PreQuizPage /></MainLayout>} />
-        <Route path="post-quiz" element={<MainLayout><PostQuizPage /></MainLayout>} />
+        {/* 새로 추가: 직접 평가 페이지 접근 라우트 */}
+        <Route path="/pre-quiz/:id" element={<PreQuizPage />} />
+
+        <Route path="/post-quiz/:id" element={<PostQuizPage />} />
+
+        <Route path="/survey/:id" element={<SurveyPage />} />
       </Route>
+
+
 
       {/* 이전 URL 경로 리디렉션 */}
       <Route path="/dashboard" element={<Navigate to="/instructor/dashboard" replace />} />
       <Route path="/courses/my-courses" element={<Navigate to="/instructor/courses" replace />} />
       <Route path="/assessments/survey" element={<Navigate to="/instructor/assessments/survey" replace />} />
-
-      {/* 교육생 페이지 리디렉션 - /tnc 경로로 변경 (백슬래시 제거) */}
-      <Route path="/student/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
-      <Route path="/student/:courseId/:path" element={<Navigate to={`/tnc/\${useParams().courseId}/\${useParams().path}`} replace />} />
 
       {/* 이전 /course 패턴을 /tnc로 리디렉션 (백슬래시 제거) */}
       <Route path="/course/:courseId" element={<Navigate to={`/tnc/\${useParams().courseId}`} replace />} />
