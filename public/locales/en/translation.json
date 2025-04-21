@@ -4,648 +4,61 @@
   },
   "auth": {
     "sign_in": "Sign In",
-    "sign_up": "Sign Up",
     "sign_out": "Sign Out",
-    "username": "Username",
-    "email": "Email",
-    "password": "Password",
-    "confirm_password": "Confirm Password",
-    "confirmation_code": "Confirmation Code",
-    "enter_confirmation_code": "Enter confirmation code",
-    "confirm_signup": "Confirm Registration",
-    "confirmation_code_sent": "Confirmation code was sent to {{email}}",
-    "confirm": "Confirm",
-    "no_account": "Don't have an account?",
-    "have_account": "Already have an account?",
-    "login_error_generic": "Login failed. Please check your credentials.",
-    "user_not_exist": "User does not exist.",
-    "password_mismatch": "Passwords do not match",
-    "signup_error": "Registration failed. Please try again.",
-    "confirm_error": "Confirmation failed. Please try again.",
-    "fields_required": "All fields are required",
-    "incorrect_password": "Incorrect password",
-    "account_not_verified": "Account needs verification",
-    "forgot_password": "Forgot Password",
-    "send_code": "Send Code",
-    "reset_password": "Reset Password",
-    "new_password": "New Password",
-    "username_description": "Enter the username or email used during registration",
-    "back_to_signin": "Back to Sign In",
-    "back_to_send_code": "Request a new code",
-    "code_sent": "Confirmation code has been sent to your registered contact",
-    "code_sent_to": "Confirmation code has been sent to {destination}",
-    "reset_code_sent": "Password reset code has been sent to your email",
-    "password_reset_success": "Your password has been reset successfully",
-    "password_hint": "Minimum 8 characters with uppercase, lowercase, numbers, and special characters",
-    "reset_request_error": "Error requesting password reset",
-    "reset_error": "Error resetting password",
-    "code_required": "Confirmation code is required",
-    "new_password_required": "New password is required",
-    "password_requirements": "Password must be at least 8 characters and include uppercase, lowercase, numbers, and special characters",
-    "invalid_parameter": "Invalid input parameter",
-    "invalid_email": "Invalid email format",
-    "invalid_phone": "Invalid phone number format (include country code)",
-    "attempt_limit": "Attempt limit exceeded. Please try again later",
-    "username_exists": "Username already exists",
-    "invalid_password": "Password does not meet requirements",
-    "username_required": "Username is required",
-    "email_required": "Email is required",
-    "password_required": "Password is required",
-    "phone_required": "Phone number is required",
-    "phone_format": "International format, e.g.: +1234567890",
-    "include_phone": "Include phone number",
-    "code_mismatch": "Invalid confirmation code",
-    "code_expired": "Confirmation code has expired",
-    "phone_number": "Phone Number",
-    "session_expired": "Your session has expired. Please sign in again.",
-    "signup_success": "Registration successful. Please sign in.",
-    "code_description": "Enter the 6-digit code sent to your email",
-    "resend_code": "Resend confirmation code",
-    "code_resent": "Confirmation code has been resent"
-  },
-  "nav": {
-    "dashboard": "Dashboard",
-    "course_management": "Course Management",
-    "courses": "Courses",
-    "catalog": "Course Catalog",
-    "course_catalog": "Course Catalog",
-    "my_courses": "My Courses",
-    "sessions": "Sessions",
-    "session_management": "Session Management",
-    "assessment_tools": "Assessment Tools",
-    "assessments": "Assessments",
-    "quiz": "Quiz",
-    "pre_quiz": "Pre Quiz",
-    "post_quiz": "Post Quiz",
-    "survey": "Survey",
-    "ai_generator": "AI Generator",
-    "analytics": "Analytics & Reports",
-    "quiz_comparison": "Pre/Post Comparison",
-    "reports": "Reports",
-    "insights": "Course Insights",
-    "student_home": "Student Home",
-    "all_courses": "All Courses",
-    "admin": "Administration",
-    "profile": "My Profile",
-    "settings": "Settings",
-    "admin_section": "Administration",
-    "admin_dashboard": "Admin Dashboard",
-    "user_management": "User Management",
-    "system_settings": "System Settings"
-  },
-  "user": {
-    "preferred_language": "Preferred Language",
-    "level": "Level"
-  },
-  "language": {
-    "english": "English",
-    "korean": "Korean"
-  },
-  "conversation": {
-    "difficulty": {
-      "beginner": "Beginner",
-      "intermediate": "Intermediate",
-      "advanced": "Advanced"
-    }
+    "sign_out_confirm": "Sign Out Confirmation",
+    "sign_out_message": "Are you sure you want to sign out?",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "security": "Security"
   },
   "common": {
     "loading": "Loading...",
     "cancel": "Cancel",
-    "delete": "Delete",
     "save": "Save",
     "edit": "Edit",
+    "delete": "Delete",
     "view": "View",
     "go_back": "Go Back",
+    "back_to_list": "Back to List",
     "error": "Error",
-    "filter": "Filter",
-    "selected": "Selected",
-    "legend": "Legend",
-    "chart": {
-      "bar": "Bar chart",
-      "pie": "Pie chart",
-      "xAxis": "X axis",
-      "yAxis": "Y axis"
-    },
-    "value": "Value",
-    "percentage": "Percentage",
-    "date": {
-      "next_month": "Next month",
-      "previous_month": "Previous month",
-      "today": "Today"
-    },
-    "errors": {
-      "fetch_user_role": "Failed to fetch user role:"
-    }
+    "language": "Language",
+    "search": "Search",
+    "close_search": "Close search",
+    "more": "More",
+    "documentation": "Documentation",
+    "support": "Support",
+    "feedback": "Feedback",
+    "opens_in_new_tab": "Opens in new tab",
+    "help": "Help",
+    "course_detail": "Course Details",
+    "required": "Required"
   },
-  "survey": {
-    "management_title": "Survey Management",
-    "select_course": "Select Course",
-    "course_placeholder": "Select a course",
-    "loading_courses": "Loading courses...",
-    "no_courses": "No courses",
-    "register_course_first": "There are no available courses. Please register a course first.",
-    "survey_type": "Survey Type",
-    "survey_type_selection": "Select survey type",
-    "pre_survey": "Pre Survey",
-    "post_survey": "Post Survey",
-    "pre": "Pre",
-    "post": "Post",
-    "sync_with_pre_survey": "Configure post-survey identical to pre-survey",
-    "create_survey": "Create Survey",
-    "generate_with_ai": "Generate with AI",
-    "create_from_template": "Create from Template",
-    "copy_from_pre_survey": "Copy from Pre-Survey",
-    "survey_list": "Survey List",
-    "survey_list_description": "{{type}} survey list for the selected course",
-    "loading_surveys": "Loading survey list...",
-    "no_surveys": "No surveys",
-    "create_new_survey_prompt": "There are no surveys for the selected course. Please create a new survey.",
-    "satisfaction_survey": "Satisfaction Survey",
-    "expectations_survey": "Expectations Survey",
-    "columns": {
-      "title": "Title",
-      "question_count": "Question Count",
-      "response_count": "Response Count",
-      "created_date": "Creation Date",
-      "actions": "Actions"
-    },
-    "actions": {
-      "button_text": "Actions",
-      "view_results": "View Results",
-      "edit": "Edit",
-      "duplicate": "Duplicate",
-      "copy_to_other": "Copy to {{type}} Survey",
-      "delete": "Delete"
-    },
-    "ai_modal": {
-      "title": "AI {{type}} Survey Auto Generation",
-      "generating": "Analyzing course materials and generating survey...",
-      "question_count": "There are {{count}} generated questions. You can edit them as needed.",
-      "question_number": "Question {{number}}:",
-      "type": "Type",
-      "create_with_questions": "Create Survey with these Questions"
-    },
-    "delete_modal": {
-      "title": "Delete Survey",
-      "confirmation": "Are you sure you want to delete \"{{title}}\" survey? This action cannot be undone, and all response data will be deleted.",
-      "warning": "Warning:",
-      "response_count": "This survey has {{count}} responses."
-    },
-    "question_types": {
-      "single": "Single Choice",
-      "multiple": "Multiple Choice",
-      "text": "Text Response"
-    },
-    "errors": {
-      "graphql_query_error": "GraphQL query error:",
-      "load_courses_error": "Error loading course list:",
-      "load_surveys_error": "Error loading survey list:",
-      "invalid_response_format": "Response data doesn't match the expected format:",
-      "generate_survey_error": "Error generating survey:",
-      "copy_survey_error": "Error copying survey:",
-      "copy_survey_error_message": "An error occurred while copying the survey.",
-      "delete_survey_error": "Error deleting survey:",
-      "delete_survey_error_message": "An error occurred while deleting the survey."
-    },
-    "alerts": {
-      "copy_success": "Survey has been copied to {{type}} survey."
-    },
-    "dummy": {
-      "question1": "Please rate your overall expectations for this course.",
-      "option1_verylow": "Very Low",
-      "option1_low": "Low",
-      "option1_medium": "Medium",
-      "option1_high": "High",
-      "option1_veryhigh": "Very High",
-      "question2": "What is your main purpose for taking this course?",
-      "option2_1": "Work skills enhancement",
-      "option2_2": "Self-development",
-      "option2_3": "Promotion/career change preparation",
-      "option2_4": "Certification",
-      "option2_5": "Other",
-      "question3": "What content are you most interested in learning from this course?",
-      "question4": "What is your level of prior knowledge on this subject?",
-      "option4_1": "Beginner (No knowledge)",
-      "option4_2": "Basic (Familiar with basic concepts)",
-      "option4_3": "Intermediate (Some experience)",
-      "option4_4": "Expert (Professional experience in the field)"
-    },
-    "template": {
-      "overall_satisfaction": "How would you rate your overall satisfaction with this course {{period}}?",
-      "before": "before starting",
-      "after": "after completion",
-      "very_dissatisfied": "Very Dissatisfied",
-      "dissatisfied": "Dissatisfied",
-      "neutral": "Neutral",
-      "satisfied": "Satisfied",
-      "very_satisfied": "Very Satisfied",
-      "most_expected_part": "What part of the {{course}} course are you most looking forward to{{past}}?",
-      "beneficial": " found most beneficial",
-      "participation_purpose": "What is your main purpose for {{past}} this training? (Select all that apply)",
-      "participating": "participating in",
-      "participated": "having participated in",
-      "purpose_1": "Work skills enhancement",
-      "purpose_2": "Self-development",
-      "purpose_3": "Certification preparation",
-      "purpose_4": "Promotion/career change preparation",
-      "purpose_5": "Knowledge sharing within team",
-      "purpose_other": "Other",
-      "additional_comment": "Please provide any additional comments or requests regarding the training.",
-      "cloud_experience": "What is your level of experience with cloud technology?",
-      "experience_none": "None",
-      "experience_basic": "Beginner level",
-      "experience_intermediate": "Intermediate level",
-      "experience_advanced": "Advanced level",
-      "experience_expert": "Expert level",
-      "skill_improvement": "Do you think your practical skills have improved through this training?",
-      "strongly_disagree": "Strongly Disagree",
-      "disagree": "Disagree",
-      "agree": "Agree",
-      "strongly_agree": "Strongly Agree"
-    }
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "course_management": "Course Management",
+    "course_catalog": "Course Catalog",
+    "course_list": "Course List",
+    "instructor_tools": "Instructor Tools",
+    "assessments": "Assessments",
+    "quiz_management": "Quiz Management",
+    "survey_management": "Survey Management",
+    "analytics": "Analytics",
+    "reports": "Reports",
+    "insights": "Course Insights",
+    "comparison": "Comparison",
+    "admin": "Administration",
+    "admin_page": "Admin Page"
   },
-  "surveyCreator": {
-    "default_title": "{{course}} {{type}} Survey",
-    "course": "Course",
-    "default_description": "This survey is a tool to collect opinions and experiences throughout the learning process.",
-    "survey_info": "Survey Information",
-    "survey_title": "Survey Title",
-    "enter_survey_title": "Enter survey title",
-    "description": "Description",
-    "enter_survey_description": "Enter survey description to show to students",
-    "time_limit": "Time Limit (minutes)",
-    "required_response": "Required Survey",
-    "allow_anonymous": "Allow Anonymous Responses",
-    "shuffle_questions": "Shuffle Question Order",
-    "survey_questions": "Survey Questions ({{count}})",
-    "add_question": "Add Question",
-    "loading_questions": "Loading questions...",
-    "no_questions": "No questions",
-    "add_question_prompt": "Click the 'Add Question' button to add survey questions.",
-    "question_list": "Survey Question List",
-    "columns": {
-      "question": "Question",
-      "type": "Type",
-      "options": "Options",
-      "actions": "Actions"
-    },
-    "text_response": "Text Response",
-    "text_no_options": "Text response questions don't require options.",
-    "enter_options_per_line": "Enter each option on a new line",
-    "editable": "Editable",
-    "option_placeholder": "Option {{number}}",
-    "actions": {
-      "detailed_edit": "Detailed Edit"
-    },
-    "question": "Question",
-    "enter_question_content": "Enter question content",
-    "question_type": "Question Type",
-    "option_choices": "Option Choices",
-    "add_option": "Add Option",
-    "edit_question": "Edit Question",
-    "add_new_question": "Add New Question",
-    "save_question": "Save Question",
-    "cancel_and_return": "Cancel & Return",
-    "save_survey": "Save Survey",
-    "save_complete": "Survey Saved Successfully",
-    "return_to_management": "Return to Survey Management",
-    "save_success_message": "Survey has been successfully saved.",
-    "alerts": {
-      "enter_question": "Please enter question content.",
-      "enter_all_options": "Please enter all option choices.",
-      "min_questions": "At least one question is required."
-    },
-    "errors": {
-      "save_error": "Error saving survey:",
-      "save_error_message": "An error occurred while saving the survey. Please try again."
-    }
-  },
-  "admin": {
-    "title": "System Administration",
-    "description": "Manage system settings, courses, customers and instructors",
-    "tabs": {
-      "courses": "Course Management",
-      "customers": "Customer Management",
-      "instructors": "Instructor Management"
-    },
-    "common": {
-      "active": "Active",
-      "inactive": "Inactive",
-      "actions": "Actions",
-      "edit": "Edit",
-      "delete": "Delete",
-      "save": "Save",
-      "cancel": "Cancel",
-      "pagination": {
-        "next": "Next page",
-        "previous": "Previous page",
-        "page_label": "Go to page {pageNumber}"
-      }
-    },
-    "courses": {
-      "course_management": "Course Management",
-      "add_course": "Add Course",
-      "add_new_course": "Add New Course",
-      "edit_course": "Edit Course",
-      "delete_course": "Delete Course",
-      "no_courses": "No courses",
-      "add_new_course_desc": "Please add a new course.",
-      "search_placeholder": "Search courses...",
-      "search_aria_label": "Search courses",
-      "error_loading": "Error loading course list.",
-      "error_saving": "Error saving course.",
-      "error_deleting": "Error deleting course.",
-      "delete_confirm": "Are you sure you want to delete \"{title}\" course? This action cannot be undone.",
-      "currency": "won",
-      "column": {
-        "title": "Course Title",
-        "category": "Category",
-        "duration": "Duration (hours)",
-        "level": "Level",
-        "price": "Price",
-        "status": "Status"
-      },
-      "form": {
-        "title": "Course Title",
-        "category": "Category",
-        "description": "Description",
-        "duration": "Duration (hours)",
-        "level": "Level",
-        "price": "Price",
-        "published_date": "Published Date",
-        "active": "Active"
-      }
-    },
-    "course_detail": {
-      "loading": {
-        "title": "Loading Course",
-        "message": "Loading course details..."
-      },
-      "errors": {
-        "invalid_id": "Invalid course ID",
-        "not_found": "Course not found",
-        "load_error": "Failed to load course details",
-        "load_error_log": "Error loading course data:",
-        "load_failed": "Failed to load course",
-        "general": "An error occurred while loading the course"
-      },
-      "warnings": {
-        "unknown_type": "Unknown assessment type:"
-      },
-      "assessment_types": {
-        "pre_quiz": "Pre-Quiz",
-        "post_quiz": "Post-Quiz",
-        "survey": "Survey"
-      },
-      "status": {
-        "active": "Active",
-        "completed": "Completed",
-        "coming_soon": "Coming Soon",
-        "expired": "Expired"
-      },
-      "actions": {
-        "start": "Start",
-        "view": "View",
-        "start_assessment": "Start Assessment"
-      },
-      "alerts": {
-        "active_assessment": "Assessment Available",
-        "assessment_available": "You have an active {{type}} ({{name}}) to complete"
-      },
-      "tabs": {
-        "overview": "Overview",
-        "materials": "Course Materials",
-        "assessments": "Assessments",
-        "announcements": "Announcements"
-      },
-      "course_info": {
-        "instructor": "Instructor",
-        "start_date": "Start Date",
-        "end_date": "End Date",
-        "location": "Location",
-        "online": "Online",
-        "offline": "Offline",
-        "tags": "Tags"
-      },
-      "assessments": {
-        "title": "Course Assessments",
-        "empty": "No assessments available for this course",
-        "columns": {
-          "name": "Assessment Name",
-          "type": "Type",
-          "status": "Status",
-          "due_date": "Due Date",
-          "action": "Action"
-        }
-      },
-      "materials": {
-        "title": "Course Materials",
-        "empty": "No materials available for this course yet",
-        "sections": {
-          "lectures": "Lecture Materials",
-          "assignments": "Assignments",
-          "resources": "Additional Resources"
-        }
-      },
-      "announcements": {
-        "title": "Course Announcements",
-        "empty": "No announcements for this course",
-        "posted_on": "Posted on {{date}}"
-      },
-      "description": {
-        "title": "Course Description"
-      }
-    },
-    "dashboard": {
-      "stats": {
-        "active_sessions": "Active Sessions",
-        "total_students": "Total Students",
-        "completion_rate": "Completion Rate",
-        "quiz_completion": "Quiz Completion Rate",
-        "change": {
-          "week_up": "{{count}}% up this week",
-          "month_up": "{{count}}% up this month",
-          "quarter_up": "{{count}}% up this quarter",
-          "same": "No change"
-        }
-      },
-      "sections": {
-        "sessions": "Upcoming Sessions",
-        "quick_actions": "Quick Actions"
-      },
-      "sessions": {
-        "create_button": "Schedule Session",
-        "when": "When",
-        "participants": "Participants",
-        "preparation": "Preparation",
-        "registered_count": "{{count}} registered",
-        "preparation_ready": "Materials ready",
-        "preparation_needed": "Materials needed",
-        "live_badge": "LIVE NOW",
-        "actions": {
-          "join": "Join Session",
-          "edit": "Edit Session",
-          "materials": "View Materials"
-        },
-        "date": {
-          "today": "Today, {{start}} - {{end}}",
-          "tomorrow": "Tomorrow, {{start}} - {{end}}",
-          "live_now": "In progress now"
-        },
-        "courses": {
-          "practitioner": "AWS Cloud Practitioner Course",
-          "architect": "Solutions Architect Training",
-          "developer": "AWS Developer Workshop"
-        },
-        "descriptions": {
-          "practitioner": "Introduction to core AWS services and cloud fundamentals",
-          "architect": "Advanced architecture design patterns for AWS solutions",
-          "developer": "Development tools and practices for AWS applications"
-        },
-        "empty": {
-          "title": "No upcoming sessions",
-          "description": "Create a new teaching session to get started"
-        }
-      },
-      "quick_actions": {
-        "go": "Go",
-        "create_course": {
-          "title": "Create Course",
-          "description": "Design a new course or training module"
-        },
-        "generate_quiz": {
-          "title": "Generate Quiz",
-          "description": "Create assessments with AI assistance"
-        },
-        "view_reports": {
-          "title": "View Reports",
-          "description": "Access analytics and student progress"
-        },
-        "manage_materials": {
-          "title": "Manage Materials",
-          "description": "Organize course materials and resources"
-        }
-      },
-      "charts": {
-        "course_completion": "Course Completion Percentage",
-        "participation": {
-          "active": "Active Students",
-          "at_risk": "At Risk",
-          "inactive": "Inactive"
-        },
-        "courses": {
-          "cloud_practitioner": "Cloud Practitioner",
-          "solutions_architect": "Solutions Architect",
-          "developer": "Developer",
-          "devops": "DevOps Engineer",
-          "security": "Security Specialist"
-        },
-        "filter_label": "Filter",
-        "filter_placeholder": "Filter data",
-        "filter_selected": "Selected filter",
-        "legend": "Chart legend",
-        "bar_chart_description": "Bar chart",
-        "pie_chart_description": "Pie chart",
-        "x_axis": "X axis",
-        "y_axis": "Y axis",
-        "details_value": "Value",
-        "details_percentage": "Percentage",
-        "segment_description": "Chart segment"
-      }
-    },
-    "customers": {
-      "customer_management": "Customer Management",
-      "add_customer": "Add Customer",
-      "add_new_customer": "Add New Customer",
-      "edit_customer": "Edit Customer",
-      "delete_customer": "Delete Customer",
-      "no_customers": "No customers",
-      "add_new_customer_desc": "Please add a new customer.",
-      "search_placeholder": "Search customers...",
-      "search_aria_label": "Search customers",
-      "error_loading": "Error loading customer list.",
-      "error_saving": "Error saving customer.",
-      "error_deleting": "Error deleting customer.",
-      "delete_confirm": "Are you sure you want to delete \"{name}\" customer? This action cannot be undone.",
-      "column": {
-        "company_name": "Company Name",
-        "contact_person": "Contact Person",
-        "email": "Email",
-        "phone": "Phone",
-        "status": "Status",
-        "join_date": "Join Date"
-      },
-      "form": {
-        "company_name": "Company Name",
-        "contact_person": "Contact Person",
-        "email": "Email",
-        "phone": "Phone",
-        "address": "Address",
-        "status": "Status",
-        "join_date": "Join Date"
-      }
-    },
-    "instructors": {
-      "instructor_management": "Instructor Management",
-      "add_instructor": "Add Instructor",
-      "add_new_instructor": "Add New Instructor",
-      "edit_instructor": "Edit Instructor",
-      "delete_instructor": "Delete Instructor",
-      "no_instructors": "No instructors",
-      "add_new_instructor_desc": "Please add a new instructor.",
-      "search_placeholder": "Search instructors...",
-      "search_aria_label": "Search instructors",
-      "error_loading": "Error loading instructor list.",
-      "error_loading_cognito": "Error loading Cognito users.",
-      "error_saving": "Error saving instructor.",
-      "error_deleting": "Error deleting instructor.",
-      "delete_confirm": "Are you sure you want to delete \"{name}\" instructor? This action cannot be undone.",
-      "log": {
-        "load_result": "Instructor list result:",
-        "update_result": "Instructor update result:",
-        "create_result": "Instructor create result:",
-        "delete_result": "Instructor delete result:"
-      },
-      "dummy_data": {
-        "instructor1": "Instructor 1",
-        "instructor2": "Instructor 2",
-        "instructor3": "Instructor 3"
-      },
-      "column": {
-        "name": "Name",
-        "email": "Email",
-        "phone": "Phone",
-        "specialization": "Specialization",
-        "status": "Status",
-        "join_date": "Join Date"
-      },
-      "form": {
-        "cognito_user": "Cognito User",
-        "select_user": "Select Cognito user",
-        "loading_users": "Loading users...",
-        "no_users": "No available Cognito users",
-        "name": "Name",
-        "email": "Email",
-        "phone": "Phone",
-        "phone_placeholder": "+82-10-1234-5678",
-        "specialization": "Specialization",
-        "bio": "Bio",
-        "status": "Status",
-        "join_date": "Join Date"
-      }
-    }
+  "role": {
+    "admin": "Administrator",
+    "instructor": "Instructor",
+    "student": "Student"
   },
   "course": {
-    "filter": {
-      "all_categories": "All categories",
-      "all_levels": "All levels",
-      "find_courses": "Find courses",
-      "search_aria": "Filter courses"
-    },
-    "list": {
-      "no_courses_found": "No courses match your search criteria",
-      "clear_filters": "Clear Filters"
-    },
+    "create_course": "Create Course",
+    "detail": "Course Detail",
+    "catalog": "Course Catalog",
     "level": {
       "foundational": "Foundational",
       "intermediate": "Intermediate",
@@ -659,471 +72,198 @@
       "machine_learning": "Machine Learning",
       "devops": "DevOps",
       "networking": "Networking"
-    },
-    "location": {
-      "online": "Online",
-      "hybrid": "Hybrid",
-      "in_person": "In-Person"
     }
   },
   "courses": {
-    "title": "Courses",
-    "description": "List of courses you are managing",
-    "create_button": "Create New Course",
+    "management_title": "Course Management",
+    "management_description": "Manage your courses and check enrollment statistics",
+    "catalog_title": "Course Catalog",
+    "catalog_description": "Browse all available course templates",
+    "catalog_management": "Course Catalog Management",
+    "catalog_admin_description": "Manage course templates and their assessments",
+    "management_settings": "Settings",
+    "view_stats": "View Stats",
+    "manage": "Manage",
+    "view_student": "Student View",
+    "enroll": "Enroll",
+    "create_button": "Create Course",
+    "create_course": "Create Course",
+    "create_assessment": "Create Assessment",
+    "manage_quizzes": "Manage Quizzes",
+    "manage_surveys": "Manage Surveys",
+    "assessment_stats": "Assessment Statistics",
+    "pre_quiz_stats": "Pre-Quiz Statistics",
+    "post_quiz_stats": "Post-Quiz Statistics",
+    "survey_stats": "Survey Statistics",
+    "completed": "completed",
+    "no_assessment_data": "No assessment data available yet",
+    "select_course_prompt": "Please select a course to view assessment statistics",
     "loading": "Loading courses...",
-    "errors": {
-      "load_error": "Course load error:",
-      "load_message": "Failed to load course list"
+    "tabs": {
+      "catalog": "Course Catalog",
+      "assessments": "Assessments"
     },
-    "no_description": "No description available",
     "details": "Course Details",
     "level": "Level",
     "category": "Category",
     "duration": "Duration",
-    "price": "Price",
+    "version": "Version",
+    "delivery": "Delivery Method",
     "hours": "hours",
-    "currency": "USD",
-    "free": "Free",
     "not_specified": "Not specified",
-    "manage": "Manage",
-    "view_student": "Student View",
+    "no_description": "No description available",
     "empty": {
       "title": "No courses available",
       "description": "Click the button below to create your first course."
+    },
+    "errors": {
+      "timeout": "Request timed out. Please try again.",
+      "authentication": "Authentication error. Please sign in again.",
+      "load_message": "Failed to load courses. Please try again later."
     }
   },
-  "role": {
-    "admin": "Administrator",
-    "instructor": "Instructor",
-    "student": "Student"
-  },
-  "quiz_management": {
-    "title": "Quiz Management",
-    "course_selection": "Select Course",
-    "course_placeholder": "Select a course",
-    "quiz_type": "Quiz Type",
-    "select_quiz_type": "Select quiz type",
-    "pre_quiz": "Pre-Quiz",
-    "post_quiz": "Post-Quiz",
-    "sync_with_pre_quiz": "Configure post-quiz identical to pre-quiz",
-    "existing_quizzes": "Existing Quizzes",
-    "existing_quiz_description": "{{type}} quiz list for the selected course",
-    "question_number": "Question {{number}}",
-    "correct_answer": "Correct Answer",
+  "course_detail": {
+    "title": "Course Details",
     "errors": {
-      "graphql_query": "GraphQL query error:",
-      "course_load": "Error loading course list:",
-      "response_format": "Response data doesn't match the expected format:",
-      "quiz_generation": "Error generating quiz:"
-    },
-    "empty_states": {
-      "no_courses": "No Courses Available",
-      "register_course": "There are no available courses. Please register a course first.",
-      "no_quizzes": "No Quizzes Available",
-      "create_new_quiz": "There are no quizzes for this course and type. Create a new quiz."
-    },
-    "actions": {
-      "create_quiz": "Create Quiz",
-      "ai_generate": "Generate with AI",
-      "copy_from_pre": "Copy from Pre-Quiz",
-      "view": "View",
-      "edit": "Edit",
-      "delete": "Delete",
-      "cancel": "Cancel",
-      "create_with_questions": "Create Quiz with these Questions"
-    },
-    "columns": {
-      "title": "Title",
-      "question_count": "Question Count",
-      "created_at": "Created Date",
-      "actions": "Actions"
+      "invalid_id": "Invalid course ID",
+      "not_found": "Course not found",
+      "fetch_failed": "Failed to fetch course details",
+      "authentication": "Authentication error. Please sign in again.",
+      "general": "An error occurred while loading the course"
     },
     "loading": {
-      "courses": "Loading courses...",
-      "quizzes": "Loading quizzes..."
+      "message": "Loading course details..."
     },
-    "modal": {
-      "ai_generation": "AI {{type}} Quiz Generation",
-      "generating": "Analyzing course materials and generating quiz...",
-      "generated_count": "There are {{count}} generated questions. You can edit them as needed."
+    "fields": {
+      "status": "Status",
+      "date_range": "Date Range",
+      "location": "Location",
+      "customer": "Customer",
+      "instructor": "Instructor",
+      "course_id": "Course ID"
+    },
+    "no_description": "No description available",
+    "sections": {
+      "description": "Course Description",
+      "assessments": "Assessments"
+    },
+    "no_assessments": "No assessments available for this course",
+    "no_assessments_description": "There are no assessment items associated with this course yet.",
+    "actions": {
+      "edit": "Edit Course",
+      "start": "Start",
+      "view": "View"
     }
   },
-  "quiz_creator": {
-    "default_course": "Course",
-    "pre_quiz": "Pre-Quiz",
-    "post_quiz": "Post-Quiz",
-    "default_description": "This quiz is designed to assess knowledge before/after the course.",
+  "course_creation": {
+    "title": "Create New Course",
+    "description": "Fill in the details below to create a new course instance",
+    "create_button": "Create Course",
     "sections": {
-      "quiz_info": "Quiz Information",
-      "questions_count": "Quiz Questions ({{count}})",
-      "question_list": "Question List"
+      "basic_info": "Basic Information",
+      "assessment": "Assessment Options"
     },
-    "meta": {
-      "title_label": "Quiz Title",
-      "title_placeholder": "Enter quiz title",
-      "description_label": "Description",
-      "description_placeholder": "Enter quiz description to show to students",
-      "time_limit": "Time Limit (minutes)",
-      "pass_score": "Pass Score (%)",
-      "shuffle_questions": "Shuffle Questions",
-      "shuffle_options": "Shuffle Options",
-      "show_feedback": "Show Immediate Feedback"
+    "fields": {
+      "lms_id": "LMS ID",
+      "course_name": "Course Name",
+      "instructor_name": "Instructor",
+      "customer_name": "Customer",
+      "direct_input": "Direct Input",
+      "location": "Location",
+      "virtual_training": "Virtual Training",
+      "start_date": "Start Date",
+      "duration": "Duration (days)",
+      "lab_count": "Lab Count",
+      "student_count": "Student Count"
     },
-    "labels": {
+    "placeholders": {
+      "lms_id": "Enter LMS ID (optional)",
+      "select_course": "Select course template",
+      "select_instructor": "Select instructor",
+      "select_customer": "Select customer",
+      "customer_name_direct": "Enter customer name",
+      "location": "Enter training location"
+    },
+    "aria": {
+      "open_calendar": "Open calendar",
+      "open_calendar_selected": "Open calendar, selected date is {date}"
+    },
+    "descriptions": {
+      "select_course": "Select a course template from the catalog"
+    },
+    "constraints": {
+      "direct_input": "Enter customer name directly",
+      "select_from_list": "Select customer from the list"
+    },
+    "assessments": {
+      "pre_quiz": "Pre-Assessment Quiz",
+      "post_quiz": "Post-Assessment Quiz",
+      "survey": "Feedback Survey",
+      "include_pre_quiz": "Include Pre-Assessment Quiz",
+      "include_post_quiz": "Include Post-Assessment Quiz",
+      "include_survey": "Include Feedback Survey",
+      "select_pre_quiz": "Select Pre-Quiz",
+      "select_post_quiz": "Select Post-Quiz",
+      "select_survey": "Select Survey",
+      "question_count": "{count} questions",
+      "preview_pre_quiz": "Preview Pre-Quiz",
+      "preview_post_quiz": "Preview Post-Quiz",
+      "preview_survey": "Preview Survey",
+      "no_pre_quiz": "No pre-quiz templates available",
+      "no_post_quiz": "No post-quiz templates available",
+      "no_survey": "No survey templates available"
+    },
+    "previews": {
+      "pre_quiz_title": "Pre-Quiz Preview",
+      "post_quiz_title": "Post-Quiz Preview",
+      "survey_title": "Survey Preview",
+      "question_number": "Question #",
       "question": "Question",
       "options": "Options",
       "correct_answer": "Correct Answer",
-      "correct": "Correct"
-    },
-    "placeholders": {
-      "question": "Enter your question here",
-      "option": "Option {{number}}"
-    },
-    "question_number": "Question {{number}}",
-    "hints": {
-      "click_to_edit": "Click on a card to edit the question"
-    },
-    "empty_states": {
-      "no_questions": "No Questions",
-      "add_instructions": "Click the 'Add Question' button to create quiz questions"
-    },
-    "validation": {
-      "question_required": "Please enter the question content",
-      "options_required": "Please fill in all option choices",
-      "min_question_required": "At least one question is required to save the quiz",
-      "course_required": "Please select a course before saving the quiz"
-    },
-    "errors": {
-      "save_error": "Error saving quiz:",
-      "save_error_message": "An error occurred while saving the quiz. Please try again.",
-      "course_load": "Error loading course list:",
-      "course_load_message": "Failed to load courses. Please try again later."
-    },
-    "actions": {
-      "add_question": "Add Question",
-      "add_option": "Add Option",
-      "save_question": "Save Question",
-      "cancel": "Cancel",
-      "cancel_return": "Cancel & Return",
-      "save_quiz": "Save Quiz",
-      "return_to_management": "Return to Quiz Management"
-    },
-    "modal": {
-      "edit_question": "Edit Question",
-      "add_question": "Add New Question",
-      "save_success": "Quiz Saved Successfully"
-    },
-    "messages": {
-      "save_success": "Your quiz has been successfully saved."
-    },
-    "loading": {
-      "questions": "Loading questions...",
-      "courses": "Loading courses..."
-    },
-    "course_selection": {
-      "title": "Course Selection",
-      "course": "Select Course",
-      "placeholder": "Select a course",
-      "no_courses": "No Courses Available",
-      "create_course": "No courses are available. Please create a course first."
-    },
-    "quiz_type_selection": {
-      "label": "Quiz Type"
-    }
-  },
-  "dashboard": {
-    "stats": {
-      "active_sessions": "Active Sessions",
-      "total_students": "Total Students",
-      "completion_rate": "Completion Rate",
-      "quiz_completion": "Quiz Completion Rate",
-      "change": {
-        "week_up": "{{count}}% up this week",
-        "month_up": "{{count}}% up this month",
-        "quarter_up": "{{count}}% up this quarter",
-        "same": "No change"
-      }
-    },
-    "sections": {
-      "sessions": "Upcoming Sessions",
-      "quick_actions": "Quick Actions"
-    },
-    "sessions": {
-      "create_button": "Schedule Session",
-      "when": "When",
-      "participants": "Participants",
-      "preparation": "Preparation",
-      "registered_count": "{{count}} registered",
-      "preparation_ready": "Materials ready",
-      "preparation_needed": "Materials needed",
-      "live_badge": "LIVE NOW",
-      "actions": {
-        "join": "Join Session",
-        "edit": "Edit Session",
-        "materials": "View Materials"
-      },
-      "date": {
-        "today": "Today, {{start}} - {{end}}",
-        "tomorrow": "Tomorrow, {{start}} - {{end}}",
-        "live_now": "In progress now"
-      },
-      "courses": {
-        "practitioner": "AWS Cloud Practitioner Course",
-        "architect": "Solutions Architect Training",
-        "developer": "AWS Developer Workshop"
-      },
-      "descriptions": {
-        "practitioner": "Introduction to core AWS services and cloud fundamentals",
-        "architect": "Advanced architecture design patterns for AWS solutions",
-        "developer": "Development tools and practices for AWS applications"
-      },
-      "empty": {
-        "title": "No upcoming sessions",
-        "description": "Create a new teaching session to get started"
-      }
-    },
-    "quick_actions": {
-      "go": "Go",
-      "create_course": {
-        "title": "Create Course",
-        "description": "Design a new course or training module"
-      },
-      "generate_quiz": {
-        "title": "Generate Quiz",
-        "description": "Create assessments with AI assistance"
-      },
-      "view_reports": {
-        "title": "View Reports",
-        "description": "Access analytics and student progress"
-      },
-      "manage_materials": {
-        "title": "Manage Materials",
-        "description": "Organize course materials and resources"
-      }
-    },
-    "charts": {
-      "course_completion": "Course Completion Percentage",
-      "participation": {
-        "active": "Active Students",
-        "at_risk": "At Risk",
-        "inactive": "Inactive"
-      },
-      "courses": {
-        "cloud_practitioner": "Cloud Practitioner",
-        "solutions_architect": "Solutions Architect",
-        "developer": "Developer",
-        "devops": "DevOps Engineer",
-        "security": "Security Specialist"
-      },
-      "filter_label": "Filter",
-      "filter_placeholder": "Filter data",
-      "filter_selected": "Selected filter",
-      "legend": "Chart legend",
-      "bar_chart_description": "Bar chart",
-      "pie_chart_description": "Pie chart",
-      "x_axis": "X axis",
-      "y_axis": "Y axis",
-      "details_value": "Value",
-      "details_percentage": "Percentage",
-      "segment_description": "Chart segment"
-    }
-  },
-  "reports": {
-    "title": "Report Generator",
-    "report_settings": "Report Settings",
-    "select_course": "Select Course",
-    "course_placeholder": "Select a course",
-    "loading_courses": "Loading courses...",
-    "no_courses": {
-      "title": "No Courses Available",
-      "message": "There are no courses available. Please add courses first."
-    },
-    "report_type": "Report Type",
-    "start_date": "Start Date",
-    "end_date": "End Date",
-    "format": "Report Format",
-    "formats": {
-      "html": "HTML"
-    },
-    "buttons": {
-      "preview": "Preview",
-      "generate": "Generate Report",
-      "download": "Download",
-      "delete": "Delete"
-    },
-    "tabs": {
-      "generate": "Generate",
-      "preview": "Preview",
-      "generated": "Generated Reports"
-    },
-    "preview_title": "Report Preview",
-    "preview_select_course": {
-      "title": "No Course Selected",
-      "message": "Please select a course to preview a report."
-    },
-    "loading_data": "Loading preview data...",
-    "preview_subtitle": "Report Preview",
-    "quiz_comparison": "Pre/Post Quiz Comparison",
-    "survey_analysis": "Survey Response Analysis",
-    "pre_quiz": "Pre-Quiz",
-    "post_quiz": "Post-Quiz",
-    "average_improvement": "Average Improvement",
-    "responses": "Responses",
-    "percentage": "Percentage",
-    "recommendation_score": "Recommendation Score",
-    "top_opinions": "Top Student Comments",
-    "generated_reports": "Generated Reports",
-    "loading_reports": "Loading reports...",
-    "no_reports": {
-      "title": "No Reports",
-      "message": "No reports have been generated yet."
-    },
-    "columns": {
-      "title": "Title",
-      "type": "Type",
-      "course": "Course",
-      "format": "Format",
-      "status": "Status",
-      "created_date": "Created Date",
-      "actions": "Actions"
-    },
-    "status": {
-      "completed": "Completed",
-      "in_progress": "In Progress",
-      "failed": "Failed"
-    },
-    "types": {
-      "quiz_comparison": {
-        "title": "Quiz Comparison",
-        "description": "Compare pre and post quiz results to measure learning progress"
-      },
-      "survey_analysis": {
-        "title": "Survey Analysis",
-        "description": "Analyze student feedback and satisfaction metrics"
-      },
-      "comprehensive": {
-        "title": "Comprehensive Report",
-        "description": "Complete course analytics including all assessment metrics"
-      },
-      "attendance": {
-        "title": "Attendance Report",
-        "description": "Track student participation and engagement statistics"
-      }
-    },
-    "preview": {
-      "question": "Question {{number}}",
-      "satisfaction": {
-        "very_high": "Very Satisfied",
-        "high": "Satisfied",
-        "neutral": "Neutral",
-        "low": "Dissatisfied",
-        "very_low": "Very Dissatisfied"
-      },
-      "comment1": "The hands-on exercises were very helpful for understanding the concepts.",
-      "comment2": "I'd like more time for the practical components of the course.",
-      "comment3": "The instructor was knowledgeable and explained complex topics clearly."
-    },
-    "errors": {
-      "course_load": "Error loading course list:",
-      "course_load_message": "Failed to load courses. Please try again later.",
-      "report_load": "Error loading report list:",
-      "report_load_message": "Failed to load reports. Please try again later.",
-      "preview_load": "Error loading preview data:",
-      "preview_load_message": "Failed to generate preview. Please try again.",
-      "generation": "Error generating report:",
-      "generation_message": "Failed to generate report. Please try again later.",
-      "delete": "Error deleting report:",
-      "delete_message": "Failed to delete report. Please try again.",
-      "select_course": "Please select a course before generating a report."
-    },
-    "alerts": {
-      "generation_started": "Report generation has started. It will appear in your list when complete.",
-      "report_created": "Report has been successfully created.",
-      "no_download_url": "Download link not available for this report.",
-      "confirm_delete": "Are you sure you want to delete this report? This action cannot be undone."
-    }
-  },
-  "quiz_creator": {
-    "default_course": "Course",
-    "pre_quiz": "Pre-Assessment Quiz",
-    "post_quiz": "Post-Assessment Quiz",
-    "default_description": "This quiz will assess your knowledge on the subject matter.",
-    "sections": {
-      "quiz_info": "Quiz Information",
-      "questions_count": "Questions ({{count}})",
-      "question_list": "Question List"
-    },
-    "meta": {
-      "title_label": "Quiz Title",
-      "title_placeholder": "Enter quiz title",
-      "description_label": "Quiz Description",
-      "description_placeholder": "Enter a description for this quiz",
-      "time_limit": "Time Limit (minutes)",
-      "pass_score": "Passing Score (%)",
-      "shuffle_questions": "Shuffle Questions",
-      "shuffle_options": "Shuffle Options",
-      "show_feedback": "Show Feedback After Quiz"
-    },
-    "course_selection": {
-      "title": "Course Selection",
-      "course": "Select a Course",
-      "placeholder": "Select a course",
-      "no_courses": "No courses available",
-      "create_course": "Please create a course first in the course management"
-    },
-    "quiz_type_selection": {
-      "label": "Quiz Type"
-    },
-    "actions": {
-      "add_question": "Add Question",
-      "add_option": "Add Option",
-      "save_question": "Save Question",
-      "cancel": "Cancel",
-      "cancel_return": "Cancel and Return",
-      "save_quiz": "Save Quiz",
-      "return_to_management": "Return to Quiz Management"
-    },
-    "labels": {
-      "question": "Question",
-      "options": "Options",
-      "correct": "Correct",
-      "correct_answer": "Correct Answer"
-    },
-    "placeholders": {
-      "question": "Enter your question here",
-      "option": "Option {{number}}"
-    },
-    "modal": {
-      "edit_question": "Edit Question",
-      "add_question": "Add Question",
-      "save_success": "Quiz Saved Successfully"
-    },
-    "validation": {
-      "question_required": "Question text is required",
-      "options_required": "All options must have values",
-      "min_question_required": "Quiz must have at least one question",
-      "course_required": "Please select a course first"
-    },
-    "empty_states": {
-      "no_questions": "No questions added",
-      "add_instructions": "Click the 'Add Question' button to create your first question"
-    },
-    "hints": {
-      "click_to_edit": "Click on a question to edit"
-    },
-    "question_number": "Question {{number}}",
-    "messages": {
-      "save_success": "Your quiz has been saved successfully. You can now return to the quiz management page."
+      "no_questions": "No questions available",
+      "no_questions_description": "This quiz template has no questions.",
+      "load_failed": "Failed to load preview questions."
     },
     "loading": {
       "courses": "Loading courses...",
+      "instructors": "Loading instructors...",
+      "customers": "Loading customers...",
+      "quizzes": "Loading quizzes...",
+      "surveys": "Loading surveys...",
       "questions": "Loading questions..."
     },
     "errors": {
-      "save_error": "Error saving quiz",
-      "save_error_message": "There was a problem saving your quiz. Please try again.",
-      "course_load": "Error loading courses",
-      "course_load_message": "There was a problem loading courses. Please refresh the page or try again later."
+      "required_fields": "Please fill all required fields",
+      "template_load": "Error loading course templates: ",
+      "instructor_load": "Error loading instructors: ",
+      "customer_load": "Error loading customers: ",
+      "assessment_load": "Error loading assessments: ",
+      "preview_load": "Error loading preview: ",
+      "creation_failed": "Error creating course: ",
+      "creation_message": "Failed to create course. Please check your inputs and try again."
+    },
+    "success": {
+      "header": "Course Created Successfully",
+      "message": "The course has been created. You will be redirected to the course management page."
+    },
+    "logs": {
+      "create_data": "Creating course with data: "
     }
+  },
+  "amplify": {
+    "errors": {
+      "model_not_found": "Model '{modelName}' not found in client schema",
+      "query_failed": "Query failed for model '{modelName}'",
+      "api_connection": "Cannot connect to API. Please check your connection",
+      "unauthorized": "User is not authorized to perform this operation"
+    }
+  },
+  "assessment": {
+    "pre_quiz": "Pre-Quiz",
+    "post_quiz": "Post-Quiz",
+    "survey": "Survey",
+    "create_quiz": "Create Quiz",
+    "create_survey": "Create Survey"
   }
 }

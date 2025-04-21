@@ -284,7 +284,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
                   <SpaceBetween size="xs">
                     <div>{t('courses.level')}: {item.level || t('courses.not_specified')}</div>
                     <div>{t('courses.duration')}: {item.duration ? `\${item.duration} \${t('courses.hours')}` : t('courses.not_specified')}</div>
-                    {item.category && <div>{t('courses.category')}: {item.category}</div>}
                     {item.deliveryMethod && <div>{t('courses.delivery')}: {item.deliveryMethod}</div>}
                     {item.version && <div>{t('courses.version')}: {item.version}</div>}
                   </SpaceBetween>

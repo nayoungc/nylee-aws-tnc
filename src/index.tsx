@@ -8,7 +8,8 @@ import './i18n';
 
 // Amplify Gen 2 설정 방식으로 변경
 // aws-exports.js 대신 amplify_outputs.json 사용
-import outputs from '../amplify_outputs.json';
+//import outputs from '../amplify_outputs.json';
+import awsExports from './aws-exports';
 
 // GraphQL 스키마 정보 요청을 위한 쿼리
 const introspectionQuery = `
@@ -36,7 +37,8 @@ const introspectionQuery = `
 console.log('Amplify 설정 적용 시작');
 try {
   // Gen 2 방식으로 설정
-  Amplify.configure(outputs);
+  //Amplify.configure(outputs);
+  Amplify.configure(awsExports); 
   console.log('Amplify Gen 2 설정 완료', Amplify.getConfig());
 } catch (error) {
   console.error('Amplify 설정 실패:', error);

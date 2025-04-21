@@ -3,7 +3,9 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import MainLayout from '../../../layouts/MainLayout';
+import MainLayout from '@layouts/MainLayout';
+import { generateClient, GraphQLResult } from 'aws-amplify/api';
+
 import { 
   Container, 
   Header, 
@@ -96,23 +98,58 @@ const CourseDetail: React.FC = () => {
       try {
         setLoading(true);
         
-        // Amplify Gen 2 모델 API 직접 사용
-        const { data, errors } = await client.models.Course.get({ 
-          courseId: courseId
-        });
-      
-        if (errors && errors.length > 0) {
-          console.error('GraphQL errors:', errors);
-          throw new Error(tString('course_detail.errors.fetch_failed'));
-        }
-      
-        if (!data) {
-          setError(t('course_detail.errors.not_found'));
-          return;
+        // 변수를 이 스코프에서 선언하여 접근 가능하게 만듦
+        let courseData = null;
+        
+        try {
+          const result = await client.graphql({
+            query: `
+              query GetCourse(\$courseId: ID!) {
+                getCourse(courseId: \$courseId) {
+                  courseId
+                  title
+                  description
+                  status
+                  startDate
+                  endDate
+                  location
+                  customerId
+                  customerName
+                  instructor
+                  assessments {
+                    items {
+                      id
+                      name
+                      type
+                      status
+                    }
+                  }
+                }
+              }
+            `,
+            variables: { courseId }
+          }) as any; // GraphQLResult 대신 any 사용
+          
+          // 결과 처리
+          courseData = result.data?.getCourse;
+          const errors = result.errors;
+          
+          if (errors) {
+            console.error("데이터를 가져오는 중 오류 발생:", errors);
+            throw new Error(errors.map((e: any) => e.message).join(', '));
+          } else if (courseData) {
+            // 데이터 처리
+            console.log("가져온 과정 데이터:", courseData);
+          } else {
+            throw new Error("과정을 찾을 수 없습니다");
+          }
+        } catch (apiError) {
+          console.error("API 호출 중 예외 발생:", apiError);
+          throw apiError; // 바깥쪽 catch 블록으로 오류 전파
         }
         
-        // 데이터 설정
-        setCourse(data);
+        // 이제 courseData 변수는 이 스코프에서 접근 가능
+        setCourse(courseData);
         
       } catch (error: any) {
         console.error('Error fetching course:', error);
@@ -165,7 +202,7 @@ const CourseDetail: React.FC = () => {
         setLoading(false);
       }
     }
-
+  
     fetchCourseData();
   }, [courseId, t]);
 

@@ -20,10 +20,10 @@ import CoursesList from './pages/instructor/courses/CoursesList';
 import CourseCreate from './pages/instructor/courses/CourseCreate';
 import CourseDetail from './pages/instructor/courses/CourseDetail';
 import CourseCatalog from './pages/instructor/courses/CourseCatalog';
-import QuizManagement from './pages/instructor/QuizManagement';
-import QuizCreator from './pages/instructor/QuizCreator';
-import SurveyManagement from './pages/instructor/SurveyManagement';
-import SurveyCreator from './pages/instructor/SurveyCreator';
+import QuizList from './pages/instructor/quizizz/QuizList';
+import QuizCreate from './pages/instructor/quizizz/QuizCreate';
+import SurveyManagement from './pages/instructor/surveys/SurveyList';
+import SurveyCreator from './pages/instructor/surveys/SurveyCreate';
 import ReportGenerator from './pages/instructor/ReportGenerator';
 import AdminPage from './pages/admin/AdminPage';
 import Analytics from './pages/instructor/Analytics';
@@ -210,7 +210,7 @@ const AppRoutes: React.FC = () => {
           <Route path="quiz" element={
             <InstructorRoute>
               <MainLayout title={tString('nav.quiz_management')}>
-                <QuizManagement />
+                <QuizList />
               </MainLayout>
             </InstructorRoute>
           } />
@@ -218,7 +218,7 @@ const AppRoutes: React.FC = () => {
           <Route path="quiz-creator" element={
             <InstructorRoute>
               <MainLayout title={tString('assessment.create_quiz')}>
-                <QuizCreator />
+                <QuizCreate />
               </MainLayout>
             </InstructorRoute>
           } />

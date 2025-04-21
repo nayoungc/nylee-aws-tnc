@@ -126,7 +126,7 @@ const CourseCatalogPage: React.FC = () => {
                 </Header>
               }
             >
-              {assessmentStats[selectedCourse.catalogId] ? (
+              {assessmentStats && selectedCourse.catalogId && assessmentStats[selectedCourse.catalogId] ? (
                 <ColumnLayout columns={3}>
                   <Box variant="awsui-key-label">
                     <h3>{t('courses.pre_quiz_stats')}</h3>

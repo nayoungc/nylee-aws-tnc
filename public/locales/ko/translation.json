@@ -4,648 +4,61 @@
   },
   "auth": {
     "sign_in": "로그인",
-    "sign_up": "회원가입",
     "sign_out": "로그아웃",
-    "username": "사용자 이름",
-    "email": "이메일",
-    "password": "비밀번호",
-    "confirm_password": "비밀번호 확인",
-    "confirmation_code": "인증 코드",
-    "enter_confirmation_code": "인증 코드 입력",
-    "confirm_signup": "가입 인증",
-    "confirmation_code_sent": "인증 코드가 {{email}}로 전송되었습니다",
-    "confirm": "인증",
-    "no_account": "계정이 없으신가요?",
-    "have_account": "이미 계정이 있으신가요?",
-    "login_error_generic": "로그인에 실패했습니다. 자격 증명을 확인해주세요.",
-    "user_not_exist": "사용자가 존재하지 않습니다.",
-    "password_mismatch": "비밀번호가 일치하지 않습니다",
-    "signup_error": "회원가입에 실패했습니다. 다시 시도해주세요.",
-    "confirm_error": "인증에 실패했습니다. 다시 시도해주세요.",
-    "fields_required": "모든 항목을 입력해주세요",
-    "incorrect_password": "잘못된 비밀번호입니다",
-    "account_not_verified": "계정 인증이 필요합니다",
-    "forgot_password": "비밀번호 찾기",
-    "send_code": "인증 코드 전송",
-    "reset_password": "비밀번호 재설정",
-    "new_password": "새 비밀번호",
-    "username_description": "가입 시 사용한 사용자 이름 또는 이메일을 입력하세요",
-    "back_to_signin": "로그인으로 돌아가기",
-    "back_to_send_code": "코드 다시 요청하기",
-    "code_sent": "인증 코드가 등록된 연락처로 전송되었습니다",
-    "code_sent_to": "인증 코드가 {destination}(으)로 전송되었습니다",
-    "reset_code_sent": "비밀번호 재설정 코드가 이메일로 전송되었습니다",
-    "password_reset_success": "비밀번호가 성공적으로 재설정되었습니다",
-    "password_hint": "8자 이상의 대문자, 소문자, 숫자, 특수문자 조합",
-    "reset_request_error": "비밀번호 재설정 요청 중 오류가 발생했습니다",
-    "reset_error": "비밀번호 재설정 중 오류가 발생했습니다",
-    "code_required": "인증 코드를 입력하세요",
-    "new_password_required": "새 비밀번호를 입력하세요",
-    "password_requirements": "비밀번호는 최소 8자 이상이며, 대문자, 소문자, 숫자, 특수문자를 포함해야 합니다",
-    "invalid_parameter": "입력값이 올바르지 않습니다",
-    "invalid_email": "올바른 이메일 형식이 아닙니다",
-    "invalid_phone": "올바른 형식의 전화번호를 입력하세요 (+국가코드포함)",
-    "attempt_limit": "요청 시도 횟수가 초과되었습니다. 잠시 후 다시 시도해주세요",
-    "username_exists": "이미 사용 중인 사용자 이름입니다",
-    "invalid_password": "비밀번호가 요구사항을 충족하지 않습니다",
-    "username_required": "사용자 이름을 입력하세요",
-    "email_required": "이메일을 입력하세요",
-    "password_required": "비밀번호를 입력하세요",
-    "phone_required": "전화번호를 입력하세요",
-    "phone_format": "국제 형식으로 입력: +82101234567",
-    "include_phone": "전화번호 포함",
-    "code_mismatch": "잘못된 인증 코드입니다",
-    "code_expired": "인증 코드가 만료되었습니다",
-    "phone_number": "전화번호",
-    "session_expired": "세션이 만료되었습니다. 다시 로그인해주세요.",
-    "signup_success": "회원가입이 완료되었습니다. 로그인해주세요.",
-    "code_description": "이메일로 받은 6자리 코드를 입력하세요",
-    "resend_code": "인증 코드 재전송",
-    "code_resent": "인증 코드가 재전송되었습니다"
-  },
-  "nav": {
-    "dashboard": "대시보드",
-    "course_management": "과정 관리",
-    "courses": "과정",
-    "catalog": "과정 카탈로그",
-    "course_catalog": "과정 카탈로그",
-    "my_courses": "내 과정",
-    "sessions": "세션",
-    "session_management": "세션 관리",
-    "assessment_tools": "평가 도구",
-    "assessments": "평가",
-    "quiz": "퀴즈",
-    "pre_quiz": "사전 퀴즈",
-    "post_quiz": "사후 퀴즈",
-    "survey": "설문조사",
-    "ai_generator": "AI 생성기",
-    "analytics": "분석 및 보고서",
-    "quiz_comparison": "사전/사후 비교",
-    "reports": "보고서",
-    "insights": "과정 인사이트",
-    "student_home": "학생 홈",
-    "all_courses": "전체 과정",
-    "admin": "관리자",
-    "profile": "내 프로필",
-    "settings": "설정",
-    "admin_section": "관리자 메뉴",
-    "admin_dashboard": "관리자 대시보드",
-    "user_management": "사용자 관리",
-    "system_settings": "시스템 설정"
-  },
-  "user": {
-    "preferred_language": "선호 언어",
-    "level": "레벨"
-  },
-  "language": {
-    "english": "영어",
-    "korean": "한국어"
-  },
-  "conversation": {
-    "difficulty": {
-      "beginner": "초급",
-      "intermediate": "중급",
-      "advanced": "고급"
-    }
+    "sign_out_confirm": "로그아웃 확인",
+    "sign_out_message": "정말로 로그아웃하시겠습니까?",
+    "profile": "프로필",
+    "preferences": "환경설정",
+    "security": "보안"
   },
   "common": {
     "loading": "로딩 중...",
     "cancel": "취소",
-    "delete": "삭제",
     "save": "저장",
     "edit": "수정",
+    "delete": "삭제",
     "view": "보기",
     "go_back": "돌아가기",
+    "back_to_list": "목록으로 돌아가기",
     "error": "오류",
-    "filter": "필터",
-    "selected": "선택됨",
-    "legend": "범례",
-    "chart": {
-      "bar": "막대 차트",
-      "pie": "파이 차트",
-      "xAxis": "X축",
-      "yAxis": "Y축"
-    },
-    "value": "값",
-    "percentage": "백분율",
-    "date": {
-      "next_month": "다음 달",
-      "previous_month": "이전 달",
-      "today": "오늘"
-    },
-    "errors": {
-      "fetch_user_role": "사용자 역할을 가져오는데 실패했습니다:"
-    }
+    "language": "언어",
+    "search": "검색",
+    "close_search": "검색 닫기",
+    "more": "더 보기",
+    "documentation": "문서",
+    "support": "지원",
+    "feedback": "피드백",
+    "opens_in_new_tab": "새 탭에서 열기",
+    "help": "도움말",
+    "course_detail": "과정 상세",
+    "required": "필수"
   },
-  "survey": {
-    "management_title": "설문조사 관리",
-    "select_course": "과정 선택",
-    "course_placeholder": "과정 선택",
-    "loading_courses": "과정 목록을 불러오는 중...",
-    "no_courses": "과정이 없습니다",
-    "register_course_first": "사용 가능한 과정이 없습니다. 과정을 먼저 등록하세요.",
-    "survey_type": "설문조사 유형",
-    "survey_type_selection": "설문조사 유형 선택",
-    "pre_survey": "사전 설문조사",
-    "post_survey": "사후 설문조사",
-    "pre": "사전",
-    "post": "사후",
-    "sync_with_pre_survey": "사후 설문조사를 사전 설문조사와 동일하게 설정",
-    "create_survey": "설문조사 만들기",
-    "generate_with_ai": "AI로 자동 생성",
-    "create_from_template": "기본 템플릿으로 생성",
-    "copy_from_pre_survey": "사전 설문조사에서 복사",
-    "survey_list": "설문조사 목록",
-    "survey_list_description": "선택한 과정의 {{type}} 설문조사 목록",
-    "loading_surveys": "설문조사 목록을 불러오는 중...",
-    "no_surveys": "설문조사가 없습니다",
-    "create_new_survey_prompt": "선택한 과정에 대한 설문조사가 없습니다. 새 설문조사를 생성하세요.",
-    "satisfaction_survey": "학습 만족도 설문조사",
-    "expectations_survey": "기대사항 설문조사",
-    "columns": {
-      "title": "제목",
-      "question_count": "문항 수",
-      "response_count": "응답 수",
-      "created_date": "생성 일자",
-      "actions": "관리"
-    },
-    "actions": {
-      "button_text": "작업",
-      "view_results": "결과 보기",
-      "edit": "편집",
-      "duplicate": "복제",
-      "copy_to_other": "{{type}} 설문조사로 복사",
-      "delete": "삭제"
-    },
-    "ai_modal": {
-      "title": "AI {{type}} 설문조사 자동 생성",
-      "generating": "과정 자료를 분석하여 설문조사를 생성하고 있습니다...",
-      "question_count": "생성된 {{count}}개의 질문이 있습니다. 필요에 맞게 수정할 수 있습니다.",
-      "question_number": "질문 {{number}}",
-      "type": "유형",
-      "create_with_questions": "이 질문으로 설문조사 만들기"
-    },
-    "delete_modal": {
-      "title": "설문조사 삭제",
-      "confirmation": "정말로 \"{{title}}\" 설문조사를 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며, 모든 응답 데이터가 함께 삭제됩니다.",
-      "warning": "주의",
-      "response_count": "이 설문조사에는 {{count}}개의 응답 데이터가 있습니다."
-    },
-    "question_types": {
-      "single": "단일 선택",
-      "multiple": "다중 선택",
-      "text": "주관식"
-    },
-    "errors": {
-      "graphql_query_error": "GraphQL 쿼리 오류:",
-      "load_courses_error": "과정 목록 로드 오류:",
-      "load_surveys_error": "설문조사 목록 로드 오류:",
-      "invalid_response_format": "응답 데이터가 예상 형식과 일치하지 않음:",
-      "generate_survey_error": "설문조사 생성 오류:",
-      "copy_survey_error": "설문조사 복사 오류:",
-      "copy_survey_error_message": "설문조사 복사 중 오류가 발생했습니다.",
-      "delete_survey_error": "설문조사 삭제 오류:",
-      "delete_survey_error_message": "설문조사 삭제 중 오류가 발생했습니다."
-    },
-    "alerts": {
-      "copy_success": "설문조사가 {{type}} 설문조사로 복사되었습니다."
-    },
-    "dummy": {
-      "question1": "이번 과정에 대한 전반적인 기대치를 평가해주세요.",
-      "option1_verylow": "매우 낮음",
-      "option1_low": "낮음",
-      "option1_medium": "보통",
-      "option1_high": "높음",
-      "option1_veryhigh": "매우 높음",
-      "question2": "이 과정을 수강하는 주된 목적은 무엇입니까?",
-      "option2_1": "업무 역량 강화",
-      "option2_2": "자기 계발",
-      "option2_3": "승진/이직 준비",
-      "option2_4": "자격증 취득",
-      "option2_5": "기타",
-      "question3": "이 과정에서 가장 배우고 싶은 내용은 무엇입니까?",
-      "question4": "해당 주제에 대한 사전 지식 수준이 어느 정도입니까?",
-      "option4_1": "초보자 (지식 없음)",
-      "option4_2": "기초 (기본 개념만 알고 있음)",
-      "option4_3": "중급 (일부 경험 있음)",
-      "option4_4": "전문가 (관련 분야 경력 있음)"
-    },
-    "template": {
-      "overall_satisfaction": "{{period}} 본 과정에 대한 전반적인 만족도는 어떠신가요?",
-      "before": "교육 시작 전",
-      "after": "교육 수료 후",
-      "very_dissatisfied": "매우 불만족",
-      "dissatisfied": "불만족",
-      "neutral": "보통",
-      "satisfied": "만족",
-      "very_satisfied": "매우 만족",
-      "most_expected_part": "{{course}} 과정에서 가장 기대되는{{past}} 부분은 무엇인가요?",
-      "beneficial": "유익했던",
-      "participation_purpose": "본 교육에 {{past}} 주된 목적은 무엇인가요? (해당하는 항목 모두 선택)",
-      "participating": "참여하시는",
-      "participated": "참여하신",
-      "purpose_1": "업무 역량 강화",
-      "purpose_2": "자기 개발",
-      "purpose_3": "자격증 취득 준비",
-      "purpose_4": "승진/이직 준비",
-      "purpose_5": "팀 내 지식 공유",
-      "purpose_other": "기타",
-      "additional_comment": "교육과 관련하여 추가 의견이나 요청사항이 있으시면 기재해 주세요.",
-      "cloud_experience": "클라우드 기술 사용 경험은 어느 정도인가요?",
-      "experience_none": "전혀 없음",
-      "experience_basic": "초보 수준",
-      "experience_intermediate": "중급 수준",
-      "experience_advanced": "고급 수준",
-      "experience_expert": "전문가 수준",
-      "skill_improvement": "교육을 통해 실무 역량이 향상되었다고 생각하시나요?",
-      "strongly_disagree": "전혀 그렇지 않다",
-      "disagree": "그렇지 않다",
-      "agree": "그렇다",
-      "strongly_agree": "매우 그렇다"
-    }
+  "nav": {
+    "home": "홈",
+    "dashboard": "대시보드",
+    "course_management": "과정 관리",
+    "course_catalog": "과정 카탈로그",
+    "course_list": "과정 목록",
+    "instructor_tools": "강사 도구",
+    "assessments": "평가",
+    "quiz_management": "퀴즈 관리",
+    "survey_management": "설문조사 관리",
+    "analytics": "분석",
+    "reports": "보고서",
+    "insights": "과정 인사이트",
+    "comparison": "비교 분석",
+    "admin": "관리자",
+    "admin_page": "관리자 페이지"
   },
-  "surveyCreator": {
-    "default_title": "{{course}} {{type}} 설문조사",
-    "course": "과정",
-    "default_description": "본 설문조사는 학습 과정에서의 의견과 경험을 수집하기 위한 도구입니다.",
-    "survey_info": "설문조사 정보",
-    "survey_title": "설문조사 제목",
-    "enter_survey_title": "설문조사 제목을 입력하세요",
-    "description": "설명",
-    "enter_survey_description": "수강생에게 보여질 설문조사 설명을 입력하세요",
-    "time_limit": "시간 제한 (분)",
-    "required_response": "필수 응답 설문조사",
-    "allow_anonymous": "익명 응답 허용",
-    "shuffle_questions": "문항 순서 섞기",
-    "survey_questions": "설문조사 문항 ({{count}}개)",
-    "add_question": "질문 추가",
-    "loading_questions": "질문을 불러오는 중...",
-    "no_questions": "질문이 없습니다",
-    "add_question_prompt": "'질문 추가' 버튼을 눌러 설문조사 문항을 추가하세요.",
-    "question_list": "설문조사 문항 목록",
-    "columns": {
-      "question": "질문",
-      "type": "유형",
-      "options": "보기 옵션",
-      "actions": "작업"
-    },
-    "text_response": "주관식 응답",
-    "text_no_options": "주관식 질문은 보기 옵션이 필요하지 않습니다.",
-    "enter_options_per_line": "각 보기를 새 줄에 입력하세요",
-    "editable": "편집 가능",
-    "option_placeholder": "보기 {{number}}",
-    "actions": {
-      "detailed_edit": "상세 편집"
-    },
-    "question": "질문",
-    "enter_question_content": "질문 내용을 입력하세요",
-    "question_type": "질문 유형",
-    "option_choices": "보기 옵션",
-    "add_option": "보기 추가",
-    "edit_question": "질문 수정",
-    "add_new_question": "새 질문 추가",
-    "save_question": "질문 저장",
-    "cancel_and_return": "취소 및 돌아가기",
-    "save_survey": "설문조사 저장",
-    "save_complete": "설문조사 저장 완료",
-    "return_to_management": "설문조사 관리로 돌아가기",
-    "save_success_message": "설문조사가 성공적으로 저장되었습니다.",
-    "alerts": {
-      "enter_question": "질문 내용을 입력해주세요.",
-      "enter_all_options": "모든 보기 옵션을 입력해주세요.",
-      "min_questions": "최소 1개 이상의 질문이 필요합니다."
-    },
-    "errors": {
-      "save_error": "설문조사 저장 오류:",
-      "save_error_message": "설문조사 저장 중 오류가 발생했습니다. 다시 시도해주세요."
-    }
-  },
-  "admin": {
-    "title": "시스템 관리",
-    "description": "시스템 설정, 과정, 고객사 및 강사 관리",
-    "tabs": {
-      "courses": "과정 관리",
-      "customers": "고객사 관리",
-      "instructors": "강사 관리"
-    },
-    "common": {
-      "active": "활성",
-      "inactive": "비활성",
-      "actions": "작업",
-      "edit": "수정",
-      "delete": "삭제",
-      "save": "저장",
-      "cancel": "취소",
-      "pagination": {
-        "next": "다음 페이지",
-        "previous": "이전 페이지",
-        "page_label": "{pageNumber} 페이지로 이동"
-      }
-    },
-    "courses": {
-      "course_management": "과정 관리",
-      "add_course": "과정 추가",
-      "add_new_course": "새 과정 추가",
-      "edit_course": "과정 수정",
-      "delete_course": "과정 삭제",
-      "no_courses": "과정이 없습니다",
-      "add_new_course_desc": "새 과정을 추가해주세요.",
-      "search_placeholder": "과정 검색...",
-      "search_aria_label": "과정 검색",
-      "error_loading": "과정 목록을 불러오는 중 오류가 발생했습니다.",
-      "error_saving": "과정 저장 중 오류가 발생했습니다.",
-      "error_deleting": "과정 삭제 중 오류가 발생했습니다.",
-      "delete_confirm": "정말 \"{title}\" 과정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-      "currency": "원",
-      "column": {
-        "title": "과정명",
-        "category": "카테고리",
-        "duration": "기간(시간)",
-        "level": "수준",
-        "price": "가격",
-        "status": "상태"
-      },
-      "form": {
-        "title": "과정명",
-        "category": "카테고리",
-        "description": "설명",
-        "duration": "기간 (시간)",
-        "level": "수준",
-        "price": "가격",
-        "published_date": "출시일",
-        "active": "활성화"
-      }
-    },
-    "course_detail": {
-      "loading": {
-        "title": "과정 로딩 중",
-        "message": "과정 정보를 불러오는 중..."
-      },
-      "errors": {
-        "invalid_id": "잘못된 과정 ID",
-        "not_found": "과정을 찾을 수 없습니다",
-        "load_error": "과정 정보를 불러오지 못했습니다",
-        "load_error_log": "과정 데이터 로딩 오류:",
-        "load_failed": "과정 로딩 실패",
-        "general": "과정을 불러오는 중 오류가 발생했습니다"
-      },
-      "warnings": {
-        "unknown_type": "알 수 없는 평가 유형:"
-      },
-      "assessment_types": {
-        "pre_quiz": "사전 퀴즈",
-        "post_quiz": "사후 퀴즈",
-        "survey": "설문조사"
-      },
-      "status": {
-        "active": "활성",
-        "completed": "완료됨",
-        "coming_soon": "예정됨",
-        "expired": "만료됨"
-      },
-      "actions": {
-        "start": "시작하기",
-        "view": "보기",
-        "start_assessment": "평가 시작하기"
-      },
-      "alerts": {
-        "active_assessment": "평가 가능",
-        "assessment_available": "완료해야 할 {{type}}({{name}})이(가) 있습니다"
-      },
-      "tabs": {
-        "overview": "개요",
-        "materials": "과정 자료",
-        "assessments": "평가",
-        "announcements": "공지사항"
-      },
-      "course_info": {
-        "instructor": "강사",
-        "start_date": "시작일",
-        "end_date": "종료일",
-        "location": "장소",
-        "online": "온라인",
-        "offline": "오프라인",
-        "tags": "태그"
-      },
-      "assessments": {
-        "title": "과정 평가",
-        "empty": "이 과정에 사용 가능한 평가가 없습니다",
-        "columns": {
-          "name": "평가 이름",
-          "type": "유형",
-          "status": "상태",
-          "due_date": "마감일",
-          "action": "작업"
-        }
-      },
-      "materials": {
-        "title": "과정 자료",
-        "empty": "아직 이 과정에 사용 가능한 자료가 없습니다",
-        "sections": {
-          "lectures": "강의 자료",
-          "assignments": "과제",
-          "resources": "추가 자료"
-        }
-      },
-      "announcements": {
-        "title": "과정 공지사항",
-        "empty": "이 과정에 대한 공지사항이 없습니다",
-        "posted_on": "{{date}}에 게시됨"
-      },
-      "description": {
-        "title": "과정 설명"
-      }
-    },
-    "dashboard": {
-      "stats": {
-        "active_sessions": "활성 세션",
-        "total_students": "총 학생 수",
-        "completion_rate": "수료율",
-        "quiz_completion": "퀴즈 완료율",
-        "change": {
-          "week_up": "이번 주 {{count}}% 증가",
-          "month_up": "이번 달 {{count}}% 증가",
-          "quarter_up": "이번 분기 {{count}}% 증가",
-          "same": "변동 없음"
-        }
-      },
-      "sections": {
-        "sessions": "예정된 세션",
-        "quick_actions": "빠른 작업"
-      },
-      "sessions": {
-        "create_button": "세션 일정 잡기",
-        "when": "날짜 및 시간",
-        "participants": "참가자",
-        "preparation": "교육 준비",
-        "registered_count": "등록된 인원 {{count}}명",
-        "preparation_ready": "자료 준비 완료",
-        "preparation_needed": "자료 준비 필요",
-        "live_badge": "진행 중",
-        "actions": {
-          "join": "세션 참여",
-          "edit": "세션 수정",
-          "materials": "자료 보기"
-        },
-        "date": {
-          "today": "오늘, {{start}} - {{end}}",
-          "tomorrow": "내일, {{start}} - {{end}}",
-          "live_now": "현재 진행 중"
-        },
-        "courses": {
-          "practitioner": "AWS 클라우드 프랙티셔너 과정",
-          "architect": "솔루션 아키텍트 교육",
-          "developer": "AWS 개발자 워크숍"
-        },
-        "descriptions": {
-          "practitioner": "AWS 핵심 서비스 및 클라우드 기초 소개",
-          "architect": "AWS 솔루션을 위한 고급 아키텍처 설계 패턴",
-          "developer": "AWS 애플리케이션 개발 도구 및 실습"
-        },
-        "empty": {
-          "title": "예정된 세션 없음",
-          "description": "새로운 교육 세션을 생성하여 시작하세요"
-        }
-      },
-      "quick_actions": {
-        "go": "이동",
-        "create_course": {
-          "title": "과정 만들기",
-          "description": "새 과정 또는 교육 모듈 설계"
-        },
-        "generate_quiz": {
-          "title": "퀴즈 생성하기",
-          "description": "AI를 활용한 평가 문항 생성"
-        },
-        "view_reports": {
-          "title": "보고서 보기",
-          "description": "분석 데이터 및 학생 진도 확인"
-        },
-        "manage_materials": {
-          "title": "교육 자료 관리",
-          "description": "과정 자료 및 리소스 정리"
-        }
-      },
-      "charts": {
-        "course_completion": "과정 완료 비율",
-        "participation": {
-          "active": "활성 학생",
-          "at_risk": "위험군",
-          "inactive": "비활성"
-        },
-        "courses": {
-          "cloud_practitioner": "클라우드 프랙티셔너",
-          "solutions_architect": "솔루션 아키텍트",
-          "developer": "개발자",
-          "devops": "DevOps 엔지니어",
-          "security": "보안 전문가"
-        },
-        "filter_label": "필터",
-        "filter_placeholder": "데이터 필터링",
-        "filter_selected": "선택된 필터",
-        "legend": "차트 범례",
-        "bar_chart_description": "막대 차트",
-        "pie_chart_description": "파이 차트",
-        "x_axis": "X축",
-        "y_axis": "Y축",
-        "details_value": "값",
-        "details_percentage": "비율",
-        "segment_description": "차트 세그먼트"
-      }
-    },
-    "customers": {
-      "customer_management": "고객사 관리",
-      "add_customer": "고객사 추가",
-      "add_new_customer": "새 고객사 추가",
-      "edit_customer": "고객사 수정",
-      "delete_customer": "고객사 삭제",
-      "no_customers": "고객사가 없습니다",
-      "add_new_customer_desc": "새 고객사를 추가해주세요.",
-      "search_placeholder": "고객사 검색...",
-      "search_aria_label": "고객사 검색",
-      "error_loading": "고객사 목록을 불러오는 중 오류가 발생했습니다.",
-      "error_saving": "고객사 저장 중 오류가 발생했습니다.",
-      "error_deleting": "고객사 삭제 중 오류가 발생했습니다.",
-      "delete_confirm": "정말 \"{name}\" 고객사를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-      "column": {
-        "company_name": "회사명",
-        "contact_person": "담당자",
-        "email": "이메일",
-        "phone": "전화번호",
-        "status": "상태",
-        "join_date": "가입일"
-      },
-      "form": {
-        "company_name": "회사명",
-        "contact_person": "담당자",
-        "email": "이메일",
-        "phone": "전화번호",
-        "address": "주소",
-        "status": "상태",
-        "join_date": "가입일"
-      }
-    },
-    "instructors": {
-      "instructor_management": "강사 관리",
-      "add_instructor": "강사 추가",
-      "add_new_instructor": "새 강사 추가",
-      "edit_instructor": "강사 수정",
-      "delete_instructor": "강사 삭제",
-      "no_instructors": "강사가 없습니다",
-      "add_new_instructor_desc": "새 강사를 추가해주세요.",
-      "search_placeholder": "강사 검색...",
-      "search_aria_label": "강사 검색",
-      "error_loading": "강사 목록을 불러오는 중 오류가 발생했습니다.",
-      "error_loading_cognito": "Cognito 사용자를 불러오는 중 오류가 발생했습니다.",
-      "error_saving": "강사 정보 저장 중 오류가 발생했습니다.",
-      "error_deleting": "강사 삭제 중 오류가 발생했습니다.",
-      "delete_confirm": "정말 \"{name}\" 강사를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-      "log": {
-        "load_result": "강사 목록 결과:",
-        "update_result": "강사 수정 결과:",
-        "create_result": "강사 생성 결과:",
-        "delete_result": "강사 삭제 결과:"
-      },
-      "dummy_data": {
-        "instructor1": "강사1",
-        "instructor2": "강사2",
-        "instructor3": "강사3"
-      },
-      "column": {
-        "name": "이름",
-        "email": "이메일",
-        "phone": "전화번호",
-        "specialization": "전문 분야",
-        "status": "상태",
-        "join_date": "가입일"
-      },
-      "form": {
-        "cognito_user": "Cognito 사용자",
-        "select_user": "Cognito 사용자 선택",
-        "loading_users": "사용자 로딩 중...",
-        "no_users": "사용 가능한 Cognito 사용자가 없습니다",
-        "name": "이름",
-        "email": "이메일",
-        "phone": "전화번호",
-        "phone_placeholder": "+82-10-1234-5678",
-        "specialization": "전문 분야",
-        "bio": "자기소개",
-        "status": "상태",
-        "join_date": "가입일"
-      }
-    }
+  "role": {
+    "admin": "관리자",
+    "instructor": "강사",
+    "student": "학생"
   },
   "course": {
-    "filter": {
-      "all_categories": "전체 카테고리",
-      "all_levels": "전체 레벨",
-      "find_courses": "과정 찾기",
-      "search_aria": "과정 필터링"
-    },
-    "list": {
-      "no_courses_found": "검색 조건과 일치하는 과정이 없습니다",
-      "clear_filters": "필터 초기화"
-    },
+    "create_course": "과정 생성",
+    "detail": "과정 상세",
+    "catalog": "과정 카탈로그",
     "level": {
       "foundational": "기초",
       "intermediate": "중급",
@@ -659,471 +72,198 @@
       "machine_learning": "머신러닝",
       "devops": "DevOps",
       "networking": "네트워킹"
-    },
-    "location": {
-      "online": "온라인",
-      "hybrid": "하이브리드",
-      "in_person": "오프라인"
     }
   },
   "courses": {
-    "title": "과정",
-    "description": "관리 중인 과정 목록",
-    "create_button": "새 과정 만들기",
+    "management_title": "과정 관리",
+    "management_description": "과정을 관리하고 등록 통계를 확인하세요",
+    "catalog_title": "과정 카탈로그",
+    "catalog_description": "사용 가능한 모든 과정 템플릿 탐색",
+    "catalog_management": "과정 카탈로그 관리",
+    "catalog_admin_description": "과정 템플릿 및 평가 관리",
+    "management_settings": "설정",
+    "view_stats": "통계 보기",
+    "manage": "관리",
+    "view_student": "학생 화면",
+    "enroll": "등록",
+    "create_button": "과정 생성",
+    "create_course": "과정 생성",
+    "create_assessment": "평가 생성",
+    "manage_quizzes": "퀴즈 관리",
+    "manage_surveys": "설문조사 관리",
+    "assessment_stats": "평가 통계",
+    "pre_quiz_stats": "사전 퀴즈 통계",
+    "post_quiz_stats": "사후 퀴즈 통계",
+    "survey_stats": "설문조사 통계",
+    "completed": "완료됨",
+    "no_assessment_data": "아직 평가 데이터가 없습니다",
+    "select_course_prompt": "평가 통계를 보려면 과정을 선택하세요",
     "loading": "과정을 불러오는 중...",
-    "errors": {
-      "load_error": "과정 로드 오류:",
-      "load_message": "과정 목록을 불러오는데 실패했습니다"
+    "tabs": {
+      "catalog": "과정 카탈로그",
+      "assessments": "평가"
     },
-    "no_description": "설명이 없습니다",
     "details": "과정 상세 정보",
     "level": "수준",
     "category": "카테고리",
     "duration": "기간",
-    "price": "가격",
+    "version": "버전",
+    "delivery": "전달 방식",
     "hours": "시간",
-    "currency": "원",
-    "free": "무료",
     "not_specified": "미지정",
-    "manage": "관리",
-    "view_student": "학생 화면 보기",
+    "no_description": "설명이 없습니다",
     "empty": {
       "title": "과정이 없습니다",
-      "description": "아래 버튼을 클릭하여 첫 번째 과정을 만드세요."
+      "description": "아래 버튼을 클릭하여 첫 번째 과정을 생성하세요."
+    },
+    "errors": {
+      "timeout": "요청 시간이 초과되었습니다. 다시 시도해주세요.",
+      "authentication": "인증 오류가 발생했습니다. 다시 로그인해주세요.",
+      "load_message": "과정 목록을 불러오는데 실패했습니다. 나중에 다시 시도하세요."
     }
   },
-  "role": {
-    "admin": "관리자",
-    "instructor": "강사",
-    "student": "학생"
-  },
-  "quiz_management": {
-    "title": "퀴즈 관리",
-    "course_selection": "과정 선택",
-    "course_placeholder": "과정을 선택하세요",
-    "quiz_type": "퀴즈 유형",
-    "select_quiz_type": "퀴즈 유형 선택",
-    "pre_quiz": "사전 퀴즈",
-    "post_quiz": "사후 퀴즈",
-    "sync_with_pre_quiz": "사후 퀴즈를 사전 퀴즈와 동일하게 설정",
-    "existing_quizzes": "기존 퀴즈",
-    "existing_quiz_description": "선택한 과정의 {{type}} 퀴즈 목록",
-    "question_number": "질문 {{number}}",
-    "correct_answer": "정답",
+  "course_detail": {
+    "title": "과정 상세 정보",
     "errors": {
-      "graphql_query": "GraphQL 쿼리 오류:",
-      "course_load": "과정 목록 로딩 오류:",
-      "response_format": "응답 데이터가 예상 형식과 맞지 않습니다:",
-      "quiz_generation": "퀴즈 생성 오류:"
-    },
-    "empty_states": {
-      "no_courses": "사용 가능한 과정 없음",
-      "register_course": "사용 가능한 과정이 없습니다. 과정을 먼저 등록하세요.",
-      "no_quizzes": "사용 가능한 퀴즈 없음",
-      "create_new_quiz": "이 과정 및 유형에 대한 퀴즈가 없습니다. 새 퀴즈를 생성하세요."
-    },
-    "actions": {
-      "create_quiz": "퀴즈 만들기",
-      "ai_generate": "AI로 생성하기",
-      "copy_from_pre": "사전 퀴즈에서 복사",
-      "view": "보기",
-      "edit": "편집",
-      "delete": "삭제",
-      "cancel": "취소",
-      "create_with_questions": "이 문제들로 퀴즈 만들기"
-    },
-    "columns": {
-      "title": "제목",
-      "question_count": "문항 수",
-      "created_at": "생성 일자",
-      "actions": "작업"
+      "invalid_id": "잘못된 과정 ID",
+      "not_found": "과정을 찾을 수 없음",
+      "fetch_failed": "과정 상세 정보를 가져오는데 실패했습니다",
+      "authentication": "인증 오류. 다시 로그인해주세요.",
+      "general": "과정을 불러오는 중 오류가 발생했습니다"
     },
     "loading": {
-      "courses": "과정을 불러오는 중...",
-      "quizzes": "퀴즈를 불러오는 중..."
+      "message": "과정 상세 정보를 불러오는 중..."
     },
-    "modal": {
-      "ai_generation": "AI {{type}} 퀴즈 생성",
-      "generating": "과정 자료를 분석하여 퀴즈를 생성하고 있습니다...",
-      "generated_count": "생성된 {{count}}개의 문제가 있습니다. 필요에 맞게 수정할 수 있습니다."
+    "fields": {
+      "status": "상태",
+      "date_range": "기간",
+      "location": "장소",
+      "customer": "고객사",
+      "instructor": "강사",
+      "course_id": "과정 ID"
+    },
+    "no_description": "설명이 없습니다",
+    "sections": {
+      "description": "과정 설명",
+      "assessments": "평가"
+    },
+    "no_assessments": "이 과정에 사용 가능한 평가가 없습니다",
+    "no_assessments_description": "아직 이 과정과 연결된 평가 항목이 없습니다.",
+    "actions": {
+      "edit": "과정 편집",
+      "start": "시작하기",
+      "view": "보기"
     }
   },
-  "quiz_creator": {
-    "default_course": "과정",
-    "pre_quiz": "사전 퀴즈",
-    "post_quiz": "사후 퀴즈",
-    "default_description": "이 퀴즈는 과정 전/후의 지식을 평가하기 위해 설계되었습니다.",
+  "course_creation": {
+    "title": "새 과정 생성",
+    "description": "아래 정보를 입력하여 새 과정을 생성하세요",
+    "create_button": "과정 생성",
     "sections": {
-      "quiz_info": "퀴즈 정보",
-      "questions_count": "퀴즈 문항 ({{count}}개)",
-      "question_list": "문항 목록"
+      "basic_info": "기본 정보",
+      "assessment": "평가 옵션"
     },
-    "meta": {
-      "title_label": "퀴즈 제목",
-      "title_placeholder": "퀴즈 제목을 입력하세요",
-      "description_label": "설명",
-      "description_placeholder": "학생들에게 보여줄 퀴즈 설명을 입력하세요",
-      "time_limit": "시간 제한 (분)",
-      "pass_score": "합격 점수 (%)",
-      "shuffle_questions": "문항 순서 섞기",
-      "shuffle_options": "보기 순서 섞기",
-      "show_feedback": "즉시 피드백 표시"
+    "fields": {
+      "lms_id": "LMS ID",
+      "course_name": "과정명",
+      "instructor_name": "강사",
+      "customer_name": "고객사",
+      "direct_input": "직접 입력",
+      "location": "장소",
+      "virtual_training": "원격 교육",
+      "start_date": "시작일",
+      "duration": "기간 (일)",
+      "lab_count": "실습 수",
+      "student_count": "수강생 수"
     },
-    "labels": {
+    "placeholders": {
+      "lms_id": "LMS ID 입력 (선택사항)",
+      "select_course": "과정 템플릿 선택",
+      "select_instructor": "강사 선택",
+      "select_customer": "고객사 선택",
+      "customer_name_direct": "고객사명 입력",
+      "location": "교육 장소 입력"
+    },
+    "aria": {
+      "open_calendar": "달력 열기",
+      "open_calendar_selected": "달력 열기, 선택된 날짜는 {date}"
+    },
+    "descriptions": {
+      "select_course": "카탈로그에서 과정 템플릿을 선택하세요"
+    },
+    "constraints": {
+      "direct_input": "고객사명 직접 입력",
+      "select_from_list": "목록에서 고객사 선택"
+    },
+    "assessments": {
+      "pre_quiz": "사전 평가 퀴즈",
+      "post_quiz": "사후 평가 퀴즈",
+      "survey": "피드백 설문조사",
+      "include_pre_quiz": "사전 평가 퀴즈 포함",
+      "include_post_quiz": "사후 평가 퀴즈 포함",
+      "include_survey": "피드백 설문조사 포함",
+      "select_pre_quiz": "사전 퀴즈 선택",
+      "select_post_quiz": "사후 퀴즈 선택",
+      "select_survey": "설문조사 선택",
+      "question_count": "문항 {count}개",
+      "preview_pre_quiz": "사전 퀴즈 미리보기",
+      "preview_post_quiz": "사후 퀴즈 미리보기",
+      "preview_survey": "설문조사 미리보기",
+      "no_pre_quiz": "사용 가능한 사전 퀴즈 템플릿이 없습니다",
+      "no_post_quiz": "사용 가능한 사후 퀴즈 템플릿이 없습니다",
+      "no_survey": "사용 가능한 설문조사 템플릿이 없습니다"
+    },
+    "previews": {
+      "pre_quiz_title": "사전 퀴즈 미리보기",
+      "post_quiz_title": "사후 퀴즈 미리보기",
+      "survey_title": "설문조사 미리보기",
+      "question_number": "문항 번호",
       "question": "질문",
       "options": "보기",
       "correct_answer": "정답",
-      "correct": "정답"
-    },
-    "placeholders": {
-      "question": "질문을 여기에 입력하세요",
-      "option": "보기 {{number}}"
-    },
-    "question_number": "문제 {{number}}",
-    "hints": {
-      "click_to_edit": "카드를 클릭하여 문제를 수정할 수 있습니다"
-    },
-    "empty_states": {
-      "no_questions": "문항 없음",
-      "add_instructions": "'문항 추가' 버튼을 클릭하여 퀴즈 문항을 생성하세요"
-    },
-    "validation": {
-      "question_required": "질문 내용을 입력해주세요",
-      "options_required": "모든 보기를 입력해주세요",
-      "min_question_required": "퀴즈를 저장하려면 최소 한 개의 문항이 필요합니다",
-      "course_required": "퀴즈를 저장하기 전에 과정을 선택해주세요"
-    },
-    "errors": {
-      "save_error": "퀴즈 저장 오류:",
-      "save_error_message": "퀴즈 저장 중 오류가 발생했습니다. 다시 시도해주세요.",
-      "course_load": "과정 목록 로딩 오류:",
-      "course_load_message": "과정을 불러오지 못했습니다. 나중에 다시 시도하세요."
-    },
-    "actions": {
-      "add_question": "문항 추가",
-      "add_option": "보기 추가",
-      "save_question": "문항 저장",
-      "cancel": "취소",
-      "cancel_return": "취소 후 돌아가기",
-      "save_quiz": "퀴즈 저장",
-      "return_to_management": "퀴즈 관리로 돌아가기"
-    },
-    "modal": {
-      "edit_question": "문항 편집",
-      "add_question": "새 문항 추가",
-      "save_success": "퀴즈가 성공적으로 저장됨"
-    },
-    "messages": {
-      "save_success": "퀴즈가 성공적으로 저장되었습니다."
+      "no_questions": "사용 가능한 문항 없음",
+      "no_questions_description": "이 퀴즈 템플릿에는 문항이 없습니다.",
+      "load_failed": "미리보기 문항을 불러오지 못했습니다."
     },
     "loading": {
-      "questions": "문항을 불러오는 중...",
-      "courses": "과정을 불러오는 중..."
+      "courses": "과정을 불러오는 중...",
+      "instructors": "강사를 불러오는 중...",
+      "customers": "고객사를 불러오는 중...",
+      "quizzes": "퀴즈를 불러오는 중...",
+      "surveys": "설문조사를 불러오는 중...",
+      "questions": "문항을 불러오는 중..."
     },
-    "course_selection": {
-      "title": "과정 선택",
-      "course": "과정 선택",
-      "placeholder": "과정을 선택하세요",
-      "no_courses": "사용 가능한 과정이 없습니다",
-      "create_course": "사용 가능한 과정이 없습니다. 먼저 과정을 등록해 주세요."
+    "errors": {
+      "required_fields": "모든 필수 항목을 입력하세요",
+      "template_load": "과정 템플릿 로딩 오류: ",
+      "instructor_load": "강사 로딩 오류: ",
+      "customer_load": "고객사 로딩 오류: ",
+      "assessment_load": "평가 로딩 오류: ",
+      "preview_load": "미리보기 로딩 오류: ",
+      "creation_failed": "과정 생성 오류: ",
+      "creation_message": "과정을 생성하지 못했습니다. 입력 내용을 확인하고 다시 시도하세요."
     },
-    "quiz_type_selection": {
-      "label": "퀴즈 유형"
+    "success": {
+      "header": "과정 생성 성공",
+      "message": "과정이 생성되었습니다. 과정 관리 페이지로 이동합니다."
+    },
+    "logs": {
+      "create_data": "다음 데이터로 과정 생성 중: "
     }
   },
-  "dashboard": {
-    "stats": {
-      "active_sessions": "활성 세션",
-      "total_students": "총 학생 수",
-      "completion_rate": "수료율",
-      "quiz_completion": "퀴즈 완료율",
-      "change": {
-        "week_up": "이번 주 {{count}}% 증가",
-        "month_up": "이번 달 {{count}}% 증가",
-        "quarter_up": "이번 분기 {{count}}% 증가",
-        "same": "변동 없음"
-      }
-    },
-    "sections": {
-      "sessions": "예정된 세션",
-      "quick_actions": "빠른 작업"
-    },
-    "sessions": {
-      "create_button": "세션 일정 잡기",
-      "when": "날짜 및 시간",
-      "participants": "참가자",
-      "preparation": "교육 준비",
-      "registered_count": "등록된 인원 {{count}}명",
-      "preparation_ready": "자료 준비 완료",
-      "preparation_needed": "자료 준비 필요",
-      "live_badge": "진행 중",
-      "actions": {
-        "join": "세션 참여",
-        "edit": "세션 수정",
-        "materials": "자료 보기"
-      },
-      "date": {
-        "today": "오늘, {{start}} - {{end}}",
-        "tomorrow": "내일, {{start}} - {{end}}",
-        "live_now": "현재 진행 중"
-      },
-      "courses": {
-        "practitioner": "AWS 클라우드 프랙티셔너 과정",
-        "architect": "솔루션 아키텍트 교육",
-        "developer": "AWS 개발자 워크숍"
-      },
-      "descriptions": {
-        "practitioner": "AWS 핵심 서비스 및 클라우드 기초 소개",
-        "architect": "AWS 솔루션을 위한 고급 아키텍처 설계 패턴",
-        "developer": "AWS 애플리케이션 개발 도구 및 실습"
-      },
-      "empty": {
-        "title": "예정된 세션 없음",
-        "description": "새로운 교육 세션을 생성하여 시작하세요"
-      }
-    },
-    "quick_actions": {
-      "go": "이동",
-      "create_course": {
-        "title": "과정 만들기",
-        "description": "새 과정 또는 교육 모듈 설계"
-      },
-      "generate_quiz": {
-        "title": "퀴즈 생성하기",
-        "description": "AI를 활용한 평가 문항 생성"
-      },
-      "view_reports": {
-        "title": "보고서 보기",
-        "description": "분석 데이터 및 학생 진도 확인"
-      },
-      "manage_materials": {
-        "title": "교육 자료 관리",
-        "description": "과정 자료 및 리소스 정리"
-      }
-    },
-    "charts": {
-      "course_completion": "과정 완료 비율",
-      "participation": {
-        "active": "활성 학생",
-        "at_risk": "위험군",
-        "inactive": "비활성"
-      },
-      "courses": {
-        "cloud_practitioner": "클라우드 프랙티셔너",
-        "solutions_architect": "솔루션 아키텍트",
-        "developer": "개발자",
-        "devops": "DevOps 엔지니어",
-        "security": "보안 전문가"
-      },
-      "filter_label": "필터",
-      "filter_placeholder": "데이터 필터링",
-      "filter_selected": "선택된 필터",
-      "legend": "차트 범례",
-      "bar_chart_description": "막대 차트",
-      "pie_chart_description": "파이 차트",
-      "x_axis": "X축",
-      "y_axis": "Y축",
-      "details_value": "값",
-      "details_percentage": "비율",
-      "segment_description": "차트 세그먼트"
+  "amplify": {
+    "errors": {
+      "model_not_found": "모델 '{modelName}'이(가) 클라이언트 스키마에서 찾을 수 없습니다",
+      "query_failed": "모델 '{modelName}'에 대한 쿼리가 실패했습니다",
+      "api_connection": "API에 연결할 수 없습니다. 연결을 확인해주세요",
+      "unauthorized": "이 작업을 수행할 권한이 없습니다"
     }
   },
-  "reports": {
-    "title": "보고서 생성기",
-    "report_settings": "보고서 설정",
-    "select_course": "과정 선택",
-    "course_placeholder": "과정을 선택하세요",
-    "loading_courses": "과정을 불러오는 중...",
-    "no_courses": {
-      "title": "과정이 없습니다",
-      "message": "사용 가능한 과정이 없습니다. 먼저 과정을 추가하세요."
-    },
-    "report_type": "보고서 유형",
-    "start_date": "시작일",
-    "end_date": "종료일",
-    "format": "보고서 형식",
-    "formats": {
-      "html": "HTML"
-    },
-    "buttons": {
-      "preview": "미리보기",
-      "generate": "보고서 생성",
-      "download": "다운로드",
-      "delete": "삭제"
-    },
-    "tabs": {
-      "generate": "생성",
-      "preview": "미리보기",
-      "generated": "생성된 보고서"
-    },
-    "preview_title": "보고서 미리보기",
-    "preview_select_course": {
-      "title": "선택된 과정이 없습니다",
-      "message": "보고서를 미리보기하려면 과정을 선택하세요."
-    },
-    "loading_data": "미리보기 데이터를 불러오는 중...",
-    "preview_subtitle": "보고서 미리보기",
-    "quiz_comparison": "사전/사후 퀴즈 비교",
-    "survey_analysis": "설문조사 응답 분석",
+  "assessment": {
     "pre_quiz": "사전 퀴즈",
     "post_quiz": "사후 퀴즈",
-    "average_improvement": "평균 향상도",
-    "responses": "응답 수",
-    "percentage": "백분율",
-    "recommendation_score": "추천 점수",
-    "top_opinions": "주요 학생 의견",
-    "generated_reports": "생성된 보고서",
-    "loading_reports": "보고서를 불러오는 중...",
-    "no_reports": {
-      "title": "보고서 없음",
-      "message": "아직 생성된 보고서가 없습니다."
-    },
-    "columns": {
-      "title": "제목",
-      "type": "유형",
-      "course": "과정",
-      "format": "형식",
-      "status": "상태",
-      "created_date": "생성일",
-      "actions": "작업"
-    },
-    "status": {
-      "completed": "완료됨",
-      "in_progress": "처리 중",
-      "failed": "실패"
-    },
-    "types": {
-      "quiz_comparison": {
-        "title": "퀴즈 비교",
-        "description": "학습 진척도를 측정하기 위한 사전/사후 퀴즈 결과 비교"
-      },
-      "survey_analysis": {
-        "title": "설문조사 분석",
-        "description": "학생 피드백 및 만족도 지표 분석"
-      },
-      "comprehensive": {
-        "title": "종합 보고서",
-        "description": "모든 평가 지표를 포함한 전체 과정 분석"
-      },
-      "attendance": {
-        "title": "출석 보고서",
-        "description": "학생 참여도 및 활동 통계 추적"
-      }
-    },
-    "preview": {
-      "question": "문제 {{number}}",
-      "satisfaction": {
-        "very_high": "매우 만족",
-        "high": "만족",
-        "neutral": "보통",
-        "low": "불만족",
-        "very_low": "매우 불만족"
-      },
-      "comment1": "실습 연습이 개념 이해에 매우 도움이 되었습니다.",
-      "comment2": "과정의 실무적인 부분에 더 많은 시간이 할애되었으면 합니다.",
-      "comment3": "강사가 전문적이었으며 복잡한 주제를 명확하게 설명해주었습니다."
-    },
-    "errors": {
-      "course_load": "과정 목록 로딩 오류:",
-      "course_load_message": "과정을 불러오지 못했습니다. 나중에 다시 시도하세요.",
-      "report_load": "보고서 목록 로딩 오류:",
-      "report_load_message": "보고서를 불러오지 못했습니다. 나중에 다시 시도하세요.",
-      "preview_load": "미리보기 데이터 로딩 오류:",
-      "preview_load_message": "미리보기를 생성하지 못했습니다. 다시 시도하세요.",
-      "generation": "보고서 생성 오류:",
-      "generation_message": "보고서 생성에 실패했습니다. 나중에 다시 시도하세요.",
-      "delete": "보고서 삭제 오류:",
-      "delete_message": "보고서 삭제에 실패했습니다. 다시 시도하세요.",
-      "select_course": "보고서를 생성하기 전에 과정을 선택하세요."
-    },
-    "alerts": {
-      "generation_started": "보고서 생성이 시작되었습니다. 완료되면 목록에 나타납니다.",
-      "report_created": "보고서가 성공적으로 생성되었습니다.",
-      "no_download_url": "이 보고서에 대한 다운로드 링크가 없습니다.",
-      "confirm_delete": "이 보고서를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
-    }
-  },
-  "quiz_creator": {
-    "default_course": "과정",
-    "pre_quiz": "사전 평가 퀴즈",
-    "post_quiz": "사후 평가 퀴즈",
-    "default_description": "이 퀴즈는 해당 주제에 대한 지식을 평가합니다.",
-    "sections": {
-      "quiz_info": "퀴즈 정보",
-      "questions_count": "문제 ({{count}}개)",
-      "question_list": "문제 목록"
-    },
-    "meta": {
-      "title_label": "퀴즈 제목",
-      "title_placeholder": "퀴즈 제목을 입력하세요",
-      "description_label": "퀴즈 설명",
-      "description_placeholder": "이 퀴즈에 대한 설명을 입력하세요",
-      "time_limit": "제한 시간(분)",
-      "pass_score": "합격 점수(%)",
-      "shuffle_questions": "문제 섞기",
-      "shuffle_options": "보기 섞기",
-      "show_feedback": "퀴즈 후 피드백 표시"
-    },
-    "course_selection": {
-      "title": "과정 선택",
-      "course": "과정 선택",
-      "placeholder": "과정을 선택하세요",
-      "no_courses": "사용 가능한 과정이 없습니다",
-      "create_course": "과정 관리에서 먼저 과정을 생성해주세요"
-    },
-    "quiz_type_selection": {
-      "label": "퀴즈 유형"
-    },
-    "actions": {
-      "add_question": "문제 추가",
-      "add_option": "보기 추가",
-      "save_question": "문제 저장",
-      "cancel": "취소",
-      "cancel_return": "취소 및 돌아가기",
-      "save_quiz": "퀴즈 저장",
-      "return_to_management": "퀴즈 관리로 돌아가기"
-    },
-    "labels": {
-      "question": "문제",
-      "options": "보기",
-      "correct": "정답",
-      "correct_answer": "정답"
-    },
-    "placeholders": {
-      "question": "여기에 문제를 입력하세요",
-      "option": "보기 {{number}}"
-    },
-    "modal": {
-      "edit_question": "문제 수정",
-      "add_question": "문제 추가",
-      "save_success": "퀴즈가 성공적으로 저장되었습니다"
-    },
-    "validation": {
-      "question_required": "문제 내용이 필요합니다",
-      "options_required": "모든 보기에는 값이 있어야 합니다",
-      "min_question_required": "퀴즈에는 최소한 하나의 문제가 있어야 합니다",
-      "course_required": "과정을 먼저 선택해주세요"
-    },
-    "empty_states": {
-      "no_questions": "추가된 문제가 없습니다",
-      "add_instructions": "첫 문제를 생성하기 위해 '문제 추가' 버튼을 클릭하세요"
-    },
-    "hints": {
-      "click_to_edit": "문제를 클릭하여 수정하기"
-    },
-    "question_number": "문제 {{number}}",
-    "messages": {
-      "save_success": "퀴즈가 성공적으로 저장되었습니다. 이제 퀴즈 관리 페이지로 돌아갈 수 있습니다."
-    },
-    "loading": {
-      "courses": "과정 불러오는 중...",
-      "questions": "문제 불러오는 중..."
-    },
-    "errors": {
-      "save_error": "퀴즈 저장 오류",
-      "save_error_message": "퀴즈를 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.",
-      "course_load": "과정 로딩 오류",
-      "course_load_message": "과정을 불러오는 중 문제가 발생했습니다. 페이지를 새로고침하거나 나중에 다시 시도해주세요."
-    }
+    "survey": "설문조사",
+    "create_quiz": "퀴즈 생성",
+    "create_survey": "설문조사 생성"
   }
 }
