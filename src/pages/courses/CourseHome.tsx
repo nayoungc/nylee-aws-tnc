@@ -154,7 +154,7 @@ const CourseHome: React.FC = () => {
   const navigateToAssessment = (assessment: Assessment) => {
     console.log('Navigating to assessment:', assessment.type, assessment.id);
     
-    // 평가 유형에 따라 다른 경로로 이동
+    // 필요한 정보를 직접 경로에 포함해 리디렉션 없이 바로 해당 페이지로 이동
     switch (assessment.type) {
       case 'pre-quiz':
         navigate(`/pre-quiz/\${assessment.id}`);
@@ -166,10 +166,10 @@ const CourseHome: React.FC = () => {
         navigate(`/survey/\${assessment.id}`);
         break;
       default:
-        // 기본 경로
         navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
     }
   };
+  
 
   // Loading indicator
   if (loading) {
