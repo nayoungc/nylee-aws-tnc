@@ -26,6 +26,7 @@ export interface CourseCatalog {
     createdAt?: string;
     updatedAt?: string;
 }
+
 export interface Customer {
     id?: string;
     name: string;
@@ -36,9 +37,9 @@ export interface Customer {
     industry?: string;
     createdAt?: string;
     updatedAt?: string;
-  }
+}
   
-  export interface Instructor {
+export interface Instructor {
     id?: string;
     name: string;
     email: string;
@@ -47,9 +48,9 @@ export interface Customer {
     bio?: string;
     createdAt?: string;
     updatedAt?: string;
-  }
+}
   
-  export interface CourseCatalogModel {
+export interface CourseCatalogModel {
     id?: string;
     course_id: string;
     course_name: string;
@@ -61,12 +62,12 @@ export interface Customer {
     target_audience?: string[];
     createdAt?: string;
     updatedAt?: string;
-  }
+}
   
-  export interface CourseViewModel extends CourseCatalogModel {
+export interface CourseViewModel extends CourseCatalogModel {
     title: string; // course_name과 동일 (UI 호환성용)
     status?: string;
-  }
+}
   
 export interface Question {
     id?: string;
@@ -183,7 +184,7 @@ export type QuizParams = {
     contextPrompt?: string;
 };
 
-// GraphQL 쿼리 정의
+// GraphQL 쿼리 정의 - 백슬래시 제거
 const LIST_COURSE_CATALOG = `
   query listCourseCatalog(
     \$filter: ModelCourseCatalogFilterInput
@@ -290,32 +291,31 @@ const DELETE_SURVEY = `
 // ==================== 핵심 함수들 ====================
 
 // CourseCatalog 관련 함수 - DynamoDB 테이블 필드에 맞게 쿼리 수정
-export async function listCourseCatalogs(options?: any) {
+export async function listCourseCatalog(options?: any) {
     try {
         const result = await client.graphql({
             query: `
-        query ListCourseCatalogs(\$filter: ModelCourseCatalogFilterInput, \$limit: Int) {
-          listCourseCatalogs(filter: \$filter, limit: \$limit) {
+        query ListCourseCatalog(\$limit: Int, \$filter: ModelCourseCatalogFilterInput, \$nextToken: String) {
+          listCourseCatalog(limit: \$limit, filter: \$filter, nextToken: \$nextToken) {
             items {
-              catalogId
-              version
+              id
               title
-              awsCode
               description
-              isPublished
-              publishedDate
               level
+              category
+              status
+              version
+              course_name
               duration
               price
               currency
-              status
-              category
               deliveryMethod
               objectives
               targetAudience
               createdAt
               updatedAt
             }
+            nextToken
           }
         }
       `,
@@ -323,17 +323,57 @@ export async function listCourseCatalogs(options?: any) {
         }) as GraphQLResult<any>;
 
         return {
-            data: result.data?.listCourseCatalogs?.items || [],
+            data: result.data?.listCourseCatalog?.items || [],
+            nextToken: result.data?.listCourseCatalog?.nextToken,
             errors: result.errors
         };
     } catch (error) {
-        console.error('Error listing course catalogs:', error);
+        console.error('Error listing course catalog:', error);
         throw error;
     }
 }
 
-// Quiz 목록 조회 - QuizList.tsx에서 사용
-export async function listQuiz(options?: any) {
+// 단일 코스 카탈로그 조회
+export async function getCourseCatalog(id: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query GetCourseCatalog(\$id: ID!) {
+            getCourseCatalog(id: \$id) {
+              id
+              title
+              description
+              level
+              category
+              status
+              version
+              course_name
+              duration
+              price
+              currency
+              deliveryMethod
+              objectives
+              targetAudience
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { id }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.getCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error getting course catalog:', error);
+      throw error;
+    }
+}
+
+// Quiz 목록 조회
+export async function listQuizzes(options?: any) {
     try {
         const result = await client.graphql({
             query: `
@@ -368,12 +408,7 @@ export async function listQuiz(options?: any) {
     }
 }
 
-// QuizList.tsx에서 사용하는 별칭 함수
-export async function listQuizzes(options?: any) {
-    return listQuiz(options);
-}
-
-// 단일 퀴즈 조회 - QuizCreate.tsx에서 사용
+// 단일 퀴즈 조회
 export async function getQuiz(quizId: string) {
     try {
         const result = await client.graphql({
@@ -419,7 +454,7 @@ export async function getQuiz(quizId: string) {
     }
 }
 
-// AI 문제 생성 함수 - 두 컴포넌트 모두에서 사용
+// AI 문제 생성 함수
 export async function generateQuizFromContent(params: QuizParams): Promise<Question[]> {
     try {
         // 실제 환경: API 호출
@@ -660,7 +695,6 @@ export async function deleteSurvey(surveyId: string) {
 }
 
 // 설문조사 AI 생성 함수
-// 설문조사 AI 생성 함수
 export async function generateSurvey(params: {
     courseId: string;
     surveyType: 'pre' | 'post';
@@ -766,24 +800,6 @@ export async function saveSurvey(surveyData: {
     }
 }
 
-// 코스 카탈로그 조회 함수
-export async function listCourseCatalog(options?: any) {
-    try {
-        const result = await client.graphql({
-            query: LIST_COURSE_CATALOG,
-            variables: options
-        }) as GraphQLResult<any>;
-
-        return {
-            data: result.data?.listCourseCatalog?.items || [],
-            errors: result.errors
-        };
-    } catch (error) {
-        console.error('Error listing course catalog:', error);
-        throw error;
-    }
-}
-
 // ==================== 고객사(Customer) 관련 함수 ====================
 export async function listCustomers(options?: any) {
     try {
@@ -818,9 +834,9 @@ export async function listCustomers(options?: any) {
       console.error('Error listing customers:', error);
       throw error;
     }
-  }
+}
   
-  export async function getCustomerById(customerId: string) {
+export async function getCustomer(customerId: string) {
     try {
       const result = await client.graphql({
         query: `
@@ -849,9 +865,9 @@ export async function listCustomers(options?: any) {
       console.error('Error getting customer:', error);
       throw error;
     }
-  }
+}
   
-  export async function createCustomerRecord(input: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) {
+export async function createCustomer(input: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) {
     try {
       const result = await client.graphql({
         query: `
@@ -880,9 +896,9 @@ export async function listCustomers(options?: any) {
       console.error('Error creating customer:', error);
       throw error;
     }
-  }
+}
   
-  export async function updateCustomerRecord(input: Partial<Customer> & { id: string }) {
+export async function updateCustomer(input: Partial<Customer> & { id: string }) {
     try {
       const result = await client.graphql({
         query: `
@@ -911,9 +927,9 @@ export async function listCustomers(options?: any) {
       console.error('Error updating customer:', error);
       throw error;
     }
-  }
+}
   
-  export async function deleteCustomerRecord(id: string) {
+export async function deleteCustomer(id: string) {
     try {
       const result = await client.graphql({
         query: `
@@ -935,10 +951,10 @@ export async function listCustomers(options?: any) {
       console.error('Error deleting customer:', error);
       throw error;
     }
-  }
+}
   
-  // ==================== 강사(Instructor) 관련 함수 ====================
-  export async function listInstructorsData(options?: any) {
+// ==================== 강사(Instructor) 관련 함수 ====================
+export async function listInstructors(options?: any) {
     try {
       const result = await client.graphql({
         query: `
@@ -970,9 +986,9 @@ export async function listCustomers(options?: any) {
       console.error('Error listing instructors:', error);
       throw error;
     }
-  }
+}
   
-  export async function getInstructorById(instructorId: string) {
+export async function getInstructor(instructorId: string) {
     try {
       const result = await client.graphql({
         query: `
@@ -1000,9 +1016,9 @@ export async function listCustomers(options?: any) {
       console.error('Error getting instructor:', error);
       throw error;
     }
-  }
+}
   
-  export async function createInstructorRecord(input: Omit<Instructor, 'id' | 'createdAt' | 'updatedAt'>) {
+export async function createInstructor(input: Omit<Instructor, 'id' | 'createdAt' | 'updatedAt'>) {
     try {
       const result = await client.graphql({
         query: `
@@ -1030,9 +1046,9 @@ export async function listCustomers(options?: any) {
       console.error('Error creating instructor:', error);
       throw error;
     }
-  }
+}
   
-  export async function updateInstructorRecord(input: Partial<Instructor> & { id: string }) {
+export async function updateInstructor(input: Partial<Instructor> & { id: string }) {
     try {
       const result = await client.graphql({
         query: `
@@ -1060,9 +1076,9 @@ export async function listCustomers(options?: any) {
       console.error('Error updating instructor:', error);
       throw error;
     }
-  }
+}
   
-  export async function deleteInstructorRecord(id: string) {
+export async function deleteInstructor(id: string) {
     try {
       const result = await client.graphql({
         query: `
@@ -1084,172 +1100,10 @@ export async function listCustomers(options?: any) {
       console.error('Error deleting instructor:', error);
       throw error;
     }
-  }
+}
   
-  // ==================== 과정 카탈로그(CourseCatalog) 관련 함수 ====================
-  export async function listCourseCatalogData(options?: any) {
-    try {
-      const result = await client.graphql({
-        query: `
-          query ListCourseCatalog(\$limit: Int, \$filter: ModelCourseCatalogFilterInput, \$nextToken: String) {
-            listCourseCatalog(limit: \$limit, filter: \$filter, nextToken: \$nextToken) {
-              items {
-                id
-                course_id
-                course_name
-                description
-                duration
-                level
-                delivery_method
-                objectives
-                target_audience
-                createdAt
-                updatedAt
-              }
-              nextToken
-            }
-          }
-        `,
-        variables: options
-      }) as GraphQLResult<any>;
-      
-      return {
-        data: result.data?.listCourseCatalog?.items || [],
-        nextToken: result.data?.listCourseCatalog?.nextToken,
-        errors: result.errors
-      };
-    } catch (error) {
-      console.error('Error listing course catalog:', error);
-      throw error;
-    }
-  }
-  
-  export async function getCourseCatalogById(id: string) {
-    try {
-      const result = await client.graphql({
-        query: `
-          query GetCourseCatalog(\$id: ID!) {
-            getCourseCatalog(id: \$id) {
-              id
-              course_id
-              course_name
-              description
-              duration
-              level
-              delivery_method
-              objectives
-              target_audience
-              createdAt
-              updatedAt
-            }
-          }
-        `,
-        variables: { id }
-      }) as GraphQLResult<any>;
-      
-      return {
-        data: result.data?.getCourseCatalog,
-        errors: result.errors
-      };
-    } catch (error) {
-      console.error('Error getting course catalog:', error);
-      throw error;
-    }
-  }
-  
-  export async function createCourseCatalogRecord(input: Omit<CourseCatalogModel, 'id' | 'createdAt' | 'updatedAt'>) {
-    try {
-      const result = await client.graphql({
-        query: `
-          mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {
-            createCourseCatalog(input: \$input) {
-              id
-              course_id
-              course_name
-              description
-              duration
-              level
-              delivery_method
-              objectives
-              target_audience
-              createdAt
-              updatedAt
-            }
-          }
-        `,
-        variables: { input }
-      }) as GraphQLResult<any>;
-      
-      return {
-        data: result.data?.createCourseCatalog,
-        errors: result.errors
-      };
-    } catch (error) {
-      console.error('Error creating course catalog:', error);
-      throw error;
-    }
-  }
-  
-  export async function updateCourseCatalogRecord(input: Partial<CourseCatalogModel> & { id: string }) {
-    try {
-      const result = await client.graphql({
-        query: `
-          mutation UpdateCourseCatalog(\$input: UpdateCourseCatalogInput!) {
-            updateCourseCatalog(input: \$input) {
-              id
-              course_id
-              course_name
-              description
-              duration
-              level
-              delivery_method
-              objectives
-              target_audience
-              createdAt
-              updatedAt
-            }
-          }
-        `,
-        variables: { input }
-      }) as GraphQLResult<any>;
-      
-      return {
-        data: result.data?.updateCourseCatalog,
-        errors: result.errors
-      };
-    } catch (error) {
-      console.error('Error updating course catalog:', error);
-      throw error;
-    }
-  }
-  
-  export async function deleteCourseCatalogRecord(id: string) {
-    try {
-      const result = await client.graphql({
-        query: `
-          mutation DeleteCourseCatalog(\$input: DeleteCourseCatalogInput!) {
-            deleteCourseCatalog(input: \$input) {
-              id
-              course_id
-              course_name
-            }
-          }
-        `,
-        variables: { input: { id } }
-      }) as GraphQLResult<any>;
-      
-      return {
-        data: result.data?.deleteCourseCatalog,
-        errors: result.errors
-      };
-    } catch (error) {
-      console.error('Error deleting course catalog:', error);
-      throw error;
-    }
-  }
-  
-  // 백엔드 데이터를 UI 뷰모델로 변환하는 함수
-  export function mapToViewModel(course: CourseCatalogModel): CourseViewModel {
+// 백엔드 데이터를 UI 뷰모델로 변환하는 함수
+export function mapToViewModel(course: CourseCatalogModel): CourseViewModel {
     return {
       id: course.id || '',
       course_id: course.course_id || '',
@@ -1265,10 +1119,10 @@ export async function listCustomers(options?: any) {
       createdAt: course.createdAt,
       updatedAt: course.updatedAt
     };
-  }
+}
   
-  // UI 뷰모델을 백엔드 데이터로 변환하는 함수
-  export function mapToBackendModel(viewModel: CourseViewModel): CourseCatalogModel {
+// UI 뷰모델을 백엔드 데이터로 변환하는 함수
+export function mapToBackendModel(viewModel: CourseViewModel): CourseCatalogModel {
     return {
       id: viewModel.id,
       course_id: viewModel.course_id,
@@ -1280,7 +1134,7 @@ export async function listCustomers(options?: any) {
       objectives: viewModel.objectives,
       target_audience: viewModel.target_audience
     };
-  }
+}
 
 // 타입 가드 함수
 export function isSurveyGenerationResponse(obj: unknown): obj is SurveyGenerationResponse {

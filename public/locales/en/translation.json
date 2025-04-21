@@ -348,7 +348,6 @@
     },
     "correct_answer": "Correct Answer"
   },
-  
   "quiz_creator": {
     "create_title": "Create Quiz",
     "edit_title": "Edit Quiz",
@@ -616,7 +615,6 @@
     "satisfaction_survey": "Satisfaction Survey",
     "expectations_survey": "Expectations Survey"
   },
-  
   "surveyCreator": {
     "default_title": "{course} {type} Survey",
     "default_description": "This survey collects feedback about the course.",
@@ -668,6 +666,78 @@
     "errors": {
       "save_error": "Error saving survey",
       "save_error_message": "Failed to save the survey. Please try again."
+    }
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "description": "Manage courses, customers, and instructors",
+    "tabs": {
+      "courses": "Course Catalog",
+      "customers": "Customers",
+      "instructors": "Instructors"
+    },
+    "courses": {
+      "title": "Course Catalog",
+      "description": "Manage course offerings and curriculum",
+      "create_button": "Create New Course",
+      "edit_button": "Edit Course",
+      "delete_button": "Delete Course",
+      "confirm_delete": "Are you sure you want to delete this course?",
+      "search_placeholder": "Search courses",
+      "error_loading": "Error loading course data",
+      "no_courses": "No courses found",
+      "table": {
+        "id": "ID",
+        "title": "Title",
+        "description": "Description",
+        "duration": "Duration",
+        "level": "Level",
+        "price": "Price",
+        "delivery_method": "Delivery Method",
+        "created": "Created Date",
+        "updated": "Last Updated"
+      }
+    },
+    "customers": {
+      "title": "Customer Management",
+      "description": "View and manage customer accounts",
+      "create_button": "Add Customer",
+      "edit_button": "Edit Customer",
+      "delete_button": "Delete Customer",
+      "confirm_delete": "Are you sure you want to delete this customer?",
+      "search_placeholder": "Search customers",
+      "error_loading": "Error loading customer data",
+      "no_customers": "No customers found",
+      "table": {
+        "id": "ID",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "company": "Company",
+        "courses_enrolled": "Courses Enrolled",
+        "created": "Created Date"
+      }
+    },
+    "instructors": {
+      "title": "Instructor Management",
+      "description": "View and manage course instructors",
+      "create_button": "Add Instructor",
+      "edit_button": "Edit Instructor",
+      "delete_button": "Delete Instructor",
+      "confirm_delete": "Are you sure you want to delete this instructor?",
+      "search_placeholder": "Search instructors",
+      "error_loading": "Error loading instructor data",
+      "no_instructors": "No instructors found",
+      "table": {
+        "id": "ID",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "specialties": "Specialties",
+        "courses_teaching": "Courses Teaching",
+        "bio": "Bio",
+        "created": "Created Date"
+      }
     }
   }
 }

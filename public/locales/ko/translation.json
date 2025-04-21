@@ -348,7 +348,6 @@
     },
     "correct_answer": "정답"
   },
-  
   "quiz_creator": {
     "create_title": "퀴즈 생성",
     "edit_title": "퀴즈 수정",
@@ -616,7 +615,6 @@
     "satisfaction_survey": "만족도 설문조사",
     "expectations_survey": "기대사항 설문조사"
   },
-  
   "surveyCreator": {
     "default_title": "{course} {type} 설문조사",
     "default_description": "이 설문조사는 과정에 대한 피드백을 수집합니다.",
@@ -668,6 +666,78 @@
     "errors": {
       "save_error": "설문조사 저장 오류",
       "save_error_message": "설문조사 저장에 실패했습니다. 다시 시도해주세요."
+    }
+  },
+  "admin": {
+    "title": "관리자 대시보드",
+    "description": "과정, 고객, 강사를 관리합니다",
+    "tabs": {
+      "courses": "과정 카탈로그",
+      "customers": "고객 관리",
+      "instructors": "강사 관리"
+    },
+    "courses": {
+      "title": "과정 카탈로그",
+      "description": "과정 제공 및 커리큘럼 관리",
+      "create_button": "새 과정 만들기",
+      "edit_button": "과정 편집",
+      "delete_button": "과정 삭제",
+      "confirm_delete": "이 과정을 삭제하시겠습니까?",
+      "search_placeholder": "과정 검색",
+      "error_loading": "과정 데이터 로드 중 오류 발생",
+      "no_courses": "과정을 찾을 수 없습니다",
+      "table": {
+        "id": "ID",
+        "title": "제목",
+        "description": "설명",
+        "duration": "기간",
+        "level": "난이도",
+        "price": "가격",
+        "delivery_method": "교육 방식",
+        "created": "생성일",
+        "updated": "최종 수정일"
+      }
+    },
+    "customers": {
+      "title": "고객 관리",
+      "description": "고객 계정 조회 및 관리",
+      "create_button": "고객 추가",
+      "edit_button": "고객 정보 편집",
+      "delete_button": "고객 삭제",
+      "confirm_delete": "이 고객을 삭제하시겠습니까?",
+      "search_placeholder": "고객 검색",
+      "error_loading": "고객 데이터 로드 중 오류 발생",
+      "no_customers": "고객을 찾을 수 없습니다",
+      "table": {
+        "id": "ID",
+        "name": "이름",
+        "email": "이메일",
+        "phone": "전화번호",
+        "company": "회사",
+        "courses_enrolled": "등록한 과정",
+        "created": "가입일"
+      }
+    },
+    "instructors": {
+      "title": "강사 관리",
+      "description": "과정 강사 조회 및 관리",
+      "create_button": "강사 추가",
+      "edit_button": "강사 정보 편집",
+      "delete_button": "강사 삭제",
+      "confirm_delete": "이 강사를 삭제하시겠습니까?",
+      "search_placeholder": "강사 검색",
+      "error_loading": "강사 데이터 로드 중 오류 발생",
+      "no_instructors": "강사를 찾을 수 없습니다",
+      "table": {
+        "id": "ID",
+        "name": "이름",
+        "email": "이메일",
+        "phone": "전화번호",
+        "specialties": "전문 분야",
+        "courses_teaching": "담당 과정",
+        "bio": "약력",
+        "created": "등록일"
+      }
     }
   }
 }
