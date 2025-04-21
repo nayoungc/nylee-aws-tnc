@@ -374,10 +374,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
           <BreadcrumbGroup items={breadcrumbItems} />
         }
         navigation={
-          <SideNavigation 
+          <SideNavigation
             activeHref={location.pathname}
             header={{ text: tString('app.title'), href: '/' }}
-            items={sideNavigationItems}
+            items={sideNavigationItems as any} // 또는 as readonly Item[]
             onFollow={handleNavigationFollow}
           />
         }
