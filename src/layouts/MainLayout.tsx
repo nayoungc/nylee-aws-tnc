@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getCurrentUser, signOut, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
+import { useAuth } from '../contexts/AuthContext'; // AuthContext 사용
 import { useTypedTranslation } from '@utils/i18n-utils';
 
 import {
@@ -17,8 +17,6 @@ import {
   Box,
   Header
 } from '@cloudscape-design/components';
-
-// Cloudscape 컴포넌트들의 타입
 import { SideNavigationProps } from '@cloudscape-design/components/side-navigation';
 import { TopNavigationProps } from '@cloudscape-design/components/top-navigation';
 
@@ -36,84 +34,52 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, tString, i18n } = useTypedTranslation();
-  const [loading, setLoading] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
-  const [authenticated, setAuthenticated] = useState<boolean>(false);
-  const [userAttributes, setUserAttributes] = useState<any>(null);
-  const [username, setUsername] = useState<string>('');
+  const [signoutLoading, setSignoutLoading] = useState(false);
+  
+  // AuthContext에서 인증 정보 가져오기 - 중복 인증 검사 방지
+  const { isAuthenticated, username, userAttributes, userRole, logout } = useAuth();
 
-  // 사용자 인증 상태 확인
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // 현재 세션 확인
-        const session = await fetchAuthSession();
-        if (session.tokens) {
-          setAuthenticated(true);
-          
-          // 사용자 속성 가져오기
-          try {
-            const user = await getCurrentUser();
-            setUsername(user.username);
-            
-            const attributes = await fetchUserAttributes();
-            setUserAttributes(attributes);
-          } catch (err) {
-            console.error('사용자 속성 가져오기 실패:', err);
-          }
-        } else {
-          setAuthenticated(false);
-          setUserAttributes(null);
-        }
-      } catch (err) {
-        setAuthenticated(false);
-        setUserAttributes(null);
-      }
-    };
-    
-    checkAuth();
-  }, []);
-
-  // 로그아웃 처리
-  const handleSignOut = async () => {
-    setLoading(true);
+  // 로그아웃 핸들러 - useCallback 사용
+  const handleSignOut = useCallback(async () => {
+    setSignoutLoading(true);
     try {
-      await signOut();
-      setAuthenticated(false);
-      setUserAttributes(null);
+      await logout();
       navigate('/signin');
     } catch (error) {
       console.error('로그아웃 오류:', error);
     } finally {
-      setLoading(false);
+      setSignoutLoading(false);
       setShowSignOutModal(false);
     }
-  };
+  }, [logout, navigate]);
 
-  // 사용자 역할 확인 (기본값: student)
-  const userRole = useMemo(() => {
-    return userAttributes?.profile || 'student';
-  }, [userAttributes]);
+  // 사이드 네비게이션 클릭 핸들러 - useCallback 사용
+  const handleNavigationFollow = useCallback((event: CustomEvent<SideNavigationProps.FollowDetail>) => {
+    if (!event.detail.external) {
+      event.preventDefault();
+      navigate(event.detail.href);
+    }
+  }, [navigate]);
 
-  // 사이드 메뉴 아이템 결정 - 모든 사용자에게 퍼블릭 메뉴 표시
-  const sideNavigationItems: SideNavigationProps.Item[] = useMemo(() => {
-    // 기본 공개 메뉴 (모든 사용자에게 표시)
+  // 사이드 내비게이션 아이템 - 최적화된 의존성 배열
+  const sideNavigationItems = useMemo(() => {
+    // 기본 메뉴 (모든 사용자용)
     const publicMenuItems: SideNavigationProps.Item[] = [
       { type: 'link', text: t('nav.course_list'), href: '/tnc' }
     ];
     
-    // 인증된 사용자만을 위한 추가 메뉴 준비
-    if (!authenticated) {
+    // 비인증 사용자는 공개 메뉴만 보여줌
+    if (!isAuthenticated) {
       return publicMenuItems;
     }
 
-    // 강사 또는 관리자인 경우 추가 메뉴
+    // 강사/관리자 메뉴 구성
     if (userRole === 'instructor' || userRole === 'admin') {
       const instructorItems: SideNavigationProps.Item[] = [
         { type: 'link', text: t('nav.dashboard'), href: '/instructor/dashboard' },
         { type: 'link', text: t('nav.course_management'), href: '/instructor/courses' },
         { type: 'link', text: t('nav.course_catalog'), href: '/instructor/courses/catalog' },
-        
         {
           type: 'section',
           text: t('nav.assessments'),
@@ -162,11 +128,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       ];
     }
     
-    // 일반 교육생은 공개 메뉴만 표시
+    // 일반 사용자는 공개 메뉴만 표시
     return publicMenuItems;
-  }, [authenticated, userRole, t]);
+  }, [isAuthenticated, userRole, t]);
 
-  // 현재 경로에 맞는 브레드크럼 생성
+  // 브레드크럼 - 경로 변경시에만 계산
   const breadcrumbItems = useMemo(() => {
     const path = location.pathname;
     const items = [{ text: t('nav.home'), href: '/' }];
@@ -268,38 +234,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     return items;
   }, [location.pathname, t]);
 
-  // SideNavigation의 onFollow 핸들러
-  const handleNavigationFollow = (event: CustomEvent<SideNavigationProps.FollowDetail>) => {
-    // 외부 링크가 아닌 경우에만 기본 동작 방지 및 페이지 이동
-    if (!event.detail.external) {
-      event.preventDefault();
-      navigate(event.detail.href);
-    }
-  };
-
-  // TopNavigation utilities 생성 - 타입에 맞게 수정
-  const getTopNavigationUtilities = (): TopNavigationProps.Utility[] => {
+  // TopNavigation utilities 메모이제이션
+  const topNavUtilities = useMemo(() => {
+    const utilities: TopNavigationProps.Utility[] = [];
+    
     // 언어 변경 버튼
-    const languageButton: TopNavigationProps.ButtonUtility = {
+    utilities.push({
       type: 'button',
       text: tString('common.language'),
       iconName: 'globe',
       onClick: () => {
-        // 언어 전환 기능
         const currentLang = i18n.language;
         const newLang = currentLang === 'ko' ? 'en' : 'ko';
         i18n.changeLanguage(newLang);
       }
-    };
+    });
     
-    // 인증된 사용자의 메뉴
-    if (authenticated) {
-      const userDropdown: TopNavigationProps.MenuDropdownUtility = {
+    // 인증된 사용자 메뉴 또는 로그인 버튼
+    if (isAuthenticated) {
+      utilities.push({
         type: 'menu-dropdown',
         text: username,
         description: userRole === 'admin' ? tString('role.admin') :
-                     userRole === 'instructor' ? tString('role.instructor') : 
-                     tString('role.student'),
+                    userRole === 'instructor' ? tString('role.instructor') : 
+                    tString('role.student'),
         iconName: 'user-profile',
         items: [
           { id: 'profile', text: tString('auth.profile'), href: '#profile' },
@@ -338,20 +296,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
             setShowSignOutModal(true);
           }
         }
-      };
-      
-      return [languageButton, userDropdown];
+      });
     } else {
-      // 로그인 버튼 (비인증 사용자용)
-      const signInButton: TopNavigationProps.ButtonUtility = {
+      utilities.push({
         type: 'button',
         text: tString('auth.sign_in'),
         onClick: () => navigate('/signin')
-      };
-      
-      return [languageButton, signInButton];
+      });
     }
-  };
+    
+    return utilities;
+  }, [isAuthenticated, username, userRole, tString, i18n, navigate]);
 
   return (
     <>
@@ -369,7 +324,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
               <Button 
                 variant="primary" 
                 onClick={handleSignOut}
-                loading={loading}
+                loading={signoutLoading}
               >
                 {t('auth.sign_out')}
               </Button>
@@ -391,7 +346,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
               alt: tString('app.title')
             }
           }}
-          utilities={getTopNavigationUtilities()}
+          utilities={topNavUtilities}
           i18nStrings={{
             searchIconAriaLabel: tString('common.search'),
             searchDismissIconAriaLabel: tString('common.close_search'),
@@ -434,4 +389,5 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   );
 };
 
-export default MainLayout;
+// 메모이제이션으로 불필요한 렌더링 방지
+export default React.memo(MainLayout);
