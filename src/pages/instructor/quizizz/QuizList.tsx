@@ -20,7 +20,6 @@ import { SelectProps } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { client, listCourseCatalog, generateQuizFromContent, listQuizzes, getQuiz } from '@graphql/client';
-import MainLayout from '@layouts/MainLayout';
 
 // 타입 정의
 interface Question {

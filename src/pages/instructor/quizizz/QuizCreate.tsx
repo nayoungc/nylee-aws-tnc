@@ -23,7 +23,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { client, listCourseCatalog, generateQuizFromContent, getQuiz } from '@graphql/client';
 import { v4 as uuidv4 } from 'uuid';
-import MainLayout from '@layouts/MainLayout';
 
 // 타입 정의
 // 기본 타입 정의
@@ -132,7 +131,6 @@ export default function QuizCreate() {
       // Amplify Gen 2 API 사용
       const response = await listCourseCatalog({
         limit: 100,
-        filter: { isPublished: { eq: true } }
       });
 
       if (response.errors) {

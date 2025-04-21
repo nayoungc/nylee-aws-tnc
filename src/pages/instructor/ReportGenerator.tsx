@@ -60,18 +60,18 @@ interface GeneratedReport {
 // GraphQL 쿼리
 const listCourseCatalog = /* GraphQL */ `
   query listCourseCatalog(
-    \$filter: ModelCourseCatalogFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listCourseCatalog(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        title
-        status
-      }
-      nextToken
+  \$limit: Int
+  \$nextToken: String
+) {
+  listCourseCatalog(limit: \$limit, nextToken: \$nextToken) {
+    items {
+      id
+      title
+      status
     }
+    nextToken
+  }
+}
   }
 `;
 
@@ -101,7 +101,7 @@ const listReports = /* GraphQL */ `
 export default function ReportGenerator() {
   const navigate = useNavigate();
   const { t, tString, i18n } = useTypedTranslation();
-  
+
   // 상태 관리
   const [courses, setCourses] = useState<SelectProps.Option[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<SelectProps.Option | null>(null);
@@ -163,7 +163,7 @@ export default function ReportGenerator() {
   // 과정 목록 가져오기
   const fetchCourses = async () => {
     setLoadingCourses(true);
-    
+
     try {
       const response = await client.graphql({
         query: listCourseCatalog,
@@ -177,17 +177,17 @@ export default function ReportGenerator() {
 
       const responseAny: any = response;
       const courseItems = responseAny.data?.listCourseCatalog?.items || [];
-      
+
       const courseOptions: SelectProps.Option[] = courseItems.map((course: CourseItem) => ({
         label: course.title,
         value: course.id
       }));
-      
+
       setCourses(courseOptions);
     } catch (error) {
       console.error(t('reports.errors.course_load'), error);
       setError(t('reports.errors.course_load_message'));
-      
+
       // 개발 환경 폴백 데이터
       if (process.env.NODE_ENV === 'development') {
         setCourses([
@@ -204,7 +204,7 @@ export default function ReportGenerator() {
   // 보고서 목록 가져오기
   const fetchReports = async () => {
     setLoadingReports(true);
-    
+
     try {
       const response = await client.graphql({
         query: listReports,
@@ -215,17 +215,17 @@ export default function ReportGenerator() {
 
       const responseAny: any = response;
       const reportItems = responseAny.data?.listReports?.items || [];
-      
+
       // 날짜 기준 내림차순 정렬 (최신순)
-      const sortedReports = [...reportItems].sort((a: any, b: any) => 
+      const sortedReports = [...reportItems].sort((a: any, b: any) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-      
+
       setGeneratedReports(sortedReports);
     } catch (error) {
       console.error(t('reports.errors.report_load'), error);
       setError(t('reports.errors.report_load_message'));
-      
+
       // 개발 환경 폴백 데이터
       if (process.env.NODE_ENV === 'development') {
         setGeneratedReports([
@@ -261,7 +261,7 @@ export default function ReportGenerator() {
   // 보고서 미리보기 데이터 가져오기
   const fetchPreviewData = async () => {
     if (!selectedCourse) return;
-    
+
     try {
       // 여기서는 API 호출 대신 샘플 데이터 사용
       const sampleData = {
@@ -301,7 +301,7 @@ export default function ReportGenerator() {
           ]
         }
       };
-      
+
       setPreviewData(sampleData);
     } catch (error) {
       console.error(t('reports.errors.preview_load'), error);
@@ -315,16 +315,16 @@ export default function ReportGenerator() {
       setError(t('reports.errors.select_course'));
       return;
     }
-    
+
     setGenerating(true);
     setError(null);
-    
+
     try {
       const selectedReportTypeObj = reportTypes.find(type => type.id === selectedReportType);
       const selectedFormatObj = reportFormats.find(format => format.id === selectedFormat);
-      
+
       const reportTitle = `\${selectedCourse.label} - \${selectedReportTypeObj?.title}`;
-      
+
       const response = await post({
         apiName: 'reportApi',
         path: '/generate-report',
@@ -340,20 +340,20 @@ export default function ReportGenerator() {
           })
         }
       }).response;
-      
+
       // 보고서 생성이 시작되었음을 알림
       alert(t('reports.alerts.generation_started'));
-      
+
       // 보고서 목록 다시 불러오기
       fetchReports();
-      
+
       // 보고서 탭으로 전환
       setActiveTabId('reports');
-      
+
     } catch (error) {
       console.error(t('reports.errors.generation'), error);
       setError(t('reports.errors.generation_message'));
-      
+
       // 개발 환경에서는 mock 응답
       if (process.env.NODE_ENV === 'development') {
         setTimeout(() => {
@@ -368,7 +368,7 @@ export default function ReportGenerator() {
             status: 'completed' as 'completed',
             url: '#'
           };
-          
+
           setGeneratedReports(prev => [newReport, ...prev]);
           setActiveTabId('reports');
           alert(t('reports.alerts.report_created'));
@@ -399,17 +399,17 @@ export default function ReportGenerator() {
             body: JSON.stringify({ reportId })
           }
         });
-        
+
         // 목록에서 제거
         setGeneratedReports(prev => prev.filter(report => report.id !== reportId));
-        
+
       } catch (error) {
         console.error(t('reports.errors.delete'), error);
         alert(t('reports.errors.delete_message'));
       }
     }
   };
-  
+
   // 미리보기가 필요할 때 데이터를 가져옵니다
   useEffect(() => {
     if (selectedCourse && activeTabId === 'preview') {
@@ -418,7 +418,7 @@ export default function ReportGenerator() {
   }, [selectedCourse, activeTabId]);
 
   const getStatusLabel = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'completed': return t('reports.status.completed');
       case 'in-progress': return t('reports.status.in_progress');
       case 'failed': return t('reports.status.failed');
@@ -449,7 +449,7 @@ export default function ReportGenerator() {
             }
           />
         </FormField>
-        
+
         <FormField label={t('reports.report_type')}>
           <Cards
             cardDefinition={{
@@ -468,14 +468,14 @@ export default function ReportGenerator() {
             items={reportTypes}
             selectedItems={reportTypes.filter(item => item.id === selectedReportType)}
             selectionType="single"
-            onSelectionChange={({ detail }) => 
-              detail.selectedItems.length > 0 && 
+            onSelectionChange={({ detail }) =>
+              detail.selectedItems.length > 0 &&
               setSelectedReportType(detail.selectedItems[0].id)
             }
             trackBy="id"
           />
         </FormField>
-        
+
         <ColumnLayout columns={2}>
           <FormField label={t('reports.start_date')}>
             <DatePicker
@@ -489,7 +489,7 @@ export default function ReportGenerator() {
               }}
             />
           </FormField>
-          
+
           <FormField label={t('reports.end_date')}>
             <DatePicker
               onChange={({ detail }) => detail.value && setEndDate(detail.value)}
@@ -503,7 +503,7 @@ export default function ReportGenerator() {
             />
           </FormField>
         </ColumnLayout>
-        
+
         <FormField label={t('reports.format')}>
           <SegmentedControl
             selectedId={selectedFormat}
@@ -514,9 +514,9 @@ export default function ReportGenerator() {
             }))}
           />
         </FormField>
-        
+
         <SpaceBetween direction="horizontal" size="xs">
-          <Button 
+          <Button
             onClick={() => setActiveTabId('preview')}
             disabled={!selectedCourse}
           >
@@ -550,11 +550,11 @@ export default function ReportGenerator() {
       ) : (
         <SpaceBetween size="l">
           <Header variant="h3">{selectedCourse.label} - {t('reports.preview_subtitle')}</Header>
-          
+
           {selectedReportType === 'quiz-comparison' && (
             <SpaceBetween size="l">
               <Header variant="h3">{t('reports.quiz_comparison')}</Header>
-              
+
               {/* Cloudscape BarChart 사용 */}
               <BarChart
                 series={[
@@ -589,15 +589,15 @@ export default function ReportGenerator() {
                 height={400}
                 hideFilter
               />
-              
+
               <Box variant="awsui-key-label">{t('reports.average_improvement')}: {previewData.quizComparison.averageImprovement}</Box>
             </SpaceBetween>
           )}
-          
+
           {selectedReportType === 'survey-analysis' && (
             <SpaceBetween size="l">
               <Header variant="h3">{t('reports.survey_analysis')}</Header>
-              
+
               {/* Cloudscape PieChart 사용 */}
               <div style={{ height: "400px" }}>
                 <PieChart
@@ -609,7 +609,7 @@ export default function ReportGenerator() {
                     { key: t('reports.responses'), value: datum.value },
                     { key: t('reports.percentage'), value: `\${((datum.value / sum) * 100).toFixed(1)}%` }
                   ]}
-                  segmentDescription={(datum, sum) => 
+                  segmentDescription={(datum, sum) =>
                     `\${datum.title}: \${((datum.value / sum) * 100).toFixed(1)}%`
                   }
                   i18nStrings={{
@@ -626,7 +626,7 @@ export default function ReportGenerator() {
                   size="large"
                 />
               </div>
-              
+
               <Box variant="awsui-key-label">{t('reports.recommendation_score')}: {previewData.surveyAnalysis.recommendationScore}/10</Box>
               <SpaceBetween size="s">
                 <Box variant="awsui-key-label">{t('reports.top_opinions')}:</Box>
@@ -679,8 +679,8 @@ export default function ReportGenerator() {
             header: t('reports.columns.status'),
             cell: item => (
               <Badge color={
-                item.status === 'completed' ? 'green' : 
-                item.status === 'in-progress' ? 'blue' : 'red'
+                item.status === 'completed' ? 'green' :
+                  item.status === 'in-progress' ? 'blue' : 'red'
               }>
                 {getStatusLabel(item.status)}
               </Badge>
@@ -735,13 +735,13 @@ export default function ReportGenerator() {
         >
           {t('reports.title')}
         </Header>
-        
+
         {error && (
           <Alert type="error">
             {error}
           </Alert>
         )}
-        
+
         <Tabs
           activeTabId={activeTabId}
           onChange={({ detail }) => setActiveTabId(detail.activeTabId)}

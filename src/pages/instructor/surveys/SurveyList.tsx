@@ -56,7 +56,6 @@ interface SurveyGenerationResponse {
 // GraphQL 쿼리 정의
 const listCourseCatalog = /* GraphQL */ `
   query listCourseCatalog(
-    \$filter: ModelCourseCatalogFilterInput
     \$limit: Int
     \$nextToken: String
   ) {

@@ -125,10 +125,18 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
               query listCourseCatalog(\$limit: Int) {
                 listCourseCatalog(limit: \$limit) {
                   items {
+                    id
                     catalogId
                     title
                     description
-                    // 필요한 다른 필드들
+                    category
+                    status
+                    version
+                    price
+                    currency
+                    deliveryMethod
+                    targetAudience
+                    # 필요한 경우 다른 필드들도 추가
                   }
                 }
               }

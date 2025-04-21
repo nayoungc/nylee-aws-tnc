@@ -187,7 +187,6 @@ export type QuizParams = {
 // GraphQL 쿼리 정의 - 백슬래시 제거
 const LIST_COURSE_CATALOG = `
   query listCourseCatalog(
-    \$filter: ModelCourseCatalogFilterInput
     \$limit: Int
     \$nextToken: String
   ) {
@@ -295,8 +294,8 @@ export async function listCourseCatalog(options?: any) {
     try {
         const result = await client.graphql({
             query: `
-        query ListCourseCatalog(\$limit: Int, \$filter: ModelCourseCatalogFilterInput, \$nextToken: String) {
-          listCourseCatalog(limit: \$limit, filter: \$filter, nextToken: \$nextToken) {
+        query ListCourseCatalog(\$limit: Int, \$nextToken: String) {
+          listCourseCatalog(limit: \$limit, nextToken: \$nextToken) {
             items {
               id
               title
