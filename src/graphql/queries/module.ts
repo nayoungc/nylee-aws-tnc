@@ -1,5 +1,5 @@
 // src/graphql/queries/modules.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const getModule = graphql(`
   query GetModule(\$catalogId: ID!, \$moduleNumber: String!) {

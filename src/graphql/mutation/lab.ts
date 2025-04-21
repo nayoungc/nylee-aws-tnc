@@ -1,5 +1,5 @@
 // src/graphql/mutations/lab.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const createLab = graphql(`
   mutation CreateLab(\$input: CreateLabInput!) {

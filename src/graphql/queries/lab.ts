@@ -1,5 +1,5 @@
 // src/graphql/queries/lab.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const getLab = graphql(`
   query GetLab(\$catalogId: ID!, \$labId: String!) {

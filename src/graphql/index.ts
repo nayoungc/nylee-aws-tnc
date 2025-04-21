@@ -1,12 +1,9 @@
-// src/graphql/index.ts
-export * from './queries/courseCatalog';
-export * from './queries/module';
-export * from './queries/lab';
-export * from './queries/course';
-export * from './queries/customer';
+// GraphQL API 내보내기
+export * from './api';
 
-export * from './mutations/courseCatalog';
-export * from './mutations/module';
-export * from './mutations/lab';
-export * from './mutations/course';
-export * from './mutations/customer';
+// 모든 쿼리 및 뮤테이션 내보내기
+export * from './queries';
+export * from './mutations';
+
+// 프래그먼트 내보내기
+export * from './fragments';

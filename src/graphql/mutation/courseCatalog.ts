@@ -1,46 +1,23 @@
 // src/graphql/mutations/courseCatalog.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
+import { CourseDetailsFragment } from '../fragments/courseDetails';
 
 export const createCourseCatalog = graphql(`
   mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {
     createCourseCatalog(input: \$input) {
-      catalogId
-      version
-      title
-      awsCode
-      description
-      category
-      level
-      duration
-      status
-      objectives
-      targetAudience
-      deliveryMethod
-      createdAt
-      updatedAt
+      ...CourseDetails
     }
   }
+  \${CourseDetailsFragment}
 `);
 
 export const updateCourseCatalog = graphql(`
   mutation UpdateCourseCatalog(\$input: UpdateCourseCatalogInput!) {
     updateCourseCatalog(input: \$input) {
-      catalogId
-      version
-      title
-      awsCode
-      description
-      category
-      level
-      duration
-      status
-      objectives
-      targetAudience
-      deliveryMethod
-      createdAt
-      updatedAt
+      ...CourseDetails
     }
   }
+  \${CourseDetailsFragment}
 `);
 
 export const deleteCourseCatalog = graphql(`

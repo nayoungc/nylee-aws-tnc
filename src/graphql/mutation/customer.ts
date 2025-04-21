@@ -1,5 +1,5 @@
 // src/graphql/mutations/customer.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const createCustomer = graphql(`
   mutation CreateCustomer(\$input: CreateCustomerInput!) {

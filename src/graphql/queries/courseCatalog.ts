@@ -1,5 +1,5 @@
 // src/graphql/queries/courseCatalog.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const getCourseCatalog = graphql(`
   query GetCourseCatalog(\$catalogId: ID!, \$version: String!) {

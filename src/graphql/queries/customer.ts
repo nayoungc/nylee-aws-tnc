@@ -1,5 +1,5 @@
 // src/graphql/queries/customers.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const getCustomer = graphql(`
   query GetCustomer(\$customerId: ID!) {

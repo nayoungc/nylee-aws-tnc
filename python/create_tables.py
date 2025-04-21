@@ -399,6 +399,386 @@ def create_course_catalog_tables():
     except ClientError as e:
         logger.error(f"테이블 생성 오류 Tnc-Customers: {e.response['Error']['Message']}")
 
+    # 9. Tnc-Courses (개설된 과정 인스턴스) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-Courses',
+            KeySchema=[
+                {'AttributeName': 'courseId', 'KeyType': 'HASH'},  # 파티션 키
+                {'AttributeName': 'startDate', 'KeyType': 'RANGE'}  # 정렬 키
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'courseId', 'AttributeType': 'S'},
+                {'AttributeName': 'startDate', 'AttributeType': 'S'},
+                {'AttributeName': 'catalogId', 'AttributeType': 'S'},
+                {'AttributeName': 'shareCode', 'AttributeType': 'S'},
+                {'AttributeName': 'instructor', 'AttributeType': 'S'},
+                {'AttributeName': 'customerId', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'catalogId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'startDate', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'GSI2',
+                    'KeySchema': [
+                        {'AttributeName': 'shareCode', 'KeyType': 'HASH'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'GSI3',
+                    'KeySchema': [
+                        {'AttributeName': 'instructor', 'KeyType': 'HASH'},
+                        {'AttributeName': 'startDate', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'GSI4',
+                    'KeySchema': [
+                        {'AttributeName': 'customerId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'startDate', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-Courses")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-Courses: {e.response['Error']['Message']}")
+
+    # 10. Tnc-Course-UserQuizzes (사용자 퀴즈 응시 정보) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-Course-UserQuizzes',
+            KeySchema=[
+                {'AttributeName': 'userId', 'KeyType': 'HASH'},  # 파티션 키
+                {'AttributeName': 'courseId_quizType_quizId', 'KeyType': 'RANGE'}  # 정렬 키
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'userId', 'AttributeType': 'S'},
+                {'AttributeName': 'courseId_quizType_quizId', 'AttributeType': 'S'},
+                {'AttributeName': 'courseId', 'AttributeType': 'S'},
+                {'AttributeName': 'quizId', 'AttributeType': 'S'},
+                {'AttributeName': 'completionTime', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'courseId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'userId', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'GSI2',
+                    'KeySchema': [
+                        {'AttributeName': 'quizId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'completionTime', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-Course-UserQuizzes")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-Course-UserQuizzes: {e.response['Error']['Message']}")
+
+    # 11. Tnc-Course-UserResponses (사용자 퀴즈 문항별 응답) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-Course-UserResponses',
+            KeySchema=[
+                {'AttributeName': 'userId_courseId_quizId', 'KeyType': 'HASH'},  # 파티션 키
+                {'AttributeName': 'questionNumber_attemptNumber', 'KeyType': 'RANGE'}  # 정렬 키
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'userId_courseId_quizId', 'AttributeType': 'S'},
+                {'AttributeName': 'questionNumber_attemptNumber', 'AttributeType': 'S'},
+                {'AttributeName': 'quizId', 'AttributeType': 'S'},
+                {'AttributeName': 'questionNumber', 'AttributeType': 'S'},
+                {'AttributeName': 'courseId', 'AttributeType': 'S'},
+                {'AttributeName': 'isCorrect', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'quizId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'questionNumber', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'GSI2',
+                    'KeySchema': [
+                        {'AttributeName': 'courseId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'isCorrect', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-Course-UserResponses")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-Course-UserResponses: {e.response['Error']['Message']}")
+
+    # 12. Tnc-Course-UserSurveys (사용자 설문조사 제출 정보) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-Course-UserSurveys',
+            KeySchema=[
+                {'AttributeName': 'randomId', 'KeyType': 'HASH'},  # 파티션 키
+                {'AttributeName': 'courseId_surveyType_surveyId', 'KeyType': 'RANGE'}  # 정렬 키
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'randomId', 'AttributeType': 'S'},
+                {'AttributeName': 'courseId_surveyType_surveyId', 'AttributeType': 'S'},
+                {'AttributeName': 'courseId', 'AttributeType': 'S'},
+                {'AttributeName': 'surveyType', 'AttributeType': 'S'},
+                {'AttributeName': 'surveyId', 'AttributeType': 'S'},
+                {'AttributeName': 'completionTime', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'courseId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'surveyType', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'GSI2',
+                    'KeySchema': [
+                        {'AttributeName': 'surveyId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'completionTime', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-Course-UserSurveys")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-Course-UserSurveys: {e.response['Error']['Message']}")
+
+    # 13. Tnc-Course-UserSurveyResponses (사용자 설문조사 문항별 응답) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-Course-UserSurveyResponses',
+            KeySchema=[
+                {'AttributeName': 'randomId_courseId_surveyId', 'KeyType': 'HASH'},  # 파티션 키
+                {'AttributeName': 'questionNumber', 'KeyType': 'RANGE'}  # 정렬 키
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'randomId_courseId_surveyId', 'AttributeType': 'S'},
+                {'AttributeName': 'questionNumber', 'AttributeType': 'S'},
+                {'AttributeName': 'surveyId', 'AttributeType': 'S'},
+                {'AttributeName': 'courseId', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'surveyId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'questionNumber', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'GSI2',
+                    'KeySchema': [
+                        {'AttributeName': 'courseId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'surveyId', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-Course-UserSurveyResponses")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-Course-UserSurveyResponses: {e.response['Error']['Message']}")
+
+    # 14. Tnc-SurveyAnalytics (설문조사 분석 데이터) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-SurveyAnalytics',
+            KeySchema=[
+                {'AttributeName': 'surveyId', 'KeyType': 'HASH'},  # 파티션 키
+                {'AttributeName': 'courseId', 'KeyType': 'RANGE'}  # 정렬 키
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'surveyId', 'AttributeType': 'S'},
+                {'AttributeName': 'courseId', 'AttributeType': 'S'},
+                {'AttributeName': 'updatedAt', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'courseId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'updatedAt', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-SurveyAnalytics")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-SurveyAnalytics: {e.response['Error']['Message']}")
+
+    # 15. Tnc-DashboardMetrics (대시보드 지표) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-DashboardMetrics',
+            KeySchema=[
+                {'AttributeName': 'metricType', 'KeyType': 'HASH'},  # 파티션 키
+                {'AttributeName': 'timeFrame_entityId', 'KeyType': 'RANGE'}  # 정렬 키
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'metricType', 'AttributeType': 'S'},
+                {'AttributeName': 'timeFrame_entityId', 'AttributeType': 'S'},
+                {'AttributeName': 'entityId', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'entityId', 'KeyType': 'HASH'},
+                        {'AttributeName': 'metricType', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-DashboardMetrics")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-DashboardMetrics: {e.response['Error']['Message']}")
+
+    # 16. Tnc-Customers (고객사 정보) 테이블 생성
+    try:
+        response = dynamodb.create_table(
+            TableName='Tnc-Customers',
+            KeySchema=[
+                {'AttributeName': 'customerId', 'KeyType': 'HASH'}  # 파티션 키만 있음
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'customerId', 'AttributeType': 'S'},
+                {'AttributeName': 'customerName', 'AttributeType': 'S'}
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    'IndexName': 'GSI1',
+                    'KeySchema': [
+                        {'AttributeName': 'customerName', 'KeyType': 'HASH'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                }
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 5,
+                'WriteCapacityUnits': 5
+            }
+        )
+        logger.info(f"테이블 생성 중: Tnc-Customers")
+    except ClientError as e:
+        logger.error(f"테이블 생성 오류 Tnc-Customers: {e.response['Error']['Message']}")
+
     # 테이블 생성 완료 대기
     for table in tables_to_create:
         try:

@@ -1,5 +1,5 @@
 // src/graphql/mutations/module.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const createModule = graphql(`
   mutation CreateModule(\$input: CreateModuleInput!) {

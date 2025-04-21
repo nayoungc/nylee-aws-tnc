@@ -1,5 +1,5 @@
 // src/graphql/mutations/course.ts
-import { graphql } from '../../api';
+import { graphql } from '../api';
 
 export const createCourse = graphql(`
   mutation CreateCourse(\$input: CreateCourseInput!) {
