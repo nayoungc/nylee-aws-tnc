@@ -18,11 +18,11 @@ import {
 } from '@cloudscape-design/components';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import {
-    listCourseCatalogData,
+    listCourseCatalog,
     getCourseCatalogById,
-    createCourseCatalogRecord,
-    updateCourseCatalogRecord,
-    deleteCourseCatalogRecord,
+    createCourseCatalog,
+    updateCourseCatalog,
+    deleteCourseCatalog,
     mapToViewModel,
     mapToBackendModel,
     CourseViewModel,
@@ -53,7 +53,7 @@ const CourseCatalogTab: React.FC = () => {
         setError(null);
 
         try {
-            const response = await listCourseCatalogData({
+            const response = await listCourseCatalog({
                 limit: 100,
                 nextToken: nextToken
             });
@@ -213,7 +213,7 @@ const CourseCatalogTab: React.FC = () => {
 
             if (currentCourse.id) {
                 // 기존 과정 수정
-                const response = await updateCourseCatalogRecord({
+                const response = await updateCourseCatalog({
                     id: backendModel.id!,
                     course_id: backendModel.course_id,
                     course_name: backendModel.course_name,
@@ -234,7 +234,7 @@ const CourseCatalogTab: React.FC = () => {
                 }
             } else {
                 // 새 과정 생성
-                const response = await createCourseCatalogRecord({
+                const response = await createCourseCatalog({
                     course_id: backendModel.course_id,
                     course_name: backendModel.course_name,
                     description: backendModel.description,
@@ -271,7 +271,7 @@ const CourseCatalogTab: React.FC = () => {
         setError(null);
 
         try {
-            const response = await deleteCourseCatalogRecord(currentCourse.id);
+            const response = await deleteCourseCatalog(currentCourse.id);
 
             if (response.data) {
                 // 삭제된 과정 제거

@@ -17,10 +17,10 @@ import {
 import { useTypedTranslation } from '../../utils/i18n-utils';
 import {
     Instructor,
-    listInstructorsData,
-    createInstructorRecord,
-    updateInstructorRecord,
-    deleteInstructorRecord
+    listInstructors,
+    createInstructor,
+    updateInstructor,
+    deleteInstructor
 } from '../../graphql/client';
 import { listCognitoUsers } from '../../services/cognitoService';
 
@@ -45,7 +45,7 @@ const InstructorTab: React.FC = () => {
         setError(null);
 
         try {
-            const response = await listInstructorsData({ limit: 20 });
+            const response = await listInstructors({ limit: 20 });
 
             console.log(t('admin.instructors.log.load_result'), response);
 
@@ -141,7 +141,7 @@ const InstructorTab: React.FC = () => {
                     status: currentInstructor.status || 'ACTIVE',
                 };
                 
-                const response = await updateInstructorRecord(updateInput);
+                const response = await updateInstructor(updateInput);
 
                 console.log(t('admin.instructors.log.update_result'), response);
 
@@ -160,7 +160,7 @@ const InstructorTab: React.FC = () => {
                     cognitoId: currentInstructor.cognitoId
                 };
                 
-                const response = await createInstructorRecord(createInput);
+                const response = await createInstructor(createInput);
 
                 console.log(t('admin.instructors.log.create_result'), response);
                 
@@ -189,7 +189,7 @@ const InstructorTab: React.FC = () => {
         setError(null);
 
         try {
-            const response = await deleteInstructorRecord(currentInstructor.id);
+            const response = await deleteInstructor(currentInstructor.id);
 
             console.log(t('admin.instructors.log.delete_result'), response);
 

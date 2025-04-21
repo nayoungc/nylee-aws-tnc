@@ -17,9 +17,9 @@ import { useTypedTranslation } from '../../utils/i18n-utils';
 import {
   Customer,
   listCustomers,
-  createCustomerRecord,
-  updateCustomerRecord,
-  deleteCustomerRecord
+  createCustomer,
+  updateCustomer,
+  deleteCustomer
 } from '../../graphql/client';
 
 const CustomerTab: React.FC = () => {
@@ -109,7 +109,7 @@ const CustomerTab: React.FC = () => {
           name: currentCustomer.name,
         };
 
-        const response = await updateCustomerRecord(customerInput);
+        const response = await updateCustomer(customerInput);
         
         // 수정된 고객사로 상태 업데이트
         if (response.data) {
@@ -123,7 +123,7 @@ const CustomerTab: React.FC = () => {
           name: currentCustomer.name,
         };
 
-        const response = await createCustomerRecord(customerInput);
+        const response = await createCustomer(customerInput);
         
         // 생성된 고객사 추가
         if (response.data) {
@@ -150,7 +150,7 @@ const CustomerTab: React.FC = () => {
     setError(null);
     
     try {
-      const response = await deleteCustomerRecord(currentCustomer.id);
+      const response = await deleteCustomer(currentCustomer.id);
       
       if (response.data) {
         // 삭제된 고객사 제거

@@ -19,7 +19,7 @@ import {
 import { SelectProps, TableProps } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { client, listCourseCatalogs, generateQuizFromContent, listQuiz } from '@graphql/client';
+import { client, listCourseCatalog, generateQuizFromContent, listQuizzes } from '@graphql/client';
 import MainLayout from '@layouts/MainLayout';
 
 
@@ -85,7 +85,7 @@ export default function QuizList() {
 
         try {
             // Amplify Gen 2 API 사용
-            const response = await listCourseCatalogs({
+            const response = await listCourseCatalog({
                 limit: 100,
                 filter: { isPublished: { eq: true } }
             });
@@ -130,7 +130,7 @@ export default function QuizList() {
 
         try {
             // Amplify Gen 2 API 사용
-            const response = await listQuiz({
+            const response = await listQuizzes({
                 filter: {
                     courseId: { eq: courseId },
                     quizType: { eq: type }
@@ -181,7 +181,7 @@ export default function QuizList() {
 
         try {
             // 사전 퀴즈 가져오기
-            const response = await listQuiz({
+            const response = await listQuizzes({
                 filter: {
                     courseId: { eq: selectedCourse.value },
                     quizType: { eq: 'pre' }

@@ -1135,6 +1135,146 @@ export function mapToBackendModel(viewModel: CourseViewModel): CourseCatalogMode
       target_audience: viewModel.target_audience
     };
 }
+// 단일 코스 카탈로그 조회 (ID로)
+export async function getCourseCatalogById(id: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query GetCourseCatalog(\$id: ID!) {
+            getCourseCatalog(id: \$id) {
+              id
+              title
+              description
+              level
+              category
+              status
+              version
+              course_name
+              course_id
+              duration
+              price
+              currency
+              deliveryMethod
+              objectives
+              targetAudience
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { id }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.getCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error getting course catalog by ID:', error);
+      throw error;
+    }
+  }
+  
+  // 코스 카탈로그 생성
+  export async function createCourseCatalog(input: Omit<CourseCatalogModel, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {
+            createCourseCatalog(input: \$input) {
+              id
+              title
+              course_id
+              course_name
+              description
+              duration
+              level
+              category
+              status
+              version
+              deliveryMethod
+              objectives
+              targetAudience
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.createCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error creating course catalog:', error);
+      throw error;
+    }
+  }
+  
+  // 코스 카탈로그 업데이트
+  export async function updateCourseCatalog(input: Partial<CourseCatalogModel> & { id: string }) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation UpdateCourseCatalog(\$input: UpdateCourseCatalogInput!) {
+            updateCourseCatalog(input: \$input) {
+              id
+              title
+              course_id
+              course_name
+              description
+              duration
+              level
+              category
+              status
+              version
+              deliveryMethod
+              objectives
+              targetAudience
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.updateCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error updating course catalog:', error);
+      throw error;
+    }
+  }
+  
+  // 코스 카탈로그 삭제
+  export async function deleteCourseCatalog(id: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation DeleteCourseCatalog(\$input: DeleteCourseCatalogInput!) {
+            deleteCourseCatalog(input: \$input) {
+              id
+              title
+              course_name
+            }
+          }
+        `,
+        variables: { input: { id } }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.deleteCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error deleting course catalog:', error);
+      throw error;
+    }
+  }
 
 // 타입 가드 함수
 export function isSurveyGenerationResponse(obj: unknown): obj is SurveyGenerationResponse {
