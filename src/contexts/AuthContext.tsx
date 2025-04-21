@@ -14,6 +14,15 @@ interface AuthContextValue {
   logout: (global?: boolean) => Promise<void>;
 }
 
+// 인증 상태 타입 정의 (useState용)
+interface AuthState {
+  isAuthenticated: boolean;
+  userAttributes: any; // any 타입으로 명시하여 null과 객체 모두 허용
+  username: string;
+  userRole: string;
+  loading: boolean;
+}
+
 // 기본값으로 undefined 설정 (후에 useAuth 훅이 올바른 사용을 강제함)
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -22,8 +31,8 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * 중복된 인증 로직을 한 곳에 모아 성능 최적화
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // 인증 상태 관리
-  const [state, setState] = useState({
+  // 인증 상태 관리 - 명시적 타입 지정
+  const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
     userAttributes: null,
     username: '',
