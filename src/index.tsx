@@ -66,12 +66,20 @@ const AppWithDebugInfo = () => {
                 try {
                   const { generateClient } = await import('aws-amplify/api');
                   const client = generateClient();
+          
                   
                   // GraphQL 스키마 정보 요청
                   const introspectionQuery = `
                     query IntrospectionQuery {
                       __schema {
                         queryType {
+                          name
+                          fields {
+                            name
+                            description
+                          }
+                        }
+                        mutationType {
                           name
                           fields {
                             name

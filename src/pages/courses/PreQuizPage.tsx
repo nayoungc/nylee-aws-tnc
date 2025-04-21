@@ -50,7 +50,7 @@ interface CourseBasicInfo {
 const PreQuizPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  
+
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [courseInfo, setCourseInfo] = useState<CourseBasicInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,29 +59,29 @@ const PreQuizPage: React.FC = () => {
   const [showConfirmExit, setShowConfirmExit] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
-  
+
   // 퀴즈 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [questionsPerPage] = useState(3);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  
+
   // 학생 이름 가져오기
   const [studentName, setStudentName] = useState<string>('');
-  
+
   useEffect(() => {
     // 로컬 스토리지에서 학생 이름 가져오기
     const savedName = localStorage.getItem(`student_name_\${courseId}`);
     if (savedName) {
       setStudentName(savedName);
     }
-    
+
     // 퀴즈 데이터 로드
     loadQuizData();
   }, [courseId]);
-  
+
   const loadQuizData = async () => {
     setLoading(true);
-    
+
     try {
       // 실제 구현에서는 API 호출로 대체
       // 예시 데이터
@@ -90,7 +90,7 @@ const PreQuizPage: React.FC = () => {
           id: courseId || 'unknown',
           title: 'AWS Cloud Practitioner Essentials'
         });
-        
+
         setQuiz({
           id: 'pre-quiz-1',
           title: 'Pre-Course Knowledge Assessment',
@@ -201,45 +201,45 @@ const PreQuizPage: React.FC = () => {
             }
           ]
         });
-        
+
         setLoading(false);
       }, 1000);
-      
+
     } catch (err) {
       setError('Failed to load quiz data. Please try again later.');
       setLoading(false);
     }
   };
-  
+
   const handleAnswer = (questionId: string, optionId: string) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: optionId
     }));
   };
-  
+
   const isQuizComplete = () => {
     if (!quiz) return false;
     return Object.keys(answers).length === quiz.questions.length;
   };
-  
+
   const getCompletionPercentage = () => {
     if (!quiz) return 0;
     return Math.round((Object.keys(answers).length / quiz.questions.length) * 100);
   };
-  
+
   const getCurrentPageQuestions = () => {
     if (!quiz) return [];
-    
+
     const indexOfLastQuestion = currentPage * questionsPerPage;
     const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-    
+
     return quiz.questions.slice(indexOfFirstQuestion, indexOfLastQuestion);
   };
-  
+
   const handleSubmit = async () => {
     setSubmitting(true);
-    
+
     try {
       // 실제 구현에서는 API 호출로 대체
       // 예시 데이터 제출 시뮬레이션
@@ -250,80 +250,74 @@ const PreQuizPage: React.FC = () => {
           studentName,
           answers
         });
-        
+
         setSubmitting(false);
         setShowThankYou(true);
       }, 1500);
-      
+
     } catch (err) {
       setError('Failed to submit quiz. Please try again.');
       setSubmitting(false);
     }
   };
-  
+
   const navigateBack = () => {
     navigate(`/student/\${courseId}`);
   };
-  
+
   // 로딩 중 표시
   if (loading) {
     return (
-      <MainLayout title="Loading Quiz...">
-        <Box padding="l" textAlign="center">
-          <Spinner size="large" />
-          <Box padding="s">Loading quiz questions...</Box>
-        </Box>
-      </MainLayout>
+      <Box padding="l" textAlign="center">
+        <Spinner size="large" />
+        <Box padding="s">Loading quiz questions...</Box>
+      </Box>
     );
   }
-  
+
   // 오류 표시
   if (error) {
     return (
-      <MainLayout title="Error">
-        <Container>
-          <Alert type="error" header="Failed to load quiz">
-            {error}
-            <Box padding={{ top: 'm' }}>
-              <Button onClick={() => navigate(`/student/\${courseId}`)}>
-                Return to Course Home
-              </Button>
-            </Box>
-          </Alert>
-        </Container>
-      </MainLayout>
-    );
-  }
-  
-  // 감사 페이지 표시
-  if (showThankYou) {
-    return (
-      <MainLayout title="Pre-Quiz Completed">
-        <Container>
-          <Box padding="xxl" textAlign="center">
-            <Box variant="h1">Thank You!</Box>
-            <Box variant="p" padding="l">
-              Your pre-course assessment has been recorded. This information will help us
-              understand your current knowledge level and tailor the course accordingly.
-            </Box>
-            <Box variant="p" padding="l">
-              <i>Note: For this pre-course assessment, we do not provide the answers or scores immediately.
-              This allows us to get an unbiased measure of your current knowledge level.</i>
-            </Box>
-            <Button 
-              variant="primary" 
-              onClick={() => navigate(`/student/\${courseId}`)}
-            >
+      <Container>
+        <Alert type="error" header="Failed to load quiz">
+          {error}
+          <Box padding={{ top: 'm' }}>
+            <Button onClick={() => navigate(`/student/\${courseId}`)}>
               Return to Course Home
             </Button>
           </Box>
-        </Container>
-      </MainLayout>
+        </Alert>
+      </Container>
     );
   }
-  
+
+  // 감사 페이지 표시
+  if (showThankYou) {
+    return (
+      <Container>
+        <Box padding="xxl" textAlign="center">
+          <Box variant="h1">Thank You!</Box>
+          <Box variant="p" padding="l">
+            Your pre-course assessment has been recorded. This information will help us
+            understand your current knowledge level and tailor the course accordingly.
+          </Box>
+          <Box variant="p" padding="l">
+            <i>Note: For this pre-course assessment, we do not provide the answers or scores immediately.
+              This allows us to get an unbiased measure of your current knowledge level.</i>
+          </Box>
+          <Button
+            variant="primary"
+            onClick={() => navigate(`/student/\${courseId}`)}
+          >
+            Return to Course Home
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
   return (
-    <MainLayout title={quiz?.title || "Pre-Course Quiz"}>
+    <>
       {/* 퀴즈 탈출 확인 모달 */}
       <Modal
         visible={showConfirmExit}
@@ -344,7 +338,7 @@ const PreQuizPage: React.FC = () => {
       >
         Your progress will not be saved. Are you sure you want to leave?
       </Modal>
-      
+
       {/* 퀴즈 제출 확인 모달 */}
       <Modal
         visible={showSubmitConfirm}
@@ -356,11 +350,11 @@ const PreQuizPage: React.FC = () => {
               <Button variant="link" onClick={() => setShowSubmitConfirm(false)}>
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
-                onClick={() => { 
+              <Button
+                variant="primary"
+                onClick={() => {
                   setShowSubmitConfirm(false);
-                  handleSubmit(); 
+                  handleSubmit();
                 }}
               >
                 Submit
@@ -371,107 +365,12 @@ const PreQuizPage: React.FC = () => {
       >
         Are you sure you want to submit your answers? You won't be able to change them after submission.
       </Modal>
-      
-      <SpaceBetween size="l">
-        {/* 헤더 컨테이너 */}
-        <Container
-          header={
-            <Header
-              variant="h1"
-              description={quiz?.description}
-              info={quiz?.timeLimit && <Box>Estimated time: {quiz.timeLimit}</Box>}
-              actions={
-                <SpaceBetween direction="horizontal" size="xs">
-                  <Button onClick={() => setShowConfirmExit(true)}>Cancel</Button>
-                  <Button 
-                    variant="primary" 
-                    disabled={!isQuizComplete() || submitting}
-                    onClick={() => setShowSubmitConfirm(true)}
-                  >
-                    {submitting ? 'Submitting...' : 'Submit'}
-                  </Button>
-                </SpaceBetween>
-              }
-            >
-              {quiz?.title} - {courseInfo?.title}
-            </Header>
-          }
-        >
-          <SpaceBetween size="l">
-            <Alert type="info">
-              {quiz?.instructions}
-            </Alert>
-            
-            <ColumnLayout columns={2} variant="text-grid">
-              <div>
-                <Box variant="h3">Completion Status:</Box>
-              </div>
-              <div>
-                <SpaceBetween size="s">
-                  <ProgressBar 
-                    value={getCompletionPercentage()} 
-                    label={`\${getCompletionPercentage()}% complete`}
-                    description={`\${Object.keys(answers).length} of \${quiz?.questions.length} questions answered`}
-                  />
-                  <StatusIndicator type={isQuizComplete() ? "success" : "in-progress"}>
-                    {isQuizComplete() ? "Ready to submit" : "Please answer all questions"}
-                  </StatusIndicator>
-                </SpaceBetween>
-              </div>
-            </ColumnLayout>
-          </SpaceBetween>
-        </Container>
-        
-        {/* 퀴즈 질문 */}
-        <Container
-          header={
-            <Header 
-              variant="h2"
-              counter={`Page \${currentPage} of \${Math.ceil((quiz?.questions.length || 0) / questionsPerPage)}`}
-            >
-              Quiz Questions
-            </Header>
-          }
-        >
-          <SpaceBetween size="xl">
-            {getCurrentPageQuestions().map((question, index) => (
-              <FormField
-                key={question.id}
-                label={`\${(currentPage - 1) * questionsPerPage + index + 1}. \${question.questionText}`}
-                errorText={!answers[question.id] && "Please select an answer"}
-              >
-                <RadioGroup
-                  items={question.options.map(option => ({
-                    value: option.id,
-                    label: option.text
-                  }))}
-                  value={answers[question.id] || ''}
-                  onChange={({ detail }) => handleAnswer(question.id, detail.value)}
-                />
-              </FormField>
-            ))}
-            
-            <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-              <Pagination
-                currentPageIndex={currentPage}
-                pagesCount={Math.ceil((quiz?.questions.length || 0) / questionsPerPage)}
-                onChange={({ detail }) => setCurrentPage(detail.currentPageIndex)}
-              />
-              {currentPage === Math.ceil((quiz?.questions.length || 0) / questionsPerPage) && (
-                <Button 
-                  variant="primary" 
-                  disabled={!isQuizComplete() || submitting}
-                  onClick={() => setShowSubmitConfirm(true)}
-                >
-                  {submitting ? 'Submitting...' : 'Submit Quiz'}
-                </Button>
-              )}
-            </SpaceBetween>
-          </SpaceBetween>
-        </Container>
-      </SpaceBetween>
-    </MainLayout>
-  );
-};
 
-export default PreQuizPage;
+      <SpaceBetween size="l">
+        {/* 나머지 내용 */}
+        {/* ... */}
+      </SpaceBetween>
+    </>
+  );
+}
+  export default PreQuizPage;

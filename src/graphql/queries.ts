@@ -1,3 +1,4 @@
+// src/graphql/queries.ts
 // CourseCatalog 쿼리
 export const listCourseCatalog = /* GraphQL */ `
   query ListCourseCatalog(

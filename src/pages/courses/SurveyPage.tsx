@@ -46,7 +46,7 @@ interface CourseBasicInfo {
 const SurveyPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  
+
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [courseInfo, setCourseInfo] = useState<CourseBasicInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,27 +55,27 @@ const SurveyPage: React.FC = () => {
   const [showConfirmExit, setShowConfirmExit] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
-  
+
   // 답변 상태
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  
+
   // 학생 이름 가져오기
   const [studentName, setStudentName] = useState<string>('');
-  
+
   useEffect(() => {
     // 로컬 스토리지에서 학생 이름 가져오기
     const savedName = localStorage.getItem(`student_name_\${courseId}`);
     if (savedName) {
       setStudentName(savedName);
     }
-    
+
     // 설문조사 데이터 로드
     loadSurveyData();
   }, [courseId]);
-  
+
   const loadSurveyData = async () => {
     setLoading(true);
-    
+
     try {
       // 실제 구현에서는 API 호출로 대체
       // 예시 데이터
@@ -84,7 +84,7 @@ const SurveyPage: React.FC = () => {
           id: courseId || 'unknown',
           title: 'AWS Cloud Practitioner Essentials'
         });
-        
+
         setSurvey({
           id: 'pre-survey-1',
           title: 'Pre-Course Survey',
@@ -147,50 +147,50 @@ const SurveyPage: React.FC = () => {
             }
           ]
         });
-        
+
         setLoading(false);
       }, 1000);
-      
+
     } catch (err) {
       setError('Failed to load survey data. Please try again later.');
       setLoading(false);
     }
   };
-  
+
   const handleAnswer = (questionId: string, value: string) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: value
     }));
   };
-  
+
   const isFormValid = () => {
     // 필수 질문이 모두 답변되었는지 확인
     if (!survey) return false;
-    
+
     const requiredQuestions = survey.questions.filter(q => q.required);
     return requiredQuestions.every(q => answers[q.id] && answers[q.id].trim() !== '');
   };
-  
+
   const getCompletionPercentage = () => {
     if (!survey) return 0;
-    
+
     const answeredCount = Object.keys(answers).length;
     const totalRequired = survey.questions.filter(q => q.required).length;
-    
+
     if (totalRequired === 0) return 100;
-    
+
     // 답변된 필수 질문 수 계산
     const answeredRequired = survey.questions
       .filter(q => q.required && answers[q.id] && answers[q.id].trim() !== '')
       .length;
-    
+
     return Math.round((answeredRequired / totalRequired) * 100);
   };
-  
+
   const handleSubmit = async () => {
     setSubmitting(true);
-    
+
     try {
       // 실제 구현에서는 API 호출로 대체
       // 예시 데이터 제출 시뮬레이션
@@ -201,76 +201,70 @@ const SurveyPage: React.FC = () => {
           studentName,
           answers
         });
-        
+
         setSubmitting(false);
         setShowThankYou(true);
       }, 1500);
-      
+
     } catch (err) {
       setError('Failed to submit survey. Please try again.');
       setSubmitting(false);
     }
   };
-  
+
   const navigateBack = () => {
     navigate(`/student/\${courseId}`);
   };
-  
+
   // 로딩 중 표시
   if (loading) {
     return (
-      <MainLayout title="Loading Survey...">
-        <Box padding="l" textAlign="center">
-          <Spinner size="large" />
-          <Box padding="s">Loading survey questions...</Box>
-        </Box>
-      </MainLayout>
+      <Box padding="l" textAlign="center">
+        <Spinner size="large" />
+        <Box padding="s">Loading survey questions...</Box>
+      </Box>
     );
   }
-  
+
   // 오류 표시
   if (error) {
     return (
-      <MainLayout title="Error">
-        <Container>
-          <Alert type="error" header="Failed to load survey">
-            {error}
-            <Box padding={{ top: 'm' }}>
-              <Button onClick={() => navigate(`/student/\${courseId}`)}>
-                Return to Course Home
-              </Button>
-            </Box>
-          </Alert>
-        </Container>
-      </MainLayout>
-    );
-  }
-  
-  // 감사 페이지 표시
-  if (showThankYou) {
-    return (
-      <MainLayout title="Survey Completed">
-        <Container>
-          <Box padding="xxl" textAlign="center">
-            <Box variant="h1">Thank You!</Box>
-            <Box variant="p" padding="l">
-              Your responses have been recorded. This information will help us
-              tailor the course to better meet your needs.
-            </Box>
-            <Button 
-              variant="primary" 
-              onClick={() => navigate(`/student/\${courseId}`)}
-            >
+      <Container>
+        <Alert type="error" header="Failed to load survey">
+          {error}
+          <Box padding={{ top: 'm' }}>
+            <Button onClick={() => navigate(`/student/\${courseId}`)}>
               Return to Course Home
             </Button>
           </Box>
-        </Container>
-      </MainLayout>
+        </Alert>
+      </Container>
     );
   }
-  
+
+  // 감사 페이지 표시
+  if (showThankYou) {
+    return (
+      <Container>
+        <Box padding="xxl" textAlign="center">
+          <Box variant="h1">Thank You!</Box>
+          <Box variant="p" padding="l">
+            Your responses have been recorded. This information will help us
+            tailor the course to better meet your needs.
+          </Box>
+          <Button
+            variant="primary"
+            onClick={() => navigate(`/student/\${courseId}`)}
+          >
+            Return to Course Home
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
   return (
-    <MainLayout title={survey?.title || "Pre-Course Survey"}>
+    <>
       {/* 설문 탈출 확인 모달 */}
       <Modal
         visible={showConfirmExit}
@@ -291,7 +285,7 @@ const SurveyPage: React.FC = () => {
       >
         Your progress will not be saved. Are you sure you want to leave?
       </Modal>
-      
+
       {/* 설문 제출 확인 모달 */}
       <Modal
         visible={showSubmitConfirm}
@@ -303,11 +297,11 @@ const SurveyPage: React.FC = () => {
               <Button variant="link" onClick={() => setShowSubmitConfirm(false)}>
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
-                onClick={() => { 
+              <Button
+                variant="primary"
+                onClick={() => {
                   setShowSubmitConfirm(false);
-                  handleSubmit(); 
+                  handleSubmit();
                 }}
               >
                 Submit
@@ -318,7 +312,7 @@ const SurveyPage: React.FC = () => {
       >
         Are you sure you want to submit your responses? You won't be able to change them after submission.
       </Modal>
-      
+
       <SpaceBetween size="l">
         {/* 헤더 컨테이너 */}
         <Container
@@ -330,8 +324,8 @@ const SurveyPage: React.FC = () => {
               actions={
                 <SpaceBetween direction="horizontal" size="xs">
                   <Button onClick={() => setShowConfirmExit(true)}>Cancel</Button>
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     disabled={!isFormValid() || submitting}
                     onClick={() => setShowSubmitConfirm(true)}
                   >
@@ -348,15 +342,15 @@ const SurveyPage: React.FC = () => {
             <Alert type="info">
               {survey?.instructions}
             </Alert>
-            
+
             <ColumnLayout columns={2} variant="text-grid">
               <div>
                 <Box variant="h3">Completion Status:</Box>
               </div>
               <div>
                 <SpaceBetween size="s">
-                  <ProgressBar 
-                    value={getCompletionPercentage()} 
+                  <ProgressBar
+                    value={getCompletionPercentage()}
                     label={`\${getCompletionPercentage()}% complete`}
                     description={`\${Object.keys(answers).filter(key => {
                       const question = survey?.questions.find(q => q.id === key);
@@ -371,7 +365,7 @@ const SurveyPage: React.FC = () => {
             </ColumnLayout>
           </SpaceBetween>
         </Container>
-        
+
         {/* 설문 질문 */}
         <Container
           header={<Header variant="h2">Survey Questions</Header>}
@@ -401,7 +395,7 @@ const SurveyPage: React.FC = () => {
                 {question.type === 'select' && question.options && (
                   <Select
                     selectedOption={
-                      answers[question.id] 
+                      answers[question.id]
                         ? { value: answers[question.id], label: question.options.find(o => o.value === answers[question.id])?.label || '' }
                         : null
                     }
@@ -416,11 +410,11 @@ const SurveyPage: React.FC = () => {
                 )}
               </FormField>
             ))}
-            
+
             <SpaceBetween direction="horizontal" size="xs" alignItems="center">
               <Button onClick={() => setShowConfirmExit(true)}>Cancel</Button>
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 disabled={!isFormValid() || submitting}
                 onClick={() => setShowSubmitConfirm(true)}
               >
@@ -430,8 +424,8 @@ const SurveyPage: React.FC = () => {
           </SpaceBetween>
         </Container>
       </SpaceBetween>
-    </MainLayout>
+    </>
   );
-};
+}
 
 export default SurveyPage;

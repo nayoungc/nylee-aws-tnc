@@ -62,7 +62,7 @@ interface CourseBasicInfo {
 const PostQuizPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  
+
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [courseInfo, setCourseInfo] = useState<CourseBasicInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,30 +71,32 @@ const PostQuizPage: React.FC = () => {
   const [showConfirmExit, setShowConfirmExit] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  
+
   // 퀴즈 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [questionsPerPage] = useState(3);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
-  
+  const [showThankYou, setShowThankYou] = useState(false);
+
+
   // 학생 이름 가져오기
   const [studentName, setStudentName] = useState<string>('');
-  
+
   useEffect(() => {
     // 로컬 스토리지에서 학생 이름 가져오기
     const savedName = localStorage.getItem(`student_name_\${courseId}`);
     if (savedName) {
       setStudentName(savedName);
     }
-    
+
     // 퀴즈 데이터 로드
     loadQuizData();
   }, [courseId]);
-  
+
   const loadQuizData = async () => {
     setLoading(true);
-    
+
     try {
       // 실제 구현에서는 API 호출로 대체
       // 예시 데이터
@@ -103,7 +105,7 @@ const PostQuizPage: React.FC = () => {
           id: courseId || 'unknown',
           title: 'AWS Cloud Practitioner Essentials'
         });
-        
+
         setQuiz({
           id: 'post-quiz-1',
           title: 'Post-Course Knowledge Assessment',
@@ -235,55 +237,55 @@ const PostQuizPage: React.FC = () => {
             }
           ]
         });
-        
+
         setLoading(false);
       }, 1000);
-      
+
     } catch (err) {
       setError('Failed to load quiz data. Please try again later.');
       setLoading(false);
     }
   };
-  
+
   const handleAnswer = (questionId: string, optionId: string) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: optionId
     }));
   };
-  
+
   const isQuizComplete = () => {
     if (!quiz) return false;
     return Object.keys(answers).length === quiz.questions.length;
   };
-  
+
   const getCompletionPercentage = () => {
     if (!quiz) return 0;
     return Math.round((Object.keys(answers).length / quiz.questions.length) * 100);
   };
-  
+
   const getCurrentPageQuestions = () => {
     if (!quiz) return [];
-    
+
     const indexOfLastQuestion = currentPage * questionsPerPage;
     const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-    
+
     return quiz.questions.slice(indexOfFirstQuestion, indexOfLastQuestion);
   };
-  
+
   const calculateResult = () => {
     if (!quiz) return null;
-    
+
     let correctCount = 0;
     quiz.questions.forEach(question => {
       if (answers[question.id] === question.correctAnswerId) {
         correctCount++;
       }
     });
-    
+
     const percentageScore = Math.round((correctCount / quiz.questions.length) * 100);
     const passed = percentageScore >= quiz.passingScore;
-    
+
     let feedbackMessage = '';
     if (percentageScore >= 90) {
       feedbackMessage = 'Excellent! You have demonstrated a thorough understanding of the course material.';
@@ -292,7 +294,7 @@ const PostQuizPage: React.FC = () => {
     } else {
       feedbackMessage = 'You may want to review some topics to strengthen your understanding.';
     }
-    
+
     return {
       score: percentageScore,
       totalQuestions: quiz.questions.length,
@@ -302,14 +304,14 @@ const PostQuizPage: React.FC = () => {
       feedbackMessage
     };
   };
-  
+
   const handleSubmit = async () => {
     setSubmitting(true);
-    
+
     try {
       // 결과 계산
       const result = calculateResult();
-      
+
       // 실제 구현에서는 API 호출로 제출
       setTimeout(() => {
         console.log('Post-Quiz submitted:', {
@@ -319,164 +321,61 @@ const PostQuizPage: React.FC = () => {
           answers,
           result
         });
-        
+
         setQuizResult(result);
         setSubmitting(false);
         setShowResults(true);
       }, 1500);
-      
+
     } catch (err) {
       setError('Failed to submit quiz. Please try again.');
       setSubmitting(false);
     }
   };
-  
+
   const navigateBack = () => {
     navigate(`/student/\${courseId}`);
   };
-  
-  // 로딩 중 표시
+
+  // 로딩 상태 처리
   if (loading) {
     return (
-      <MainLayout title="Loading Quiz...">
-        <Box padding="l" textAlign="center">
-          <Spinner size="large" />
-          <Box padding="s">Loading quiz questions...</Box>
-        </Box>
-      </MainLayout>
+      <Box padding="l" textAlign="center">
+        <Spinner size="large" />
+        <Box padding="s">Loading quiz questions...</Box>
+      </Box>
     );
   }
   
-  // 오류 표시
+  // 오류 상태 처리
   if (error) {
     return (
-      <MainLayout title="Error">
-        <Container>
-          <Alert type="error" header="Failed to load quiz">
-            {error}
-            <Box padding={{ top: 'm' }}>
-              <Button onClick={() => navigate(`/student/\${courseId}`)}>
-                Return to Course Home
-              </Button>
-            </Box>
-          </Alert>
-        </Container>
-      </MainLayout>
+      <Container>
+        <Alert type="error" header="Failed to load quiz">
+          {error}
+          <Box padding={{ top: 'm' }}>
+            <Button onClick={() => navigate(`/student/\${courseId}`)}>
+              Return to Course Home
+            </Button>
+          </Box>
+        </Alert>
+      </Container>
     );
   }
   
-  // 결과 페이지 표시
-  if (showResults && quizResult) {
+  // 감사 페이지 표시
+  if (showThankYou) {
     return (
-      <MainLayout title="Quiz Results">
-        <SpaceBetween size="l">
-          <Container
-            header={
-              <Header
-                variant="h1"
-                description={`\${courseInfo?.title} - Post-Course Assessment`}
-                actions={
-                  <Button variant="primary" onClick={() => navigate(`/student/\${courseId}`)}>
-                    Return to Course Home
-                  </Button>
-                }
-              >
-                Your Quiz Results
-              </Header>
-            }
-          >
-            <SpaceBetween size="l">
-              <ColumnLayout columns={2} variant="text-grid">
-                <div>
-                  <Box variant="h2">Score:</Box>
-                </div>
-                <div>
-                  <Box variant="h2" color={quizResult.score >= (quiz?.passingScore || 0) ? 'text-status-success' : 'text-status-error'}>
-                    {quizResult.score}%
-                  </Box>
-                </div>
-                
-                <div>
-                  <Box variant="h3">Correct Answers:</Box>
-                </div>
-                <div>
-                  <Box variant="h3">
-                    {quizResult.correctAnswers} of {quizResult.totalQuestions}
-                  </Box>
-                </div>
-                
-                <div>
-                  <Box variant="h3">Result:</Box>
-                </div>
-                <div>
-                  {quizResult.score >= (quiz?.passingScore || 0) ? (
-                    <Badge color="green">PASSED</Badge>
-                  ) : (
-                    <Badge color="red">NOT PASSED</Badge>
-                  )}
-                </div>
-              </ColumnLayout>
-              
-              <Alert type={quizResult.score >= (quiz?.passingScore || 0) ? 'success' : 'warning'}>
-                {quizResult.feedbackMessage}
-              </Alert>
-            </SpaceBetween>
-          </Container>
-          
-          {/* 결과 상세 */}
-          <Container
-            header={<Header variant="h2">Question Review</Header>}
-          >
-            <SpaceBetween size="l">
-              {quiz?.questions.map((question, index) => (
-                <ExpandableSection
-                  key={question.id}
-                  headerText={
-                    <span>
-                      Question {index + 1}: {question.questionText}
-                      {answers[question.id] === question.correctAnswerId ? (
-                        <Badge color="green">Correct</Badge>
-                      ) : (
-                        <Badge color="red">Incorrect</Badge>
-                      )}
-                    </span>
-                  }
-                >
-                  <SpaceBetween size="m">
-                    <Box>
-                      <Box variant="h4">Your Answer:</Box>
-                      <Box 
-                        color={answers[question.id] === question.correctAnswerId ? 'text-status-success' : 'text-status-error'}
-                      >
-                        {question.options.find(o => o.id === answers[question.id])?.text || 'No answer'}
-                      </Box>
-                    </Box>
-                    
-                    {answers[question.id] !== question.correctAnswerId && (
-                      <Box>
-                        <Box variant="h4">Correct Answer:</Box>
-                        <Box color="text-status-success">
-                          {question.options.find(o => o.id === question.correctAnswerId)?.text}
-                        </Box>
-                      </Box>
-                    )}
-                    
-                    <Box>
-                      <Box variant="h4">Explanation:</Box>
-                      <Box>{question.explanation}</Box>
-                    </Box>
-                  </SpaceBetween>
-                </ExpandableSection>
-              ))}
-            </SpaceBetween>
-          </Container>
-        </SpaceBetween>
-      </MainLayout>
+      <Box padding="xxl" textAlign="center">
+        <Box variant="h1">Thank You!</Box>
+        {/* ... */}
+      </Box>
     );
   }
   
+  // 메인 UI 반환
   return (
-    <MainLayout title={quiz?.title || "Post-Course Quiz"}>
+    <>
       {/* 퀴즈 탈출 확인 모달 */}
       <Modal
         visible={showConfirmExit}
@@ -497,7 +396,7 @@ const PostQuizPage: React.FC = () => {
       >
         Your progress will not be saved. Are you sure you want to leave?
       </Modal>
-      
+  
       {/* 퀴즈 제출 확인 모달 */}
       <Modal
         visible={showSubmitConfirm}
@@ -509,11 +408,11 @@ const PostQuizPage: React.FC = () => {
               <Button variant="link" onClick={() => setShowSubmitConfirm(false)}>
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
-                onClick={() => { 
+              <Button
+                variant="primary"
+                onClick={() => {
                   setShowSubmitConfirm(false);
-                  handleSubmit(); 
+                  handleSubmit();
                 }}
               >
                 Submit
@@ -523,13 +422,15 @@ const PostQuizPage: React.FC = () => {
         }
       >
         Are you sure you want to submit your answers? You won't be able to change them after submission.
-        {!isQuizComplete() && (
-          <Box padding={{ top: 's' }} color="text-status-warning">
-            <strong>Warning:</strong> You have not answered all questions. Unanswered questions will be marked as incorrect.
-          </Box>
-        )}
+        {
+          !isQuizComplete() && (
+            <Box padding={{ top: 's' }} color="text-status-warning">
+              <strong>Warning:</strong> You have not answered all questions. Unanswered questions will be marked as incorrect.
+            </Box>
+          )
+        }
       </Modal>
-      
+  
       <SpaceBetween size="l">
         {/* 헤더 컨테이너 */}
         <Container
@@ -546,8 +447,8 @@ const PostQuizPage: React.FC = () => {
               actions={
                 <SpaceBetween direction="horizontal" size="xs">
                   <Button onClick={() => setShowConfirmExit(true)}>Cancel</Button>
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     onClick={() => setShowSubmitConfirm(true)}
                   >
                     {submitting ? 'Submitting...' : 'Submit'}
@@ -563,15 +464,15 @@ const PostQuizPage: React.FC = () => {
             <Alert type="info">
               {quiz?.instructions}
             </Alert>
-            
+  
             <ColumnLayout columns={2} variant="text-grid">
               <div>
                 <Box variant="h3">Completion Status:</Box>
               </div>
               <div>
                 <SpaceBetween size="s">
-                  <ProgressBar 
-                    value={getCompletionPercentage()} 
+                  <ProgressBar
+                    value={getCompletionPercentage()}
                     label={`\${getCompletionPercentage()}% complete`}
                     description={`\${Object.keys(answers).length} of \${quiz?.questions.length} questions answered`}
                   />
@@ -583,11 +484,11 @@ const PostQuizPage: React.FC = () => {
             </ColumnLayout>
           </SpaceBetween>
         </Container>
-        
+  
         {/* 퀴즈 질문 */}
         <Container
           header={
-            <Header 
+            <Header
               variant="h2"
               counter={`Page \${currentPage} of \${Math.ceil((quiz?.questions.length || 0) / questionsPerPage)}`}
             >
@@ -612,7 +513,7 @@ const PostQuizPage: React.FC = () => {
                 />
               </FormField>
             ))}
-            
+  
             <SpaceBetween direction="horizontal" size="xs" alignItems="center">
               <Pagination
                 currentPageIndex={currentPage}
@@ -620,8 +521,8 @@ const PostQuizPage: React.FC = () => {
                 onChange={({ detail }) => setCurrentPage(detail.currentPageIndex)}
               />
               {currentPage === Math.ceil((quiz?.questions.length || 0) / questionsPerPage) && (
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   disabled={submitting}
                   onClick={() => setShowSubmitConfirm(true)}
                 >
@@ -632,8 +533,7 @@ const PostQuizPage: React.FC = () => {
           </SpaceBetween>
         </Container>
       </SpaceBetween>
-    </MainLayout>
+    </>
   );
-};
-
+}
 export default PostQuizPage;
