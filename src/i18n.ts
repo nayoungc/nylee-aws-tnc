@@ -17,7 +17,7 @@ if (!i18n.isInitialized) {
       
       // 백엔드 설정 추가 - public 폴더에서 로드
       backend: {
-        loadPath: '/locales/{{lng}}/{{ns}}.json', // public 폴더 내 경로
+        loadPath: '/locales/{{lng}}/translation.json'
       },
       
       detection: {

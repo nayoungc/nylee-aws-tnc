@@ -14,7 +14,6 @@ import {
   Spinner,
   Alert
 } from '@cloudscape-design/components';
-import MainLayout from '../../layouts/MainLayout';
 
 const Anyltics: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -37,7 +36,6 @@ const Anyltics: React.FC = () => {
   };
 
   return (
-    <MainLayout title="AI Question Generator">
       <SpaceBetween size="l">
         <Container
           header={
@@ -221,7 +219,6 @@ const Anyltics: React.FC = () => {
           </Alert>
         )}
       </SpaceBetween>
-    </MainLayout>
   );
 };
 
