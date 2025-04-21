@@ -1,0 +1,308 @@
+{
+  "modules_and_labs": [
+    {
+      "id": "1",
+      "course_title": "Advanced AWS Well-Architected Best Practices",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "2",
+      "course_title": "Amazon SageMaker Studio for Data Scientists",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "3",
+      "course_title": "Architecting on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": "1",
+      "lab_title": "VPC를 구축하고 Elastic Compute Cloud(EC2) 인스턴스를 추가하는 연습"
+    },
+    {
+      "id": "4",
+      "course_title": "Architecting on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": "2",
+      "lab_title": "생성한 VPC에 Amazon Relational Database Service(RDS) 인스턴스와 Application Load Balancer(ALB)를 설치하는 연습"
+    },
+    {
+      "id": "5",
+      "course_title": "Architecting on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": "3",
+      "lab_title": "실습 환경에서 S3 백엔드를 사용하여 CloudFront 배포를 구축하는 연습"
+    },
+    {
+      "id": "1",
+      "course_title": "AWS Well-Architected Framework",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "2",
+      "course_title": "AWS Well-Architected Best Practices (Custom)",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "3",
+      "course_title": "Building Batch Data Analytics Solutions on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "4",
+      "course_title": "Building Data Analytics Solutions Using Amazon Redshift",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "5",
+      "course_title": "Building Data Lakes on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "6",
+      "course_title": "Build Modern Applications with AWS NoSQL Databases",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "7",
+      "course_title": "Building Streaming Data Analytics Solutions on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "8",
+      "course_title": "Cloud Operations on AWS (구 Systems Operations on AWS)",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "9",
+      "course_title": "Data Warehousing on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "1",
+      "course_title": "Designing and Implementing Storage on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "2",
+      "course_title": "Developing Generative AI Applications on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "3",
+      "course_title": "Developing on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "4",
+      "course_title": "Developing Serverless Solutions on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "5",
+      "course_title": "DevOps Engineering on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "6",
+      "course_title": "Generative AI Essentials on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "7",
+      "course_title": "Migrating to AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "8",
+      "course_title": "MLOps Engineering on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "9",
+      "course_title": "Networking Essentials for Cloud Applications on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "1",
+      "course_title": "Networking on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "2",
+      "course_title": "Practical Data Science with Amazon SageMaker",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "3",
+      "course_title": "Practical IaC on AWS with Terraform",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "4",
+      "course_title": "Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS)",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "5",
+      "course_title": "Security Engineering on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "1",
+      "course_title": null,
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "2",
+      "course_title": "Digital Classroom - Developing Generative AI Applications on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "3",
+      "course_title": "Digital Classroom – Developing on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "4",
+      "course_title": "Digital Classroom - Developing Serverless Solutions on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "5",
+      "course_title": "Digital Classroom – DevOps Engineering on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "6",
+      "course_title": "Digital Classroom - Generative AI for Executives",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "7",
+      "course_title": "Digital Classroom - Planning and Designing Databases on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "8",
+      "course_title": "Digital Classroom - Running Containers on Amazon Elastic Kubernetes Service (Amazon EKS)",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "9",
+      "course_title": "Digital Classroom - Security Engineering on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    },
+    {
+      "id": "10",
+      "course_title": "Digital Classroom – The Machine Learning Pipeline on AWS",
+      "module_number": null,
+      "module_title": null,
+      "lab_number": null,
+      "lab_title": null
+    }
+  ]
+}

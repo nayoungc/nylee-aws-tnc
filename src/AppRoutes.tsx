@@ -8,6 +8,36 @@ import {
 import { Hub } from 'aws-amplify/utils';
 import { useTranslation } from 'react-i18next';
 
+// 인증 관련 컴포넌트
+import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
+import ConfirmSignUp from './components/ConfirmSignUp';
+import ForgotPassword from './components/ForgotPassword';
+import NewPassword from './components/NewPassword';
+import ProtectedRoute from './components/ProtectedRoute';  // 이 임포트가 있는지 확인
+
+import MainLayout from './layouts/MainLayout';
+import AuthLayout from './layouts/AuthLayout';
+import PreQuizPage from './pages/courses/PreQuizPage';
+import PostQuizPage from './pages/courses/PostQuizPage';
+import SurveyPage from './pages/courses/SurveyPage';
+import Dashboard from './pages/instructor/Dashboard';
+import AdminPage from './pages/admin/AdminPage';
+import CourseHome from './pages/courses/CourseHome';
+import CourseList from './pages/courses/CourseList';
+import Analytics from './pages/instructor/Analytics';
+import CourseCatalog from './pages/instructor/CourseCatalog';
+import CourseCreation from './pages/instructor/CourseCreation';
+import CoursesManagement from './pages/instructor/CoursesManagement';
+import QuizCreator from './pages/instructor/QuizCreator';
+import QuizManagement from './pages/instructor/QuizManagement';
+import ReportGenerator from './pages/instructor/ReportGenerator';
+import SurveyCreator from './pages/instructor/SurveyCreator';
+import SurveyManagement from './pages/instructor/SurveyManagement';
+
+
+
+
 // 컴포넌트 임포트...
 
 const AppRoutes: React.FC = () => {
