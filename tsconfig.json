@@ -21,7 +21,8 @@
       "@/*": ["src/*"],
       "@utils/*": ["src/utils/*"],
       "@components/*": ["src/components/*"],
-      "@graphql/*": ["src/graphql/*"]
+      "@graphql/*": ["src/graphql/*"],
+      "@amplify/*": ["amplify/*"]
     }
   },
   "include": ["src", "src/types/**/*.d.ts", "craco.config.js"],

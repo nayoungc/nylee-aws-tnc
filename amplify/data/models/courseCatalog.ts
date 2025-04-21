@@ -17,11 +17,10 @@ export const courseCatalogSchema = a.schema({
       publishedDate: a.datetime(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
-      
+
       // 관계 정의
-      modules: a.hasMany('CourseModule', 'catalogId'),
-      labs: a.hasMany('CourseLab', 'catalogId'),
-      materials: a.hasMany('CourseMaterial', 'catalogId')
+      modules: a.hasMany('CourseCatalogModule', 'catalogId'),
+      labs: a.hasMany('CourseCatalogLab', 'catalogId'),
     })
     .identifier(['catalogId', 'version'])
     .secondaryIndexes((index) => [

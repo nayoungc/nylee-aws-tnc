@@ -1,4 +1,4 @@
-// CourseCatalog.tsx
+// src/pages/CourseCatalog.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   BaseCourseView,
@@ -16,7 +16,11 @@ import {
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { executeGraphQL } from '@utils/auth';
+import { generateClient } from 'aws-amplify/api';
+import type { Schema } from '@amplify/data/schema';
+
+// API 클라이언트 생성
+const client = generateClient<Schema>();
 
 // 평가 현황 인터페이스
 interface AssessmentStats {
@@ -33,11 +37,12 @@ const CourseCatalog: React.FC = () => {
   const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
   const [selectedCourse, setSelectedCourse] = useState<CourseCatalogType | null>(null);
   
-  // 평가 현황 데이터 가져오기 (실제로는 API 호출이 필요함)
   useEffect(() => {
     const fetchAssessmentStats = async () => {
       try {
-        // 실제 구현에서는 GraphQL 쿼리로 데이터 가져오기
+        // 실제 구현에서는 Gen 2 API를 사용하여 통계 데이터 가져오기
+        // 예시: const { data } = await client.models.AssessmentStats.list();
+        
         // 현재는 샘플 데이터 사용
         const mockStats: Record<string, AssessmentStats> = {
           '1': {
@@ -63,13 +68,11 @@ const CourseCatalog: React.FC = () => {
     fetchAssessmentStats();
   }, []);
   
-  // 과정 선택 처리
   const handleCourseSelect = (course: CourseCatalogType) => {
     setSelectedCourse(course);
     setActiveTabId('assessments');
   };
   
-  // 커스텀 액션 버튼
   const additionalActions = (
     <Button 
       onClick={() => navigate('/instructor/assessments/quiz-creator')}
@@ -78,7 +81,6 @@ const CourseCatalog: React.FC = () => {
     </Button>
   );
   
-  // 탭 렌더링
   const renderTabs = () => (
     <Tabs
       activeTabId={activeTabId}
@@ -97,7 +99,6 @@ const CourseCatalog: React.FC = () => {
               managePath="/instructor/courses/"
               viewPath="/tnc/"
               additionalActions={additionalActions}
-              // 과정 선택 시 처리할 수 있도록 onSelectCourse 콜백 추가
               onSelectCourse={handleCourseSelect}
             />
           )
@@ -113,26 +114,26 @@ const CourseCatalog: React.FC = () => {
                   description={selectedCourse.description}
                   actions={
                     <SpaceBetween direction="horizontal" size="xs">
-                      <Button onClick={() => navigate(`/instructor/assessments/quiz?courseId=\${selectedCourse.id}`)}>
+                      <Button onClick={() => navigate(`/instructor/assessments/quiz?courseId=\${selectedCourse.catalogId}`)}>
                         {t('courses.manage_quizzes')}
                       </Button>
-                      <Button onClick={() => navigate(`/instructor/assessments/survey?courseId=\${selectedCourse.id}`)}>
+                      <Button onClick={() => navigate(`/instructor/assessments/survey?courseId=\${selectedCourse.catalogId}`)}>
                         {t('courses.manage_surveys')}
                       </Button>
                     </SpaceBetween>
                   }
                 >
-                  {selectedCourse.course_name} - {t('courses.assessment_stats')}
+                  {selectedCourse.course_name || selectedCourse.title} - {t('courses.assessment_stats')}
                 </Header>
               }
             >
-              {assessmentStats[selectedCourse.id] ? (
+              {assessmentStats[selectedCourse.catalogId] ? (
                 <ColumnLayout columns={3}>
                   <Box variant="awsui-key-label">
                     <h3>{t('courses.pre_quiz_stats')}</h3>
                     <div>
                       <StatusIndicator type="success">
-                        {assessmentStats[selectedCourse.id]?.preQuiz?.completed || 0} / {assessmentStats[selectedCourse.id]?.preQuiz?.total || 0} {t('courses.completed')}
+                        {assessmentStats[selectedCourse.catalogId]?.preQuiz?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.preQuiz?.total || 0} {t('courses.completed')}
                       </StatusIndicator>
                     </div>
                   </Box>
@@ -140,7 +141,7 @@ const CourseCatalog: React.FC = () => {
                     <h3>{t('courses.post_quiz_stats')}</h3>
                     <div>
                       <StatusIndicator type="info">
-                        {assessmentStats[selectedCourse.id]?.postQuiz?.completed || 0} / {assessmentStats[selectedCourse.id]?.postQuiz?.total || 0} {t('courses.completed')}
+                        {assessmentStats[selectedCourse.catalogId]?.postQuiz?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.postQuiz?.total || 0} {t('courses.completed')}
                       </StatusIndicator>
                     </div>
                   </Box>
@@ -148,7 +149,7 @@ const CourseCatalog: React.FC = () => {
                     <h3>{t('courses.survey_stats')}</h3>
                     <div>
                       <StatusIndicator type="warning">
-                        {assessmentStats[selectedCourse.id]?.surveys?.completed || 0} / {assessmentStats[selectedCourse.id]?.surveys?.total || 0} {t('courses.completed')}
+                        {assessmentStats[selectedCourse.catalogId]?.surveys?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.surveys?.total || 0} {t('courses.completed')}
                       </StatusIndicator>
                     </div>
                   </Box>

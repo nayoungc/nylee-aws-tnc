@@ -1,58 +1,34 @@
 // amplify/data/models/course.ts
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { a } from '@aws-amplify/backend';
 
-const schema = a.schema({
+export const courseSchema = a.schema({
   Course: a
     .model({
-      courseId: a.id().required(),
-      title: a.string().required(),
+      courseId: a.string().required(),
+      startDate: a.string().required(),
       catalogId: a.string().required(),
-      version: a.string().required(),
-      customerId: a.string().required(),
-      startDate: a.datetime(),
-      endDate: a.datetime(),
+      title: a.string().required(),
+      description: a.string(),
+      endDate: a.string(),
       status: a.string().required(),
+      shareCode: a.string(),
+      instructor: a.string(),
+      customerId: a.string().required(),
+      maxSeats: a.integer(),
+      currentSeats: a.integer(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
-      // 복합 키를 사용한 관계는 필드 이름 배열로 전달
-      courseCatalog: a.belongsTo('CourseCatalog', ['catalogId', 'version']),
-      customer: a.belongsTo('Customer', 'customerId')
+
+      // 관계 정의
+      courseCatalog: a.belongsTo('CourseCatalog', 'catalogId'),
+      customer: a.belongsTo('Customer', 'customerId'),
+      userQuizzes: a.hasMany('UserQuiz', 'courseId')
     })
-    .identifier(['courseId'])
+    .identifier(['courseId', 'startDate'])
     .secondaryIndexes((index) => [
-      index('catalogId').name('byCourseCatalog'),
-      index('customerId').name('byCustomer')
-    ]),
-  
-  CourseCatalog: a
-    .model({
-      catalogId: a.id().required(),
-      version: a.string().required(),
-      title: a.string().required(),
-      // hasMany 관계도 동일하게 배열로 전달
-      courses: a.hasMany('Course', ['catalogId', 'version'])
-    })
-    .identifier(['catalogId', 'version']),
-
-  Customer: a
-    .model({
-      customerId: a.id().required(),
-      name: a.string().required(),
-      courses: a.hasMany('Course', 'customerId')
-    })
-    .identifier(['customerId'])
-})
-.authorization((allow) => [
-  allow.authenticated().to(['read']), 
-  allow.group('Admin').to(['create', 'read', 'update', 'delete']),
-  allow.owner().to(['read', 'create', 'update', 'delete'])
-]);
-
-export type Schema = ClientSchema<typeof schema>;
-
-export const data = defineData({
-  schema,
-  authorizationModes: {
-    defaultAuthorizationMode: 'userPool',
-  }
+      index('catalogId').sortKeys(['startDate']).name('byCatalogId'),
+      index('shareCode').name('byShareCode'),
+      index('instructor').sortKeys(['startDate']).name('byInstructor'),
+      index('customerId').sortKeys(['startDate']).name('byCustomerId')
+    ])
 });

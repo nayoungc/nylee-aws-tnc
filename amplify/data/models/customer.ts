@@ -14,8 +14,8 @@ export const customerSchema = a.schema({
       industry: a.string(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
-      
-      // 관계 정의 (필요하다면 Course와의 관계)
+
+      // 관계 정의
       courses: a.hasMany('Course', 'customerId')
     })
     .identifier(['customerId'])

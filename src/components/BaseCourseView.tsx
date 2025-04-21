@@ -1,3 +1,4 @@
+// src/components/BaseCourseView.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -12,75 +13,77 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
-// 사용하지 않는 import 제거
-// import { executeGraphQL } from '@utils/auth';
-// import { listCourseCatalogs } from '@graphql/queries/courseCatalog';
-import { client } from '@graphql/api';
-// Amplify Gen 2 스키마 타입 가져오기 (필요한 경우)
-import type { Schema } from '../../amplify/data/resource';
+import { generateClient } from 'aws-amplify/api';
+import type { Schema } from '../../amplify/data/schema';
+
+
+// API 클라이언트 생성
+const client = generateClient<Schema>();
 
 // 백엔드 스키마와 일치하는 타입 정의
 export interface CourseCatalog {
-  catalogId: string;        // DynamoDB 테이블의 파티션 키
-  version: string;          // DynamoDB 테이블의 정렬 키
-  title: string;            // 과정 이름
-  awsCode?: string;         // AWS 코드
+  catalogId: string;
+  version: string;
+  title: string;
+  awsCode?: string;
   description?: string;
-  category?: string;        // 카테고리
   level?: string;
-  duration?: string;
-  deliveryMethod?: string;  // 전달 방식
-  objectives?: string[];
-  targetAudience?: string[]; // 대상 고객
-  status?: string;
+  duration?: number;
+  price?: number;
+  currency?: string;
+  isPublished: boolean;
+  publishedDate?: string;
   createdAt?: string;
   updatedAt?: string;
+  
+  // UI에 필요한 추가 필드
+  status?: string;
+  category?: string;
+  deliveryMethod?: string;
+  objectives?: string[];
+  targetAudience?: string[];
+  course_name?: string; // CourseCatalog.tsx에서 참조하는 필드
 }
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
   return {
-    catalogId: item.catalogId || item.id || '',
+    catalogId: item.catalogId || '',
     version: item.version || 'v1',
-    title: item.title || item.course_name || '',
-    awsCode: item.awsCode || '',
-    description: item.description || '',
+    title: item.title || '',
+    course_name: item.title || '', // course_name 필드 추가 (호환성을 위해)
+    awsCode: item.awsCode,
+    description: item.description,
     category: item.category || '',
-    level: item.level || '',
-    duration: item.duration || '',
-    deliveryMethod: item.deliveryMethod || item.delivery_method || '',
+    level: item.level,
+    duration: item.duration,
+    price: item.price,
+    currency: item.currency,
+    isPublished: item.isPublished !== undefined ? item.isPublished : true,
+    publishedDate: item.publishedDate,
+    deliveryMethod: item.deliveryMethod || '',
     objectives: item.objectives || [],
-    targetAudience: item.targetAudience || item.target_audience || [],
-    // UI에 필요한 추가 필드 - 필요시 기본값 설정
+    targetAudience: item.targetAudience || [],
     status: item.status || 'ACTIVE',
     createdAt: item.createdAt,
     updatedAt: item.updatedAt
   };
 };
 
-// BaseCourseView의 props 인터페이스 - 중복 제거
+// BaseCourseView의 props 인터페이스
 interface BaseCourseViewProps {
   title: string;
   description: string;
-  
-  // 모드와 권한 관련 프로퍼티
   isReadOnly?: boolean;
   isAdminView?: boolean;
-  
-  // 경로 설정
   createPath?: string;
   managePath: string;
   viewPath: string;
-  
-  // 버튼 표시 제어
   showCreateButton?: boolean;
   showManageButton?: boolean;
   showViewButton?: boolean;
-  
   additionalActions?: React.ReactNode;
   courses?: CourseCatalog[];
-  
-  // 과정 선택 콜백 추가
   onSelectCourse?: (course: CourseCatalog) => void;
 }
 
@@ -105,13 +108,11 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 페이지 이동 함수
   const navigateToCreateCourse = useCallback(() => {
     if (createPath) navigate(createPath);
   }, [navigate, createPath]);
 
   useEffect(() => {
-    // 이미 courses가 props로 제공된 경우 API 호출 생략
     if (initialCourses && initialCourses.length > 0) {
       setLoading(false);
       return;
@@ -121,12 +122,10 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
       setLoading(true);
       setError(null);
       
-      // 데이터 로딩 타임아웃 설정
       const timeoutId = setTimeout(() => {
         setLoading(false);
         setError(t('courses.errors.timeout'));
         
-        // 개발 환경에서만 샘플 데이터 제공
         if (process.env.NODE_ENV === 'development') {
           setCourses([
             mapToCourseViewModel({ 
@@ -135,25 +134,23 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
               description: '타임아웃으로 인한 샘플 데이터입니다.',
               level: '입문',
               category: '기타',
-              duration: '0',
+              duration: 0,
               status: 'ACTIVE',
             })
           ]);
         }
-      }, 15000); // 15초 타임아웃
+      }, 15000);
       
       try {
-        // 1. 인증 확인
         await getCurrentUser();
         
         console.log('API 호출 시작...');
         
         try {
-          // 2. Amplify Gen 2 API 호출 방식 사용
           const { data, errors } = await client.models.CourseCatalog.list({
             limit: 100,
             // 필요한 경우 authMode 지정
-            // authMode: 'apiKey'
+            // authMode: 'userPool'
           });
 
           console.log('API 응답:', data);
@@ -163,7 +160,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
             throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
           }
           
-          // 3. 데이터가 있으면 매핑 후 상태 업데이트
           if (data && Array.isArray(data)) {
             const mappedItems = data.map(mapToCourseViewModel);
             setCourses(mappedItems);
@@ -171,7 +167,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
             setCourses([]);
           }
           
-          // 타임아웃 제거
           clearTimeout(timeoutId);
         } catch (graphqlError) {
           console.error('GraphQL 오류:', graphqlError);
@@ -182,7 +177,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         console.error('Course load error:', error);
         clearTimeout(timeoutId);
         
-        // 오류 처리
         if (error.name === 'UserUnAuthenticatedException' || 
             error.message?.includes('인증')) {
           setError(t('courses.errors.authentication'));
@@ -190,7 +184,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           setError(t('courses.errors.load_message'));
         }
         
-        // 개발 환경에서만 샘플 데이터 사용
         if (process.env.NODE_ENV === 'development') {
           setCourses([
             mapToCourseViewModel({
@@ -200,7 +193,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
               description: 'Learn the fundamentals of AWS Cloud',
               level: 'Beginner',
               category: 'Cloud',
-              duration: '8',
+              duration: 8,
               status: 'ACTIVE', 
             }),
             mapToCourseViewModel({ 
@@ -210,7 +203,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
               description: 'Learn advanced AWS architecture concepts',
               level: 'Intermediate',
               category: 'Architecture',
-              duration: '24',
+              duration: 24,
               status: 'ACTIVE', 
             })
           ]);
@@ -223,7 +216,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     checkAuthAndFetchCourses();
   }, [t, initialCourses]);
 
-  // 상태에 따른 배지 색상 결정
   const getStatusColor = (status?: string): "green" | "blue" | "grey" => {
     if (!status) return 'grey';
     switch(status.toUpperCase()) {
@@ -233,7 +225,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     }
   };
 
-  // 로딩 상태 표시
   if (loading) {
     return (
       <Box padding="l" textAlign="center">
@@ -243,32 +234,27 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     );
   }
 
-  // 버튼 액션 섹션 렌더링
   const renderActionButtons = (item: CourseCatalog) => {
     return (
       <SpaceBetween direction="horizontal" size="xs">
-        {/* 과정 선택 버튼 */}
         {onSelectCourse && (
           <Button onClick={() => onSelectCourse(item)}>
             {t('courses.view_stats')}
           </Button>
         )}
         
-        {/* 관리 버튼은 관리자 뷰이고 showManageButton이 true일 때만 표시 */}
         {isAdminView && showManageButton && (
           <Button onClick={() => navigate(`\${managePath}\${item.catalogId}`)}>
             {t('courses.manage')}
           </Button>
         )}
         
-        {/* 학습자 뷰 버튼 */}
         {showViewButton && (
           <Button iconName="external" onClick={() => navigate(`\${viewPath}\${item.catalogId}`)}>
             {t('courses.view_student')}
           </Button>
         )}
         
-        {/* 읽기 전용이 아닌 경우에만 등록 버튼 표시 */}
         {!isReadOnly && (
           <Button variant="normal">
             {t('courses.enroll')}
@@ -288,7 +274,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
             <SpaceBetween direction="horizontal" size="xs">
               {additionalActions}
               
-              {/* 관리자 뷰이고 showCreateButton이 true인 경우에만 생성 버튼 표시 */}
               {isAdminView && showCreateButton && createPath && (
                 <Button variant="primary" onClick={navigateToCreateCourse}>
                   {t('courses.create_button')}

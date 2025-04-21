@@ -127,41 +127,52 @@ const CourseDetailPage: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    async function fetchCourseData() {
-      if (!courseId) {
-        setError(t('course_detail.errors.invalid_id'));
-        setLoading(false);
-        return;
-      }
+  // useEffect(() => {
+  //   async function fetchCourseData() {
+  //     if (!courseId) {
+  //       setError(t('course_detail.errors.invalid_id'));
+  //       setLoading(false);
+  //       return;
+  //     }
       
-      try {
-        setLoading(true);
-        // Gen 2에 맞는 방식으로 수정
-        const { data } = await client.graphql<GraphQLQuery<GetCourseQuery>>({
-          query: getCourseCatalog,
-          variables: { id: courseId },
-          authMode: 'userPool' // 인증 모드 명시적 지정
-        });
+  //     try {
+  //       setLoading(true);
         
-        const courseData = data.getCourse;
+  //       // Amplify Gen 2 모델 API 직접 사용
+  //       const { data, errors } = await client.models.CourseCatalog.get({ 
+  //         catalogId: courseId,
+  //         version: "v1" // 기본 버전 또는 필요한 버전 지정
+  //       });
+      
+  //       if (errors && errors.length > 0) {
+  //         console.error('GraphQL errors:', errors);
+  //         throw new Error(t('course_detail.errors.fetch_failed'));
+  //       }
+      
+  //       if (!data) {
+  //         setError(t('course_detail.errors.not_found'));
+  //         return;
+  //       }
         
-        if (!courseData) {
-          setError(t('course_detail.errors.not_found'));
-          return;
-        }
+  //       // 데이터 변환 및 상태 업데이트
+  //       setCourse(mapToCourseViewModel(data));
         
-        setCourse(courseData);
-      } catch (err) {
-        console.error(t('course_detail.errors.load_error_log'), err);
-        setError(t('course_detail.errors.load_error'));
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCourseData();
-  }, [courseId, client, t]);
+  //     } catch (error: any) {
+  //       console.error('Error fetching course:', error);
+        
+  //       // 오류 유형에 따른 메시지 설정
+  //       if (error.name === 'UserUnAuthenticatedException') {
+  //         setError(t('course_detail.errors.authentication'));
+  //       } else {
+  //         setError(t('course_detail.errors.fetch_failed'));
+  //       }
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  
+  //   fetchCourseData();
+  // }, [courseId, client, t]);
 
   // 평가 항목 시작 핸들러
   const handleStartAssessment = (assessmentId: string, type: string) => {

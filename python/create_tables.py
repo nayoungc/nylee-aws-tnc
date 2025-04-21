@@ -257,7 +257,7 @@ def create_course_catalog_tables():
         logger.error(f"테이블 생성 오류 Tnc-CourseCatalog-Quizzes: {e.response['Error']['Message']}")
     
     # 나머지 테이블도 비슷한 방식으로 생성... (간략화를 위해 일부만 포함)
-    # 6. Tnc-CourseCatalog-Questions 테이블 생성
+    # 6. ioTnc-CourseCatalog-Questions 테이블 생성
     try:
         response = dynamodb.create_table(
             TableName='Tnc-CourseCatalog-Questions',
