@@ -141,7 +141,7 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/"
         element={
-          authenticated ? (
+          isAuthenticated ? (
             userAttributes?.profile === 'admin' ? (
               <Navigate to="/admin" />
             ) : userAttributes?.profile === 'instructor' ? (
