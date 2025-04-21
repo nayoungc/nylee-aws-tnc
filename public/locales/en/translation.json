@@ -265,5 +265,409 @@
     "survey": "Survey",
     "create_quiz": "Create Quiz",
     "create_survey": "Create Survey"
+  },
+  "quiz_management": {
+    "title": "Quiz Management",
+    "subtitle": "Manage Quizzes",
+    "course_selection": "Select Course",
+    "course_placeholder": "Choose a course",
+    "quiz_type": "Quiz Type",
+    "select_quiz_type": "Select quiz type",
+    "pre_quiz": "Pre-Quiz",
+    "post_quiz": "Post-Quiz",
+    "sync_with_pre_quiz": "Sync with pre-quiz content",
+    "actions": {
+      "create_quiz": "Create Quiz",
+      "ai_generate": "Generate with AI",
+      "copy_from_pre": "Copy from Pre-Quiz",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "try_generation": "Generate Questions",
+      "regenerate": "Regenerate",
+      "cancel": "Cancel",
+      "create_with_questions": "Create Quiz with Questions",
+      "return_to_management": "Return to Quiz Management"
+    },
+    "existing_quizzes": "Existing Quizzes",
+    "existing_quiz_description": "Below are all {type} quizzes for the selected course",
+    "filter_placeholder": "Filter quizzes",
+    "filter_aria_label": "Filter quizzes by name",
+    "columns": {
+      "title": "Quiz Title",
+      "question_count": "Questions",
+      "created_at": "Created",
+      "actions": "Actions"
+    },
+    "empty_states": {
+      "no_courses": "No courses available",
+      "register_course_first": "Please register a course first",
+      "no_quizzes": "No quizzes found",
+      "create_new_quiz": "Create a new quiz using the buttons above",
+      "no_generated_questions": "No questions generated yet"
+    },
+    "loading": {
+      "courses": "Loading courses...",
+      "quizzes": "Loading quizzes..."
+    },
+    "errors": {
+      "course_load": "Error loading courses",
+      "course_load_message": "Failed to load courses. Please try again later.",
+      "quiz_load": "Error loading quizzes",
+      "quiz_load_message": "Failed to load quizzes. Please try again later.",
+      "copy_quiz": "Error copying quiz",
+      "copy_quiz_message": "Failed to copy quiz. Please try again later.",
+      "delete_quiz": "Error deleting quiz",
+      "delete_quiz_message": "Failed to delete quiz. Please try again later.",
+      "quiz_generation": "Error generating quiz",
+      "generation_failed": "Failed to generate questions. Please try again.",
+      "no_pre_quiz": "No pre-quiz found for this course",
+      "course_required": "Please select a course first"
+    },
+    "delete_confirm": "Are you sure you want to delete this quiz?",
+    "modal": {
+      "ai_generation": "Generate {type} Quiz Questions",
+      "generating": "Generating questions...",
+      "generated_count": "{count} questions generated",
+      "question": "Question",
+      "quality": "Quality"
+    },
+    "model_selection": "AI Model",
+    "model_types": {
+      "basic": "Basic",
+      "advanced": "Advanced"
+    },
+    "model_description": {
+      "basic": "Simpler questions, faster generation",
+      "advanced": "More complex questions with deeper assessment"
+    },
+    "quality": {
+      "high": "High Quality",
+      "medium": "Medium Quality",
+      "low": "Low Quality"
+    },
+    "correct_answer": "Correct Answer"
+  },
+  
+  "quiz_creator": {
+    "create_title": "Create Quiz",
+    "edit_title": "Edit Quiz",
+    "course_selection": {
+      "title": "Course Selection",
+      "course": "Course",
+      "placeholder": "Select a course",
+      "no_courses": "No courses available",
+      "create_course": "Please create a course first"
+    },
+    "quiz_type_selection": {
+      "label": "Quiz Type"
+    },
+    "pre_quiz": "Pre-Quiz",
+    "post_quiz": "Post-Quiz",
+    "sections": {
+      "quiz_info": "Quiz Information",
+      "questions": "Quiz Questions",
+      "questions_count": "Questions ({count})",
+      "question_list": "Question List"
+    },
+    "meta": {
+      "title_label": "Quiz Title",
+      "title_placeholder": "Enter quiz title",
+      "description_label": "Description",
+      "description_placeholder": "Enter quiz description",
+      "time_limit": "Time Limit (minutes)",
+      "pass_score": "Pass Score (%)",
+      "shuffle_questions": "Shuffle Questions",
+      "shuffle_options": "Shuffle Answer Options",
+      "show_feedback": "Show Feedback After Each Question"
+    },
+    "labels": {
+      "question": "Question",
+      "options": "Options",
+      "correct": "Correct",
+      "explanation": "Explanation",
+      "difficulty": "Difficulty",
+      "tags": "Tags"
+    },
+    "hints": {
+      "tags": "Separate tags with commas"
+    },
+    "placeholders": {
+      "question": "Enter question text",
+      "explanation": "Enter explanation (shown after answering)",
+      "option": "Option {number}",
+      "select_difficulty": "Select difficulty level",
+      "tags": "tag1, tag2, tag3"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "actions": {
+      "import_questions": "Import Questions",
+      "ai_generate": "Generate with AI",
+      "add_question": "Add Question",
+      "add_option": "Add Option",
+      "cancel": "Cancel",
+      "save_question": "Save Question",
+      "cancel_return": "Cancel & Return",
+      "save_quiz": "Save Quiz",
+      "update_quiz": "Update Quiz"
+    },
+    "empty_states": {
+      "no_questions": "No questions added yet",
+      "add_instructions": "Click the button below to add your first question"
+    },
+    "validation": {
+      "question_required": "Question text is required",
+      "options_required": "All options must have text",
+      "min_question_required": "At least one question is required",
+      "course_required": "Please select a course"
+    },
+    "modal": {
+      "add_question": "Add Question",
+      "edit_question": "Edit Question",
+      "import_questions": "Import Questions",
+      "ai_generation": "Generate Questions with AI",
+      "save_success": "Quiz Saved Successfully"
+    },
+    "messages": {
+      "save_success": "Your quiz has been saved successfully.",
+      "update_success": "Your quiz has been updated successfully."
+    },
+    "default_description": "This quiz will assess your knowledge of the course material.",
+    "confirm_delete_question": "Are you sure you want to delete this question?",
+    "import": {
+      "description": "Import questions from a file. Supported formats:",
+      "format_json": "JSON file with an array of questions",
+      "format_csv": "CSV file with question data",
+      "format_txt": "Text file with questions separated by blank lines",
+      "processing": "Processing file...",
+      "loading": "Loading questions",
+      "select_file": "Select File",
+      "supported_formats": "Supported formats: .json, .csv, .txt"
+    },
+    "ai": {
+      "model_type": "AI Model Type",
+      "model_basic": "Standard",
+      "model_advanced": "Advanced",
+      "model_basic_description": "Creates balanced questions covering key concepts",
+      "model_advanced_description": "Creates more challenging questions with deeper assessment",
+      "question_count": "Number of Questions",
+      "question_count_hint": "Maximum 20 questions can be generated at once",
+      "context": "Additional Context (Optional)",
+      "context_description": "Add specific topics or concepts you want to include in the questions",
+      "context_placeholder": "Enter specific topics or concepts to focus on",
+      "generating": "Generating questions...",
+      "generated_count": "{count} questions generated",
+      "no_questions": "No questions generated",
+      "quality": "Quality",
+      "quality_high": "High",
+      "quality_medium": "Medium",
+      "quality_low": "Low",
+      "regenerate": "Regenerate Questions",
+      "add_questions": "Add These Questions"
+    },
+    "loading": {
+      "courses": "Loading courses..."
+    },
+    "errors": {
+      "course_load": "Error loading courses",
+      "course_load_message": "Failed to load courses. Please try again.",
+      "quiz_load": "Error loading quiz",
+      "quiz_load_message": "Failed to load quiz data. Please try again.",
+      "file_import": "Error importing file",
+      "file_import_message": "Failed to import questions. Please check file format and try again.",
+      "ai_generation": "Error generating questions",
+      "ai_generation_message": "Failed to generate questions. Please try again.",
+      "save_error": "Error saving quiz",
+      "save_error_message": "Failed to save quiz. Please try again."
+    }
+  },
+  "survey": {
+    "management_title": "Survey Management",
+    "survey_list": "Survey List",
+    "select_course": "Select Course",
+    "course_placeholder": "Choose a course",
+    "survey_type": "Survey Type",
+    "survey_type_selection": "Select survey type",
+    "pre_survey": "Pre-Survey",
+    "post_survey": "Post-Survey",
+    "pre": "Pre",
+    "post": "Post",
+    "sync_with_pre_survey": "Sync with pre-survey content",
+    "create_survey": "Create Survey",
+    "generate_with_ai": "Generate with AI",
+    "create_from_template": "Create from Template",
+    "copy_from_pre_survey": "Copy from Pre-Survey",
+    "survey_list_description": "Below are all {type} surveys for the selected course",
+    "no_surveys": "No surveys found",
+    "create_new_survey_prompt": "Create a new survey using the buttons above",
+    "loading_surveys": "Loading surveys...",
+    "loading_courses": "Loading courses...",
+    "no_courses": "No courses available",
+    "register_course_first": "Please register a course first",
+    "columns": {
+      "title": "Survey Title",
+      "question_count": "Questions",
+      "response_count": "Responses",
+      "created_date": "Created Date",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view_results": "View Results",
+      "edit": "Edit Survey",
+      "duplicate": "Duplicate",
+      "copy_to_other": "Copy to {type} Survey",
+      "delete": "Delete",
+      "button_text": "Actions",
+      "cancel": "Cancel",
+      "regenerate": "Generate Again",
+      "try_generation": "Generate Questions",
+      "create_with_questions": "Create with These Questions"
+    },
+    "ai_modal": {
+      "title": "Generate {type} Survey Questions",
+      "generating": "Generating questions...",
+      "question_count": "{count} questions generated",
+      "question_number": "Question {number}",
+      "type": "Question type",
+      "created_at": "Created"
+    },
+    "delete_modal": {
+      "title": "Delete Survey",
+      "confirmation": "Are you sure you want to delete survey \"{title}\"?",
+      "warning": "Warning:",
+      "response_count": "This survey has {count} responses that will be deleted."
+    },
+    "question_types": {
+      "single": "Single Choice",
+      "multiple": "Multiple Choice",
+      "text": "Open Text"
+    },
+    "template": {
+      "overall_satisfaction": "How would you rate your overall satisfaction {period} the training?",
+      "before": "before",
+      "after": "after",
+      "very_dissatisfied": "Very Dissatisfied",
+      "dissatisfied": "Dissatisfied",
+      "neutral": "Neutral",
+      "satisfied": "Satisfied",
+      "very_satisfied": "Very Satisfied",
+      "most_expected_part": "What aspects of {course} are you most {past} looking forward to?",
+      "beneficial": "found most beneficial",
+      "participation_purpose": "What is your main reason for {past} this course?",
+      "participating": "participating in",
+      "participated": "having participated in",
+      "purpose_1": "Professional development",
+      "purpose_2": "Required by employer",
+      "purpose_3": "Career change/advancement",
+      "purpose_4": "Personal interest",
+      "purpose_5": "Certification preparation",
+      "purpose_other": "Other (please specify)",
+      "additional_comment": "Do you have any additional comments or feedback?",
+      "cloud_experience": "How would you rate your cloud computing experience?",
+      "experience_none": "No experience",
+      "experience_basic": "Basic knowledge",
+      "experience_intermediate": "Some practical experience",
+      "experience_advanced": "Advanced user",
+      "experience_expert": "Expert",
+      "skill_improvement": "This course has improved my skills in this subject area.",
+      "strongly_disagree": "Strongly Disagree",
+      "disagree": "Disagree",
+      "agree": "Agree",
+      "strongly_agree": "Strongly Agree"
+    },
+    "dummy": {
+      "question1": "How would you rate your overall satisfaction with the course?",
+      "option1_verylow": "Very Low",
+      "option1_low": "Low",
+      "option1_medium": "Medium",
+      "option1_high": "High",
+      "option1_veryhigh": "Very High",
+      "question2": "What topics are you most interested in? (Select all that apply)",
+      "option2_1": "Cloud Architecture",
+      "option2_2": "DevOps Practices",
+      "option2_3": "Security",
+      "option2_4": "Machine Learning",
+      "option2_5": "Cost Optimization",
+      "question3": "Do you have any suggestions for improvement?",
+      "question4": "How did you hear about this course?",
+      "option4_1": "Work Colleague",
+      "option4_2": "Internet Search",
+      "option4_3": "Social Media",
+      "option4_4": "Email Newsletter"
+    },
+    "errors": {
+      "graphql_query_error": "Error executing GraphQL query",
+      "load_courses_error": "Error loading courses",
+      "load_surveys_error": "Error loading surveys",
+      "generate_survey_error": "Error generating survey",
+      "copy_survey_error": "Error copying survey",
+      "copy_survey_error_message": "Failed to copy the survey. Please try again.",
+      "delete_survey_error": "Error deleting survey",
+      "delete_survey_error_message": "Failed to delete the survey. Please try again.",
+      "invalid_response_format": "Invalid response format"
+    },
+    "alerts": {
+      "copy_success": "Survey successfully copied to {type} survey"
+    },
+    "satisfaction_survey": "Satisfaction Survey",
+    "expectations_survey": "Expectations Survey"
+  },
+  
+  "surveyCreator": {
+    "default_title": "{course} {type} Survey",
+    "default_description": "This survey collects feedback about the course.",
+    "survey_info": "Survey Information",
+    "survey_title": "Survey Title",
+    "enter_survey_title": "Enter survey title",
+    "description": "Description",
+    "enter_survey_description": "Enter survey description",
+    "time_limit": "Time Limit (minutes)",
+    "required_response": "Require Response",
+    "allow_anonymous": "Allow Anonymous Responses",
+    "shuffle_questions": "Shuffle Questions",
+    "add_question": "Add Question",
+    "survey_questions": "Survey Questions ({count})",
+    "loading_questions": "Loading questions...",
+    "columns": {
+      "question": "Question",
+      "type": "Type",
+      "options": "Options"
+    },
+    "editable": "Click to edit",
+    "enter_options_per_line": "Enter each option on a new line",
+    "text_response": "Open text response",
+    "text_no_options": "Text questions don't have options",
+    "no_questions": "No questions yet",
+    "add_question_prompt": "Click the button below to add your first question",
+    "question_list": "Question List",
+    "actions": {
+      "detailed_edit": "Edit",
+      "cancel_and_return": "Cancel & Return"
+    },
+    "save_survey": "Save Survey",
+    "edit_question": "Edit Question",
+    "add_new_question": "Add New Question",
+    "question": "Question",
+    "enter_question_content": "Enter your question here",
+    "question_type": "Question Type",
+    "option_choices": "Options",
+    "option_placeholder": "Option {number}",
+    "add_option": "Add Option",
+    "save_question": "Save Question",
+    "save_complete": "Survey Saved",
+    "save_success_message": "Your survey has been saved successfully.",
+    "return_to_management": "Return to Survey Management",
+    "alerts": {
+      "enter_question": "Please enter a question",
+      "enter_all_options": "Please enter text for all options"
+    },
+    "errors": {
+      "save_error": "Error saving survey",
+      "save_error_message": "Failed to save the survey. Please try again."
+    }
   }
 }
