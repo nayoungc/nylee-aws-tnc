@@ -1,7 +1,7 @@
 // src/AppRoutes.tsx
 import React from 'react'; 
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext'; // AuthContext 사용
+import { useAuth } from './contexts/AuthContext';
 import { useTypedTranslation } from '@utils/i18n-utils';
 
 // 인증 관련 컴포넌트
@@ -15,9 +15,11 @@ import LoadingScreen from './components/LoadingScreen';
 
 // 강사용 페이지 컴포넌트
 import Dashboard from './pages/instructor/Dashboard';
-import CoursesManagement from './pages/instructor/CoursesManagement';
-import CourseCreation from './pages/instructor/CourseCreation';
-import CourseCatalog from './pages/instructor/CourseCatalog';
+// 파일 이름 구조 업데이트
+import CoursesList from './pages/instructor/courses/CoursesList';
+import CourseCreate from './pages/instructor/courses/CourseCreate';
+import CourseDetail from './pages/instructor/courses/CourseDetail';
+import CourseCatalog from './pages/instructor/courses/CourseCatalog';
 import QuizManagement from './pages/instructor/QuizManagement';
 import QuizCreator from './pages/instructor/QuizCreator';
 import SurveyManagement from './pages/instructor/SurveyManagement';
@@ -51,7 +53,6 @@ const CoursePathRedirect: React.FC = () => {
 const AppRoutes: React.FC = () => {
   const navigate = useNavigate();
   const { t, tString } = useTypedTranslation();
-  // AuthContext 사용 - 중복 인증 로직 제거
   const { isAuthenticated, userAttributes, loading } = useAuth();
 
   // 로딩 중 화면
@@ -96,6 +97,7 @@ const AppRoutes: React.FC = () => {
           ) :
           <AuthLayout><SignIn /></AuthLayout>
       } />
+      
       
       <Route path="/signup" element={
         isAuthenticated ? <Navigate to="/" /> : <AuthLayout><SignUp /></AuthLayout>
@@ -169,11 +171,11 @@ const AppRoutes: React.FC = () => {
           </InstructorRoute>
         } />
 
-        {/* 과정 관리 */}
+        {/* 과정 관리 - 클래스 이름 변경 */}
         <Route path="courses" element={
           <InstructorRoute>
             <MainLayout title={tString('nav.course_management')}>
-              <CoursesManagement />
+              <CoursesList />
             </MainLayout>
           </InstructorRoute>
         } />
@@ -181,7 +183,16 @@ const AppRoutes: React.FC = () => {
         <Route path="courses/create" element={
           <InstructorRoute>
             <MainLayout title={tString('course.create_course')}>
-              <CourseCreation />
+              <CourseCreate />
+            </MainLayout>
+          </InstructorRoute>
+        } />
+        
+        {/* 과정 상세 페이지 추가 */}
+        <Route path="courses/:courseId" element={
+          <InstructorRoute>
+            <MainLayout title={tString('course.detail')}>
+              <CourseDetail />
             </MainLayout>
           </InstructorRoute>
         } />

@@ -1,4 +1,4 @@
-// src/components/BaseCourseView.tsx
+// src/components/courses/BaseCourseView.tsx - 수정
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -13,37 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { generateClient } from 'aws-amplify/api';
-import type { Schema } from '../../amplify/data/schema';
-
-
-// API 클라이언트 생성
-const client = generateClient<Schema>();
-
-// 백엔드 스키마와 일치하는 타입 정의
-export interface CourseCatalog {
-  catalogId: string;
-  version: string;
-  title: string;
-  awsCode?: string;
-  description?: string;
-  level?: string;
-  duration?: number;
-  price?: number;
-  currency?: string;
-  isPublished: boolean;
-  publishedDate?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  
-  // UI에 필요한 추가 필드
-  status?: string;
-  category?: string;
-  deliveryMethod?: string;
-  objectives?: string[];
-  targetAudience?: string[];
-  course_name?: string; // CourseCatalog.tsx에서 참조하는 필드
-}
+import { client, type CourseCatalog } from '../../graphql/client';
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
@@ -86,6 +56,8 @@ interface BaseCourseViewProps {
   courses?: CourseCatalog[];
   onSelectCourse?: (course: CourseCatalog) => void;
 }
+
+export { mapToCourseViewModel, type CourseCatalog };
 
 export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   title,
@@ -147,15 +119,14 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         console.log('API 호출 시작...');
         
         try {
+          // Amplify Gen 2 API 호출
           const { data, errors } = await client.models.CourseCatalog.list({
-            limit: 100,
-            // 필요한 경우 authMode 지정
-            // authMode: 'userPool'
+            limit: 100
           });
 
           console.log('API 응답:', data);
           
-          if (errors) {
+          if (errors && errors.length > 0) {
             console.error('GraphQL 오류:', errors);
             throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
           }
@@ -189,7 +160,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
             mapToCourseViewModel({
               catalogId: '1',
               version: 'v1',
-              title: 'AWS Cloud Practitioner Essentials', 
+              title: 'AWS Cloud Practitioner Essentials',
               description: 'Learn the fundamentals of AWS Cloud',
               level: 'Beginner',
               category: 'Cloud',
@@ -199,7 +170,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
             mapToCourseViewModel({ 
               catalogId: '2', 
               version: 'v1',
-              title: 'AWS Solutions Architect Associate', 
+              title: 'AWS Solutions Architect Associate',
               description: 'Learn advanced AWS architecture concepts',
               level: 'Intermediate',
               category: 'Architecture',

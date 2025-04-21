@@ -136,7 +136,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   const breadcrumbItems = useMemo(() => {
     const path = location.pathname;
     const items = [{ text: t('nav.home'), href: '/' }];
-
+  
     if (path.startsWith('/tnc')) {
       items.push({ text: t('nav.course_list'), href: '/tnc' });
       

@@ -1,9 +1,9 @@
-// src/pages/CourseCatalog.tsx
+// src/pages/instructor/courses/CourseCatalog.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   BaseCourseView,
   CourseCatalog as CourseCatalogType 
-} from '@components/BaseCourseView';
+} from '@components/courses/BaseCourseView';
 import { 
   Container, 
   Header, 
@@ -16,11 +16,8 @@ import {
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { generateClient } from 'aws-amplify/api';
-import type { Schema } from '@amplify/data/schema';
-
-// API 클라이언트 생성
-const client = generateClient<Schema>();
+import { client } from '../../../graphql/client';
+import MainLayout from '../../../layouts/MainLayout';
 
 // 평가 현황 인터페이스
 interface AssessmentStats {
@@ -30,8 +27,8 @@ interface AssessmentStats {
   surveys: { total: number, completed: number };
 }
 
-const CourseCatalog: React.FC = () => {
-  const { t } = useTypedTranslation();
+const CourseCatalogPage: React.FC = () => {
+  const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
   const [activeTabId, setActiveTabId] = useState('catalog');
   const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
@@ -40,9 +37,11 @@ const CourseCatalog: React.FC = () => {
   useEffect(() => {
     const fetchAssessmentStats = async () => {
       try {
-        // 실제 구현에서는 Gen 2 API를 사용하여 통계 데이터 가져오기
-        // 예시: const { data } = await client.models.AssessmentStats.list();
-        
+        // 실제 구현에서는 Gen 2 API 호출로 변경
+        // const { data } = await client.models.Assessment.list({
+        //   filter: { courseId: { eq: selectedCourse?.catalogId } }
+        // });
+
         // 현재는 샘플 데이터 사용
         const mockStats: Record<string, AssessmentStats> = {
           '1': {
@@ -171,28 +170,30 @@ const CourseCatalog: React.FC = () => {
   );
 
   return (
-    <SpaceBetween size="l">
-      <Container
-        header={
-          <Header
-            variant="h1"
-            description={t('courses.catalog_admin_description')}
-            actions={
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => navigate('/instructor/courses/create')}>
-                  {t('courses.create_course')}
-                </Button>
-              </SpaceBetween>
-            }
-          >
-            {t('courses.catalog_management')}
-          </Header>
-        }
-      >
-        {renderTabs()}
-      </Container>
-    </SpaceBetween>
+    <MainLayout title={tString('courses.catalog_management')}>
+      <SpaceBetween size="l">
+        <Container
+          header={
+            <Header
+              variant="h1"
+              description={t('courses.catalog_admin_description')}
+              actions={
+                <SpaceBetween direction="horizontal" size="xs">
+                  <Button onClick={() => navigate('/instructor/courses/create')}>
+                    {t('courses.create_course')}
+                  </Button>
+                </SpaceBetween>
+              }
+            >
+              {t('courses.catalog_management')}
+            </Header>
+          }
+        >
+          {renderTabs()}
+        </Container>
+      </SpaceBetween>
+    </MainLayout>
   );
 };
 
-export default CourseCatalog;
+export default CourseCatalogPage;
