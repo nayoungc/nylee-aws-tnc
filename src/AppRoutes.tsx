@@ -1,6 +1,6 @@
 // src/AppRoutes.tsx
 import React from 'react'; 
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext'; // AuthContext 사용
 import { useTypedTranslation } from '@utils/i18n-utils';
 
@@ -38,13 +38,13 @@ import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
 
 // 리디렉션을 위한 별도 컴포넌트들
-const CoursesHomeRedirect = () => {
-  const { courseId } = useParams();
+const CoursesHomeRedirect: React.FC = () => {
+  const { courseId } = useParams<{ courseId: string }>();
   return <Navigate to={`/tnc/\${courseId}`} replace />;
 };
 
-const CoursePathRedirect = () => {
-  const { courseId, path } = useParams();
+const CoursePathRedirect: React.FC = () => {
+  const { courseId, path } = useParams<{ courseId: string; path: string }>();
   return <Navigate to={`/tnc/\${courseId}/\${path}`} replace />;
 };
 
