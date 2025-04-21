@@ -11,7 +11,7 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       // resources 설정 제거 (파일을 직접 import 하지 않음)
-      fallbackLng: 'en',
+      fallbackLng: 'ko',
       supportedLngs: ['en', 'ko'], 
       debug: process.env.NODE_ENV === 'development',
       interpolation: { escapeValue: false },

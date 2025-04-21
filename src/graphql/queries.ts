@@ -1,111 +1,129 @@
 // src/graphql/queries.ts
-// CourseCatalog 쿼리
+import { graphql } from './api';
 export const listCourseCatalog = /* GraphQL */ `
-  query ListCourseCatalog(
-    \$limit: Int   
-    \$nextToken: String
-  ) {
+  query ListCourseCatalog(\$limit: Int, \$nextToken: String) {
     listCourseCatalog(limit: \$limit, nextToken: \$nextToken) {
       items {
-        id
-        course_id
-        course_name
+        catalogId
+        version
+        title
+        awsCode
+        description
+        category
         level
         duration
-        delivery_method
-        description
+        status
         objectives
-        target_audience
+        targetAudience
+        deliveryMethod
         createdAt
         updatedAt
       }
       nextToken
+    }
+  }
+`;
+
+export const getCourseCatalogById = /* GraphQL */ `
+  query GetCourseCatalogById(\$catalogId: ID!, \$version: String!) {
+    getCourseCatalog(catalogId: \$catalogId, version: \$version) {
+      catalogId
+      version
+      title
+      awsCode
+      description
+      category
+      level
+      duration
+      status
+      objectives
+      targetAudience
+      deliveryMethod
+      createdAt
+      updatedAt
     }
   }
 `;
 
 export const getCourseCatalog = /* GraphQL */ `
-  query GetCourseCatalog(\$id: ID!) {
-    getCourseCatalog(id: \$id) {
-      id
-      course_id
-      course_name
+  query GetCourseCatalog(\$catalogId: ID!, \$version: String!) {
+    getCourseCatalog(catalogId: \$catalogId, version: \$version) {
+      catalogId
+      version
+      title
+      awsCode
+      description
+      category
       level
       duration
-      delivery_method
-      description
-      objectives
-      target_audience
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-// Customer 쿼리
-export const listCustomers = /* GraphQL */ `
-  query ListCustomers(
-    \$filter: ModelCustomerFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listCustomers(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        name
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-export const getCustomer = /* GraphQL */ `
-  query GetCustomer(\$id: ID!) {
-    getCustomer(id: \$id) {
-      id
-      name
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-// Instructor 쿼리
-export const listInstructors = /* GraphQL */ `
-  query ListInstructors(
-    \$filter: ModelInstructorFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listInstructors(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        name
-        email
-        status
-        profile
-        cognitoId
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-export const getInstructor = /* GraphQL */ `
-  query GetInstructor(\$id: ID!) {
-    getInstructor(id: \$id) {
-      id
-      name
-      email
       status
-      profile
-      cognitoId
+      objectives
+      targetAudience
+      prerequisites
+      deliveryMethod
       createdAt
       updatedAt
+    }
+  }
+`;
+
+export const listCourseCatalogs = /* GraphQL */ `
+  query ListCourseCatalogs(
+    \$filter: ModelCourseCatalogFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        catalogId
+        version
+        title
+        awsCode
+        description
+        category
+        level
+        duration
+        status
+        objectives
+        targetAudience
+        prerequisites
+        deliveryMethod
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
+// 인덱스를 사용한 쿼리
+export const courseCatalogsByTitle = /* GraphQL */ `
+  query CourseCatalogsByTitle(
+    \$title: String!
+    \$version: ModelStringKeyConditionInput
+    \$limit: Int
+    \$nextToken: String
+    \$sortDirection: ModelSortDirection
+  ) {
+    courseCatalogsByTitle(
+      title: \$title
+      version: \$version
+      limit: \$limit
+      nextToken: \$nextToken
+      sortDirection: \$sortDirection
+    ) {
+      items {
+        catalogId
+        version
+        title
+        awsCode
+        description
+        category
+        status
+        createdAt
+        updatedAt
+      }
+      nextToken
     }
   }
 `;

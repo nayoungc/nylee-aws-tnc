@@ -2,40 +2,30 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
 const schema = a.schema({
-  // 과정 카탈로그 모델
   CourseCatalog: a
     .model({
-      id: a.id(), 
-      course_id: a.string().required(), // AWS-GOE와 같은 고유 코스 ID
-      course_name: a.string().required(),
+      catalogId: a.id().required(),
+      version: a.string().required(),
+      title: a.string().required(),
+      awsCode: a.string(),
+      description: a.string(),
+      category: a.string(),
       level: a.string(),
       duration: a.string(),
-      delivery_method: a.string(),
-      description: a.string(),
-      objectives: a.string().array(), // 문자열 배열
-      target_audience: a.string().array(), // 문자열 배열
-    })
-    .authorization(allow => [allow.authenticated()]),
-
-  // 고객사 모델 - 단순 구조
-  Customer: a
-    .model({
-      id: a.id(),
-      name: a.string().required()
-    })
-    .authorization(allow => [allow.authenticated()]),
-
-  // 강사 모델
-  Instructor: a
-    .model({
-      id: a.id(),
-      name: a.string().required(),
-      email: a.string().required(),
       status: a.string(),
-      profile: a.string(),
-      cognitoId: a.string()
+      objectives: a.array(a.string()),
+      targetAudience: a.array(a.string()),
+      prerequisites: a.array(a.string()),
+      deliveryMethod: a.string()
     })
-    .authorization(allow => [allow.authenticated()])
+    .authorization(allow => [
+      allow.public().to(['read']),
+      allow.authenticated().to(['read', 'create', 'update', 'delete']),
+    ])
+    .primaryKey(keys => keys.partition('catalogId').sort('version'))
+    // 글로벌 보조 인덱스 정의
+    .index('byTitle', keys => keys.partition('title').sort('version'))
+    .index('byAwsCode', keys => keys.partition('awsCode').sort('version'))
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -44,5 +34,9 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
+    // API 키 설정 (필요시)
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30,
+    },
   },
 });

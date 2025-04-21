@@ -17,8 +17,8 @@ import {
   Box,
   Header
 } from '@cloudscape-design/components';
-import { SideNavigationProps } from '@cloudscape-design/components/side-navigation';
-import { TopNavigationProps } from '@cloudscape-design/components/top-navigation';
+import { SideNavigationProps } from '@cloudscape-design/components';
+import { TopNavigationProps } from '@cloudscape-design/components';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -67,7 +67,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     // 기본 메뉴 (모든 사용자용)
     const publicMenuItems: SideNavigationProps.Item[] = [
       { type: 'link', text: t('nav.course_list'), href: '/tnc' }
-    ];
+    ] as SideNavigationProps.Item[];
     
     // 비인증 사용자는 공개 메뉴만 보여줌
     if (!isAuthenticated) {

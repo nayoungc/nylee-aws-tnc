@@ -2,7 +2,6 @@ import boto3
 import json
 import os
 import docx
-import time
 import logging
 from typing import Dict, List, Any
 
@@ -20,7 +19,6 @@ def extract_text_from_docx(file_path):
 def get_course_version_from_awstc(course_code):
     """releases.awstc.com에서 과정 버전 정보를 가져옵니다."""
     # 참고: 실제 구현에서는 사이트 접근 권한이 필요할 수 있습니다
-    # 여기서는 가상의 버전 정보를 반환합니다
     default_versions = {
         "ARCHAWS": "3.0",
         "SECUR": "3.1",
@@ -28,9 +26,7 @@ def get_course_version_from_awstc(course_code):
         "DEVELOPING": "3.2",
         "MLOPS": "1.0",
         "WELLARCH": "2.0",
-        "TECHDCT": "3.0",
-        "SYSO": "3.0",
-        "CLOUDOPS": "3.0"
+        "TECHDCT": "3.0"
     }
     
     return default_versions.get(course_code, "1.0")
@@ -110,17 +106,15 @@ def extract_data_with_bedrock(text, prompt_type):
     system_message = "당신은 텍스트에서 정보를 추출하여 구조화된 데이터로 반환하는 도우미입니다."
     
     try:
-        # Claude 3 모델 사용 (Sonnet 또는 Haiku)
-        modelId = "anthropic.claude-3-sonnet-20240229-v1:0"
+        # Claude 2 모델 사용
+        modelId = "anthropic.claude-v2"
         
+        # Claude 2는 메시지 형식이 아닌 프롬프트 형식을 사용합니다
         body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4000,
+            "prompt": f"\n\nHuman: {prompts[prompt_type]}\n\n문서 내용:\n{text}\n\nAssistant:",
+            "max_tokens_to_sample": 4000,
             "temperature": 0.0,
-            "system": system_message,
-            "messages": [
-                {"role": "user", "content": prompts[prompt_type] + "\n\n문서 내용:\n" + text}
-            ]
+            "stop_sequences": ["\n\nHuman:"]
         })
         
         response = bedrock_runtime.invoke_model(
@@ -128,14 +122,9 @@ def extract_data_with_bedrock(text, prompt_type):
             body=body
         )
         
+        # Claude 2 응답 파싱
         response_body = json.loads(response.get('body').read().decode('utf-8'))
-        content = response_body.get('content', [])
-        
-        # 텍스트 내용 추출
-        text_content = ""
-        for block in content:
-            if block.get('type') == 'text':
-                text_content += block.get('text', '')
+        text_content = response_body.get('completion', '')
         
         # 결과에서 JSON 부분만 추출
         json_start = text_content.find('[')
@@ -162,31 +151,8 @@ def save_to_json(data, filename):
         json.dump(data, f, ensure_ascii=False, indent=2)
     logger.info(f"{filename} 파일이 생성되었습니다.")
 
-def upload_to_dynamodb(table_name, items, ask_confirmation=True):
-    """데이터를 DynamoDB 테이블에 업로드합니다."""
-    if ask_confirmation:
-        confirmation = input(f"{len(items)}개의 항목을 {table_name} 테이블에 업로드하시겠습니까? (y/n): ")
-        if confirmation.lower() != 'y':
-            logger.info("업로드가 취소되었습니다.")
-            return False
-    
-    dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(table_name)
-    
-    # 배치로 항목 추가 (25개 항목 단위로 나눠서 처리)
-    batch_size = 25
-    for i in range(0, len(items), batch_size):
-        batch_items = items[i:i+batch_size]
-        with table.batch_writer() as batch:
-            for item in batch_items:
-                batch.put_item(Item=item)
-        logger.info(f"{len(batch_items)}개의 항목을 {table_name} 테이블에 업로드했습니다. ({i+1}-{i+len(batch_items)})")
-    
-    logger.info(f"총 {len(items)}개의 항목이 {table_name} 테이블에 업로드되었습니다.")
-    return True
-
 def process_documents():
-    """워드 문서를 처리하고 데이터를 추출합니다."""
+    """워드 문서를 처리하고 데이터를 추출하여 JSON으로 저장합니다."""
     
     # 1. 문서에서 텍스트 추출
     try:
@@ -194,26 +160,26 @@ def process_documents():
         logger.info(f"문서에서 텍스트 추출 완료: {len(tnc_text)} 문자")
     except Exception as e:
         logger.error(f"문서 텍스트 추출 오류: {str(e)}")
-        return
+        return False
     
     # 2. Bedrock 모델을 이용한 데이터 추출
     logger.info("카탈로그 정보 추출 중...")
     catalog_data = extract_data_with_bedrock(tnc_text, "catalog")
     if not catalog_data:
         logger.error("카탈로그 데이터 추출 실패")
-        return
+        return False
     
     logger.info("모듈 정보 추출 중...")
     modules_data = extract_data_with_bedrock(tnc_text, "modules")
     if not modules_data:
         logger.error("모듈 데이터 추출 실패")
-        return
+        return False
     
     logger.info("실습 정보 추출 중...")
     labs_data = extract_data_with_bedrock(tnc_text, "labs")
     if not labs_data:
         logger.error("실습 데이터 추출 실패")
-        return
+        return False
     
     # 3. 버전 정보 추가
     for item in catalog_data:
@@ -237,17 +203,12 @@ def process_documents():
     save_to_json(modules_data, "course_modules.json")
     save_to_json(labs_data, "course_labs.json")
     
-    # 5. 사용자 확인 후 DynamoDB에 업로드
-    logger.info("\nJSON 파일이 생성되었습니다. DynamoDB에 업로드하시겠습니까?")
-    if input("계속 진행하려면 'y'를 입력하세요: ").lower() == 'y':
-        upload_to_dynamodb("Tnc-CourseCatalog", catalog_data)
-        upload_to_dynamodb("Tnc-CourseCatalog-Modules", modules_data)
-        upload_to_dynamodb("Tnc-CourseCatalog-Labs", labs_data)
-    else:
-        logger.info("DynamoDB 업로드를 건너뛰었습니다. JSON 파일을 확인하고 나중에 업로드할 수 있습니다.")
+    logger.info("\nJSON 파일 생성이 완료되었습니다.")
+    logger.info("파일을 확인한 후 upload_data.py를 실행하여 DynamoDB에 업로드할 수 있습니다.")
+    return True
 
 if __name__ == "__main__":
-    logger.info("AWS 교육 과정 데이터 추출 및 DynamoDB 업로드 시작")
+    logger.info("AWS 교육 과정 데이터 추출 시작")
     
     # AWS 자격 증명 확인
     try:
@@ -257,7 +218,5 @@ if __name__ == "__main__":
         logger.error("AWS 자격 증명을 확인하세요.")
         exit(1)
     
-    # 데이터 추출 및 업로드
+    # 데이터 추출 및 JSON 저장
     process_documents()
-    
-    logger.info("프로세스가 완료되었습니다.")

@@ -17,18 +17,20 @@ import { listCourseCatalog } from '@graphql/queries';
 
 // 백엔드 스키마와 일치하는 타입 정의
 export interface CourseCatalog {
-  id: string;
-  course_name: string;
+  catalogId: string;        // DynamoDB 테이블의 파티션 키
+  version: string;          // DynamoDB 테이블의 정렬 키
+  title: string;            // 과정 이름
+  awsCode?: string;         // AWS 코드
   description?: string;
+  category?: string;        // 카테고리
   level?: string;
   duration?: string;
-  delivery_method?: string;
+  deliveryMethod?: string;  // 전달 방식
   objectives?: string[];
-  target_audience?: string[];
+  targetAudience?: string[]; // 대상 고객
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
-  // UI 표시용 추가 필드
-  status?: string;
 }
 
 // 응답 타입 정의
@@ -43,14 +45,17 @@ export interface listCourseCatalogResponse {
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
   return {
-    id: item.id,
-    course_name: item.course_name || item.title || '',
+    catalogId: item.catalogId || item.id || '',
+    version: item.version || 'v1',
+    title: item.title || item.course_name || '',
+    awsCode: item.awsCode || '',
     description: item.description || '',
+    category: item.category || '',
     level: item.level || '',
     duration: item.duration || '',
-    delivery_method: item.delivery_method || '',
+    deliveryMethod: item.deliveryMethod || item.delivery_method || '',
     objectives: item.objectives || [],
-    target_audience: item.target_audience || [],
+    targetAudience: item.targetAudience || item.target_audience || [],
     // UI에 필요한 추가 필드 - 필요시 기본값 설정
     status: item.status || 'ACTIVE',
     createdAt: item.createdAt,
@@ -97,7 +102,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   showViewButton = true,
   additionalActions,
   courses: initialCourses,
-  onSelectCourse // 이 파라미터 추가
+  onSelectCourse
 }) => {
   const navigate = useNavigate();
   const { t, tString } = useTypedTranslation();
@@ -130,8 +135,8 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         if (process.env.NODE_ENV === 'development') {
           setCourses([
             mapToCourseViewModel({ 
-              id: '1', 
-              course_name: '타임아웃 - 샘플 과정', 
+              catalogId: '1', 
+              title: '타임아웃 - 샘플 과정', 
               description: '타임아웃으로 인한 샘플 데이터입니다.',
               level: '입문',
               category: '기타',
@@ -149,9 +154,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         console.log('API 호출 시작...');
         
         try {
-          // 2. 정의된 쿼리 사용
+          // 2. 정의된 쿼리 사용 - DynamoDB 테이블 스키마에 맞게 filter 인자 제거
           const data = await executeGraphQL<listCourseCatalogResponse>(
-            listCourseCatalog,  // 수정된 쿼리명
+            listCourseCatalog,
             { limit: 100 }
           );
           
@@ -162,8 +167,8 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           
           // 가능한 응답 키 확인
           const responseKey = 
-            data.listCourseCatalog ? 'listCourseCatalog' :  // 단수형 추가
             data.listCourseCatalog ? 'listCourseCatalog' :
+            data.listCourseCatalogs ? 'listCourseCatalogs' :
             data.listCourses ? 'listCourses' : 
             Object.keys(data)[0];
           
@@ -201,8 +206,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         if (process.env.NODE_ENV === 'development') {
           setCourses([
             mapToCourseViewModel({
-              id: '1', 
-              course_name: 'AWS Cloud Practitioner Essentials', 
+              catalogId: '1',
+              version: 'v1',
+              title: 'AWS Cloud Practitioner Essentials', 
               description: 'Learn the fundamentals of AWS Cloud',
               level: 'Beginner',
               category: 'Cloud',
@@ -210,8 +216,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
               status: 'ACTIVE', 
             }),
             mapToCourseViewModel({ 
-              id: '2', 
-              course_name: 'AWS Solutions Architect Associate', 
+              catalogId: '2', 
+              version: 'v1',
+              title: 'AWS Solutions Architect Associate', 
               description: 'Learn advanced AWS architecture concepts',
               level: 'Intermediate',
               category: 'Architecture',
@@ -261,14 +268,14 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         
         {/* 관리 버튼은 관리자 뷰이고 showManageButton이 true일 때만 표시 */}
         {isAdminView && showManageButton && (
-          <Button onClick={() => navigate(`\${managePath}\${item.id}`)}>
+          <Button onClick={() => navigate(`\${managePath}\${item.catalogId}`)}>
             {t('courses.manage')}
           </Button>
         )}
         
         {/* 학습자 뷰 버튼 */}
         {showViewButton && (
-          <Button iconName="external" onClick={() => navigate(`\${viewPath}\${item.id}`)}>
+          <Button iconName="external" onClick={() => navigate(`\${viewPath}\${item.catalogId}`)}>
             {t('courses.view_student')}
           </Button>
         )}
@@ -315,7 +322,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           cardDefinition={{
             header: item => (
               <SpaceBetween size="xxs">
-                <div>{item.course_name}</div>
+                <div>{item.title}</div>
                 <Badge color={getStatusColor(item.status)}>
                   {item.status || 'ACTIVE'}
                 </Badge>
@@ -333,6 +340,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
                   <SpaceBetween size="xs">
                     <div>{t('courses.level')}: {item.level || t('courses.not_specified')}</div>
                     <div>{t('courses.duration')}: {item.duration ? `\${item.duration} \${t('courses.hours')}` : t('courses.not_specified')}</div>
+                    {item.category && <div>{t('courses.category')}: {item.category}</div>}
+                    {item.deliveryMethod && <div>{t('courses.delivery')}: {item.deliveryMethod}</div>}
+                    {item.version && <div>{t('courses.version')}: {item.version}</div>}
                   </SpaceBetween>
                 )
               },
