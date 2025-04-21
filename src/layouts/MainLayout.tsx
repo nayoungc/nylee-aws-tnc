@@ -1,3 +1,4 @@
+// src/layouts/MainLayout.tsx
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext'; // AuthContext 사용
@@ -10,15 +11,14 @@ import {
   BreadcrumbGroup,
   Button,
   SpaceBetween,
-  Icon,
   Badge,
   Container,
   Modal,
   Box,
-  Header
+  Header,
+  SideNavigationProps, 
+  TopNavigationProps
 } from '@cloudscape-design/components';
-import { SideNavigationProps } from '@cloudscape-design/components';
-import { TopNavigationProps } from '@cloudscape-design/components';
 
 interface MainLayoutProps {
   children: React.ReactNode;

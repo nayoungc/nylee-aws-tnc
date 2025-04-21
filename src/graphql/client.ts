@@ -26,7 +26,48 @@ export interface CourseCatalog {
     createdAt?: string;
     updatedAt?: string;
 }
-
+export interface Customer {
+    id?: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    organizationName?: string;
+    industry?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  }
+  
+  export interface Instructor {
+    id?: string;
+    name: string;
+    email: string;
+    cognitoId?: string;
+    status?: string;
+    bio?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  }
+  
+  export interface CourseCatalogModel {
+    id?: string;
+    course_id: string;
+    course_name: string;
+    description?: string;
+    duration?: string;
+    level?: string;
+    delivery_method?: string;
+    objectives?: string[];
+    target_audience?: string[];
+    createdAt?: string;
+    updatedAt?: string;
+  }
+  
+  export interface CourseViewModel extends CourseCatalogModel {
+    title: string; // course_name과 동일 (UI 호환성용)
+    status?: string;
+  }
+  
 export interface Question {
     id?: string;
     question: string;
@@ -742,6 +783,504 @@ export async function listCourseCatalog(options?: any) {
         throw error;
     }
 }
+
+// ==================== 고객사(Customer) 관련 함수 ====================
+export async function listCustomers(options?: any) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query ListCustomers(\$limit: Int, \$filter: ModelCustomerFilterInput, \$nextToken: String) {
+            listCustomers(limit: \$limit, filter: \$filter, nextToken: \$nextToken) {
+              items {
+                id
+                name
+                email
+                phone
+                address
+                organizationName
+                industry
+                createdAt
+                updatedAt
+              }
+              nextToken
+            }
+          }
+        `,
+        variables: options
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.listCustomers?.items || [],
+        nextToken: result.data?.listCustomers?.nextToken,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error listing customers:', error);
+      throw error;
+    }
+  }
+  
+  export async function getCustomerById(customerId: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query GetCustomer(\$id: ID!) {
+            getCustomer(id: \$id) {
+              id
+              name
+              email
+              phone
+              address
+              organizationName
+              industry
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { id: customerId }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.getCustomer,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error getting customer:', error);
+      throw error;
+    }
+  }
+  
+  export async function createCustomerRecord(input: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation CreateCustomer(\$input: CreateCustomerInput!) {
+            createCustomer(input: \$input) {
+              id
+              name
+              email
+              phone
+              address
+              organizationName
+              industry
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.createCustomer,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      throw error;
+    }
+  }
+  
+  export async function updateCustomerRecord(input: Partial<Customer> & { id: string }) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation UpdateCustomer(\$input: UpdateCustomerInput!) {
+            updateCustomer(input: \$input) {
+              id
+              name
+              email
+              phone
+              address
+              organizationName
+              industry
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.updateCustomer,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      throw error;
+    }
+  }
+  
+  export async function deleteCustomerRecord(id: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation DeleteCustomer(\$input: DeleteCustomerInput!) {
+            deleteCustomer(input: \$input) {
+              id
+              name
+            }
+          }
+        `,
+        variables: { input: { id } }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.deleteCustomer,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      throw error;
+    }
+  }
+  
+  // ==================== 강사(Instructor) 관련 함수 ====================
+  export async function listInstructorsData(options?: any) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query ListInstructors(\$limit: Int, \$filter: ModelInstructorFilterInput, \$nextToken: String) {
+            listInstructors(limit: \$limit, filter: \$filter, nextToken: \$nextToken) {
+              items {
+                id
+                name
+                email
+                cognitoId
+                status
+                bio
+                createdAt
+                updatedAt
+              }
+              nextToken
+            }
+          }
+        `,
+        variables: options
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.listInstructors?.items || [],
+        nextToken: result.data?.listInstructors?.nextToken,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error listing instructors:', error);
+      throw error;
+    }
+  }
+  
+  export async function getInstructorById(instructorId: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query GetInstructor(\$id: ID!) {
+            getInstructor(id: \$id) {
+              id
+              name
+              email
+              cognitoId
+              status
+              bio
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { id: instructorId }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.getInstructor,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error getting instructor:', error);
+      throw error;
+    }
+  }
+  
+  export async function createInstructorRecord(input: Omit<Instructor, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation CreateInstructor(\$input: CreateInstructorInput!) {
+            createInstructor(input: \$input) {
+              id
+              name
+              email
+              cognitoId
+              status
+              bio
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.createInstructor,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error creating instructor:', error);
+      throw error;
+    }
+  }
+  
+  export async function updateInstructorRecord(input: Partial<Instructor> & { id: string }) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation UpdateInstructor(\$input: UpdateInstructorInput!) {
+            updateInstructor(input: \$input) {
+              id
+              name
+              email
+              cognitoId
+              status
+              bio
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.updateInstructor,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error updating instructor:', error);
+      throw error;
+    }
+  }
+  
+  export async function deleteInstructorRecord(id: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation DeleteInstructor(\$input: DeleteInstructorInput!) {
+            deleteInstructor(input: \$input) {
+              id
+              name
+            }
+          }
+        `,
+        variables: { input: { id } }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.deleteInstructor,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error deleting instructor:', error);
+      throw error;
+    }
+  }
+  
+  // ==================== 과정 카탈로그(CourseCatalog) 관련 함수 ====================
+  export async function listCourseCatalogData(options?: any) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query ListCourseCatalog(\$limit: Int, \$filter: ModelCourseCatalogFilterInput, \$nextToken: String) {
+            listCourseCatalog(limit: \$limit, filter: \$filter, nextToken: \$nextToken) {
+              items {
+                id
+                course_id
+                course_name
+                description
+                duration
+                level
+                delivery_method
+                objectives
+                target_audience
+                createdAt
+                updatedAt
+              }
+              nextToken
+            }
+          }
+        `,
+        variables: options
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.listCourseCatalog?.items || [],
+        nextToken: result.data?.listCourseCatalog?.nextToken,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error listing course catalog:', error);
+      throw error;
+    }
+  }
+  
+  export async function getCourseCatalogById(id: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          query GetCourseCatalog(\$id: ID!) {
+            getCourseCatalog(id: \$id) {
+              id
+              course_id
+              course_name
+              description
+              duration
+              level
+              delivery_method
+              objectives
+              target_audience
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { id }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.getCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error getting course catalog:', error);
+      throw error;
+    }
+  }
+  
+  export async function createCourseCatalogRecord(input: Omit<CourseCatalogModel, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {
+            createCourseCatalog(input: \$input) {
+              id
+              course_id
+              course_name
+              description
+              duration
+              level
+              delivery_method
+              objectives
+              target_audience
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.createCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error creating course catalog:', error);
+      throw error;
+    }
+  }
+  
+  export async function updateCourseCatalogRecord(input: Partial<CourseCatalogModel> & { id: string }) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation UpdateCourseCatalog(\$input: UpdateCourseCatalogInput!) {
+            updateCourseCatalog(input: \$input) {
+              id
+              course_id
+              course_name
+              description
+              duration
+              level
+              delivery_method
+              objectives
+              target_audience
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: { input }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.updateCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error updating course catalog:', error);
+      throw error;
+    }
+  }
+  
+  export async function deleteCourseCatalogRecord(id: string) {
+    try {
+      const result = await client.graphql({
+        query: `
+          mutation DeleteCourseCatalog(\$input: DeleteCourseCatalogInput!) {
+            deleteCourseCatalog(input: \$input) {
+              id
+              course_id
+              course_name
+            }
+          }
+        `,
+        variables: { input: { id } }
+      }) as GraphQLResult<any>;
+      
+      return {
+        data: result.data?.deleteCourseCatalog,
+        errors: result.errors
+      };
+    } catch (error) {
+      console.error('Error deleting course catalog:', error);
+      throw error;
+    }
+  }
+  
+  // 백엔드 데이터를 UI 뷰모델로 변환하는 함수
+  export function mapToViewModel(course: CourseCatalogModel): CourseViewModel {
+    return {
+      id: course.id || '',
+      course_id: course.course_id || '',
+      course_name: course.course_name || '',
+      title: course.course_name || '', // UI 호환성용
+      description: course.description,
+      duration: course.duration,
+      level: course.level,
+      delivery_method: course.delivery_method,
+      objectives: course.objectives || [],
+      target_audience: course.target_audience || [],
+      status: 'ACTIVE', // UI용 기본값
+      createdAt: course.createdAt,
+      updatedAt: course.updatedAt
+    };
+  }
+  
+  // UI 뷰모델을 백엔드 데이터로 변환하는 함수
+  export function mapToBackendModel(viewModel: CourseViewModel): CourseCatalogModel {
+    return {
+      id: viewModel.id,
+      course_id: viewModel.course_id,
+      course_name: viewModel.course_name,
+      description: viewModel.description,
+      duration: viewModel.duration,
+      level: viewModel.level,
+      delivery_method: viewModel.delivery_method,
+      objectives: viewModel.objectives,
+      target_audience: viewModel.target_audience
+    };
+  }
 
 // 타입 가드 함수
 export function isSurveyGenerationResponse(obj: unknown): obj is SurveyGenerationResponse {

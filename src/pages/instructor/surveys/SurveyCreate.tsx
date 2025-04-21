@@ -19,7 +19,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { post } from 'aws-amplify/api';
 import Table from "@cloudscape-design/components/table";
-import { useTypedTranslation } from '../../../utils/i18n-utils';
+import { useTypedTranslation } from '@utils/i18n-utils';
 
 // 타입 정의
 interface Question {
