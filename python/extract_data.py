@@ -3,6 +3,8 @@ import json
 import os
 import docx
 import logging
+import time
+import random
 from typing import Dict, List, Any
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,7 +20,6 @@ def extract_text_from_docx(file_path):
 
 def get_course_version_from_awstc(course_code):
     """releases.awstc.com에서 과정 버전 정보를 가져옵니다."""
-    # 참고: 실제 구현에서는 사이트 접근 권한이 필요할 수 있습니다
     default_versions = {
         "ARCHAWS": "3.0",
         "SECUR": "3.1",
@@ -30,6 +31,27 @@ def get_course_version_from_awstc(course_code):
     }
     
     return default_versions.get(course_code, "1.0")
+
+def extract_data_with_bedrock_retry(text, prompt_type, max_retries=5):
+    """재시도 로직과 함께 Bedrock API를 호출합니다."""
+    retry_count = 0
+    base_delay = 2  # 기본 지연 시간 (초)
+    
+    while retry_count < max_retries:
+        try:
+            return extract_data_with_bedrock(text, prompt_type)
+        except Exception as e:
+            retry_count += 1
+            if "ThrottlingException" in str(e) and retry_count < max_retries:
+                # 지수 백오프 및 지터 적용
+                delay = base_delay * (2 ** retry_count) + random.uniform(0, 1)
+                logger.warning(f"API 쓰로틀링 발생, {delay:.2f}초 후 재시도 ({retry_count}/{max_retries})...")
+                time.sleep(delay)
+            else:
+                logger.error(f"Bedrock API 호출 오류: {str(e)}")
+                raise e
+    
+    return []
 
 def extract_data_with_bedrock(text, prompt_type):
     """AWS Bedrock 모델을 사용하여 텍스트에서 정보를 추출합니다."""
@@ -103,8 +125,6 @@ def extract_data_with_bedrock(text, prompt_type):
         """
     }
     
-    system_message = "당신은 텍스트에서 정보를 추출하여 구조화된 데이터로 반환하는 도우미입니다."
-    
     try:
         # Claude 2 모델 사용
         modelId = "anthropic.claude-v2"
@@ -143,7 +163,28 @@ def extract_data_with_bedrock(text, prompt_type):
     
     except Exception as e:
         logger.error(f"Bedrock API 호출 오류: {str(e)}")
-        return []
+        raise e
+
+def chunk_text(text, max_chunk_size=20000):
+    """텍스트를 더 작은 청크로 나눕니다."""
+    # 단락 단위로 텍스트 분할
+    paragraphs = text.split("\n")
+    
+    chunks = []
+    current_chunk = ""
+    
+    for paragraph in paragraphs:
+        if len(current_chunk) + len(paragraph) + 1 <= max_chunk_size:
+            current_chunk += paragraph + "\n"
+        else:
+            chunks.append(current_chunk)
+            current_chunk = paragraph + "\n"
+    
+    if current_chunk:
+        chunks.append(current_chunk)
+    
+    logger.info(f"텍스트가 {len(chunks)}개의 청크로 분할되었습니다.")
+    return chunks
 
 def save_to_json(data, filename):
     """데이터를 JSON 파일로 저장합니다."""
@@ -162,24 +203,58 @@ def process_documents():
         logger.error(f"문서 텍스트 추출 오류: {str(e)}")
         return False
     
+    # 텍스트를 작은 청크로 나눔
+    text_chunks = chunk_text(tnc_text)
+    
     # 2. Bedrock 모델을 이용한 데이터 추출
-    logger.info("카탈로그 정보 추출 중...")
-    catalog_data = extract_data_with_bedrock(tnc_text, "catalog")
+    catalog_data = []
+    modules_data = []
+    labs_data = []
+    
+    # 각 청크별로 처리
+    for i, chunk in enumerate(text_chunks):
+        logger.info(f"청크 {i+1}/{len(text_chunks)} 처리 중...")
+        
+        # 데이터 추출 시도 (재시도 로직 포함)
+        try:
+            # 카탈로그 정보 추출
+            if i == 0:  # 첫 번째 청크에서만 카탈로그 정보 추출
+                logger.info(f"청크 {i+1}: 카탈로그 정보 추출 중...")
+                chunk_catalog_data = extract_data_with_bedrock_retry(chunk, "catalog")
+                catalog_data.extend(chunk_catalog_data)
+            
+            # 모듈 정보 추출
+            logger.info(f"청크 {i+1}: 모듈 정보 추출 중...")
+            time.sleep(2)  # API 호출 사이에 지연 추가
+            chunk_modules_data = extract_data_with_bedrock_retry(chunk, "modules")
+            modules_data.extend(chunk_modules_data)
+            
+            # 실습 정보 추출
+            logger.info(f"청크 {i+1}: 실습 정보 추출 중...")
+            time.sleep(2)  # API 호출 사이에 지연 추가
+            chunk_labs_data = extract_data_with_bedrock_retry(chunk, "labs")
+            labs_data.extend(chunk_labs_data)
+            
+        except Exception as e:
+            logger.error(f"청크 {i+1} 처리 중 오류 발생: {str(e)}")
+            continue
+    
     if not catalog_data:
         logger.error("카탈로그 데이터 추출 실패")
         return False
     
-    logger.info("모듈 정보 추출 중...")
-    modules_data = extract_data_with_bedrock(tnc_text, "modules")
     if not modules_data:
         logger.error("모듈 데이터 추출 실패")
         return False
     
-    logger.info("실습 정보 추출 중...")
-    labs_data = extract_data_with_bedrock(tnc_text, "labs")
     if not labs_data:
         logger.error("실습 데이터 추출 실패")
         return False
+    
+    # 중복 제거
+    catalog_data = remove_duplicates(catalog_data, "catalogId")
+    modules_data = remove_duplicates(modules_data, "moduleId")
+    labs_data = remove_duplicates(labs_data, "labId")
     
     # 3. 버전 정보 추가
     for item in catalog_data:
@@ -206,6 +281,20 @@ def process_documents():
     logger.info("\nJSON 파일 생성이 완료되었습니다.")
     logger.info("파일을 확인한 후 upload_data.py를 실행하여 DynamoDB에 업로드할 수 있습니다.")
     return True
+
+def remove_duplicates(data_list, id_field):
+    """리스트에서 중복 항목을 제거합니다."""
+    seen = set()
+    unique_items = []
+    
+    for item in data_list:
+        item_id = item.get(id_field)
+        if item_id and item_id not in seen:
+            seen.add(item_id)
+            unique_items.append(item)
+    
+    logger.info(f"{len(data_list) - len(unique_items)}개의 중복 항목이 제거되었습니다.")
+    return unique_items
 
 if __name__ == "__main__":
     logger.info("AWS 교육 과정 데이터 추출 시작")

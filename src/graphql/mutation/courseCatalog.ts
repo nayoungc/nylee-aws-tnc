@@ -1,7 +1,7 @@
-// src/graphql/mutations.ts
-import { graphql } from './api';
+// src/graphql/mutations/courseCatalog.ts
+import { graphql } from '../../api';
 
-export const createCourseCatalog = /* GraphQL */ `
+export const createCourseCatalog = graphql(`
   mutation CreateCourseCatalog(\$input: CreateCourseCatalogInput!) {
     createCourseCatalog(input: \$input) {
       catalogId
@@ -15,15 +15,14 @@ export const createCourseCatalog = /* GraphQL */ `
       status
       objectives
       targetAudience
-      prerequisites
       deliveryMethod
       createdAt
       updatedAt
     }
   }
-`;
+`);
 
-export const updateCourseCatalog = /* GraphQL */ `
+export const updateCourseCatalog = graphql(`
   mutation UpdateCourseCatalog(\$input: UpdateCourseCatalogInput!) {
     updateCourseCatalog(input: \$input) {
       catalogId
@@ -37,22 +36,19 @@ export const updateCourseCatalog = /* GraphQL */ `
       status
       objectives
       targetAudience
-      prerequisites
       deliveryMethod
       createdAt
       updatedAt
     }
   }
-`;
+`);
 
-export const deleteCourseCatalog = /* GraphQL */ `
+export const deleteCourseCatalog = graphql(`
   mutation DeleteCourseCatalog(\$input: DeleteCourseCatalogInput!) {
     deleteCourseCatalog(input: \$input) {
       catalogId
       version
       title
-      createdAt
-      updatedAt
     }
   }
-`;
+`);

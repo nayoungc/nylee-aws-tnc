@@ -1,40 +1,25 @@
 // amplify/data/resource.ts
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { defineData } from '@aws-amplify/backend';
+import { courseCatalogSchema } from './schemas/courseCatalog';
+import { moduleSchema } from './schemas/modules';
+import { labSchema } from './schemas/labs';
+import { courseSchema } from './schemas/courses';
+import { customerSchema } from './schemas/customer'; 
+import { a } from '@aws-amplify/backend';
 
+// 모든 스키마 합치기
 const schema = a.schema({
-  CourseCatalog: a
-    .model({
-      catalogId: a.id().required(),
-      version: a.string().required(),
-      title: a.string().required(),
-      awsCode: a.string(),
-      description: a.string(),
-      category: a.string(),
-      level: a.string(),
-      duration: a.string(),
-      status: a.string(),
-      objectives: a.array(a.string()),
-      targetAudience: a.array(a.string()),
-      prerequisites: a.array(a.string()),
-      deliveryMethod: a.string()
-    })
-    .authorization(allow => [
-      allow.public().to(['read']),
-      allow.authenticated().to(['read', 'create', 'update', 'delete']),
-    ])
-    .primaryKey(keys => keys.partition('catalogId').sort('version'))
-    // 글로벌 보조 인덱스 정의
-    .index('byTitle', keys => keys.partition('title').sort('version'))
-    .index('byAwsCode', keys => keys.partition('awsCode').sort('version'))
+  ...courseCatalogSchema,
+  ...modulesSchema,
+  ...labsSchema,
+  ...courseSchema,
+  ...customerSchema
 });
-
-export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
-    // API 키 설정 (필요시)
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },
