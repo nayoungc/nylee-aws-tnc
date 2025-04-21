@@ -66,8 +66,8 @@ interface GraphQLResponse<T> {
     errors?: any[];
 }
 
-interface ListCourseCatalogsResponse {
-    listCourseCatalogs: {
+interface listCourseCatalogResponse {
+    listCourseCatalog: {
         items: CourseCatalog[];
         nextToken?: string;
     };
@@ -157,19 +157,19 @@ const CourseCatalogTab: React.FC = () => {
                     nextToken: nextToken
                 },
                 authMode: 'userPool'
-            }) as GraphQLResponse<ListCourseCatalogsResponse>;
+            }) as GraphQLResponse<listCourseCatalogResponse>;
 
-            if (result.data?.listCourseCatalogs?.items) {
+            if (result.data?.listCourseCatalog?.items) {
                 // 백엔드 데이터를 뷰모델로 변환
-                const viewModels = result.data.listCourseCatalogs.items.map(mapToViewModel);
+                const viewModels = result.data.listCourseCatalog.items.map(mapToViewModel);
                 setCourses(viewModels);
-                setNextToken(result.data.listCourseCatalogs.nextToken || null);
+                setNextToken(result.data.listCourseCatalog.nextToken || null);
 
                 // 모든 과정에서 고유 목표 및 대상 청중 수집
                 const allObjectives = new Set<string>();
                 const allAudiences = new Set<string>();
 
-                result.data.listCourseCatalogs.items.forEach(course => {
+                result.data.listCourseCatalog.items.forEach(course => {
                     course.objectives?.forEach(obj => allObjectives.add(obj));
                     course.target_audience?.forEach(audience => allAudiences.add(audience));
                 });

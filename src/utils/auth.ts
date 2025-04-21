@@ -151,7 +151,7 @@ export const executeGraphQL = async <T>(
         console.log('샘플 데이터로 대체합니다');
         
         // 쿼리 내용에 따른 샘플 데이터 제공
-        if (query.includes('listCourseCatalogs') ||
+        if (query.includes('listCourseCatalog') ||
             query.includes('listCourses')) {
           
           // 샘플 코스 데이터

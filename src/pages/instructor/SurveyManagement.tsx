@@ -53,13 +53,13 @@ interface SurveyGenerationResponse {
 }
 
 // GraphQL 쿼리 정의
-const listCourseCatalogs = /* GraphQL */ `
-  query ListCourseCatalogs(
+const listCourseCatalog = /* GraphQL */ `
+  query listCourseCatalog(
     \$filter: ModelCourseCatalogFilterInput
     \$limit: Int
     \$nextToken: String
   ) {
-    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+    listCourseCatalog(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         id
         title
@@ -145,7 +145,7 @@ export default function SurveyManagement() {
       // GraphQL API를 사용하여 데이터 가져오기      
       try {
         const response = await client.graphql({
-          query: listCourseCatalogs,
+          query: listCourseCatalog,
           variables: {
             limit: 100,
             filter: {
@@ -155,7 +155,7 @@ export default function SurveyManagement() {
         });
 
         const responseAny: any = response;
-        const courseItems = responseAny.data?.listCourseCatalogs?.items || [];
+        const courseItems = responseAny.data?.listCourseCatalog?.items || [];
         
         const courseOptions: SelectProps.Option[] = courseItems.map((course: CourseItem) => ({
           label: course.title,

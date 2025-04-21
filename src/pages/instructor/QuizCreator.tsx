@@ -59,13 +59,13 @@ interface CourseCatalog {
 }
 
 // 추가: GraphQL 쿼리 정의
-const listCourseCatalogs = /* GraphQL */ `
-    query ListCourseCatalogs(
+const listCourseCatalog = /* GraphQL */ `
+    query listCourseCatalog(
       \$filter: ModelCourseCatalogFilterInput
       \$limit: Int
       \$nextToken: String
     ) {
-      listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      listCourseCatalog(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
         items {
           id
           title
@@ -131,7 +131,7 @@ export default function QuizCreator() {
 
       try {
         const response = await client.graphql({
-          query: listCourseCatalogs,
+          query: listCourseCatalog,
           variables: {
             limit: 100,
             filter: {
@@ -142,7 +142,7 @@ export default function QuizCreator() {
         });
 
         const responseAny: any = response;
-        const items = responseAny.data?.listCourseCatalogs?.items || [];
+        const items = responseAny.data?.listCourseCatalog?.items || [];
 
         const options = items.map((item: CourseCatalog) => ({
           label: item.title,

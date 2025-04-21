@@ -32,7 +32,7 @@ export interface CourseCatalog {
 }
 
 // 응답 타입 정의
-export interface ListCourseCatalogsResponse {
+export interface listCourseCatalogResponse {
   // 여러 가능한 응답 키를 처리할 수 있도록 인덱스 시그니처 사용
   [key: string]: {
     items: any[]; // 원시 API 응답 타입 (매핑 전)
@@ -146,7 +146,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         
         try {
           // 2. 정의된 쿼리 사용
-          const data = await executeGraphQL<ListCourseCatalogsResponse>(
+          const data = await executeGraphQL<listCourseCatalogResponse>(
             listCourseCatalog,  // 수정된 쿼리명
             { limit: 100 }
           );
@@ -159,7 +159,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           // 가능한 응답 키 확인
           const responseKey = 
             data.listCourseCatalog ? 'listCourseCatalog' :  // 단수형 추가
-            data.listCourseCatalogs ? 'listCourseCatalogs' :
+            data.listCourseCatalog ? 'listCourseCatalog' :
             data.listCourses ? 'listCourses' : 
             Object.keys(data)[0];
           

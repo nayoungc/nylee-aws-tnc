@@ -385,7 +385,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
             href: '/',
             title: tString('app.title'),
             logo: {
-              src: '/logo.png',
+              src: '/images/aws.png',
               alt: tString('app.title')
             }
           }}
