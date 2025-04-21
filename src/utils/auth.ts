@@ -5,7 +5,7 @@
  * 로그인, 회원가입, 사용자 관리 및 GraphQL API 호출 관련 유틸리티를 포함합니다.
  */
 
-import { listCourseCatalogData } from '../graphql/client';
+import { listCourseCatalog } from '../graphql/client';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
 import { 
@@ -124,8 +124,8 @@ export const executeGraphQL = async <T>(
     
     try {
       // Gen 2 방식으로 API 호출
-      if (query.includes('listCourseCatalogData') || query.includes('listCourseCatalog')) {
-        const response = await listCourseCatalogData();
+      if (query.includes('listCourseCatalog') || query.includes('listCourseCatalog')) {
+        const response = await listCourseCatalog();
         return response as unknown as T;
       } else {
         // 다른 쿼리의 경우 일반 GraphQL 클라이언트 사용

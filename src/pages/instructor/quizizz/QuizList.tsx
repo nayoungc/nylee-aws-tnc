@@ -16,12 +16,11 @@ import {
     Alert,
     TextFilter
 } from '@cloudscape-design/components';
-import { SelectProps, TableProps } from '@cloudscape-design/components';
+import { SelectProps } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { client, listCourseCatalog, generateQuizFromContent, listQuizzes } from '@graphql/client';
+import { client, listCourseCatalog, generateQuizFromContent, listQuizzes, getQuiz } from '@graphql/client';
 import MainLayout from '@layouts/MainLayout';
-
 
 // 타입 정의
 interface Question {
@@ -43,7 +42,7 @@ interface QuizItem {
 }
 
 interface CourseCatalog {
-    catalogId: string;
+    id: string; // 이전의 catalogId에서 변경됨
     title: string;
     description?: string;
     version: string;
@@ -86,8 +85,7 @@ export default function QuizList() {
         try {
             // Amplify Gen 2 API 사용
             const response = await listCourseCatalog({
-                limit: 100,
-                filter: { isPublished: { eq: true } }
+                limit: 100
             });
 
             if (response.errors) {
@@ -95,9 +93,14 @@ export default function QuizList() {
             }
 
             if (response.data) {
-                const courseOptions: SelectProps.Option[] = response.data.map((course: CourseCatalog) => ({
+                // 응답 구조에 따라 적절히 처리
+                const courseList = Array.isArray(response.data) 
+                    ? response.data 
+                    : [];
+
+                const courseOptions: SelectProps.Option[] = courseList.map((course: CourseCatalog) => ({
                     label: course.title,
-                    value: course.catalogId,
+                    value: course.id, // catalogId가 id로 변경됨
                     description: course.description || '',
                 }));
 
@@ -195,23 +198,23 @@ export default function QuizList() {
             if (response.data && response.data.length > 0) {
                 const preQuiz = response.data[0];
 
-                // 사전 퀴즈의 질문 가져오기 (실제 구현에서는 추가 API 호출 필요)
+                // 사전 퀴즈의 질문 가져오기
                 const questionsResponse = await client.graphql({
-                    query: `query GetQuizQuestions(\$quizId: ID!) {
-                    getQuizQuestions(quizId: \$quizId) {
+                    query: `
+                    query GetQuizQuestions(\$quizId: ID!) {
+                      getQuizQuestions(quizId: \$quizId) {
                         items {
-                            id
-                            question
-                            options
-                            correctAnswer
+                          id
+                          question
+                          options
+                          correctAnswer
                         }
-                    }
-                }`,
-                    variables: { quizId: preQuiz.id },
-                    authMode: 'userPool'
+                      }
+                    }`,
+                    variables: { quizId: preQuiz.id }
                 });
 
-                // TypeScript에서 GraphQLResult 사용하지 않고 any로 처리
+                // 결과 추출
                 const typedResult = questionsResponse as any;
                 const questions = typedResult.data?.getQuizQuestions?.items || [];
 
@@ -237,69 +240,6 @@ export default function QuizList() {
         }
     };
 
-    // // 사전 퀴즈 복사하기
-    // const copyFromPreQuiz = async () => {
-    //     if (!selectedCourse || quizType !== 'post') return;
-
-    //     setLoading(true);
-    //     setError(null);
-
-    //     try {
-    //         // 사전 퀴즈 가져오기
-    //         const response = await listQuiz({
-    //             filter: {
-    //                 courseId: { eq: selectedCourse.value as string },
-    //                 quizType: { eq: 'pre' }
-    //             }
-    //         });
-
-    //         if (response.errors) {
-    //             throw new Error(response.errors.map(e => e.message).join(', '));
-    //         }
-
-    //         if (response.data && response.data.length > 0) {
-    //             const preQuiz = response.data[0];
-
-    //             // 사전 퀴즈의 질문 가져오기 (실제 구현에서는 추가 API 호출 필요)
-    //             const questionsResponse = await client.graphql({
-    //                 query: `query GetQuizQuestions(\$quizId: ID!) {
-    //         getQuizQuestions(quizId: \$quizId) {
-    //           items {
-    //             id
-    //             question
-    //             options
-    //             correctAnswer
-    //           }
-    //         }
-    //       }`,
-    //                 variables: { quizId: preQuiz.id },
-    //                 authMode: 'userPool'
-    //             }) as any;
-
-    //             const questions = questionsResponse.data.getQuizQuestions.items;
-
-    //             // 퀴즈 생성기로 이동 - 사전 퀴즈의 질문을 가지고
-    //             navigate('/instructor/assessments/quiz-create', {
-    //                 state: {
-    //                     courseId: selectedCourse.value,
-    //                     courseName: selectedCourse.label,
-    //                     quizType: 'post',
-    //                     initialQuestions: questions,
-    //                     preQuizId: preQuiz.id,
-    //                     copyMode: true
-    //                 }
-    //             });
-    //         } else {
-    //             setError(t('quiz_management.errors.no_pre_quiz'));
-    //         }
-    //     } catch (error) {
-    //         console.error(t('quiz_management.errors.copy_quiz'), error);
-    //         setError(t('quiz_management.errors.copy_quiz_message'));
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     // AI로 퀴즈 생성하기
     const generateQuizWithAI = async () => {
         if (!selectedCourse) return;
@@ -310,7 +250,7 @@ export default function QuizList() {
         setError(null);
 
         try {
-            // AI 서비스를 통해 퀴즈 생성 (실제 API 호출)
+            // AI 서비스를 통해 퀴즈 생성
             const questions = await generateQuizFromContent({
                 courseId: selectedCourse.value as string,
                 quizType,
@@ -335,15 +275,15 @@ export default function QuizList() {
 
         try {
             await client.graphql({
-                query: `mutation DeleteQuiz(\$input: DeleteQuizInput!) {
-          deleteQuiz(input: \$input) {
-            id
-          }
-        }`,
+                query: `
+                mutation DeleteQuiz(\$input: DeleteQuizInput!) {
+                  deleteQuiz(input: \$input) {
+                    id
+                  }
+                }`,
                 variables: {
                     input: { id: quizId }
-                },
-                authMode: 'userPool'
+                }
             });
 
             // 퀴즈 목록 새로고침

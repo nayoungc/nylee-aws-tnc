@@ -122,8 +122,8 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           // Amplify Gen 2 API 호출
           const result = await client.graphql({
             query: `
-              query ListCourseCatalogs(\$limit: Int) {
-                listCourseCatalogs(limit: \$limit) {
+              query listCourseCatalog(\$limit: Int) {
+                listCourseCatalog(limit: \$limit) {
                   items {
                     catalogId
                     title
@@ -136,7 +136,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
             variables: { limit: 100 }
           }) as any;
           
-          const data = result.data?.listCourseCatalogs?.items || [];
+          const data = result.data?.listCourseCatalog?.items || [];
           const errors = result.errors;
 
           console.log('API 응답:', data);
