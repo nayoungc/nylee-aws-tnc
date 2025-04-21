@@ -3,6 +3,7 @@ import re
 import uuid
 import boto3
 from botocore.exceptions import ClientError
+from docx import Document  # python-docx 라이브러리 사용
 
 # Bedrock 클라이언트 설정
 bedrock = boto3.client(
@@ -15,6 +16,18 @@ dynamodb = boto3.resource('dynamodb', region_name='us-east-1')  # 사용 중인 
 course_table = dynamodb.Table('Tnc-CourseCatalog')
 module_table = dynamodb.Table('Tnc-CourseCatalog-Modules')
 
+def read_docx_file(file_path):
+    """DOCX 파일을 읽어 텍스트 내용을 추출합니다"""
+    try:
+        doc = Document(file_path)
+        full_text = []
+        for para in doc.paragraphs:
+            full_text.append(para.text)
+        return '\n'.join(full_text)
+    except Exception as e:
+        print(f"DOCX 파일 읽기 오류: {e}")
+        return None
+
 def extract_course_info(document_content):
     """Bedrock Claude를 사용하여 과정 정보를 추출합니다"""
     
@@ -24,9 +37,9 @@ def extract_course_info(document_content):
     2. 레벨 (초급, 중급, 고급)
     3. 제공 방법
     4. 소요 시간
-    5. 과정 목표
-    6. 수강 대상
-    7. 수강 전 권장 사항
+    5. 과정 목표 (bullet point 형태로 제공된 목표 목록)
+    6. 수강 대상 (bullet point 형태로 제공된 대상 목록)
+    7. 수강 전 권장 사항 (bullet point 형태로 제공된 권장사항 목록)
     
     각 과정마다 명확하게 구분하여 JSON 형식으로 응답해주세요.
     JSON 형식은 정확히 다음과 같아야 합니다:
@@ -78,7 +91,19 @@ def extract_course_info(document_content):
         # JSON 형식으로 되어있지만 코드블록이 없는 경우 처리
         json_str = re.search(r'(\{.*\})', content, re.DOTALL).group(1)
     
-    return json.loads(json_str)
+    try:
+        courses_data = json.loads(json_str)
+        
+        # 고유 ID 추가
+        for course in courses_data['courses']:
+            if 'id' not in course or not course['id']:
+                course['id'] = str(uuid.uuid4())
+        
+        return courses_data
+    except json.JSONDecodeError as e:
+        print(f"JSON 디코딩 오류: {e}")
+        print(f"문제가 있는 JSON 문자열: {json_str}")
+        return {"courses": []}
 
 def extract_modules_and_labs(document_content):
     """Bedrock Claude를 사용하여 모듈 및 실습 정보를 추출합니다"""
@@ -140,7 +165,19 @@ def extract_modules_and_labs(document_content):
         # JSON 형식으로 되어있지만 코드블록이 없는 경우 처리
         json_str = re.search(r'(\{.*\})', content, re.DOTALL).group(1)
     
-    return json.loads(json_str)
+    try:
+        modules_data = json.loads(json_str)
+        
+        # 고유 ID 추가
+        for module in modules_data['modules_and_labs']:
+            if 'id' not in module or not module['id']:
+                module['id'] = str(uuid.uuid4())
+        
+        return modules_data
+    except json.JSONDecodeError as e:
+        print(f"JSON 디코딩 오류: {e}")
+        print(f"문제가 있는 JSON 문자열: {json_str}")
+        return {"modules_and_labs": []}
 
 def save_to_json(data, filename):
     """데이터를 JSON 파일로 저장합니다"""
@@ -167,8 +204,11 @@ def upload_to_dynamodb(courses_data, modules_data):
 
 def process_document(file_path):
     """문서를 처리하고 정보를 추출합니다"""
-    with open(file_path, 'r', encoding='utf-8') as file:
-        document_content = file.read()
+    # DOCX 파일 읽기
+    document_content = read_docx_file(file_path)
+    if not document_content:
+        print("문서 내용을 읽을 수 없습니다.")
+        return
     
     # 교육 과정 정보 추출
     print("과정 정보 추출 중...")
@@ -188,5 +228,5 @@ def process_document(file_path):
     print("DynamoDB 업로드가 완료되었습니다.")
 
 if __name__ == "__main__":
-    document_file_path = "aws_tnc_courses.txt"  # 문서 파일 경로
+    document_file_path = "AWS TnC_ILT_DILT.docx"  # DOCX 파일 경로로 수정
     process_document(document_file_path)

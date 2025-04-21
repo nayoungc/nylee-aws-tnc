@@ -56,6 +56,8 @@ const SurveyPage: React.FC = () => {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const { id } = useParams<{ id: string }>();
+  console.log('Loading survey data for ID:', id);
+
 
 
   // 답변 상태
@@ -77,12 +79,10 @@ const SurveyPage: React.FC = () => {
 
   const loadSurveyData = async () => {
     setLoading(true);
-    console.log('Loading quiz data for ID:', id);
 
 
     try {
       // 실제 구현에서는 API 호출로 대체
-      // 예시 데이터
       setTimeout(() => {
         setCourseInfo({
           id: courseId || 'unknown',

@@ -72,7 +72,7 @@ const PostQuizPage: React.FC = () => {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const { id } = useParams<{ id: string }>();
-
+  console.log('Post Quiz ID from URL:', id);
 
   // 퀴즈 상태
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,7 +98,6 @@ const PostQuizPage: React.FC = () => {
 
   const loadQuizData = async () => {
     setLoading(true);
-    console.log('Loading quiz data for ID:', id);
 
     try {
       // 실제 구현에서는 API 호출로 대체

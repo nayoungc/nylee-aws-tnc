@@ -52,6 +52,7 @@ const PreQuizPage: React.FC = () => {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const { id } = useParams<{ id: string }>();
+  console.log('Pre Quiz ID from URL:', id);
 
 
   // 퀴즈 상태
@@ -75,9 +76,7 @@ const PreQuizPage: React.FC = () => {
 
   const loadQuizData = async () => {
     setLoading(true);
-    console.log('Loading quiz data for ID:', id);
-
-
+    
     try {
       // 실제 구현에서는 API 호출로 대체
       // 예시 데이터

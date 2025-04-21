@@ -151,12 +151,9 @@ const CourseHome: React.FC = () => {
   };
 
   // 수정된 부분: 평가 유형에 따라 다른 페이지로 이동
-  // navigateToAssessment 함수 수정
   const navigateToAssessment = (assessment: Assessment) => {
-    // isActive 체크 제거 - 모두 활성화
-
     console.log('Navigating to assessment:', assessment.type, assessment.id);
-
+    
     // 평가 유형에 따라 다른 경로로 이동
     switch (assessment.type) {
       case 'pre-quiz':
@@ -169,7 +166,7 @@ const CourseHome: React.FC = () => {
         navigate(`/survey/\${assessment.id}`);
         break;
       default:
-        // 기존 기본 경로
+        // 기본 경로
         navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
     }
   };
@@ -310,7 +307,6 @@ const CourseHome: React.FC = () => {
         />
       </Container>
 
-      {/* 나머지 코드는 동일 */}
       {/* Materials section */}
       <Container
         header={<Header variant="h2">과정 자료</Header>}
