@@ -1,19 +1,196 @@
 // CourseCatalog.tsx
-import React from 'react';
-import { BaseCourseView } from '@components/BaseCourseView';
+import React, { useState, useEffect } from 'react';
+import { 
+  BaseCourseView,
+  CourseCatalog as CourseCatalogType 
+} from '@components/BaseCourseView';
+import { 
+  Container, 
+  Header, 
+  SpaceBetween, 
+  Button, 
+  Tabs, 
+  ColumnLayout, 
+  Box, 
+  StatusIndicator 
+} from '@cloudscape-design/components';
+import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
+import { executeGraphQL } from '@utils/auth';
+
+// 평가 현황 인터페이스
+interface AssessmentStats {
+  courseId: string;
+  preQuiz: { total: number, completed: number };
+  postQuiz: { total: number, completed: number };
+  surveys: { total: number, completed: number };
+}
 
 const CourseCatalog: React.FC = () => {
   const { t } = useTypedTranslation();
+  const navigate = useNavigate();
+  const [activeTabId, setActiveTabId] = useState('catalog');
+  const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
+  const [selectedCourse, setSelectedCourse] = useState<CourseCatalogType | null>(null);
   
-  return (
-    <BaseCourseView 
-      title={t('courses.catalog_title')}
-      description={t('courses.catalog_description')}
-      createPath="/instructor/courses" 
-      managePath="/instructor/courses/"
-      viewPath="/course/"
+  // 평가 현황 데이터 가져오기 (실제로는 API 호출이 필요함)
+  useEffect(() => {
+    const fetchAssessmentStats = async () => {
+      try {
+        // 실제 구현에서는 GraphQL 쿼리로 데이터 가져오기
+        // 현재는 샘플 데이터 사용
+        const mockStats: Record<string, AssessmentStats> = {
+          '1': {
+            courseId: '1',
+            preQuiz: { total: 15, completed: 10 },
+            postQuiz: { total: 12, completed: 8 },
+            surveys: { total: 20, completed: 15 }
+          },
+          '2': {
+            courseId: '2',
+            preQuiz: { total: 25, completed: 18 },
+            postQuiz: { total: 22, completed: 15 },
+            surveys: { total: 30, completed: 25 }
+          }
+        };
+        
+        setAssessmentStats(mockStats);
+      } catch (error) {
+        console.error('평가 현황 데이터 로드 중 오류:', error);
+      }
+    };
+    
+    fetchAssessmentStats();
+  }, []);
+  
+  // 과정 선택 처리
+  const handleCourseSelect = (course: CourseCatalogType) => {
+    setSelectedCourse(course);
+    setActiveTabId('assessments');
+  };
+  
+  // 커스텀 액션 버튼
+  const additionalActions = (
+    <Button 
+      onClick={() => navigate('/instructor/assessments/quiz-creator')}
+    >
+      {t('courses.create_assessment')}
+    </Button>
+  );
+  
+  // 탭 렌더링
+  const renderTabs = () => (
+    <Tabs
+      activeTabId={activeTabId}
+      onChange={({ detail }) => setActiveTabId(detail.activeTabId)}
+      tabs={[
+        {
+          id: 'catalog',
+          label: t('courses.tabs.catalog'),
+          content: (
+            <BaseCourseView 
+              title={t('courses.catalog_title')}
+              description={t('courses.catalog_description')}
+              isAdminView={true}
+              showCreateButton={true}
+              createPath="/instructor/courses/create" 
+              managePath="/instructor/courses/"
+              viewPath="/tnc/"
+              additionalActions={additionalActions}
+              // 과정 선택 시 처리할 수 있도록 onSelectCourse 콜백 추가
+              onSelectCourse={handleCourseSelect}
+            />
+          )
+        },
+        {
+          id: 'assessments',
+          label: t('courses.tabs.assessments'),
+          content: selectedCourse ? (
+            <Container
+              header={
+                <Header 
+                  variant="h2"
+                  description={selectedCourse.description}
+                  actions={
+                    <SpaceBetween direction="horizontal" size="xs">
+                      <Button onClick={() => navigate(`/instructor/assessments/quiz?courseId=\${selectedCourse.id}`)}>
+                        {t('courses.manage_quizzes')}
+                      </Button>
+                      <Button onClick={() => navigate(`/instructor/assessments/survey?courseId=\${selectedCourse.id}`)}>
+                        {t('courses.manage_surveys')}
+                      </Button>
+                    </SpaceBetween>
+                  }
+                >
+                  {selectedCourse.course_name} - {t('courses.assessment_stats')}
+                </Header>
+              }
+            >
+              {assessmentStats[selectedCourse.id] ? (
+                <ColumnLayout columns={3}>
+                  <Box variant="awsui-key-label">
+                    <h3>{t('courses.pre_quiz_stats')}</h3>
+                    <div>
+                      <StatusIndicator type="success">
+                        {assessmentStats[selectedCourse.id]?.preQuiz?.completed || 0} / {assessmentStats[selectedCourse.id]?.preQuiz?.total || 0} {t('courses.completed')}
+                      </StatusIndicator>
+                    </div>
+                  </Box>
+                  <Box variant="awsui-key-label">
+                    <h3>{t('courses.post_quiz_stats')}</h3>
+                    <div>
+                      <StatusIndicator type="info">
+                        {assessmentStats[selectedCourse.id]?.postQuiz?.completed || 0} / {assessmentStats[selectedCourse.id]?.postQuiz?.total || 0} {t('courses.completed')}
+                      </StatusIndicator>
+                    </div>
+                  </Box>
+                  <Box variant="awsui-key-label">
+                    <h3>{t('courses.survey_stats')}</h3>
+                    <div>
+                      <StatusIndicator type="warning">
+                        {assessmentStats[selectedCourse.id]?.surveys?.completed || 0} / {assessmentStats[selectedCourse.id]?.surveys?.total || 0} {t('courses.completed')}
+                      </StatusIndicator>
+                    </div>
+                  </Box>
+                </ColumnLayout>
+              ) : (
+                <Box textAlign="center" padding="l">
+                  {t('courses.no_assessment_data')}
+                </Box>
+              )}
+            </Container>
+          ) : (
+            <Box textAlign="center" padding="l">
+              {t('courses.select_course_prompt')}
+            </Box>
+          )
+        }
+      ]}
     />
+  );
+
+  return (
+    <SpaceBetween size="l">
+      <Container
+        header={
+          <Header
+            variant="h1"
+            description={t('courses.catalog_admin_description')}
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button onClick={() => navigate('/instructor/courses/create')}>
+                  {t('courses.create_course')}
+                </Button>
+              </SpaceBetween>
+            }
+          >
+            {t('courses.catalog_management')}
+          </Header>
+        }
+      >
+        {renderTabs()}
+      </Container>
+    </SpaceBetween>
   );
 };
 

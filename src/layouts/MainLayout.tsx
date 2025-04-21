@@ -112,6 +112,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
       const instructorItems: SideNavigationProps.Item[] = [
         { type: 'link', text: t('nav.dashboard'), href: '/instructor/dashboard' },
         { type: 'link', text: t('nav.course_management'), href: '/instructor/courses' },
+        { type: 'link', text: t('nav.course_catalog'), href: '/instructor/courses/catalog' },
+        
         {
           type: 'section',
           text: t('nav.assessments'),

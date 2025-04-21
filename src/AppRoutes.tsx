@@ -21,13 +21,13 @@ import LoadingScreen from './components/LoadingScreen';
 import Dashboard from './pages/instructor/Dashboard';
 import CoursesManagement from './pages/instructor/CoursesManagement';
 import CourseCreation from './pages/instructor/CourseCreation';
+import CourseCatalog from './pages/instructor/CourseCatalog';
 import QuizManagement from './pages/instructor/QuizManagement';
 import QuizCreator from './pages/instructor/QuizCreator';
 import SurveyManagement from './pages/instructor/SurveyManagement';
 import SurveyCreator from './pages/instructor/SurveyCreator';
 import ReportGenerator from './pages/instructor/ReportGenerator';
 import AdminPage from './pages/admin/AdminPage';
-import CourseCatalog from './pages/instructor/CourseCatalog';
 import Analytics from './pages/instructor/Analytics';
 
 // 교육생용 페이지 컴포넌트

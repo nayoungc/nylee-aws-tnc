@@ -58,7 +58,7 @@ const mapToCourseViewModel = (item: any): CourseCatalog => {
   };
 };
 
-// BaseCourseView의 props 인터페이스
+// BaseCourseView의 props 인터페이스 - 중복 제거
 interface BaseCourseViewProps {
   title: string;
   description: string;
@@ -79,6 +79,9 @@ interface BaseCourseViewProps {
   
   additionalActions?: React.ReactNode;
   courses?: CourseCatalog[];
+  
+  // 과정 선택 콜백 추가
+  onSelectCourse?: (course: CourseCatalog) => void;
 }
 
 export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
@@ -93,7 +96,8 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   showManageButton = true,
   showViewButton = true,
   additionalActions,
-  courses: initialCourses
+  courses: initialCourses,
+  onSelectCourse // 이 파라미터 추가
 }) => {
   const navigate = useNavigate();
   const { t, tString } = useTypedTranslation();
@@ -248,6 +252,13 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   const renderActionButtons = (item: CourseCatalog) => {
     return (
       <SpaceBetween direction="horizontal" size="xs">
+        {/* 과정 선택 버튼 */}
+        {onSelectCourse && (
+          <Button onClick={() => onSelectCourse(item)}>
+            {t('courses.view_stats')}
+          </Button>
+        )}
+        
         {/* 관리 버튼은 관리자 뷰이고 showManageButton이 true일 때만 표시 */}
         {isAdminView && showManageButton && (
           <Button onClick={() => navigate(`\${managePath}\${item.id}`)}>
