@@ -13,7 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { client, type CourseCatalog } from '../../graphql/client';
+import { client, type CourseCatalog } from '@graphql/client';
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
@@ -120,9 +120,24 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         
         try {
           // Amplify Gen 2 API 호출
-          const { data, errors } = await client.models.CourseCatalog.list({
-            limit: 100
-          });
+          const result = await client.graphql({
+            query: `
+              query ListCourseCatalogs(\$limit: Int) {
+                listCourseCatalogs(limit: \$limit) {
+                  items {
+                    catalogId
+                    title
+                    description
+                    // 필요한 다른 필드들
+                  }
+                }
+              }
+            `,
+            variables: { limit: 100 }
+          }) as any;
+          
+          const data = result.data?.listCourseCatalogs?.items || [];
+          const errors = result.errors;
 
           console.log('API 응답:', data);
           

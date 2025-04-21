@@ -7,7 +7,8 @@ module.exports = {
       '@': path.resolve(__dirname, 'src'),
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@components': path.resolve(__dirname, 'src/components'),
-      '@graphql': path.resolve(__dirname, 'src/graphql')
+      '@graphql': path.resolve(__dirname, 'src/graphql'),
+      '@layouts': path.resolve(__dirname, 'src/layouts'),
     }
   }
 };
