@@ -151,8 +151,14 @@ export async function generateQuizWithRAG(courseId: string, options: Partial<Gen
     
     // 개발 환경에서는 예제 질문 반환
     if (process.env.NODE_ENV === 'development') {
-      return generateDummyQuestions({ courseId, ...options });
-    }
+        return generateDummyQuestions({ 
+          courseId, 
+          quizType: options.quizType || 'pre', // 기본값 제공
+          modelType: options.modelType || 'basic',
+          questionCount: options.questionCount || 5,
+          contextPrompt: options.contextPrompt 
+        });
+      }
     
     throw error;
   }
