@@ -56,7 +56,7 @@ const AppRoutes: React.FC = () => {
 
   // 로딩 중 화면
   if (loading) {
-    return <LoadingScreen message={t('common.loading')} />;
+    return <LoadingScreen message={tString('common.loading')} />;
   }
 
   // 강사 전용 라우트를 위한 래퍼 컴포넌트
