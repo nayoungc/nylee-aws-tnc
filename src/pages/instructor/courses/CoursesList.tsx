@@ -9,7 +9,6 @@ const CoursesList: React.FC = () => {
   const { t, tString } = useTypedTranslation();
   
   return (
-    <MainLayout title={tString('courses.management_title')}>
       <BaseCourseView 
         title={t('courses.management_title')} 
         description={t('courses.management_description')}
@@ -25,7 +24,6 @@ const CoursesList: React.FC = () => {
           </Button>
         }
       />
-    </MainLayout>
   );
 };
 

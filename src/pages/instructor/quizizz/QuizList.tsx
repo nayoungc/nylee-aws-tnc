@@ -378,302 +378,300 @@ export default function QuizList() {
     };
 
     return (
-        <MainLayout title={tString('quiz_management.title')}>
-            <SpaceBetween size="l">
-                <Container header={<Header variant="h2">{t('quiz_management.subtitle')}</Header>}>
+        <SpaceBetween size="l">
+            <Container header={<Header variant="h2">{t('quiz_management.subtitle')}</Header>}>
+                <SpaceBetween size="l">
+                    {error && <Alert type="error">{error}</Alert>}
+
+                    <FormField label={t('quiz_management.course_selection')}>
+                        <Select
+                            selectedOption={selectedCourse}
+                            onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
+                            options={courses}
+                            placeholder={tString('quiz_management.course_placeholder')}
+                            filteringType="auto"
+                            statusType={loadingCourses ? "loading" : "finished"}
+                            loadingText={tString('quiz_management.loading.courses')}
+                            empty={
+                                <Box textAlign="center" color="inherit">
+                                    <b>{t('quiz_management.empty_states.no_courses')}</b>
+                                    <Box padding={{ bottom: "xs" }}>
+                                        {t('quiz_management.empty_states.register_course')}
+                                    </Box>
+                                </Box>
+                            }
+                        />
+                    </FormField>
+
+                    <FormField label={t('quiz_management.quiz_type')}>
+                        <SegmentedControl
+                            selectedId={quizType}
+                            onChange={({ detail }) => setQuizType(detail.selectedId as 'pre' | 'post')}
+                            label={tString('quiz_management.select_quiz_type')}
+                            options={[
+                                { id: 'pre', text: tString('quiz_management.pre_quiz') },
+                                { id: 'post', text: tString('quiz_management.post_quiz') },
+                            ]}
+                        />
+                    </FormField>
+
+                    {quizType === 'post' && (
+                        <Checkbox
+                            checked={syncQuizzes}
+                            onChange={({ detail }) => setSyncQuizzes(detail.checked)}
+                        >
+                            {t('quiz_management.sync_with_pre_quiz')}
+                        </Checkbox>
+                    )}
+
+                    <SpaceBetween direction="horizontal" size="xs">
+                        <Button
+                            variant="primary"
+                            disabled={!selectedCourse || (quizType === 'post' && syncQuizzes)}
+                            onClick={() => navigateToQuizCreator()}
+                            iconName="add-plus"
+                        >
+                            {t('quiz_management.actions.create_quiz')}
+                        </Button>
+                        <Button
+                            onClick={generateQuizWithAI}
+                            iconName="file-open"
+                            disabled={!selectedCourse}
+                        >
+                            {t('quiz_management.actions.ai_generate')}
+                        </Button>
+                        {quizType === 'post' && syncQuizzes && (
+                            <Button
+                                variant="normal"
+                                iconName="copy"
+                                onClick={copyFromPreQuiz}
+                                disabled={!selectedCourse}
+                            >
+                                {t('quiz_management.actions.copy_from_pre')}
+                            </Button>
+                        )}
+                    </SpaceBetween>
+                </SpaceBetween>
+            </Container>
+
+            {/* 기존 퀴즈 목록 */}
+            <Container
+                header={
+                    <Header
+                        variant="h2"
+                        description={t('quiz_management.existing_quiz_description', {
+                            type: quizType === 'pre' ? t('quiz_management.pre_quiz') : t('quiz_management.post_quiz')
+                        })}
+                        actions={
+                            <TextFilter
+                                filteringText={filterText}
+                                filteringPlaceholder={tString('quiz_management.filter_placeholder')}
+                                filteringAriaLabel={tString('quiz_management.filter_aria_label')}
+                                onChange={({ detail }) => setFilterText(detail.filteringText)}
+                            />
+                        }
+                    >
+                        {t('quiz_management.existing_quizzes')}
+                    </Header>
+                }
+            >
+                <Table
+                    items={filteredQuizzes}
+                    loading={loadingQuizzes}
+                    loadingText={tString('quiz_management.loading.quizzes')}
+                    columnDefinitions={[
+                        {
+                            id: "title",
+                            header: t('quiz_management.columns.title'),
+                            cell: item => item.title,
+                            sortingField: 'title'
+                        },
+                        {
+                            id: "questionCount",
+                            header: t('quiz_management.columns.question_count'),
+                            cell: item => item.questionCount
+                        },
+                        {
+                            id: "createdAt",
+                            header: t('quiz_management.columns.created_at'),
+                            cell: item => new Date(item.createdAt).toLocaleDateString(),
+                            sortingField: 'createdAt'
+                        },
+                        {
+                            id: "actions",
+                            header: t('quiz_management.columns.actions'),
+                            cell: item => (
+                                <SpaceBetween direction="horizontal" size="xs">
+                                    <Button
+                                        iconName="search"
+                                        onClick={() => navigate(`/instructor/assessments/quiz-view/\${item.id}`)}
+                                    >
+                                        {t('quiz_management.actions.view')}
+                                    </Button>
+                                    <Button
+                                        iconName="edit"
+                                        onClick={() => navigate(`/instructor/assessments/quiz-create`, {
+                                            state: {
+                                                quizId: item.id,
+                                                courseId: item.courseId,
+                                                courseName: item.courseName,
+                                                quizType: item.quizType,
+                                                editMode: true
+                                            }
+                                        })}
+                                    >
+                                        {t('quiz_management.actions.edit')}
+                                    </Button>
+                                    <Button
+                                        iconName="remove"
+                                        onClick={() => deleteQuiz(item.id)}
+                                    >
+                                        {t('quiz_management.actions.delete')}
+                                    </Button>
+                                </SpaceBetween>
+                            )
+                        }
+                    ]}
+                    empty={
+                        <Box textAlign="center" color="inherit">
+                            <b>{t('quiz_management.empty_states.no_quizzes')}</b>
+                            <Box padding={{ bottom: "xs" }}>
+                                {t('quiz_management.empty_states.create_new_quiz')}
+                            </Box>
+                            <Button onClick={() => navigateToQuizCreator()} iconName="add-plus">
+                                {t('quiz_management.actions.create_quiz')}
+                            </Button>
+                        </Box>
+                    }
+                    sortingDisabled={false}
+                    sortingColumn={{ sortingField: 'createdAt' }}
+                    sortingDescending={true}
+                />
+            </Container>
+
+            {/* AI 퀴즈 생성 모달 */}
+            <Modal
+                visible={showAiModal}
+                onDismiss={() => setShowAiModal(false)}
+                header={t('quiz_management.modal.ai_generation', {
+                    type: quizType === 'pre' ? t('quiz_management.pre_quiz') : t('quiz_management.post_quiz')
+                })}
+                size="large"
+            >
+                {loading ? (
+                    <Box textAlign="center" padding="l">
+                        <Spinner />
+                        <p>{t('quiz_management.modal.generating')}</p>
+                    </Box>
+                ) : (
                     <SpaceBetween size="l">
                         {error && <Alert type="error">{error}</Alert>}
 
-                        <FormField label={t('quiz_management.course_selection')}>
-                            <Select
-                                selectedOption={selectedCourse}
-                                onChange={({ detail }) => setSelectedCourse(detail.selectedOption)}
-                                options={courses}
-                                placeholder={tString('quiz_management.course_placeholder')}
-                                filteringType="auto"
-                                statusType={loadingCourses ? "loading" : "finished"}
-                                loadingText={tString('quiz_management.loading.courses')}
-                                empty={
-                                    <Box textAlign="center" color="inherit">
-                                        <b>{t('quiz_management.empty_states.no_courses')}</b>
-                                        <Box padding={{ bottom: "xs" }}>
-                                            {t('quiz_management.empty_states.register_course')}
-                                        </Box>
-                                    </Box>
-                                }
-                            />
-                        </FormField>
-
-                        <FormField label={t('quiz_management.quiz_type')}>
+                        {/* AI 모델 선택 */}
+                        <FormField label={t('quiz_management.model_selection')}>
                             <SegmentedControl
-                                selectedId={quizType}
-                                onChange={({ detail }) => setQuizType(detail.selectedId as 'pre' | 'post')}
-                                label={tString('quiz_management.select_quiz_type')}
+                                selectedId={aiModelType}
+                                onChange={({ detail }) => setAiModelType(detail.selectedId as 'basic' | 'advanced')}
                                 options={[
-                                    { id: 'pre', text: tString('quiz_management.pre_quiz') },
-                                    { id: 'post', text: tString('quiz_management.post_quiz') },
+                                    { id: 'basic', text: tString('quiz_management.model_types.basic') },
+                                    { id: 'advanced', text: tString('quiz_management.model_types.advanced') },
                                 ]}
                             />
+                            <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
+                                {aiModelType === 'advanced' ?
+                                    t('quiz_management.model_description.advanced') :
+                                    t('quiz_management.model_description.basic')}
+                            </Box>
                         </FormField>
 
-                        {quizType === 'post' && (
-                            <Checkbox
-                                checked={syncQuizzes}
-                                onChange={({ detail }) => setSyncQuizzes(detail.checked)}
-                            >
-                                {t('quiz_management.sync_with_pre_quiz')}
-                            </Checkbox>
+                        {generatedQuestions.length > 0 && (
+                            <>
+                                <p>{t('quiz_management.modal.generated_count', { count: generatedQuestions.length })}</p>
+
+                                {/* 생성된 질문 목록 표시 */}
+                                <Table
+                                    columnDefinitions={[
+                                        {
+                                            id: "question",
+                                            header: t('quiz_management.modal.question'),
+                                            cell: item => (
+                                                <div>
+                                                    <div>{item.question}</div>
+                                                    <Box color="text-status-success" fontSize="body-s">
+                                                        {item.options.map((opt: string, idx: number) => (
+                                                            <span key={idx}>
+                                                                {(item.correctAnswer === idx || item.correctAnswer === opt) &&
+                                                                    `\${t('quiz_management.correct_answer')}: \${opt}`}
+                                                            </span>
+                                                        ))}
+                                                    </Box>
+                                                </div>
+                                            )
+                                        },
+                                        {
+                                            id: "quality",
+                                            header: t('quiz_management.modal.quality'),
+                                            cell: item => (
+                                                <Box color={item.quality >= 0.8 ? "text-status-success" :
+                                                    item.quality >= 0.6 ? "text-status-info" :
+                                                        "text-status-warning"}>
+                                                    {item.quality >= 0.8 ? t('quiz_management.quality.high') :
+                                                        item.quality >= 0.6 ? t('quiz_management.quality.medium') :
+                                                            t('quiz_management.quality.low')}
+                                                </Box>
+                                            )
+                                        }
+                                    ]}
+                                    items={generatedQuestions.map((q, i) => ({ ...q, quality: Math.random() * 0.4 + 0.5 }))}
+                                    trackBy="question"
+                                    selectionType="multi"
+                                    empty={
+                                        <Box textAlign="center">{t('quiz_management.no_questions_generated')}</Box>
+                                    }
+                                    header={<Header>{t('quiz_management.generated_questions')}</Header>}
+                                />
+
+                                <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+                                    <Button onClick={() => generateQuizWithAI()}>
+                                        {t('quiz_management.actions.regenerate')}
+                                    </Button>
+                                    <Button onClick={() => setShowAiModal(false)}>
+                                        {t('quiz_management.actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => {
+                                            setShowAiModal(false);
+                                            navigateToQuizCreator(generatedQuestions);
+                                        }}
+                                    >
+                                        {t('quiz_management.actions.create_with_questions')}
+                                    </Button>
+                                </SpaceBetween>
+                            </>
                         )}
 
-                        <SpaceBetween direction="horizontal" size="xs">
-                            <Button
-                                variant="primary"
-                                disabled={!selectedCourse || (quizType === 'post' && syncQuizzes)}
-                                onClick={() => navigateToQuizCreator()}
-                                iconName="add-plus"
-                            >
-                                {t('quiz_management.actions.create_quiz')}
-                            </Button>
-                            <Button
-                                onClick={generateQuizWithAI}
-                                iconName="file-open"
-                                disabled={!selectedCourse}
-                            >
-                                {t('quiz_management.actions.ai_generate')}
-                            </Button>
-                            {quizType === 'post' && syncQuizzes && (
-                                <Button
-                                    variant="normal"
-                                    iconName="copy"
-                                    onClick={copyFromPreQuiz}
-                                    disabled={!selectedCourse}
-                                >
-                                    {t('quiz_management.actions.copy_from_pre')}
-                                </Button>
-                            )}
-                        </SpaceBetween>
-                    </SpaceBetween>
-                </Container>
-
-                {/* 기존 퀴즈 목록 */}
-                <Container
-                    header={
-                        <Header
-                            variant="h2"
-                            description={t('quiz_management.existing_quiz_description', {
-                                type: quizType === 'pre' ? t('quiz_management.pre_quiz') : t('quiz_management.post_quiz')
-                            })}
-                            actions={
-                                <TextFilter
-                                    filteringText={filterText}
-                                    filteringPlaceholder={tString('quiz_management.filter_placeholder')}
-                                    filteringAriaLabel={tString('quiz_management.filter_aria_label')}
-                                    onChange={({ detail }) => setFilterText(detail.filteringText)}
-                                />
-                            }
-                        >
-                            {t('quiz_management.existing_quizzes')}
-                        </Header>
-                    }
-                >
-                    <Table
-                        items={filteredQuizzes}
-                        loading={loadingQuizzes}
-                        loadingText={tString('quiz_management.loading.quizzes')}
-                        columnDefinitions={[
-                            {
-                                id: "title",
-                                header: t('quiz_management.columns.title'),
-                                cell: item => item.title,
-                                sortingField: 'title'
-                            },
-                            {
-                                id: "questionCount",
-                                header: t('quiz_management.columns.question_count'),
-                                cell: item => item.questionCount
-                            },
-                            {
-                                id: "createdAt",
-                                header: t('quiz_management.columns.created_at'),
-                                cell: item => new Date(item.createdAt).toLocaleDateString(),
-                                sortingField: 'createdAt'
-                            },
-                            {
-                                id: "actions",
-                                header: t('quiz_management.columns.actions'),
-                                cell: item => (
-                                    <SpaceBetween direction="horizontal" size="xs">
-                                        <Button
-                                            iconName="search"
-                                            onClick={() => navigate(`/instructor/assessments/quiz-view/\${item.id}`)}
-                                        >
-                                            {t('quiz_management.actions.view')}
-                                        </Button>
-                                        <Button
-                                            iconName="edit"
-                                            onClick={() => navigate(`/instructor/assessments/quiz-create`, {
-                                                state: {
-                                                    quizId: item.id,
-                                                    courseId: item.courseId,
-                                                    courseName: item.courseName,
-                                                    quizType: item.quizType,
-                                                    editMode: true
-                                                }
-                                            })}
-                                        >
-                                            {t('quiz_management.actions.edit')}
-                                        </Button>
-                                        <Button
-                                            iconName="remove"
-                                            onClick={() => deleteQuiz(item.id)}
-                                        >
-                                            {t('quiz_management.actions.delete')}
-                                        </Button>
-                                    </SpaceBetween>
-                                )
-                            }
-                        ]}
-                        empty={
-                            <Box textAlign="center" color="inherit">
-                                <b>{t('quiz_management.empty_states.no_quizzes')}</b>
-                                <Box padding={{ bottom: "xs" }}>
-                                    {t('quiz_management.empty_states.create_new_quiz')}
+                        {generatedQuestions.length === 0 && !loading && !error && (
+                            <SpaceBetween size="l">
+                                <Box textAlign="center">
+                                    {t('quiz_management.empty_states.no_generated_questions')}
                                 </Box>
-                                <Button onClick={() => navigateToQuizCreator()} iconName="add-plus">
-                                    {t('quiz_management.actions.create_quiz')}
-                                </Button>
-                            </Box>
-                        }
-                        sortingDisabled={false}
-                        sortingColumn={{ sortingField: 'createdAt' }}
-                        sortingDescending={true}
-                    />
-                </Container>
-
-                {/* AI 퀴즈 생성 모달 */}
-                <Modal
-                    visible={showAiModal}
-                    onDismiss={() => setShowAiModal(false)}
-                    header={t('quiz_management.modal.ai_generation', {
-                        type: quizType === 'pre' ? t('quiz_management.pre_quiz') : t('quiz_management.post_quiz')
-                    })}
-                    size="large"
-                >
-                    {loading ? (
-                        <Box textAlign="center" padding="l">
-                            <Spinner />
-                            <p>{t('quiz_management.modal.generating')}</p>
-                        </Box>
-                    ) : (
-                        <SpaceBetween size="l">
-                            {error && <Alert type="error">{error}</Alert>}
-
-                            {/* AI 모델 선택 */}
-                            <FormField label={t('quiz_management.model_selection')}>
-                                <SegmentedControl
-                                    selectedId={aiModelType}
-                                    onChange={({ detail }) => setAiModelType(detail.selectedId as 'basic' | 'advanced')}
-                                    options={[
-                                        { id: 'basic', text: tString('quiz_management.model_types.basic') },
-                                        { id: 'advanced', text: tString('quiz_management.model_types.advanced') },
-                                    ]}
-                                />
-                                <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
-                                    {aiModelType === 'advanced' ?
-                                        t('quiz_management.model_description.advanced') :
-                                        t('quiz_management.model_description.basic')}
-                                </Box>
-                            </FormField>
-
-                            {generatedQuestions.length > 0 && (
-                                <>
-                                    <p>{t('quiz_management.modal.generated_count', { count: generatedQuestions.length })}</p>
-
-                                    {/* 생성된 질문 목록 표시 */}
-                                    <Table
-                                        columnDefinitions={[
-                                            {
-                                                id: "question",
-                                                header: t('quiz_management.modal.question'),
-                                                cell: item => (
-                                                    <div>
-                                                        <div>{item.question}</div>
-                                                        <Box color="text-status-success" fontSize="body-s">
-                                                            {item.options.map((opt: string, idx: number) => (
-                                                                <span key={idx}>
-                                                                    {(item.correctAnswer === idx || item.correctAnswer === opt) &&
-                                                                        `\${t('quiz_management.correct_answer')}: \${opt}`}
-                                                                </span>
-                                                            ))}
-                                                        </Box>
-                                                    </div>
-                                                )
-                                            },
-                                            {
-                                                id: "quality",
-                                                header: t('quiz_management.modal.quality'),
-                                                cell: item => (
-                                                    <Box color={item.quality >= 0.8 ? "text-status-success" :
-                                                        item.quality >= 0.6 ? "text-status-info" :
-                                                            "text-status-warning"}>
-                                                        {item.quality >= 0.8 ? t('quiz_management.quality.high') :
-                                                            item.quality >= 0.6 ? t('quiz_management.quality.medium') :
-                                                                t('quiz_management.quality.low')}
-                                                    </Box>
-                                                )
-                                            }
-                                        ]}
-                                        items={generatedQuestions.map((q, i) => ({ ...q, quality: Math.random() * 0.4 + 0.5 }))}
-                                        trackBy="question"
-                                        selectionType="multi"
-                                        empty={
-                                            <Box textAlign="center">{t('quiz_management.no_questions_generated')}</Box>
-                                        }
-                                        header={<Header>{t('quiz_management.generated_questions')}</Header>}
-                                    />
-
-                                    <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-                                        <Button onClick={() => generateQuizWithAI()}>
-                                            {t('quiz_management.actions.regenerate')}
-                                        </Button>
-                                        <Button onClick={() => setShowAiModal(false)}>
-                                            {t('quiz_management.actions.cancel')}
-                                        </Button>
-                                        <Button
-                                            variant="primary"
-                                            onClick={() => {
-                                                setShowAiModal(false);
-                                                navigateToQuizCreator(generatedQuestions);
-                                            }}
-                                        >
-                                            {t('quiz_management.actions.create_with_questions')}
-                                        </Button>
-                                    </SpaceBetween>
-                                </>
-                            )}
-
-                            {generatedQuestions.length === 0 && !loading && !error && (
-                                <SpaceBetween size="l">
-                                    <Box textAlign="center">
-                                        {t('quiz_management.empty_states.no_generated_questions')}
-                                    </Box>
-                                    <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-                                        <Button onClick={() => setShowAiModal(false)}>
-                                            {t('quiz_management.actions.cancel')}
-                                        </Button>
-                                        <Button
-                                            variant="primary"
-                                            onClick={() => generateQuizWithAI()}
-                                        >
-                                            {t('quiz_management.actions.try_generation')}
-                                        </Button>
-                                    </SpaceBetween>
+                                <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+                                    <Button onClick={() => setShowAiModal(false)}>
+                                        {t('quiz_management.actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => generateQuizWithAI()}
+                                    >
+                                        {t('quiz_management.actions.try_generation')}
+                                    </Button>
                                 </SpaceBetween>
-                            )}
-                        </SpaceBetween>
-                    )}
-                </Modal>
-            </SpaceBetween>
-        </MainLayout>
+                            </SpaceBetween>
+                        )}
+                    </SpaceBetween>
+                )}
+            </Modal>
+        </SpaceBetween>
     );
 }

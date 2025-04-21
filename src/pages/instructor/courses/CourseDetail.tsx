@@ -225,19 +225,16 @@ const CourseDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <MainLayout>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
           <StatusIndicator type="loading">
             {t('course_detail.loading.message')}
           </StatusIndicator>
         </div>
-      </MainLayout>
     );
   }
 
   if (error || !course) {
     return (
-      <MainLayout>
         <Container>
           <Alert type="error" header={t('course_detail.errors.load_failed')}>
             {error || t('course_detail.errors.general')}
@@ -248,7 +245,6 @@ const CourseDetail: React.FC = () => {
             </Box>
           </Alert>
         </Container>
-      </MainLayout>
     );
   }
 
@@ -268,7 +264,6 @@ const CourseDetail: React.FC = () => {
   })) || [];
 
   return (
-    <MainLayout title={course.title}>
       <SpaceBetween size="l">
         {activeAssessment && (
           <Alert
@@ -410,7 +405,6 @@ const CourseDetail: React.FC = () => {
           />
         </Container>
       </SpaceBetween>
-    </MainLayout>
   );
 };
 

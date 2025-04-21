@@ -222,7 +222,6 @@ const CourseCreate: React.FC = () => {
   };
 
   return (
-    <MainLayout title={tString('course_creation.title')}>
       <Container
         header={
           <Header
@@ -357,7 +356,6 @@ const CourseCreate: React.FC = () => {
           </Container>
         </SpaceBetween>
       </Container>
-    </MainLayout>
   );
 };
 

@@ -17,7 +17,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { client } from '../../../graphql/client';
-import MainLayout from '../../../layouts/MainLayout';
 
 // 평가 현황 인터페이스
 interface AssessmentStats {
@@ -170,7 +169,6 @@ const CourseCatalogPage: React.FC = () => {
   );
 
   return (
-    <MainLayout title={tString('courses.catalog_management')}>
       <SpaceBetween size="l">
         <Container
           header={
@@ -192,7 +190,6 @@ const CourseCatalogPage: React.FC = () => {
           {renderTabs()}
         </Container>
       </SpaceBetween>
-    </MainLayout>
   );
 };
 

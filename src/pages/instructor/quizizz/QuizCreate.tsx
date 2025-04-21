@@ -543,7 +543,6 @@ export default function QuizCreate() {
   };
 
   return (
-    <MainLayout title={isEditMode ? tString('quiz_creator.edit_title') : tString('quiz_creator.create_title')}>
       <SpaceBetween size="l">
         {error && <Alert type="error">{error}</Alert>}
 
@@ -1152,6 +1151,5 @@ export default function QuizCreate() {
           )}
         </Modal>
       </SpaceBetween>
-    </MainLayout>
   );
 }
