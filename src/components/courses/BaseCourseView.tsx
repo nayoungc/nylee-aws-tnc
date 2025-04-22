@@ -13,7 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { client, type CourseCatalog } from '@graphql/client';
+import { listCourseCatalogs, CourseCatalog } from '@api';
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
@@ -21,7 +21,6 @@ const mapToCourseViewModel = (item: any): CourseCatalog => {
     catalogId: item.catalogId || '',
     version: item.version || 'v1',
     title: item.title || '',
-    course_name: item.title || '', // course_name 필드 추가 (호환성을 위해)
     awsCode: item.awsCode,
     description: item.description,
     category: item.category || '',
@@ -119,51 +118,21 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         console.log('API 호출 시작...');
         
         try {
-          // Amplify Gen 2 API 호출
-          const result = await client.graphql({
-            query: `
-              query listCourseCatalog(\$limit: Int) {
-                listCourseCatalog(limit: \$limit) {
-                  items {
-                    id
-                    catalogId
-                    title
-                    description
-                    category
-                    status
-                    version
-                    price
-                    currency
-                    deliveryMethod
-                    targetAudience
-                    # 필요한 경우 다른 필드들도 추가
-                  }
-                }
-              }
-            `,
-            variables: { limit: 100 }
-          }) as any;
+          // 새로운 API 구조 사용
+          const result = await listCourseCatalogs();
           
-          const data = result.data?.listCourseCatalog?.items || [];
-          const errors = result.errors;
-
-          console.log('API 응답:', data);
+          console.log('API 응답:', result.data);
           
-          if (errors && errors.length > 0) {
-            console.error('GraphQL 오류:', errors);
-            throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
-          }
-          
-          if (data && Array.isArray(data)) {
-            const mappedItems = data.map(mapToCourseViewModel);
+          if (result.data && Array.isArray(result.data)) {
+            const mappedItems = result.data.map(mapToCourseViewModel);
             setCourses(mappedItems);
           } else {
             setCourses([]);
           }
           
           clearTimeout(timeoutId);
-        } catch (graphqlError) {
-          console.error('GraphQL 오류:', graphqlError);
+        } catch (apiError) {
+          console.error('API 오류:', apiError);
           clearTimeout(timeoutId);
           throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
         }

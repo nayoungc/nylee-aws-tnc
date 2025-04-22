@@ -1,0 +1,1444 @@
+[
+  {
+    "catalogId": "200-ARAWAB",
+    "labNumber": "1",
+    "moduleId": "200-ARAWAB-MOD2",
+    "title": "운영 우수성 원칙 검토 실습",
+    "description": "AWS Well-Architected Tool을 사용하여 운영 우수성 원칙 검토를 실행합니다.",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Well-Architected Tool"
+    ]
+  },
+  {
+    "catalogId": "200-ARAWAB",
+    "labNumber": "2",
+    "moduleId": "200-ARAWAB-MOD2",
+    "title": "보안 원칙 검토 실습",
+    "description": "AWS Well-Architected Tool을 사용하여 보안 원칙 검토를 실행합니다.",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Well-Architected Tool"
+    ]
+  },
+  {
+    "catalogId": "200-ARAWAB",
+    "labNumber": "3",
+    "moduleId": "200-ARAWAB-MOD3",
+    "title": "위험 우선순위 지정 실습",
+    "description": "식별된 위험에 대한 우선순위 지정 및 해결 방안 수립",
+    "duration": "60분",
+    "difficulty": "고급",
+    "awsServices": [
+      "AWS Well-Architected Tool"
+    ]
+  },
+  {
+    "catalogId": "300-MLASMS",
+    "labNumber": "1",
+    "moduleId": "300-MLASMS-MOD2",
+    "title": "SageMaker Data Wrangler를 사용한 데이터 분석 및 준비",
+    "description": "SageMaker Data Wrangler를 사용하여 데이터를 분석하고 준비합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker Data Wrangler"
+    ]
+  },
+  {
+    "catalogId": "300-MLASMS",
+    "labNumber": "2",
+    "moduleId": "300-MLASMS-MOD2",
+    "title": "Amazon EMR을 사용한 대규모 데이터 분석 및 준비",
+    "description": "Amazon EMR을 사용하여 대규모 데이터셋을 분석하고 처리합니다.",
+    "duration": "75분",
+    "difficulty": "고급",
+    "awsServices": [
+      "Amazon EMR",
+      "Amazon S3"
+    ]
+  },
+  {
+    "catalogId": "300-MLASMS",
+    "labNumber": "3",
+    "moduleId": "300-MLASMS-MOD2",
+    "title": "SageMaker Processing과 SageMaker Python SDK를 사용한 데이터 처리",
+    "description": "SageMaker Processing을 사용하여 데이터를 전처리합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker Processing"
+    ]
+  },
+  {
+    "catalogId": "200-ARCHIT",
+    "labNumber": "1",
+    "moduleId": "200-ARCHIT-MOD1",
+    "title": "AWS API 도구를 사용한 EC2 인스턴스 배포 살펴보기",
+    "description": "AWS Management Console, AWS CLI, AWS CloudFormation을 사용하여 EC2 인스턴스 배포",
+    "duration": "45분",
+    "difficulty": "초급",
+    "awsServices": [
+      "Amazon EC2",
+      "AWS CLI",
+      "AWS CloudFormation"
+    ]
+  },
+  {
+    "catalogId": "200-ARCHIT",
+    "labNumber": "2",
+    "moduleId": "200-ARCHIT-MOD3",
+    "title": "Amazon VPC 인프라 구축",
+    "description": "VPC, 서브넷, 보안 그룹 및 기타 네트워킹 구성 요소 생성",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon VPC",
+      "Amazon EC2"
+    ]
+  },
+  {
+    "catalogId": "100-ACPEXX",
+    "labNumber": "1",
+    "moduleId": "100-ACPEXX-MOD1",
+    "title": "AWS Identity and Access Management 소개",
+    "description": "IAM 사용자 및 그룹 생성, 정책 연결",
+    "duration": "30분",
+    "difficulty": "초급",
+    "awsServices": [
+      "AWS IAM"
+    ]
+  },
+  {
+    "catalogId": "100-ACPEXX",
+    "labNumber": "2",
+    "moduleId": "100-ACPEXX-MOD3",
+    "title": "Amazon EC2 인스턴스에서 VPC 생성 및 웹 애플리케이션 시작",
+    "description": "VPC 환경 구성 및 해당 VPC에 웹 애플리케이션 배포",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon VPC",
+      "Amazon EC2"
+    ]
+  },
+  {
+    "catalogId": "100-MTMGES",
+    "labNumber": "1",
+    "moduleId": "100-MTMGES-MOD3",
+    "title": "AWS DMS를 사용한 데이터베이스 마이그레이션",
+    "description": "AWS Database Migration Service를 사용하여 온프레미스 데이터베이스를 AWS로 마이그레이션",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS DMS",
+      "Amazon RDS"
+    ]
+  },
+  {
+    "catalogId": "100-MTMGES",
+    "labNumber": "2",
+    "moduleId": "100-MTMGES-MOD4",
+    "title": "AWS MGN을 사용한 애플리케이션 마이그레이션",
+    "description": "AWS Application Migration Service를 사용하여 애플리케이션 마이그레이션 수행",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS MGN"
+    ]
+  },
+  {
+    "catalogId": "100-SECESS",
+    "labNumber": "1",
+    "moduleId": "100-SECESS-MOD3",
+    "title": "보안 정책 소개",
+    "description": "AWS IAM에서 보안 정책 생성 및 관리",
+    "duration": "30분",
+    "difficulty": "초급",
+    "awsServices": [
+      "AWS IAM"
+    ]
+  },
+  {
+    "catalogId": "100-SECESS",
+    "labNumber": "2",
+    "moduleId": "100-SECESS-MOD4",
+    "title": "보안 그룹으로 VPC리소스 보호",
+    "description": "보안 그룹을 구성하여 EC2 인스턴스 및 기타 VPC 리소스 보호",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon VPC",
+      "Amazon EC2"
+    ]
+  },
+  {
+    "catalogId": "100-TECESS",
+    "labNumber": "1",
+    "moduleId": "100-TECESS-MOD1",
+    "title": "AWS Identity and Access Management 소개",
+    "description": "IAM 사용자 생성 및 역할 정의",
+    "duration": "30분",
+    "difficulty": "초급",
+    "awsServices": [
+      "AWS IAM"
+    ]
+  },
+  {
+    "catalogId": "100-TECESS",
+    "labNumber": "2",
+    "moduleId": "100-TECESS-MOD3",
+    "title": "VPC를 생성하고 Amazon EC2에서 애플리케이션 시작",
+    "description": "VPC, 서브넷, 보안 그룹 구성 및 EC2 인스턴스 시작",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon VPC",
+      "Amazon EC2"
+    ]
+  },
+  {
+    "catalogId": "200-CSAWAF",
+    "labNumber": "1",
+    "moduleId": "200-CSAWAF-MOD2",
+    "title": "운영 우수성",
+    "description": "운영 우수성 원칙에 대한 Well-Architected 검토 수행",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Well-Architected Tool"
+    ]
+  },
+  {
+    "catalogId": "200-CSAWAF",
+    "labNumber": "2",
+    "moduleId": "200-CSAWAF-MOD3",
+    "title": "안정성",
+    "description": "안정성 원칙에 대한 Well-Architected 검토 수행",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Well-Architected Tool"
+    ]
+  },
+  {
+    "catalogId": "200-CSAWAFC",
+    "labNumber": "1",
+    "moduleId": "200-CSAWAFC-MOD2",
+    "title": "운영 우수성",
+    "description": "운영 우수성 원칙에 대한 심층 Well-Architected 검토 수행",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Well-Architected Tool",
+      "AWS CloudFormation"
+    ]
+  },
+  {
+    "catalogId": "200-CSAWAFC",
+    "labNumber": "2",
+    "moduleId": "200-CSAWAFC-MOD3",
+    "title": "안정성",
+    "description": "안정성 원칙에 대한 심층 Well-Architected 검토 수행",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Well-Architected Tool",
+      "Amazon CloudWatch"
+    ]
+  },
+  [
+    {
+      "catalogId": "300-ARAWAB",
+      "labNumber": "1",
+      "moduleId": "300-ARAWAB-2",
+      "title": "운영 우수성 원칙 검토 실습",
+      "description": "AWS Well-Architected Tool을 사용하여 운영 우수성 원칙 검토를 실행합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "300-ARAWAB",
+      "labNumber": "2",
+      "moduleId": "300-ARAWAB-2",
+      "title": "보안 원칙 검토 실습",
+      "description": "AWS Well-Architected Tool을 사용하여 보안 원칙 검토를 실행합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "300-ARAWAB",
+      "labNumber": "3",
+      "moduleId": "300-ARAWAB-3",
+      "title": "위험 우선순위 지정 실습",
+      "description": "식별된 위험에 대한 우선순위 지정 및 해결 방안 수립",
+      "duration": "60분",
+      "difficulty": "고급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "300-SMDS",
+      "labNumber": "1",
+      "moduleId": "300-SMDS-2",
+      "title": "SageMaker Data Wrangler를 사용한 데이터 분석 및 준비",
+      "description": "SageMaker Data Wrangler를 사용하여 데이터를 분석하고 준비합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon SageMaker Data Wrangler"
+      ]
+    },
+    {
+      "catalogId": "300-SMDS",
+      "labNumber": "2",
+      "moduleId": "300-SMDS-2",
+      "title": "Amazon EMR을 사용한 대규모 데이터 분석 및 준비",
+      "description": "Amazon EMR을 사용하여 대규모 데이터셋을 분석하고 처리합니다.",
+      "duration": "75분",
+      "difficulty": "고급",
+      "awsServices": [
+        "Amazon EMR",
+        "Amazon S3"
+      ]
+    },
+    {
+      "catalogId": "300-SMDS",
+      "labNumber": "3",
+      "moduleId": "300-SMDS-2",
+      "title": "SageMaker Processing과 SageMaker Python SDK를 사용한 데이터 처리",
+      "description": "SageMaker Processing을 사용하여 데이터를 전처리합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon SageMaker Processing"
+      ]
+    },
+    {
+      "catalogId": "300-SMDS",
+      "labNumber": "4",
+      "moduleId": "300-SMDS-3",
+      "title": "SageMaker Experiments를 사용한 학습 및 튜닝 모델의 반복 추적",
+      "description": "SageMaker Experiments를 사용하여 모델 훈련 반복을 추적합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon SageMaker Experiments"
+      ]
+    },
+    {
+      "catalogId": "300-SMDS",
+      "labNumber": "5",
+      "moduleId": "300-SMDS-3",
+      "title": "SageMaker Debugger를 사용한 경고 분석, 탐지 및 설정",
+      "description": "SageMaker Debugger를 사용하여 모델 훈련 과정의 문제점을 진단합니다.",
+      "duration": "60분",
+      "difficulty": "고급",
+      "awsServices": [
+        "Amazon SageMaker Debugger"
+      ]
+    },
+    {
+      "catalogId": "300-SMDS",
+      "labNumber": "6",
+      "moduleId": "300-SMDS-3",
+      "title": "SageMaker Clarify를 사용하여 편향 식별",
+      "description": "SageMaker Clarify를 사용하여 ML 모델의 편향을 식별합니다.",
+      "duration": "60분",
+      "difficulty": "고급",
+      "awsServices": [
+        "Amazon SageMaker Clarify"
+      ]
+    },
+    {
+      "catalogId": "200-ARCHI",
+      "labNumber": "1",
+      "moduleId": "200-ARCHI-1",
+      "title": "AWS API 도구를 사용한 EC2 인스턴스 배포 살펴보기",
+      "description": "AWS Management Console, AWS CLI, AWS CloudFormation을 사용하여 EC2 인스턴스를 배포합니다.",
+      "duration": "45분",
+      "difficulty": "초급",
+      "awsServices": [
+        "Amazon EC2",
+        "AWS CLI",
+        "AWS CloudFormation"
+      ]
+    },
+    {
+      "catalogId": "200-ARCHI",
+      "labNumber": "2",
+      "moduleId": "200-ARCHI-3",
+      "title": "Amazon VPC 인프라 구축",
+      "description": "VPC, 서브넷, 보안 그룹 및 기타 네트워킹 구성 요소를 생성합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon VPC",
+        "Amazon EC2"
+      ]
+    },
+    {
+      "catalogId": "200-ARCHI",
+      "labNumber": "3",
+      "moduleId": "200-ARCHI-5",
+      "title": "Amazon VPC 인프라에 데이터베이스 계층 생성",
+      "description": "VPC 환경에서 RDS 인스턴스를 배포하고 구성합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon RDS",
+        "Amazon VPC"
+      ]
+    },
+    {
+      "catalogId": "200-ARCHI",
+      "labNumber": "4",
+      "moduleId": "200-ARCHI-5",
+      "title": "Amazon VPC에서 고가용성 구성",
+      "description": "다중 AZ 환경에서 고가용성 아키텍처를 구성합니다.",
+      "duration": "75분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon EC2",
+        "Amazon VPC",
+        "Elastic Load Balancing",
+        "Amazon Auto Scaling"
+      ]
+    },
+    {
+      "catalogId": "100-AWSCPE",
+      "labNumber": "1",
+      "moduleId": "100-AWSCPE-1",
+      "title": "AWS Identity and Access Management 소개",
+      "description": "IAM 사용자 및 그룹을 생성하고 정책을 연결합니다.",
+      "duration": "30분",
+      "difficulty": "초급",
+      "awsServices": [
+        "AWS IAM"
+      ]
+    },
+    {
+      "catalogId": "100-AWSCPE",
+      "labNumber": "2",
+      "moduleId": "100-AWSCPE-3",
+      "title": "Amazon EC2 인스턴스에서 VPC 생성 및 웹 애플리케이션 시작",
+      "description": "VPC 환경을 구성하고 해당 VPC에 웹 애플리케이션을 배포합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon VPC",
+        "Amazon EC2"
+      ]
+    },
+    {
+      "catalogId": "100-AWSCPE",
+      "labNumber": "3",
+      "moduleId": "100-AWSCPE-5",
+      "title": "Amazon S3 버킷과 DynamoDB 테이블을 사용하도록 웹 애플리케이션 구성",
+      "description": "웹 애플리케이션이 S3에 저장된 정적 콘텐츠와 DynamoDB에 저장된 동적 데이터를 사용하도록 구성합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon S3",
+        "Amazon DynamoDB",
+        "Amazon EC2"
+      ]
+    },
+    {
+      "catalogId": "100-AWSCPE",
+      "labNumber": "4",
+      "moduleId": "100-AWSCPE-5",
+      "title": "애플리케이션 고가용성 구성",
+      "description": "로드 밸런서와 자동 확장을 사용하여 웹 애플리케이션의 고가용성을 구성합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon EC2",
+        "Amazon Auto Scaling",
+        "Elastic Load Balancing"
+      ]
+    },
+    {
+      "catalogId": "100-MIGESS",
+      "labNumber": "1",
+      "moduleId": "100-MIGESS-3",
+      "title": "AWS DMS를 사용한 데이터베이스 마이그레이션",
+      "description": "AWS Database Migration Service를 사용하여 온프레미스 데이터베이스를 AWS로 마이그레이션합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS DMS",
+        "Amazon RDS"
+      ]
+    },
+    {
+      "catalogId": "100-MIGESS",
+      "labNumber": "2",
+      "moduleId": "100-MIGESS-4",
+      "title": "AWS MGN을 사용한 애플리케이션 마이그레이션",
+      "description": "AWS Application Migration Service를 사용하여 애플리케이션 마이그레이션을 수행합니다.",
+      "duration": "75분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS MGN"
+      ]
+    },
+    {
+      "catalogId": "100-SECESS",
+      "labNumber": "1",
+      "moduleId": "100-SECESS-3",
+      "title": "보안 정책 소개",
+      "description": "AWS IAM에서 보안 정책을 생성하고 관리합니다.",
+      "duration": "30분",
+      "difficulty": "초급",
+      "awsServices": [
+        "AWS IAM"
+      ]
+    },
+    {
+      "catalogId": "100-SECESS",
+      "labNumber": "2",
+      "moduleId": "100-SECESS-4",
+      "title": "보안 그룹으로 VPC 리소스 보호",
+      "description": "보안 그룹을 구성하여 EC2 인스턴스 및 기타 VPC 리소스를 보호합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon VPC",
+        "Amazon EC2"
+      ]
+    },
+    {
+      "catalogId": "100-SECESS",
+      "labNumber": "3",
+      "moduleId": "100-SECESS-5",
+      "title": "AWS Config 및 AWS Lambda로 인시던트 대응 자동화",
+      "description": "AWS Config 규칙과 AWS Lambda를 사용하여 인시던트 대응을 자동화합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Config",
+        "AWS Lambda",
+        "Amazon SNS"
+      ]
+    },
+    {
+      "catalogId": "100-TECHESS",
+      "labNumber": "1",
+      "moduleId": "100-TECHESS-1",
+      "title": "AWS Identity and Access Management 소개",
+      "description": "IAM 사용자를 생성하고 역할을 정의합니다.",
+      "duration": "30분",
+      "difficulty": "초급",
+      "awsServices": [
+        "AWS IAM"
+      ]
+    },
+    {
+      "catalogId": "100-TECHESS",
+      "labNumber": "2",
+      "moduleId": "100-TECHESS-3",
+      "title": "VPC를 생성하고 Amazon EC2에서 애플리케이션 시작",
+      "description": "VPC, 서브넷, 보안 그룹을 구성하고 EC2 인스턴스를 시작합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon VPC",
+        "Amazon EC2"
+      ]
+    },
+    {
+      "catalogId": "100-TECHESS",
+      "labNumber": "3",
+      "moduleId": "100-TECHESS-5",
+      "title": "Amazon S3 버킷과 DynamoDB 테이블을 사용하도록 웹 애플리케이션 구성",
+      "description": "웹 애플리케이션을 S3 및 DynamoDB와 통합합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon S3",
+        "Amazon DynamoDB",
+        "Amazon EC2"
+      ]
+    },
+    {
+      "catalogId": "100-TECHESS",
+      "labNumber": "4",
+      "moduleId": "100-TECHESS-6",
+      "title": "애플리케이션 고가용성 구성",
+      "description": "로드 밸런서, 자동 스케일링 그룹 및 다중 AZ 배포를 사용하여 애플리케이션의 고가용성을 구성합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Elastic Load Balancing",
+        "Amazon Auto Scaling",
+        "Amazon EC2"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAF",
+      "labNumber": "1",
+      "moduleId": "200-CSAWAF-2",
+      "title": "운영 우수성",
+      "description": "운영 우수성 원칙에 대한 Well-Architected 검토를 수행합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAF",
+      "labNumber": "2",
+      "moduleId": "200-CSAWAF-3",
+      "title": "안정성",
+      "description": "안정성 원칙에 대한 Well-Architected 검토를 수행합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAF",
+      "labNumber": "3",
+      "moduleId": "200-CSAWAF-4",
+      "title": "보안",
+      "description": "보안 원칙에 대한 Well-Architected 검토를 수행합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAF",
+      "labNumber": "4",
+      "moduleId": "200-CSAWAF-5",
+      "title": "성능 효율성",
+      "description": "성능 효율성 원칙에 대한 Well-Architected 검토를 수행합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAF",
+      "labNumber": "5",
+      "moduleId": "200-CSAWAF-6",
+      "title": "비용 최적화",
+      "description": "비용 최적화 원칙에 대한 Well-Architected 검토를 수행합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAFC",
+      "labNumber": "1",
+      "moduleId": "200-CSAWAFC-2",
+      "title": "운영 우수성",
+      "description": "운영 우수성 원칙에 대한 심층 Well-Architected 검토를 수행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool",
+        "AWS CloudFormation"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAFC",
+      "labNumber": "2",
+      "moduleId": "200-CSAWAFC-3",
+      "title": "안정성",
+      "description": "안정성 원칙에 대한 심층 Well-Architected 검토를 수행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool",
+        "Amazon CloudWatch"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAFC",
+      "labNumber": "3",
+      "moduleId": "200-CSAWAFC-4",
+      "title": "보안",
+      "description": "보안 원칙에 대한 심층 Well-Architected 검토를 수행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool",
+        "AWS IAM",
+        "AWS KMS"
+      ]
+    },
+    {
+      "catalogId": "200-CSAWAFC",
+      "labNumber": "4",
+      "moduleId": "200-CSAWAFC-5",
+      "title": "성능 효율성",
+      "description": "성능 효율성 원칙에 대한 심층 Well-Architected 검토를 수행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Well-Architected Tool",
+        "Amazon EC2",
+        "Amazon RDS"
+      ]
+    },
+    {
+      "catalogId": "200-DABATC",
+      "labNumber": "1",
+      "moduleId": "200-DABATC-3",
+      "title": "Amazon EMR 기반 Apache Spark를 사용한 대기 시간이 짧은 데이터 분석",
+      "description": "Amazon EMR에서 Apache Spark를 사용하여 실시간에 가까운 데이터 분석을 수행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon EMR",
+        "Apache Spark",
+        "Amazon S3"
+      ]
+    },
+    {
+      "catalogId": "200-DABATC",
+      "labNumber": "2",
+      "moduleId": "200-DABATC-4",
+      "title": "Amazon EMR을 Hive와 함께 사용하여 배치 데이터 처리",
+      "description": "Apache Hive와 Amazon EMR을 사용하여 배치 데이터 처리 작업을 수행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon EMR",
+        "Apache Hive",
+        "Amazon S3"
+      ]
+    },
+    {
+      "catalogId": "200-DABATC",
+      "labNumber": "3",
+      "moduleId": "200-DABATC-5",
+      "title": "AWS Step Functions를 사용하여 Spark에서 데이터 처리 오케스트레이션",
+      "description": "AWS Step Functions를 사용하여 Spark 데이터 처리 워크플로우를 오케스트레이션합니다.",
+      "duration": "75분",
+      "difficulty": "고급",
+      "awsServices": [
+        "AWS Step Functions",
+        "Amazon EMR",
+        "Apache Spark",
+        "AWS Lambda"
+      ]
+    },
+    {
+      "catalogId": "200-DAREDS",
+      "labNumber": "1",
+      "moduleId": "200-DAREDS-2",
+      "title": "Amazon Redshift 클러스터에서 데이터 로드 및 쿼리",
+      "description": "Amazon Redshift 클러스터를 생성하고, 데이터를 로드하고, 쿼리를 실행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon Redshift",
+        "Amazon S3"
+      ]
+    },
+    {
+      "catalogId": "200-DAREDS",
+      "labNumber": "2",
+      "moduleId": "200-DAREDS-3",
+      "title": "Amazon Redshift Spectrum을 사용한 데이터 분석",
+      "description": "Amazon Redshift Spectrum을 사용하여 S3에 저장된 데이터를 분석합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon Redshift Spectrum",
+        "Amazon S3",
+        "Amazon Redshift"
+      ]
+    },
+    {
+      "catalogId": "200-DAREDS",
+      "labNumber": "3",
+      "moduleId": "200-DAREDS-4",
+      "title": "Amazon Redshift에서 데이터 변환 및 쿼리 실행",
+      "description": "Amazon Redshift에서 데이터 변환 작업을 수행하고 고급 쿼리를 실행합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon Redshift",
+        "Amazon S3"
+      ]
+    },
+    {
+      "catalogId": "200-ANBDLK",
+      "labNumber": "1",
+      "moduleId": "200-ANBDLK-2",
+      "title": "간단한 데이터 레이크 설정",
+      "description": "Amazon S3, AWS Glue 및 Amazon Athena를 사용하여 기본 데이터 레이크를 설정합니다.",
+      "duration": "45분",
+      "difficulty": "초급",
+      "awsServices": [
+        "Amazon S3",
+        "AWS Glue",
+        "Amazon Athena"
+      ]
+    },
+    {
+      "catalogId": "200-ANBDLK",
+      "labNumber": "2",
+      "moduleId": "200-ANBDLK-4",
+      "title": "AWS Lake Formation을 사용하여 데이터 레이크 구축",
+      "description": "AWS Lake Formation을 사용하여 통합 권한 모델을 갖춘 데이터 레이크를 구축합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Lake Formation",
+        "Amazon S3",
+        "AWS Glue"
+      ]
+    },
+    {
+      "catalogId": "200-ANBDLK",
+      "labNumber": "3",
+      "moduleId": "200-ANBDLK-5",
+      "title": "AWS Lake Formation 블루프린트를 사용하여 데이터 레이크 생성 자동화",
+      "description": "AWS Lake Formation 블루프린트를 사용하여 데이터 레이크 생성을 자동화합니다.",
+      "duration": "60분",
+      "difficulty": "중급",
+      "awsServices": [
+        "AWS Lake Formation",
+        "AWS Glue",
+        "Amazon S3"
+      ]
+    },
+    {
+      "catalogId": "200-ANBDLK",
+      "labNumber": "4",
+      "moduleId": "200-ANBDLK-5",
+      "title": "Amazon QuickSight를 사용하여 데이터 시각화",
+      "description": "Amazon QuickSight를 사용하여 데이터 레이크의 데이터를 시각화합니다.",
+      "duration": "45분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon QuickSight",
+        "Amazon Athena",
+        "Amazon S3"
+      ]
+    },
+    {
+      "catalogId": "200-DBNSQL",
+      "labNumber": "1",
+      "moduleId": "200-DBNSQL-2",
+      "title": "Amazon DynamoDB 테이블, 인덱스 및 변경 스트림을 사용하여 플릿 및 이동 데이터 관리 시스템 구현",
+      "description": "Amazon DynamoDB를 사용하여 플릿 및 이동 데이터 관리 시스템을 구현합니다.",
+      "duration": "75분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon DynamoDB",
+        "AWS Lambda"
+      ]
+    },
+    {
+      "catalogId": "200-DBNSQL",
+      "labNumber": "2",
+      "moduleId": "200-DBNSQL-3",
+      "title": "Amazon DocumentDB에서 사용자 프로파일 데이터 관리 워크로드 구현 및 최적화",
+      "description": "Amazon DocumentDB를 사용하여 사용자 프로필 데이터 관리 워크로드를 구현하고 최적화합니다.",
+      "duration": "75분",
+      "difficulty": "중급",
+      "awsServices": [
+        "Amazon DocumentDB",
+        "AWS Lambda"
+      ]
+    },
+    {
+      "catalogId": "200-DBNSQL",
+      "labNumber": "3",
+      "moduleId": "200-DBNSQL-4",
+      "title": "Amazon ElastiCache for Redis를 사용하여 지리 공간 자전거 검색, 사용자 프로파일 캐싱 및 순위표 구현",
+      "description": "Amazon ElastiCache for Redis를 사용하여 지리 공간 검색, 캐싱 및 순위표 기능을 구현합니다.",
+      "duration": "75분",
+      "difficulty": "고급",
+      "awsServices": [
+        "Amazon ElastiCache",
+        "AWS Lambda",
+        "Amazon API Gateway"
+      ]
+    }
+  ],
+  {
+    "catalogId": "200-SISECO-",
+    "labNumber": "1",
+    "moduleId": "200-SISECO-1",
+    "title": "교차 계정 액세스",
+    "description": "AWS Organizations 및 IAM 역할을 사용하여 계정 간 액세스를 구성합니다.",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS IAM",
+      "AWS Organizations"
+    ]
+  },
+  {
+    "catalogId": "200-SISECO",
+    "labNumber": "2",
+    "moduleId": "200-SISECO-3",
+    "title": "AWS Systems Manager 및 Amazon Inspector 사용",
+    "description": "AWS Systems Manager와 Amazon Inspector를 사용하여 애플리케이션 보안을 강화합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Systems Manager",
+      "Amazon Inspector",
+      "Amazon EC2"
+    ]
+  },
+  {
+    "catalogId": "200-SISECO",
+    "labNumber": "3",
+    "moduleId": "200-SISECO-7",
+    "title": "서버 로그 분석 – 로그 수집",
+    "description": "서버 로그를 수집하고 분석하기 위한 로깅 인프라를 구축합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon CloudWatch Logs",
+      "AWS CloudTrail",
+      "Amazon S3"
+    ]
+  },
+  {
+    "catalogId": "200-SISECO",
+    "labNumber": "4",
+    "moduleId": "200-SISECO-8",
+    "title": "서버 로그 분석 – 로그 분석",
+    "description": "수집된 로그를 분석하여 보안 인사이트를 도출합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon Athena",
+      "Amazon Kinesis",
+      "Amazon CloudWatch Logs"
+    ]
+  },
+  {
+    "catalogId": "200-SISECO",
+    "labNumber": "5",
+    "moduleId": "200-SISECO-11",
+    "title": "ADFS를 사용한 연동 액세스",
+    "description": "Active Directory Federation Services를 사용하여 AWS 리소스에 대한 연동 액세스를 구성합니다.",
+    "duration": "75분",
+    "difficulty": "고급",
+    "awsServices": [
+      "AWS IAM",
+      "AWS Directory Service",
+      "AWS Single Sign-On"
+    ]
+  },
+  {
+    "catalogId": "200-SISECO",
+    "labNumber": "6",
+    "moduleId": "200-SISECO-12",
+    "title": "AWS Lambda 및 AWS Config를 사용한 모니터링 및 대응",
+    "description": "AWS Lambda 함수와 AWS Config를 사용하여 보안 이벤트를 모니터링하고 자동으로 대응합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Lambda",
+      "AWS Config",
+      "Amazon SNS"
+    ]
+  },
+  {
+    "catalogId": "200-SISECO",
+    "labNumber": "7",
+    "moduleId": "200-SISECO-13",
+    "title": "AWS KMS 사용",
+    "description": "AWS Key Management Service를 사용하여 데이터 암호화 관리를 구성합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS KMS",
+      "Amazon S3",
+      "AWS Secrets Manager"
+    ]
+  },
+  {
+    "catalogId": "200-SISECO",
+    "labNumber": "8",
+    "moduleId": "200-SISECO-14",
+    "title": "AWS Service Catalog를 사용하여 AWS에서 보안 자동화",
+    "description": "AWS Service Catalog를 사용하여 표준화되고 보안이 강화된 서비스 및 리소스 프로비저닝을 자동화합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Service Catalog",
+      "AWS CloudFormation",
+      "AWS IAM"
+    ]
+  },
+  {
+    "catalogId": "200-SVDVSS",
+    "labNumber": "1",
+    "moduleId": "200-SVDVSS-1",
+    "title": "간단한 서버리스 애플리케이션 배포",
+    "description": "AWS SAM을 사용하여 간단한 서버리스 애플리케이션을 배포합니다.",
+    "duration": "60분",
+    "difficulty": "초급",
+    "awsServices": [
+      "AWS Lambda",
+      "Amazon API Gateway",
+      "AWS SAM"
+    ]
+  },
+  {
+    "catalogId": "200-SVDVSS",
+    "labNumber": "2",
+    "moduleId": "200-SVDVSS-4",
+    "title": "Amazon EventBridge를 사용한 메시지 팬아웃",
+    "description": "Amazon EventBridge를 사용하여 이벤트 기반 아키텍처에서 메시지 팬아웃을 구현합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon EventBridge",
+      "AWS Lambda",
+      "Amazon SNS"
+    ]
+  },
+  {
+    "catalogId": "200-SVDVSS",
+    "labNumber": "3",
+    "moduleId": "200-SVDVSS-6",
+    "title": "AWS Step Functions를 사용한 워크플로 오케스트레이션",
+    "description": "AWS Step Functions를 사용하여 복잡한 서버리스 워크플로를 오케스트레이션합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Step Functions",
+      "AWS Lambda",
+      "Amazon S3"
+    ]
+  },
+  {
+    "catalogId": "200-SVDVSS",
+    "labNumber": "4",
+    "moduleId": "200-SVDVSS-9",
+    "title": "관찰 가능성 및 모니터링",
+    "description": "CloudWatch, X-Ray 및 기타 도구를 사용하여 서버리스 애플리케이션에 관찰 가능성을 추가합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon CloudWatch",
+      "AWS X-Ray",
+      "AWS Lambda"
+    ]
+  },
+  {
+    "catalogId": "200-DEVOPS",
+    "labNumber": "1",
+    "moduleId": "200-DEVOPS-2",
+    "title": "AWS CLI 실습",
+    "description": "AWS Command Line Interface를 사용하여 다양한 AWS 리소스를 관리합니다.",
+    "duration": "45분",
+    "difficulty": "초급",
+    "awsServices": [
+      "AWS CLI",
+      "Amazon EC2",
+      "Amazon S3"
+    ]
+  },
+  {
+    "catalogId": "200-DEVOPS",
+    "labNumber": "2",
+    "moduleId": "200-DEVOPS-3",
+    "title": "AWS Config를 사용하여 자동화된 AWS IAM 정책 테스트를 구축 및 실행",
+    "description": "AWS Config를 사용하여 IAM 정책의 규정 준수 테스트 자동화를 구축합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Config",
+      "AWS IAM",
+      "AWS Lambda"
+    ]
+  },
+  {
+    "catalogId": "200-DEVOPS",
+    "labNumber": "3",
+    "moduleId": "200-DEVOPS-5",
+    "title": "AWS CloudFormation 템플릿 실습",
+    "description": "AWS CloudFormation을 사용하여 인프라를 코드로 정의하고 배포합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS CloudFormation",
+      "Amazon EC2",
+      "Amazon VPC"
+    ]
+  },
+  {
+    "catalogId": "200-DEVOPS",
+    "labNumber": "4",
+    "moduleId": "200-DEVOPS-7",
+    "title": "AWS CodeStar를 사용하여 지속적 전달 도구 체인 생성",
+    "description": "AWS CodeStar를 사용하여 완전한 CI/CD 파이프라인을 구축합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS CodeStar",
+      "AWS CodeCommit",
+      "AWS CodeBuild",
+      "AWS CodeDeploy",
+      "AWS CodePipeline"
+    ]
+  },
+  {
+    "catalogId": "100-CEAIEX",
+    "labNumber": "1",
+    "moduleId": "100-CEAIEX-3",
+    "title": "Amazon Bedrock을 사용한 슬로건 생성 최적화",
+    "description": "Amazon Bedrock을 사용하여 프롬프트 엔지니어링과 슬로건 생성을 최적화합니다.",
+    "duration": "45분",
+    "difficulty": "초급",
+    "awsServices": [
+      "Amazon Bedrock"
+    ]
+  },
+  {
+    "catalogId": "100-CEAIEX",
+    "labNumber": "2",
+    "moduleId": "100-CEAIEX-4",
+    "title": "Amazon Bedrock Guardrails를 통한 책임감 있는 AI 원칙 구현",
+    "description": "Amazon Bedrock Guardrails를 사용하여 생성형 AI 모델에 안전장치를 구현합니다.",
+    "duration": "45분",
+    "difficulty": "초급",
+    "awsServices": [
+      "Amazon Bedrock"
+    ]
+  },
+  {
+    "catalogId": "100-CEAIEX",
+    "labNumber": "3",
+    "moduleId": "100-CEAIEX-7",
+    "title": "생성형 AI를 사용한 프로젝트 계획 수립",
+    "description": "생성형 AI를 사용하여 프로젝트 계획을 수립하고 문서를 생성합니다.",
+    "duration": "60분",
+    "difficulty": "초급",
+    "awsServices": [
+      "Amazon Bedrock",
+      "Amazon Q Business"
+    ]
+  },
+  {
+    "catalogId": "200-MTMAWS",
+    "labNumber": "1",
+    "moduleId": "200-MTMAWS-4",
+    "title": "온프레미스 네트워크 및 디렉터리 서비스를 AWS에 연결",
+    "description": "온프레미스 네트워크와 디렉터리 서비스를 AWS 환경에 연결합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Directory Service",
+      "AWS Direct Connect",
+      "Amazon VPC"
+    ]
+  },
+  {
+    "catalogId": "200-MTMAWS",
+    "labNumber": "2",
+    "moduleId": "200-MTMAWS-6",
+    "title": "마이그레이션에 필요한 애플리케이션 데이터 수집",
+    "description": "AWS Application Discovery Service를 사용하여 마이그레이션 계획에 필요한 애플리케이션 데이터를 수집합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Application Discovery Service",
+      "AWS Migration Hub"
+    ]
+  },
+  {
+    "catalogId": "200-MTMAWS",
+    "labNumber": "3",
+    "moduleId": "200-MTMAWS-9",
+    "title": "애플리케이션을 AWS로 마이그레이션",
+    "description": "AWS Application Migration Service를 사용하여 애플리케이션을 AWS로 마이그레이션합니다.",
+    "duration": "90분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Application Migration Service",
+      "Amazon EC2",
+      "Amazon VPC"
+    ]
+  },
+  {
+    "catalogId": "200-MTMAWS",
+    "labNumber": "4",
+    "moduleId": "200-MTMAWS-10",
+    "title": "기존 데이터베이스를 Amazon Aurora로 마이그레이션",
+    "description": "AWS Database Migration Service를 사용하여 기존 데이터베이스를 Amazon Aurora로 마이그레이션합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS Database Migration Service",
+      "Amazon Aurora",
+      "Amazon RDS"
+    ]
+  },
+  {
+    "catalogId": "200-MTMAWS",
+    "labNumber": "5",
+    "moduleId": "200-MTMAWS-13",
+    "title": "Amazon S3 및 Amazon ECS를 사용하여 애플리케이션 최적화",
+    "description": "마이그레이션된 애플리케이션을 Amazon S3 및 Amazon ECS를 사용하여 현대화하고 최적화합니다.",
+    "duration": "90분",
+    "difficulty": "고급",
+    "awsServices": [
+      "Amazon S3",
+      "Amazon ECS",
+      "AWS Lambda"
+    ]
+  },
+  {
+    "catalogId": "200-MLPOPS",
+    "labNumber": "1",
+    "moduleId": "200-MLPOPS-2",
+    "title": "기존 보유 알고리즘을 MLPOPS 파이프라인에 가져오기",
+    "description": "기존 알고리즘을 MLPOPS 파이프라인에 통합하는 방법을 학습합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker",
+      "AWS CodeCommit",
+      "AWS CodePipeline"
+    ]
+  },
+  {
+    "catalogId": "200-MLPOPS",
+    "labNumber": "2",
+    "moduleId": "200-MLPOPS-2",
+    "title": "AWS CodeBuild를 사용하여 기계 학습 모델 코딩 및 제공",
+    "description": "AWS CodeBuild를 사용하여 기계 학습 모델을 구축하고 제공하는 방법을 학습합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "AWS CodeBuild",
+      "Amazon SageMaker",
+      "Amazon ECR"
+    ]
+  },
+  {
+    "catalogId": "200-MLPOPS",
+    "labNumber": "3",
+    "moduleId": "200-MLPOPS-3",
+    "title": "모델을 프로덕션에 배포",
+    "description": "Amazon SageMaker를 사용하여 기계 학습 모델을 프로덕션 환경에 배포합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker",
+      "AWS Lambda",
+      "Amazon API Gateway"
+    ]
+  },
+  {
+    "catalogId": "200-MLPOPS",
+    "labNumber": "4",
+    "moduleId": "200-MLPOPS-3",
+    "title": "A/B 테스트 수행",
+    "description": "Amazon SageMaker를 사용하여 프로덕션 환경에서 모델 A/B 테스트를 수행합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker",
+      "Amazon CloudWatch"
+    ]
+  },
+  {
+    "catalogId": "200-MLPOPS",
+    "labNumber": "5",
+    "moduleId": "200-MLPOPS-4",
+    "title": "파이프라인 문제 해결",
+    "description": "MLPOPS 파이프라인의 문제를 식별하고 해결합니다.",
+    "duration": "60분",
+    "difficulty": "고급",
+    "awsServices": [
+      "Amazon SageMaker",
+      "AWS CloudTrail",
+      "Amazon CloudWatch"
+    ]
+  },
+  {
+    "catalogId": "200-MLPOPS",
+    "labNumber": "6",
+    "moduleId": "200-MLPOPS-4",
+    "title": "기계 학습 모델 모니터링",
+    "description": "프로덕션 환경에서 기계 학습 모델의 성능을 모니터링합니다.",
+    "duration": "75분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker Model Monitor",
+      "Amazon CloudWatch",
+      "AWS Lambda"
+    ]
+  },
+  {
+    "catalogId": "200-NWCNAN",
+    "labNumber": "1",
+    "moduleId": "200-NWCNAN-1",
+    "title": "다중 AZ VPC 아키텍처 구축",
+    "description": "고가용성을 위한 다중 가용 영역 VPC 아키텍처를 구축합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon VPC",
+      "Amazon EC2",
+      "Amazon Route Tables"
+    ]
+  },
+  {
+    "catalogId": "200-NWCNAN",
+    "labNumber": "2",
+    "moduleId": "200-NWCNAN-3",
+    "title": "Amazon CloudFront를 사용하여 성능 가속화",
+    "description": "Amazon CloudFront를 사용하여 웹 애플리케이션의 성능을 개선합니다.",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon CloudFront",
+      "Amazon S3",
+      "Amazon Route 53"
+    ]
+  },
+  {
+    "catalogId": "200-NWCNAN",
+    "labNumber": "3",
+    "moduleId": "200-NWCNAN-4",
+    "title": "내결함성 및 글로벌 트래픽 최적화 달성",
+    "description": "Amazon Route 53과 AWS Global Accelerator를 사용하여 내결함성 있는 글로벌 애플리케이션을 구축합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon Route 53",
+      "AWS Global Accelerator",
+      "Elastic Load Balancing"
+    ]
+  },
+  {
+    "catalogId": "200-PDSSMK",
+    "labNumber": "1",
+    "moduleId": "200-PDSSMK-2",
+    "title": "데이터 로드 및 시각화",
+    "description": "데이터를 로드하고 시각화하여 기본 패턴과 관계를 이해합니다.",
+    "duration": "45분",
+    "difficulty": "초급",
+    "awsServices": [
+      "Amazon SageMaker",
+      "Amazon S3"
+    ]
+  },
+  {
+    "catalogId": "200-PDSSMK",
+    "labNumber": "2",
+    "moduleId": "200-PDSSMK-3",
+    "title": "하이퍼파라미터 튜닝 작업",
+    "description": "Amazon SageMaker의 자동 하이퍼파라미터 튜닝 기능을 사용하여 모델 성능을 최적화합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker"
+    ]
+  },
+  {
+    "catalogId": "200-PDSSMK",
+    "labNumber": "3",
+    "moduleId": "200-PDSSMK-6",
+    "title": "애플리케이션 Auto Scaling",
+    "description": "Amazon SageMaker 엔드포인트에 Auto Scaling을 구성하여 트래픽 변동에 대응합니다.",
+    "duration": "45분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon SageMaker",
+      "AWS Auto Scaling"
+    ]
+  },
+  {
+    "catalogId": "200-PIAC",
+    "labNumber": "1",
+    "moduleId": "200-PIAC-3",
+    "title": "Terraform 개발환경 구성 및 단일 서버 배포",
+    "description": "Terraform 개발 환경을 구성하고 단일 EC2 인스턴스를 배포합니다.",
+    "duration": "45분",
+    "difficulty": "초급",
+    "awsServices": [
+      "Amazon EC2",
+      "Amazon VPC"
+    ]
+  },
+  {
+    "catalogId": "200-PIAC",
+    "labNumber": "2",
+    "moduleId": "200-PIAC-5",
+    "title": "Terraform을 사용하여 VPC 배포",
+    "description": "Terraform을 사용하여 사용자 지정 VPC와 관련 리소스를 배포합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon VPC",
+      "Amazon EC2",
+      "Amazon Route Tables"
+    ]
+  },
+  {
+    "catalogId": "200-PIAC",
+    "labNumber": "3",
+    "moduleId": "200-PIAC-6",
+    "title": "Terraform을 사용하여 3계층 Architecture 배포",
+    "description": "Terraform을 사용하여 웹, 애플리케이션 및 데이터베이스 계층이 포함된 완전한 3계층 아키텍처를 배포합니다.",
+    "duration": "90분",
+    "difficulty": "고급",
+    "awsServices": [
+      "Amazon EC2",
+      "Amazon RDS",
+      "Elastic Load Balancing",
+      "Amazon VPC"
+    ]
+  },
+  {
+    "catalogId": "200-COREKS",
+    "labNumber": "1",
+    "moduleId": "200-COREKS-2",
+    "title": "Kubernetes Pod 배포",
+    "description": "Amazon EKS 클러스터에서 기본 Kubernetes Pod를 배포합니다.",
+    "duration": "45분",
+    "difficulty": "초급",
+    "awsServices": [
+      "Amazon EKS",
+      "Amazon EC2"
+    ]
+  },
+  {
+    "catalogId": "200-COREKS",
+    "labNumber": "2",
+    "moduleId": "200-COREKS-4",
+    "title": "애플리케이션 배포",
+    "description": "Amazon EKS 클러스터에 컨테이너화된 애플리케이션을 배포합니다.",
+    "duration": "60분",
+    "difficulty": "중급",
+    "awsServices": [
+      "Amazon EKS",
+      "Amazon ECR",
+      "AWS Fargate"
+    ]
+  }
+]

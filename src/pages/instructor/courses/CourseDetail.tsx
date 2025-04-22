@@ -3,8 +3,6 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import MainLayout from '@layouts/MainLayout';
-import { generateClient, GraphQLResult } from 'aws-amplify/api';
 
 import { 
   Container, 
@@ -19,7 +17,13 @@ import {
   Tabs,
   ColumnLayout
 } from '@cloudscape-design/components';
-import { client } from '../../../graphql/client';
+
+import { 
+  getCourse, 
+} from '@api/courses';
+import { 
+  Course
+} from '@api/types';
 
 // StatusIndicator의 타입 정의
 type StatusIndicatorType = "success" | "warning" | "error" | "info" | "stopped" | "in-progress" | "loading";
@@ -39,7 +43,8 @@ interface AssessmentItem {
 const CourseDetail: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
-  const [course, setCourse] = useState<any>(null);
+  // Course 타입 사용
+  const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTabId, setActiveTabId] = useState('overview');
@@ -98,48 +103,17 @@ const CourseDetail: React.FC = () => {
       try {
         setLoading(true);
         
-        // 변수를 이 스코프에서 선언하여 접근 가능하게 만듦
-        let courseData = null;
-        
         try {
-          const result = await client.graphql({
-            query: `
-              query GetCourse(\$courseId: ID!) {
-                getCourse(courseId: \$courseId) {
-                  courseId
-                  title
-                  description
-                  status
-                  startDate
-                  endDate
-                  location
-                  customerId
-                  customerName
-                  instructor
-                  assessments {
-                    items {
-                      id
-                      name
-                      type
-                      status
-                    }
-                  }
-                }
-              }
-            `,
-            variables: { courseId }
-          }) as any; // GraphQLResult 대신 any 사용
+          // API 함수 사용하여 데이터 가져오기
+          const result = await getCourse(courseId, '');
           
           // 결과 처리
-          courseData = result.data?.getCourse;
-          const errors = result.errors;
+          const courseData = result.data;
           
-          if (errors) {
-            console.error("데이터를 가져오는 중 오류 발생:", errors);
-            throw new Error(errors.map((e: any) => e.message).join(', '));
-          } else if (courseData) {
+          if (courseData) {
             // 데이터 처리
             console.log("가져온 과정 데이터:", courseData);
+            setCourse(courseData as Course);
           } else {
             throw new Error("과정을 찾을 수 없습니다");
           }
@@ -147,10 +121,6 @@ const CourseDetail: React.FC = () => {
           console.error("API 호출 중 예외 발생:", apiError);
           throw apiError; // 바깥쪽 catch 블록으로 오류 전파
         }
-        
-        // 이제 courseData 변수는 이 스코프에서 접근 가능
-        setCourse(courseData);
-        
       } catch (error: any) {
         console.error('Error fetching course:', error);
         
@@ -164,39 +134,21 @@ const CourseDetail: React.FC = () => {
         // 개발 환경에서 샘플 데이터 제공
         if (process.env.NODE_ENV === 'development') {
           setCourse({
-            courseId: courseId,
+            lmsId: courseId || '',
+            startDate: '2023-05-01',
+            catalogId: 'cat-1',
             title: 'AWS Cloud Practitioner Essentials',
             description: '클라우드 기초 개념과 AWS 서비스에 대한 기본 지식을 배우는 과정입니다.',
             status: 'ACTIVE',
-            startDate: '2023-05-01',
-            endDate: '2023-05-05',
-            location: 'Seoul AWS Office',
+            duration: 5,
             customerId: 'cust-1',
-            customerName: '한국 AWS',
             instructor: 'John Doe',
             assessments: {
-              items: [
-                { 
-                  id: 'pre-1', 
-                  name: '사전 평가 테스트',
-                  type: 'PRE_QUIZ',
-                  status: 'ACTIVE' 
-                },
-                { 
-                  id: 'post-1', 
-                  name: '이해도 평가 테스트',
-                  type: 'POST_QUIZ',
-                  status: 'COMING_SOON' 
-                },
-                { 
-                  id: 'survey-1', 
-                  name: '과정 만족도 조사',
-                  type: 'SURVEY',
-                  status: 'COMING_SOON' 
-                }
-              ]
+              preQuiz: 'pre-1',
+              postQuiz: 'post-1',
+              preSurvey: 'survey-1'
             }
-          });
+          } as Course);
         }
       } finally {
         setLoading(false);
@@ -248,20 +200,50 @@ const CourseDetail: React.FC = () => {
     );
   }
 
-  // 활성화된 평가 있는지 확인
-  const activeAssessment = course.assessments?.items?.find((item: any) => item.status === 'ACTIVE');
+  // 평가 항목 준비 - assessments 매핑 구조 변경
+  const assessmentItems: AssessmentItem[] = [];
+  
+  // 사전 퀴즈 추가
+  if (course.assessments?.preQuiz) {
+    assessmentItems.push({
+      id: course.assessments.preQuiz,
+      name: t('course_detail.assessment_names.pre_quiz'),
+      type: 'PRE_QUIZ',
+      status: getAssessmentStatusName('ACTIVE'), // 상태 정보가 없으므로 기본값 사용
+      statusType: getStatusType('ACTIVE'),
+      action: t('course_detail.actions.start'),
+      actionEnabled: true
+    });
+  }
+  
+  // 사후 퀴즈 추가
+  if (course.assessments?.postQuiz) {
+    assessmentItems.push({
+      id: course.assessments.postQuiz,
+      name: t('course_detail.assessment_names.post_quiz'),
+      type: 'POST_QUIZ',
+      status: getAssessmentStatusName('COMING_SOON'), // 상태 정보가 없으므로 기본값 사용
+      statusType: getStatusType('COMING_SOON'),
+      action: t('course_detail.actions.view'),
+      actionEnabled: false
+    });
+  }
+  
+  // 설문 추가
+  if (course.assessments?.preSurvey) {
+    assessmentItems.push({
+      id: course.assessments.preSurvey,
+      name: t('course_detail.assessment_names.survey'),
+      type: 'SURVEY',
+      status: getAssessmentStatusName('COMING_SOON'), // 상태 정보가 없으므로 기본값 사용
+      statusType: getStatusType('COMING_SOON'),
+      action: t('course_detail.actions.view'),
+      actionEnabled: false
+    });
+  }
 
-  // 평가 항목 준비
-  const assessmentItems: AssessmentItem[] = course.assessments?.items?.map((assessment: any) => ({
-    id: assessment.id,
-    name: assessment.name,
-    type: assessment.type,
-    status: getAssessmentStatusName(assessment.status),
-    statusType: getStatusType(assessment.status),
-    dueDate: assessment.dueDate ? formatDate(assessment.dueDate) : undefined,
-    action: assessment.status === 'ACTIVE' ? t('course_detail.actions.start') : t('course_detail.actions.view'),
-    actionEnabled: ['ACTIVE', 'COMPLETED'].includes(assessment.status)
-  })) || [];
+  // 활성화된 평가가 있는지 확인
+  const activeAssessment = assessmentItems.find(item => item.status === getAssessmentStatusName('ACTIVE'));
 
   return (
       <SpaceBetween size="l">
@@ -285,7 +267,6 @@ const CourseDetail: React.FC = () => {
           </Alert>
         )}
 
-        {/* 나머지 코드는 다국어 지원을 위해 t() 함수를 사용하여 수정할 수 있습니다 */}
         <Container
           header={
             <Header
@@ -311,25 +292,30 @@ const CourseDetail: React.FC = () => {
               <Box variant="awsui-key-label">
                 <Box variant="awsui-key-label">{t('course_detail.fields.status')}</Box>
                 <div>
-                  <StatusIndicator type={getStatusType(course.status)}>
-                    {getAssessmentStatusName(course.status)}
+                  <StatusIndicator type={getStatusType(course.status || 'ACTIVE')}>
+                    {getAssessmentStatusName(course.status || 'ACTIVE')}
                   </StatusIndicator>
                 </div>
               </Box>
               <Box variant="awsui-key-label">
                 <Box variant="awsui-key-label">{t('course_detail.fields.date_range')}</Box>
-                <div>{formatDate(course.startDate)} - {formatDate(course.endDate)}</div>
+                <div>
+                  {formatDate(course.startDate)} - 
+                  {formatDate(course.duration ? 
+                    new Date(new Date(course.startDate).getTime() + (course.duration * 24 * 60 * 60 * 1000)).toISOString() : 
+                    undefined)}
+                </div>
               </Box>
               <Box variant="awsui-key-label">
                 <Box variant="awsui-key-label">{t('course_detail.fields.location')}</Box>
-                <div>{course.location || '-'}</div>
+                <div>{course.deliveryMethod || '-'}</div>
               </Box>
             </SpaceBetween>
             
             <SpaceBetween size="l">
               <Box variant="awsui-key-label">
                 <Box variant="awsui-key-label">{t('course_detail.fields.customer')}</Box>
-                <div>{course.customerName || '-'}</div>
+                <div>{course.customerId || '-'}</div>
               </Box>
               <Box variant="awsui-key-label">
                 <Box variant="awsui-key-label">{t('course_detail.fields.instructor')}</Box>
@@ -337,7 +323,7 @@ const CourseDetail: React.FC = () => {
               </Box>
               <Box variant="awsui-key-label">
                 <Box variant="awsui-key-label">{t('course_detail.fields.course_id')}</Box>
-                <div>{course.courseId}</div>
+                <div>{course.lmsId}</div>
               </Box>
             </SpaceBetween>
           </ColumnLayout>

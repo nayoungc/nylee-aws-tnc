@@ -53,17 +53,16 @@ def create_course_catalog_tables():
             TableName='Tnc-CourseCatalog',
             KeySchema=[
                 {'AttributeName': 'catalogId', 'KeyType': 'HASH'},  # 파티션 키
-                {'AttributeName': 'version', 'KeyType': 'RANGE'}    # 정렬 키
+                {'AttributeName': 'title', 'KeyType': 'RANGE'}    # 정렬 키
             ],
             AttributeDefinitions=[
                 {'AttributeName': 'catalogId', 'AttributeType': 'S'},
                 {'AttributeName': 'version', 'AttributeType': 'S'},
                 {'AttributeName': 'title', 'AttributeType': 'S'},
-                {'AttributeName': 'awsCode', 'AttributeType': 'S'}
             ],
             GlobalSecondaryIndexes=[
                 {
-                    'IndexName': 'GSI1',
+                    'IndexName': 'CourseCatalog-GSI1',
                     'KeySchema': [
                         {'AttributeName': 'title', 'KeyType': 'HASH'},
                         {'AttributeName': 'version', 'KeyType': 'RANGE'}
@@ -75,7 +74,7 @@ def create_course_catalog_tables():
                     }
                 },
                 {
-                    'IndexName': 'GSI2',
+                    'IndexName': 'CourseCatalog-GSI2',
                     'KeySchema': [
                         {'AttributeName': 'awsCode', 'KeyType': 'HASH'},
                         {'AttributeName': 'version', 'KeyType': 'RANGE'}
@@ -107,11 +106,11 @@ def create_course_catalog_tables():
             AttributeDefinitions=[
                 {'AttributeName': 'catalogId', 'AttributeType': 'S'},
                 {'AttributeName': 'moduleNumber', 'AttributeType': 'S'},
-                {'AttributeName': 'moduleId', 'AttributeType': 'S'}
+                {'AttributeName': 'moduleNumber', 'AttributeType': 'S'},
             ],
             GlobalSecondaryIndexes=[
                 {
-                    'IndexName': 'GSI1',
+                    'IndexName': 'ourseCatalog-Modules-GSI1',
                     'KeySchema': [
                         {'AttributeName': 'moduleId', 'KeyType': 'HASH'}
                     ],

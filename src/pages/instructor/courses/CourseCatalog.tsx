@@ -1,22 +1,28 @@
 // src/pages/instructor/courses/CourseCatalog.tsx
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   BaseCourseView,
-  CourseCatalog as CourseCatalogType 
+  CourseCatalog as CourseCatalogType
 } from '@components/courses/BaseCourseView';
-import { 
-  Container, 
-  Header, 
-  SpaceBetween, 
-  Button, 
-  Tabs, 
-  ColumnLayout, 
-  Box, 
-  StatusIndicator 
+import {
+  Container,
+  Header,
+  SpaceBetween,
+  Button,
+  Tabs,
+  ColumnLayout,
+  Box,
+  StatusIndicator
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { client } from '../../../graphql/client';
+// 새로운 API 구조에 맞게 임포트 경로 변경
+import { listQuizzes, listSurveys } from '@api';
+
+import {
+  Quiz,
+  Survey
+} from '@api/types';
 
 // 평가 현황 인터페이스
 interface AssessmentStats {
@@ -32,15 +38,67 @@ const CourseCatalogPage: React.FC = () => {
   const [activeTabId, setActiveTabId] = useState('catalog');
   const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
   const [selectedCourse, setSelectedCourse] = useState<CourseCatalogType | null>(null);
-  
+
   useEffect(() => {
     const fetchAssessmentStats = async () => {
-      try {
-        // 실제 구현에서는 Gen 2 API 호출로 변경
-        // const { data } = await client.models.Assessment.list({
-        //   filter: { courseId: { eq: selectedCourse?.catalogId } }
-        // });
+      if (!selectedCourse?.catalogId) return;
 
+      try {
+        // 1. 퀴즈 데이터 가져오기 (DynamoDB 방식)
+        const preQuizResult = await listQuizzes({
+          filter: {
+            expression: 'courseId = :courseId AND quizType = :quizType',
+            expressionValues: {
+              ':courseId': selectedCourse.catalogId,
+              ':quizType': 'pre'
+            }
+          }
+        });
+
+        const postQuizResult = await listQuizzes({
+          filter: {
+            expression: 'courseId = :courseId AND quizType = :quizType',
+            expressionValues: {
+              ':courseId': selectedCourse.catalogId,
+              ':quizType': 'post'
+            }
+          }
+        });
+
+        // 2. 설문조사 데이터 가져오기
+        const surveysResult = await listSurveys({
+          filter: {
+            expression: 'courseId = :courseId',
+            expressionValues: {
+              ':courseId': selectedCourse.catalogId
+            }
+          }
+        });
+
+        // 3. 통계 계산 및 상태 업데이트
+        const stats: Record<string, AssessmentStats> = {
+          [selectedCourse.catalogId]: {
+            courseId: selectedCourse.catalogId,
+            preQuiz: {
+              total: preQuizResult.data.length,
+              completed: (preQuizResult.data as Quiz[]).filter(q => q.status === 'COMPLETED').length
+            },
+            postQuiz: {
+              total: postQuizResult.data.length,
+              completed: (postQuizResult.data as Quiz[]).filter(q => q.status === 'COMPLETED').length
+            },
+            surveys: {
+              total: surveysResult.data.length,
+              completed: (surveysResult.data as Survey[]).filter(s => s.responseCount > 0).length
+            }
+          }
+        };
+
+
+
+        setAssessmentStats(stats);
+
+        // 실제 구현에서는 위의 API 호출로 데이터를 가져와서 통계를 계산하면 됩니다
         // 현재는 샘플 데이터 사용
         const mockStats: Record<string, AssessmentStats> = {
           '1': {
@@ -56,29 +114,75 @@ const CourseCatalogPage: React.FC = () => {
             surveys: { total: 30, completed: 25 }
           }
         };
-        
-        setAssessmentStats(mockStats);
+
       } catch (error) {
         console.error('평가 현황 데이터 로드 중 오류:', error);
       }
     };
-    
-    fetchAssessmentStats();
-  }, []);
-  
+
+    if (selectedCourse?.catalogId) {
+      fetchAssessmentStats();
+    }
+  }, [selectedCourse]);
+
+  // useEffect(() => {
+  //   const fetchAssessmentStats = async () => {
+  //     try {
+  //       // Gen 2 방식으로 API 호출
+  //       // 실제 API를 구현할 경우 아래와 같이 사용
+  //       // const preQuizResult = await listQuizzes({ filter: { 
+  //       //   courseId: { eq: selectedCourse?.catalogId },
+  //       //   quizType: { eq: 'pre' }
+  //       // }});
+  //       // 
+  //       // const postQuizResult = await listQuizzes({ filter: { 
+  //       //   courseId: { eq: selectedCourse?.catalogId },
+  //       //   quizType: { eq: 'post' }
+  //       // }});
+  //       // 
+  //       // const surveysResult = await listSurveys({ filter: { 
+  //       //   courseId: { eq: selectedCourse?.catalogId }
+  //       // }});
+
+  //       // 실제 구현에서는 위의 API 호출로 데이터를 가져와서 통계를 계산하면 됩니다
+  //       // 현재는 샘플 데이터 사용
+  //       const mockStats: Record<string, AssessmentStats> = {
+  //         '1': {
+  //           courseId: '1',
+  //           preQuiz: { total: 15, completed: 10 },
+  //           postQuiz: { total: 12, completed: 8 },
+  //           surveys: { total: 20, completed: 15 }
+  //         },
+  //         '2': {
+  //           courseId: '2',
+  //           preQuiz: { total: 25, completed: 18 },
+  //           postQuiz: { total: 22, completed: 15 },
+  //           surveys: { total: 30, completed: 25 }
+  //         }
+  //       };
+
+  //       setAssessmentStats(mockStats);
+  //     } catch (error) {
+  //       console.error('평가 현황 데이터 로드 중 오류:', error);
+  //     }
+  //   };
+
+  //   fetchAssessmentStats();
+  // }, []);
+
   const handleCourseSelect = (course: CourseCatalogType) => {
     setSelectedCourse(course);
     setActiveTabId('assessments');
   };
-  
+
   const additionalActions = (
-    <Button 
+    <Button
       onClick={() => navigate('/instructor/assessments/quiz-creator')}
     >
       {t('courses.create_assessment')}
     </Button>
   );
-  
+
   const renderTabs = () => (
     <Tabs
       activeTabId={activeTabId}
@@ -88,12 +192,12 @@ const CourseCatalogPage: React.FC = () => {
           id: 'catalog',
           label: t('courses.tabs.catalog'),
           content: (
-            <BaseCourseView 
+            <BaseCourseView
               title={t('courses.catalog_title')}
               description={t('courses.catalog_description')}
               isAdminView={true}
               showCreateButton={true}
-              createPath="/instructor/courses/create" 
+              createPath="/instructor/courses/create"
               managePath="/instructor/courses/"
               viewPath="/tnc/"
               additionalActions={additionalActions}
@@ -107,7 +211,7 @@ const CourseCatalogPage: React.FC = () => {
           content: selectedCourse ? (
             <Container
               header={
-                <Header 
+                <Header
                   variant="h2"
                   description={selectedCourse.description}
                   actions={
@@ -121,7 +225,8 @@ const CourseCatalogPage: React.FC = () => {
                     </SpaceBetween>
                   }
                 >
-                  {selectedCourse.course_name || selectedCourse.title} - {t('courses.assessment_stats')}
+                  {/* course_name 필드 대신 title 필드 사용 */}
+                  {selectedCourse.title} - {t('courses.assessment_stats')}
                 </Header>
               }
             >
@@ -169,27 +274,27 @@ const CourseCatalogPage: React.FC = () => {
   );
 
   return (
-      <SpaceBetween size="l">
-        <Container
-          header={
-            <Header
-              variant="h1"
-              description={t('courses.catalog_admin_description')}
-              actions={
-                <SpaceBetween direction="horizontal" size="xs">
-                  <Button onClick={() => navigate('/instructor/courses/create')}>
-                    {t('courses.create_course')}
-                  </Button>
-                </SpaceBetween>
-              }
-            >
-              {t('courses.catalog_management')}
-            </Header>
-          }
-        >
-          {renderTabs()}
-        </Container>
-      </SpaceBetween>
+    <SpaceBetween size="l">
+      <Container
+        header={
+          <Header
+            variant="h1"
+            description={t('courses.catalog_admin_description')}
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button onClick={() => navigate('/instructor/courses/create')}>
+                  {t('courses.create_course')}
+                </Button>
+              </SpaceBetween>
+            }
+          >
+            {t('courses.catalog_management')}
+          </Header>
+        }
+      >
+        {renderTabs()}
+      </Container>
+    </SpaceBetween>
   );
 };
 

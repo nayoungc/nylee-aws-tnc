@@ -3,7 +3,6 @@ import React from 'react';
 import { BaseCourseView } from '@components/courses/BaseCourseView';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { Button } from '@cloudscape-design/components';
-import MainLayout from '../../../layouts/MainLayout';
 
 const CoursesList: React.FC = () => {
   const { t, tString } = useTypedTranslation();

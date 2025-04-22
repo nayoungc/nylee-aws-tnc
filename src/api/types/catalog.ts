@@ -1,0 +1,46 @@
+// 카탈로그 테이블 관련 인터페이스
+export interface CourseCatalog {
+    catalogId: string;        // 파티션 키
+    title: string;            // 정렬 키 
+    version: string;          // GSI1 정렬 키
+    awsCode?: string;         // GSI2 해시 키
+    description?: string;
+    isPublished: boolean;
+    publishedDate?: string;
+    level?: string;
+    duration?: number;
+    price?: number;
+    currency?: string;
+    status?: string;
+    category?: string;
+    deliveryMethod?: string;
+    objectives?: string[];
+    targetAudience?: string[];
+    createdAt?: string;
+    updatedAt?: string;
+  }
+  
+  export interface CatalogModule {
+    catalogId: string;        // 파티션 키
+    moduleNumber: string;     // 정렬 키
+    title: string;            // GSI1 해시 키
+    description?: string;
+    duration?: number;
+    learningObjectives?: string[];
+    prerequisites?: string[];
+    createdAt?: string;
+    updatedAt?: string;
+  }
+  
+  export interface CatalogLab {
+    catalogId: string;        // 파티션 키
+    labNumber: string;        // 정렬 키
+    moduleId: string;         // GSI1 해시 키 
+    title: string;            // GSI2 해시 키
+    description?: string;
+    duration?: number;
+    instructions?: string;
+    resources?: string[];
+    createdAt?: string;
+    updatedAt?: string;
+  }
