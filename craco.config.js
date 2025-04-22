@@ -9,6 +9,8 @@ module.exports = {
       '@components': path.resolve(__dirname, 'src/components'),
       '@graphql': path.resolve(__dirname, 'src/graphql'),
       '@layouts': path.resolve(__dirname, 'src/layouts'),
+      "@api": ["./src/api"],
+      "@api/*": ["src/api/*"]
     }
   }
 };
