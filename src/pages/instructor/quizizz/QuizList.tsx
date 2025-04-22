@@ -1,34 +1,35 @@
-// src/pages/instructor/quizizz/QuizList.tsx
-import React, { useState, useEffect } from 'react';
 import {
-    Button,
-    Container,
-    Header,
-    Select,
-    SpaceBetween,
-    FormField,
-    Modal,
-    Spinner,
-    Box,
-    Table,
-    Checkbox,
-    SegmentedControl,
+    listCourseCatalogs,
+} from '@/api/catalog';
+import {
+    deleteQuiz,
+    generateQuizFromContent,
+    getQuiz,
+    listQuizzes
+} from '@/api/quiz';
+import {
     Alert,
+    Box,
+    Button,
+    Checkbox,
+    Container,
+    FormField,
+    Header,
+    Modal,
+    SegmentedControl,
+    Select,
+    SelectProps,
+    SpaceBetween,
+    Spinner,
+    Table,
     TextFilter
 } from '@cloudscape-design/components';
-import { SelectProps } from '@cloudscape-design/components';
-import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { client, listCourseCatalog, generateQuizFromContent, listQuizzes, getQuiz } from '@graphql/client';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CourseCatalog, Question } from '../../../api/types';
 
 // 타입 정의
-interface Question {
-    id?: string;
-    question: string;
-    options: string[];
-    correctAnswer: string | number;
-}
-
 interface QuizItem {
     id: string;
     title: string;
@@ -38,13 +39,6 @@ interface QuizItem {
     questionCount: number;
     createdAt: string;
     updatedAt: string;
-}
-
-interface CourseCatalog {
-    id: string; // 이전의 catalogId에서 변경됨
-    title: string;
-    description?: string;
-    version: string;
 }
 
 export default function QuizList() {
@@ -82,35 +76,24 @@ export default function QuizList() {
         setError(null);
 
         try {
-            // Amplify Gen 2 API 사용
-            const response = await listCourseCatalog({
-                limit: 100
-            });
+            const response = await listCourseCatalogs();
 
-            if (response.errors) {
-                throw new Error(response.errors.map(e => e.message).join(', '));
-            }
+            if (response.data && Array.isArray(response.data)) {
+                const mappedCourses = response.data.map(item => ({
+                    catalogId: item.catalogId || '',
+                    title: item.title || '',
+                    description: item.description,
+                } as CourseCatalog));
 
-            if (response.data) {
-                // 응답 구조에 따라 적절히 처리
-                const courseList = Array.isArray(response.data) 
-                    ? response.data 
-                    : [];
-
-                const courseOptions: SelectProps.Option[] = courseList.map((course: CourseCatalog) => ({
+                const courseOptions: SelectProps.Option[] = mappedCourses.map(course => ({
                     label: course.title,
-                    value: course.id, // catalogId가 id로 변경됨
+                    value: course.catalogId,
                     description: course.description || '',
                 }));
 
                 setCourses(courseOptions);
-            }
-        } catch (error) {
-            console.error(t('quiz_management.errors.course_load'), error);
-            setError(t('quiz_management.errors.course_load_message'));
-
-            // 개발 환경에서 더미 데이터 제공
-            if (process.env.NODE_ENV === 'development') {
+            } else if (process.env.NODE_ENV === 'development') {
+                // 개발 환경에서 더미 데이터 제공
                 const fallbackOptions: SelectProps.Option[] = [
                     { label: "AWS Cloud Practitioner", value: "course-1" },
                     { label: "AWS Solutions Architect Associate", value: "course-2" },
@@ -118,6 +101,9 @@ export default function QuizList() {
                 ];
                 setCourses(fallbackOptions);
             }
+        } catch (error) {
+            console.error(t('quiz_management.errors.course_load'), error);
+            setError(t('quiz_management.errors.course_load_message'));
         } finally {
             setLoadingCourses(false);
         }
@@ -131,17 +117,12 @@ export default function QuizList() {
         setError(null);
 
         try {
-            // Amplify Gen 2 API 사용
             const response = await listQuizzes({
                 filter: {
                     courseId: { eq: courseId },
                     quizType: { eq: type }
-                }
+                } as any
             });
-
-            if (response.errors) {
-                throw new Error(response.errors.map(e => e.message).join(', '));
-            }
 
             if (response.data) {
                 setExistingQuizzes(response.data);
@@ -187,47 +168,30 @@ export default function QuizList() {
                 filter: {
                     courseId: { eq: selectedCourse.value },
                     quizType: { eq: 'pre' }
-                }
+                } as any
             });
-
-            if (response.errors) {
-                throw new Error(response.errors.map(e => e.message).join(', '));
-            }
 
             if (response.data && response.data.length > 0) {
                 const preQuiz = response.data[0];
 
-                // 사전 퀴즈의 질문 가져오기
-                const questionsResponse = await client.graphql({
-                    query: `
-                    query GetQuizQuestions(\$quizId: ID!) {
-                      getQuizQuestions(quizId: \$quizId) {
-                        items {
-                          id
-                          question
-                          options
-                          correctAnswer
+                // 사전 퀴즈의 상세 정보 (질문 포함) 가져오기
+                const quizDetail = await getQuiz(preQuiz.id);
+
+                if (quizDetail.data) {
+                    // 퀴즈 생성기로 이동
+                    navigate('/instructor/assessments/quiz-create', {
+                        state: {
+                            courseId: selectedCourse.value,
+                            courseName: selectedCourse.label,
+                            quizType: 'post',
+                            initialQuestions: quizDetail.data.questions || [],
+                            preQuizId: preQuiz.id,
+                            copyMode: true
                         }
-                      }
-                    }`,
-                    variables: { quizId: preQuiz.id }
-                });
-
-                // 결과 추출
-                const typedResult = questionsResponse as any;
-                const questions = typedResult.data?.getQuizQuestions?.items || [];
-
-                // 퀴즈 생성기로 이동 - 사전 퀴즈의 질문을 가지고
-                navigate('/instructor/assessments/quiz-create', {
-                    state: {
-                        courseId: selectedCourse.value,
-                        courseName: selectedCourse.label,
-                        quizType: 'post',
-                        initialQuestions: questions,
-                        preQuizId: preQuiz.id,
-                        copyMode: true
-                    }
-                });
+                    });
+                } else {
+                    setError(t('quiz_management.errors.no_questions'));
+                }
             } else {
                 setError(t('quiz_management.errors.no_pre_quiz'));
             }
@@ -267,29 +231,18 @@ export default function QuizList() {
     };
 
     // 퀴즈 삭제하기
-    const deleteQuiz = async (quizId: string) => {
+    const handleDeleteQuiz = async (quizId: string) => {
         if (!window.confirm(tString('quiz_management.delete_confirm'))) {
             return;
         }
 
         try {
-            await client.graphql({
-                query: `
-                mutation DeleteQuiz(\$input: DeleteQuizInput!) {
-                  deleteQuiz(input: \$input) {
-                    id
-                  }
-                }`,
-                variables: {
-                    input: { id: quizId }
-                }
-            });
+            await deleteQuiz(quizId);
 
             // 퀴즈 목록 새로고침
             if (selectedCourse && selectedCourse.value) {
                 fetchQuizzes(selectedCourse.value, quizType);
             }
-
         } catch (error) {
             console.error(t('quiz_management.errors.delete_quiz'), error);
             setError(t('quiz_management.errors.delete_quiz_message'));
@@ -463,7 +416,7 @@ export default function QuizList() {
                                     </Button>
                                     <Button
                                         iconName="remove"
-                                        onClick={() => deleteQuiz(item.id)}
+                                        onClick={() => handleDeleteQuiz(item.id)}
                                     >
                                         {t('quiz_management.actions.delete')}
                                     </Button>

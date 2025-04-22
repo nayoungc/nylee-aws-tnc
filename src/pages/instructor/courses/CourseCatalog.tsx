@@ -1,23 +1,22 @@
 // src/pages/instructor/courses/CourseCatalog.tsx
-import React, { useState, useEffect } from 'react';
+import { listQuizzes, listSurveys } from '@api';
+import {
+  Box,
+  Button,
+  ColumnLayout,
+  Container,
+  Header,
+  SpaceBetween,
+  StatusIndicator,
+  Tabs
+} from '@cloudscape-design/components';
 import {
   BaseCourseView,
   CourseCatalog as CourseCatalogType
 } from '@components/courses/BaseCourseView';
-import {
-  Container,
-  Header,
-  SpaceBetween,
-  Button,
-  Tabs,
-  ColumnLayout,
-  Box,
-  StatusIndicator
-} from '@cloudscape-design/components';
-import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-// 새로운 API 구조에 맞게 임포트 경로 변경
-import { listQuizzes, listSurveys } from '@api';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Quiz,

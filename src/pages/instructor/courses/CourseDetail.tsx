@@ -1,27 +1,25 @@
 // src/pages/instructor/courses/CourseDetail.tsx
-import React from 'react';  
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { 
-  Container, 
-  Header, 
-  SpaceBetween, 
-  Box, 
-  Button, 
+import {
   Alert,
-  StatusIndicator, 
-  Table,
+  Box,
+  Button,
+  ColumnLayout,
+  Container,
   ExpandableSection,
-  Tabs,
-  ColumnLayout
+  Header,
+  SpaceBetween,
+  StatusIndicator,
+  Table
 } from '@cloudscape-design/components';
 
-import { 
-  getCourse, 
+import {
+  getCourse,
 } from '@api/courses';
-import { 
+import {
   Course
 } from '@api/types';
 

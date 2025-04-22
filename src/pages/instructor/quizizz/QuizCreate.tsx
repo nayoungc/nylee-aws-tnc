@@ -1,42 +1,40 @@
 // src/pages/instructor/quizizz/QuizCreate.tsx 
-import React, { useState, useEffect } from 'react';
 import {
-  Container,
-  Header,
-  SpaceBetween,
-  FormField,
-  Input,
-  Button,
-  Textarea,
-  Box,
-  RadioGroup,
-  Checkbox,
   Alert,
-  Modal,
+  Box,
+  Button,
+  Checkbox,
   ColumnLayout,
+  Container,
+  FormField,
+  Header,
+  Input,
+  Modal,
+  ProgressBar,
+  RadioGroup,
   Select,
+  SpaceBetween,
   Spinner,
   Table,
-  ProgressBar
+  Textarea
 } from '@cloudscape-design/components';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { client, listCourseCatalog, generateQuizFromContent, getQuiz } from '@graphql/client';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  listCourseCatalogs,
+} from '@api/catalog';
+
+import { CourseCatalog, Question, Quiz } from '@/api/types';
+import {
+  createQuiz,
+  generateQuizFromContent,
+  getQuiz,
+  updateQuiz
+} from '@api/quiz';
 import { v4 as uuidv4 } from 'uuid';
 
 // 타입 정의
-// 기본 타입 정의
-export interface Question {
-  id?: string;
-  question: string;
-  options: string[];
-  correctAnswer: string | number;
-  explanation?: string;
-  difficulty?: string;
-  tags?: string[];
-  quality?: number;
-}
-
 interface QuizMeta {
   title: string;
   description: string;
@@ -67,7 +65,7 @@ export default function QuizCreate() {
   const editingQuizId = quizId || state.quizId;
 
   // 상태 관리
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<CourseCatalog[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<any>(
     state.courseId && state.courseName
       ? { label: state.courseName, value: state.courseId }
@@ -128,24 +126,28 @@ export default function QuizCreate() {
     try {
       setLoading(true);
 
-      // Amplify Gen 2 API 사용
-      const response = await listCourseCatalog({
-        limit: 100,
-      });
+      // DynamoDB API 호출
+      const response = await listCourseCatalogs();
 
-      if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
-      }
+      if (response.data && Array.isArray(response.data)) {
+        // 타입 변환 적용
+        const mappedCourses = response.data.map(item => ({
+          catalogId: item.catalogId || '',
+          title: item.title || '',
+          version: item.version || 'v1',
+          isPublished: item.isPublished !== undefined ? item.isPublished : true,
+          status: item.status || 'ACTIVE',
+          description: item.description,
+          level: item.level,
+          // 기타 필요한 필드...
+        } as CourseCatalog));
+        
+        setCourses(mappedCourses);
 
-      if (response.data) {
-        setCourses(response.data);
-
-        const courseOptions = Array.isArray(response.data)
-          ? response.data.map(course => ({
-            label: course.title,
-            value: course.catalogId
-          }))
-          : [];
+        const courseOptions = mappedCourses.map(course => ({
+          label: course.title,
+          value: course.catalogId
+        }));
 
         // 이미 선택된 과정이 없고 과정이 있다면 첫 번째 과정 선택
         if (!selectedCourse && courseOptions.length > 0) {
@@ -153,6 +155,43 @@ export default function QuizCreate() {
           setQuizMeta(prev => ({
             ...prev,
             title: `\${courseOptions[0].label} \${
+              quizType === 'post' ? t('quiz_creator.post_quiz') : t('quiz_creator.pre_quiz')
+            }`
+          }));
+        }
+      } else if (process.env.NODE_ENV === 'development') {
+        // 개발 환경인 경우 샘플 데이터 제공
+        const sampleCourses = [
+          {
+            catalogId: 'sample-1',
+            title: 'AWS Cloud Practitioner',
+            version: 'v1',
+            isPublished: true,
+            status: 'ACTIVE',
+            description: '클라우드 기초 개념 학습',
+            level: 'Foundational'
+          },
+          {
+            catalogId: 'sample-2',
+            title: 'AWS Solutions Architect Associate',
+            version: 'v1',
+            isPublished: true,
+            status: 'ACTIVE',
+            description: 'AWS 아키텍처 설계 학습',
+            level: 'Associate'
+          }
+        ] as CourseCatalog[];
+        
+        setCourses(sampleCourses);
+        
+        if (!selectedCourse) {
+          setSelectedCourse({
+            label: sampleCourses[0].title,
+            value: sampleCourses[0].catalogId
+          });
+          setQuizMeta(prev => ({
+            ...prev,
+            title: `\${sampleCourses[0].title} \${
               quizType === 'post' ? t('quiz_creator.post_quiz') : t('quiz_creator.pre_quiz')
             }`
           }));
@@ -172,10 +211,6 @@ export default function QuizCreate() {
       setLoading(true);
 
       const response = await getQuiz(quizId);
-
-      if (response.errors) {
-        throw new Error(response.errors.map(e => e.message).join(', '));
-      }
 
       if (response.data) {
         const quiz = response.data;
@@ -494,7 +529,7 @@ export default function QuizCreate() {
 
     try {
       // 저장할 퀴즈 데이터 구성
-      const quizData = {
+      const quizData: Partial<Quiz> = {
         id: editingQuizId || uuidv4(),
         courseId: selectedCourse.value,
         courseName: selectedCourse.label,
@@ -506,25 +541,21 @@ export default function QuizCreate() {
         shuffleQuestions: quizMeta.shuffleQuestions,
         shuffleOptions: quizMeta.shuffleOptions,
         showFeedback: quizMeta.showFeedback,
-        questions
+        questions,
+        questionCount: questions.length
       };
 
-      // Amplify Gen 2 API 저장
-      const mutation = isEditMode ? 'updateQuiz' : 'createQuiz';
-      const variables = {
-        input: quizData
-      };
+      // 수정된 Gen 2 API 호출
+      let result;
+      if (isEditMode) {
+        result = await updateQuiz(quizData);
+      } else {
+        result = await createQuiz(quizData);
+      }
 
-      await client.graphql({
-        query: `mutation \${mutation}(\$input: \${isEditMode ? 'UpdateQuizInput' : 'CreateQuizInput'}!) {
-          \${mutation}(input: \$input) {
-            id
-            title
-          }
-        }`,
-        variables,
-        authMode: 'userPool'
-      });
+      if (result.errors) {
+        throw new Error(result.errors.toString());
+      }
 
       setShowSaveModal(true);
     } catch (error) {
