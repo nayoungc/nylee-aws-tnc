@@ -1,4 +1,5 @@
 // src/pages/admin/InstructorTab.tsx
+
 import React, { useState, useEffect } from 'react';
 import {
     Table,
@@ -21,6 +22,9 @@ import {
     ListUsersCommand,
     AdminGetUserCommand 
 } from "@aws-sdk/client-cognito-identity-provider";
+
+// 상단에 useAuth import 추가
+import { useAuth } from '@/contexts/AuthContext';
 
 // Define interfaces
 interface Instructor {
