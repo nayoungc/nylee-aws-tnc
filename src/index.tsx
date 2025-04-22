@@ -63,7 +63,7 @@ const AppWithDebugInfo = () => {
   return (
     <>
       {/* 디버그 패널 토글 버튼 */}
-      <div style={{ position: 'fixed', top: '5px', right: '5px', zIndex: 9999 }}>
+      <div style={{ position: 'fixed', bottom: '5px', right: '5px', zIndex: 9999 }}>
         <button 
           onClick={() => setShowDebugPanel(!showDebugPanel)}
           style={{ 
