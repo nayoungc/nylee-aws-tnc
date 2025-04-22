@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { handleConfirmSignUp, handleResendConfirmationCode } from '@utils/auth';
+// @utils/auth 대신 직접 aws-amplify에서 임포트
+import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 
@@ -41,22 +42,21 @@ const ConfirmSignUp: React.FC = () => {
     setError(null);
     
     try {
-      const confirmResult = await handleConfirmSignUp(username, code);
+      // Amplify Gen 2 방식으로 직접 호출
+      const confirmResult = await confirmSignUp({
+        username,
+        confirmationCode: code
+      });
+      
       console.log('인증 결과:', confirmResult);
       
-      // 자동 로그인이 성공적으로 완료된 경우
-      if (confirmResult.autoSignIn?.isSignedIn) {
-        navigate('/');
-      } 
-      // 자동 로그인이 불필요하거나 실패한 경우
-      else {
-        navigate('/signin', { 
-          state: { 
-            username,
-            message: t('auth.confirm_success') || '계정이 확인되었습니다. 로그인해주세요.'
-          } 
-        });
-      }
+      // 인증 성공 후 로그인 페이지로 이동
+      navigate('/signin', { 
+        state: { 
+          username,
+          message: t('auth.confirm_success') || '계정이 확인되었습니다. 로그인해주세요.'
+        } 
+      });
     } catch (err: any) {
       console.error('확인 오류:', err);
       
@@ -82,12 +82,19 @@ const ConfirmSignUp: React.FC = () => {
     setError(null);
     
     try {
-      const resendResult = await handleResendConfirmationCode(username);
+      // Amplify Gen 2 방식으로 직접 호출
+      const resendResult = await resendSignUpCode({
+        username
+      });
+      
       console.log('코드 재전송 결과:', resendResult);
+      
+      // 전달된 목적지 정보 표시
+      const destinationInfo = resendResult.destination || '등록된 연락처';
       
       setResendMessage(
         t('auth.code_resent') || 
-        `인증 코드가 \${resendResult.destination || '등록된 연락처'}로 재전송되었습니다`
+        `인증 코드가 \${destinationInfo}로 재전송되었습니다`
       );
       
       // 성공 메시지 3초 후 자동 제거
