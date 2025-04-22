@@ -127,7 +127,7 @@ const AppWithDebugInfo = () => {
                   const result = await client.graphql({
                     query: introspectionQuery,
                     // 다양한 인증 모드 시도
-                    authMode: 'apiKey'  // userPool, apiKey, iam 중 적절한 것으로 설정
+                    authMode: 'userPool'  // userPool, apiKey, iam 중 적절한 것으로 설정
                   });
 
                   // 타입 가드 추가
