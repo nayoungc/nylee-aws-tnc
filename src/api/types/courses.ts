@@ -1,3 +1,4 @@
+// src/api/types/course.tsx
 export interface Course {
     lmsId: string;            // 파티션 키
     startDate: string;        // 정렬 키

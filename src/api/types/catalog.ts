@@ -1,4 +1,4 @@
-// 카탈로그 테이블 관련 인터페이스
+// src/types/catalog.tss
 export interface CourseCatalog {
     catalogId: string;        // 파티션 키
     title: string;            // 정렬 키 

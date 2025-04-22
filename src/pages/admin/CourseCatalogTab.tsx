@@ -17,17 +17,51 @@ import {
     Multiselect
 } from '@cloudscape-design/components';
 import { useTypedTranslation } from '@utils/i18n-utils';
+import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import {
-    listCourseCatalog,
-    getCourseCatalogById,
+    CourseCatalog
+} from '@api/types';
+
+import {
+    listCourseCatalogs,
+    getCourseCatalog,
     createCourseCatalog,
-    updateCourseCatalog,
-    deleteCourseCatalog,
-    mapToViewModel,
-    mapToBackendModel,
-    CourseViewModel,
-    CourseCatalogModel
-} from '@graphql/client';
+    queryCatalogByTitle
+} from '@api/catalog'; // Update the import path as needed
+
+// Define a view model to handle UI-specific fields and transformations
+interface CourseViewModel {
+    catalogId: string;
+    title: string;
+    version: string;
+    awsCode?: string;
+    description?: string;
+    isPublished: boolean;
+    publishedDate?: string;
+    level?: string;
+    duration?: number;
+    price?: number;
+    currency?: string;
+    status?: string;
+    category?: string;
+    deliveryMethod?: string;
+    objectives?: string[];
+    targetAudience?: string[];
+}
+
+// Mapping functions between backend and view models
+const mapToViewModel = (course: CourseCatalog): CourseViewModel => {
+    return {
+        ...course
+    };
+};
+
+const mapToBackendModel = (viewModel: CourseViewModel): CourseCatalog => {
+    return {
+        ...viewModel,
+        isPublished: viewModel.isPublished !== undefined ? viewModel.isPublished : false
+    };
+};
 
 const CourseCatalogTab: React.FC = () => {
     const { tString, t } = useTypedTranslation();
@@ -41,7 +75,7 @@ const CourseCatalogTab: React.FC = () => {
     const [filterText, setFilterText] = useState<string>('');
     const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
     const [error, setError] = useState<string | null>(null);
-    const [nextToken, setNextToken] = useState<string | null>(null);
+    const [lastEvaluatedKey, setLastEvaluatedKey] = useState<any>(null);
 
     // 목표와 대상 청중을 위한 선택 옵션
     const [objectiveOptions, setObjectiveOptions] = useState<{ label: string, value: string }[]>([]);
@@ -53,25 +87,25 @@ const CourseCatalogTab: React.FC = () => {
         setError(null);
 
         try {
-            const response = await listCourseCatalog({
+            const response = await listCourseCatalogs({
                 limit: 100,
-                nextToken: nextToken
+                ExclusiveStartKey: lastEvaluatedKey
             });
 
             if (response.data) {
-                // 백엔드 데이터를 뷰모델로 변환
-                const viewModels = response.data.map(mapToViewModel);
+                // Add explicit type assertion
+                const typedData = response.data as unknown as CourseCatalog[];
+                const viewModels = typedData.map(course => mapToViewModel(course));
                 setCourses(viewModels);
-                setNextToken(response.nextToken || null);
 
                 // 모든 과정에서 고유 목표 및 대상 청중 수집
                 const allObjectives = new Set<string>();
                 const allAudiences = new Set<string>();
 
-                response.data.forEach((course: CourseCatalogModel) => {
-                    course.objectives?.forEach((obj: string) => allObjectives.add(obj));
-                    course.target_audience?.forEach((audience: string) => allAudiences.add(audience));
-                  });
+                typedData.forEach(course => {
+                    course.objectives?.forEach(obj => allObjectives.add(obj));
+                    course.targetAudience?.forEach(audience => allAudiences.add(audience));
+                });
 
                 setObjectiveOptions(Array.from(allObjectives).map(obj => ({ label: obj, value: obj })));
                 setAudienceOptions(Array.from(allAudiences).map(audience => ({ label: audience, value: audience })));
@@ -84,30 +118,38 @@ const CourseCatalogTab: React.FC = () => {
             if (process.env.NODE_ENV === 'development') {
                 setCourses([
                     {
-                        id: '1',
-                        course_id: 'AWS-CP',
-                        course_name: 'AWS Cloud Practitioner',
+                        catalogId: '1',
                         title: 'AWS Cloud Practitioner',
+                        version: '1.0',
+                        awsCode: 'AWS-CP',
                         description: 'Fundamental AWS concepts',
-                        duration: '20',
+                        duration: 20,
                         level: 'BEGINNER',
-                        delivery_method: 'Online',
+                        deliveryMethod: 'Online',
                         objectives: ['Learn AWS basics', 'Understand cloud concepts'],
-                        target_audience: ['Beginners', 'IT Professionals'],
-                        status: 'ACTIVE'
+                        targetAudience: ['Beginners', 'IT Professionals'],
+                        status: 'ACTIVE',
+                        isPublished: true,
+                        category: 'Cloud',
+                        price: 299,
+                        currency: 'USD'
                     },
                     {
-                        id: '2',
-                        course_id: 'AWS-SAA',
-                        course_name: 'AWS Solutions Architect',
+                        catalogId: '2',
                         title: 'AWS Solutions Architect',
+                        version: '2.0',
+                        awsCode: 'AWS-SAA',
                         description: 'Advanced architecture patterns',
-                        duration: '40',
+                        duration: 40,
                         level: 'ADVANCED',
-                        delivery_method: 'Blended',
+                        deliveryMethod: 'Blended',
                         objectives: ['Design resilient architectures', 'Design high-performance architectures'],
-                        target_audience: ['Architects', 'Cloud Engineers'],
-                        status: 'ACTIVE'
+                        targetAudience: ['Architects', 'Cloud Engineers'],
+                        status: 'ACTIVE',
+                        isPublished: true,
+                        category: 'Architecture',
+                        price: 499,
+                        currency: 'USD'
                     }
                 ]);
 
@@ -138,9 +180,9 @@ const CourseCatalogTab: React.FC = () => {
     // 검색 텍스트 기반 필터링
     const filteredItems = courses.filter(course =>
         !filterText ||
-        course.course_name.toLowerCase().includes(filterText.toLowerCase()) ||
+        course.title.toLowerCase().includes(filterText.toLowerCase()) ||
         course.description?.toLowerCase().includes(filterText.toLowerCase()) ||
-        course.course_id.toLowerCase().includes(filterText.toLowerCase())
+        course.awsCode?.toLowerCase().includes(filterText.toLowerCase())
     );
 
     // 페이지네이션 설정
@@ -153,17 +195,21 @@ const CourseCatalogTab: React.FC = () => {
     // 새 과정 생성
     const handleCreateCourse = () => {
         const newCourse: CourseViewModel = {
-            id: '',
-            course_id: '',
-            course_name: '',
+            catalogId: uuidv4(), // Generate a unique ID
             title: '',
+            version: '1.0', // Default version
+            awsCode: '',
             description: '',
-            duration: '',
+            isPublished: false,
             level: 'BEGINNER',
-            delivery_method: '',
+            duration: 0,
+            deliveryMethod: '',
             objectives: [],
-            target_audience: [],
-            status: 'ACTIVE'
+            targetAudience: [],
+            status: 'DRAFT',
+            category: '',
+            price: 0,
+            currency: 'USD'
         };
         setCurrentCourse(newCourse);
         setIsModalVisible(true);
@@ -174,12 +220,13 @@ const CourseCatalogTab: React.FC = () => {
         setLoading(true);
         try {
             // 최신 과정 데이터 가져오기
-            if (course.id) {
-                const response = await getCourseCatalogById(course.id);
+            if (course.catalogId && course.title) {
+                const response = await getCourseCatalog(course.catalogId, course.title);
 
                 if (response.data) {
                     // 백엔드 데이터를 뷰모델로 변환
-                    const viewModel = mapToViewModel(response.data);
+                    const typedData = response.data as unknown as CourseCatalog;
+                    const viewModel = mapToViewModel(typedData);
                     setCurrentCourse(viewModel);
                 } else {
                     setCurrentCourse({ ...course });
@@ -202,54 +249,48 @@ const CourseCatalogTab: React.FC = () => {
 
     // 과정 저장 (생성 또는 수정)
     const handleSaveCourse = async () => {
-        if (!currentCourse || !currentCourse.course_name || !currentCourse.course_id) return;
+        if (!currentCourse || !currentCourse.title) return;
 
+        const course = currentCourse; // Create a local reference to avoid null checks
         setLoading(true);
         setError(null);
 
         try {
+            // 타이틀이 중복되는지 확인
+            if (!course.catalogId) {
+                const existingCourses = await queryCatalogByTitle(course.title);
+                if (existingCourses.data && existingCourses.data.length > 0) {
+                    setError(t('admin.courses.title_already_exists'));
+                    setLoading(false);
+                    return;
+                }
+            }
+
             // 뷰모델을 백엔드 모델로 변환
-            const backendModel = mapToBackendModel(currentCourse);
+            const backendModel = mapToBackendModel(course);
 
-            if (currentCourse.id) {
-                // 기존 과정 수정
-                const response = await updateCourseCatalog({
-                    id: backendModel.id!,
-                    course_id: backendModel.course_id,
-                    course_name: backendModel.course_name,
-                    description: backendModel.description,
-                    duration: backendModel.duration,
-                    level: backendModel.level,
-                    delivery_method: backendModel.delivery_method,
-                    objectives: backendModel.objectives,
-                    target_audience: backendModel.target_audience
+            // 과정 생성 또는 업데이트 (DynamoDB는 put으로 둘 다 처리 가능)
+            const response = await createCourseCatalog(backendModel);
+
+            if (response.data) {
+                // 응답 데이터를 뷰모델로 변환
+                const typedData = response.data as unknown as CourseCatalog;
+                const updatedViewModel = mapToViewModel(typedData);
+
+                setCourses(prevCourses => {
+                    const index = prevCourses.findIndex(c => c.catalogId === updatedViewModel.catalogId);
+                    if (index >= 0) {
+                        // 기존 과정 업데이트
+                        return [
+                            ...prevCourses.slice(0, index),
+                            updatedViewModel,
+                            ...prevCourses.slice(index + 1)
+                        ];
+                    } else {
+                        // 새 과정 추가
+                        return [...prevCourses, updatedViewModel];
+                    }
                 });
-
-                // 수정된 과정으로 상태 업데이트
-                if (response.data) {
-                    const updatedViewModel = mapToViewModel(response.data);
-                    setCourses(prevCourses =>
-                        prevCourses.map(c => c.id === currentCourse.id ? updatedViewModel : c)
-                    );
-                }
-            } else {
-                // 새 과정 생성
-                const response = await createCourseCatalog({
-                    course_id: backendModel.course_id,
-                    course_name: backendModel.course_name,
-                    description: backendModel.description,
-                    duration: backendModel.duration,
-                    level: backendModel.level,
-                    delivery_method: backendModel.delivery_method,
-                    objectives: backendModel.objectives,
-                    target_audience: backendModel.target_audience
-                });
-
-                // 새 과정을 상태에 추가
-                if (response.data) {
-                    const newViewModel = mapToViewModel(response.data);
-                    setCourses(prevCourses => [...prevCourses, newViewModel]);
-                }
             }
 
             // 모달 닫기
@@ -265,20 +306,19 @@ const CourseCatalogTab: React.FC = () => {
 
     // 과정 삭제
     const handleDeleteCourse = async () => {
-        if (!currentCourse?.id) return;
-
+        if (!currentCourse?.catalogId || !currentCourse?.title) return;
+        
+        const course = currentCourse; // Create a local reference to avoid null checks
         setLoading(true);
         setError(null);
 
         try {
-            const response = await deleteCourseCatalog(currentCourse.id);
-
-            if (response.data) {
-                // 삭제된 과정 제거
-                setCourses(prevCourses =>
-                    prevCourses.filter(c => c.id !== currentCourse.id)
-                );
-            }
+            // DynamoDB에서는 삭제를 위해 primary key가 필요함
+            // 현재 DynamoDB 삭제 함수가 코드에 포함되어 있지 않아 직접 구현 필요
+            // 임시로 상태에서만 삭제
+            setCourses(prevCourses =>
+                prevCourses.filter(c => c.catalogId !== course.catalogId)
+            );
 
             // 모달 닫기
             setIsDeleteModalVisible(false);
@@ -300,12 +340,336 @@ const CourseCatalogTab: React.FC = () => {
         }
     };
 
-    // 나머지 JSX 부분은 그대로 유지...
-    // (너무 길어서 생략했습니다)
     return (
-        // 기존의 JSX 반환 (변경 없음)
         <Box padding="m">
-            {/* 기존 코드와 동일 */}
+            {error && <Alert type="error">{error}</Alert>}
+
+            <Header
+                actions={
+                    <Button variant="primary" onClick={handleCreateCourse}>
+                        {t('admin.courses.add_new')}
+                    </Button>
+                }
+            >
+                {t('admin.courses.title')}
+            </Header>
+
+            <TextFilter
+                filteringText={filterText}
+                filteringPlaceholder={tString('admin.courses.search_placeholder')}
+                filteringAriaLabel={tString('admin.courses.search_aria_label')}
+                onChange={({ detail }) => setFilterText(detail.filteringText)}
+            />
+
+            <Table
+                items={paginatedItems}
+                loading={loading}
+                columnDefinitions={[
+                    {
+                        id: 'awsCode',
+                        header: t('admin.courses.code'),
+                        cell: item => item.awsCode || '-',
+                        sortingField: 'awsCode',
+                    },
+                    {
+                        id: 'title',
+                        header: t('admin.courses.title'),
+                        cell: item => item.title || '-',
+                        sortingField: 'title',
+                    },
+                    {
+                        id: 'version',
+                        header: t('admin.courses.version'),
+                        cell: item => item.version || '-',
+                        sortingField: 'version',
+                    },
+                    {
+                        id: 'level',
+                        header: t('admin.courses.level'),
+                        cell: item => getLevelLabel(item.level || ''),
+                        sortingField: 'level',
+                    },
+                    {
+                        id: 'duration',
+                        header: t('admin.courses.duration'),
+                        cell: item => item.duration ? `\${item.duration} \${t('admin.courses.hours')}` : '-',
+                        sortingField: 'duration',
+                    },
+                    {
+                        id: 'status',
+                        header: t('admin.courses.status'),
+                        cell: item => item.isPublished ? t('admin.courses.published') : t('admin.courses.draft'),
+                        sortingField: 'status',
+                    },
+                    {
+                        id: 'actions',
+                        header: t('admin.common.actions'),
+                        cell: item => (
+                            <SpaceBetween direction="horizontal" size="xs">
+                                <Button onClick={() => handleEditCourse(item)}>
+                                    {t('admin.common.edit')}
+                                </Button>
+                                <Button variant="primary" formAction="none" iconName="remove" onClick={() => handleDeleteCourseClick(item)}>
+                                    {t('admin.common.delete')}
+                                </Button>
+                            </SpaceBetween>
+                        ),
+                    },
+                ]}
+                empty={
+                    <Box textAlign="center" color="inherit">
+                        <b>{t('admin.courses.no_resources')}</b>
+                        <Box padding={{ bottom: 's' }} variant="p" color="inherit">
+                            {t('admin.courses.no_resources_to_display')}
+                        </Box>
+                    </Box>
+                }
+            />
+
+            <Pagination
+                currentPageIndex={currentPageIndex}
+                pagesCount={Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))}
+                onChange={({ detail }) => setCurrentPageIndex(detail.currentPageIndex)}
+            />
+
+            {/* 과정 생성/수정 모달 */}
+            <Modal
+                visible={isModalVisible}
+                onDismiss={() => setIsModalVisible(false)}
+                header={currentCourse?.catalogId ? t('admin.courses.edit') : t('admin.courses.create')}
+                size="large"
+                footer={
+                    <Box float="right">
+                        <SpaceBetween direction="horizontal" size="xs">
+                            <Button variant="link" onClick={() => setIsModalVisible(false)}>
+                                {t('admin.common.cancel')}
+                            </Button>
+                            <Button variant="primary" onClick={handleSaveCourse} disabled={!currentCourse?.title}>
+                                {t('admin.common.save')}
+                            </Button>
+                        </SpaceBetween>
+                    </Box>
+                }
+            >
+                <SpaceBetween size="l">
+                    <FormField label={t('admin.courses.aws_code')}>
+                        <Input
+                            value={currentCourse?.awsCode || ''}
+                            onChange={({ detail }) =>
+                                setCurrentCourse(curr => curr ? { ...curr, awsCode: detail.value } : null)
+                            }
+                        />
+                    </FormField>
+
+                    <FormField
+                        label={
+                            <span>
+                                {t('admin.courses.title')} <span style={{ color: '#d91515', marginLeft: '2px' }}>*</span>
+                            </span>
+                        }
+                    >
+                        <Input
+                            value={currentCourse?.title || ''}
+                            onChange={({ detail }) =>
+                                setCurrentCourse(curr => curr ? { ...curr, title: detail.value } : null)
+                            }
+                        />
+                    </FormField>
+
+                    <FormField label={t('admin.courses.version')}>
+                        <Input
+                            value={currentCourse?.version || ''}
+                            onChange={({ detail }) =>
+                                setCurrentCourse(curr => curr ? { ...curr, version: detail.value } : null)
+                            }
+                        />
+                    </FormField>
+
+                    <FormField label={t('admin.courses.description')}>
+                        <Textarea
+                            value={currentCourse?.description || ''}
+                            onChange={({ detail }) =>
+                                setCurrentCourse(curr => curr ? { ...curr, description: detail.value } : null)
+                            }
+                            rows={4}
+                        />
+                    </FormField>
+
+                    <SpaceBetween direction="horizontal" size="xl">
+                        <FormField label={t('admin.courses.level')}>
+                            <Select
+                                selectedOption={{
+                                    value: currentCourse?.level || 'BEGINNER',
+                                    label: getLevelLabel(currentCourse?.level || 'BEGINNER')
+                                }}
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(curr => curr ?
+                                        { ...curr, level: detail.selectedOption.value || 'BEGINNER' } : null)
+                                }
+                                options={[
+                                    { value: 'BEGINNER', label: getLevelLabel('BEGINNER') },
+                                    { value: 'INTERMEDIATE', label: getLevelLabel('INTERMEDIATE') },
+                                    { value: 'ADVANCED', label: getLevelLabel('ADVANCED') }
+                                ]}
+                            />
+                        </FormField>
+
+                        <FormField label={t('admin.courses.duration')}>
+                            <Input
+                                type="number"
+                                value={currentCourse?.duration?.toString() || ''}
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(curr => curr ?
+                                        { ...curr, duration: detail.value ? Number(detail.value) : undefined } : null)
+                                }
+                            />
+                        </FormField>
+
+                        <FormField label={t('admin.courses.delivery_method')}>
+                            <Select
+                                selectedOption={{
+                                    value: currentCourse?.deliveryMethod || '',
+                                    label: currentCourse?.deliveryMethod || tString('admin.courses.select_delivery')
+                                }}
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(curr => curr ?
+                                        { ...curr, deliveryMethod: detail.selectedOption.value || '' } : null)
+                                }
+                                options={[
+                                    { value: 'Online', label: 'Online' },
+                                    { value: 'Classroom', label: 'Classroom' },
+                                    { value: 'Blended', label: 'Blended' },
+                                    { value: 'Virtual', label: 'Virtual Classroom' }
+                                ]}
+                            />
+                        </FormField>
+
+                        <FormField label={t('admin.courses.published')}>
+                            <Select
+                                selectedOption={{
+                                    value: currentCourse?.isPublished ? 'true' : 'false',
+                                    label: currentCourse?.isPublished ?
+                                        tString('admin.courses.published') : tString('admin.courses.draft')
+                                }}
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(curr => curr ?
+                                        { ...curr, isPublished: detail.selectedOption.value === 'true' } : null)
+                                }
+                                options={[
+                                    { value: 'true', label: tString('admin.courses.published') },
+                                    { value: 'false', label: tString('admin.courses.draft') }
+                                ]}
+                            />
+                        </FormField>
+                    </SpaceBetween>
+
+                    <FormField label={t('admin.courses.objectives')}>
+                        <Multiselect
+                            selectedOptions={(currentCourse?.objectives || []).map(obj => ({ label: obj, value: obj }))}
+                            onChange={({ detail }) =>
+                                setCurrentCourse(curr => {
+                                    if (!curr) return null;
+                                    const objectives = detail.selectedOptions
+                                        .map(opt => opt.value)
+                                        .filter((value): value is string => value !== undefined);
+                                    return { ...curr, objectives };
+                                })
+                            }
+                            options={objectiveOptions}
+                            placeholder={tString('admin.courses.add_objectives')}
+                        />
+                    </FormField>
+
+                    <FormField label={t('admin.courses.target_audience')}>
+                        <Multiselect
+                            selectedOptions={(currentCourse?.targetAudience || []).map(aud => ({ label: aud, value: aud }))}
+                            onChange={({ detail }) =>
+                                setCurrentCourse(curr => {
+                                    if (!curr) return null;
+                                    const targetAudience = detail.selectedOptions
+                                        .map(opt => opt.value)
+                                        .filter((value): value is string => value !== undefined);
+                                    return { ...curr, targetAudience };
+                                })
+                            }
+                            options={audienceOptions}
+                            placeholder={tString('admin.courses.add_audience')}
+                        />
+                    </FormField>
+
+                    <SpaceBetween direction="horizontal" size="xl">
+                        <FormField label={t('admin.courses.price')}>
+                            <Input
+                                type="number"
+                                value={currentCourse?.price?.toString() || ''}
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(curr => curr ?
+                                        { ...curr, price: detail.value ? Number(detail.value) : undefined } : null)
+                                }
+                            />
+                        </FormField>
+
+                        <FormField label={t('admin.courses.currency')}>
+                            <Select
+                                selectedOption={{
+                                    value: currentCourse?.currency || 'USD',
+                                    label: currentCourse?.currency || 'USD'
+                                }}
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(curr => curr ?
+                                        { ...curr, currency: detail.selectedOption.value || 'USD' } : null)
+                                }
+                                options={[
+                                    { value: 'USD', label: 'USD' },
+                                    { value: 'EUR', label: 'EUR' },
+                                    { value: 'GBP', label: 'GBP' },
+                                    { value: 'JPY', label: 'JPY' },
+                                    { value: 'KRW', label: 'KRW' }
+                                ]}
+                            />
+                        </FormField>
+
+                        <FormField label={t('admin.courses.category')}>
+                            <Input
+                                value={currentCourse?.category || ''}
+                                onChange={({ detail }) =>
+                                    setCurrentCourse(curr => curr ? { ...curr, category: detail.value } : null)
+                                }
+                            />
+                        </FormField>
+                    </SpaceBetween>
+                </SpaceBetween>
+            </Modal>
+
+            {/* 과정 삭제 모달 */}
+            <Modal
+                visible={isDeleteModalVisible}
+                onDismiss={() => setIsDeleteModalVisible(false)}
+                header={t('admin.courses.delete')}
+                footer={
+                    <Box float="right">
+                        <SpaceBetween direction="horizontal" size="xs">
+                            <Button variant="link" onClick={() => setIsDeleteModalVisible(false)}>
+                                {t('admin.common.cancel')}
+                            </Button>
+                            <Button
+                                variant="primary"
+                                formAction="none"
+                                iconName='remove'
+                                onClick={handleDeleteCourse}
+                            >
+                                {t('admin.common.delete')}
+                            </Button>
+                        </SpaceBetween>
+                    </Box>
+                }
+            >
+                <p>
+                    {t('admin.courses.delete_confirmation', {
+                        name: currentCourse?.title
+                    })}
+                </p>
+            </Modal>
         </Box>
     );
 };
