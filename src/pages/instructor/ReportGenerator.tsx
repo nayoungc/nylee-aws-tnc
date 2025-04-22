@@ -21,17 +21,19 @@ import {
   PieChart
 } from '@cloudscape-design/components';
 import { SelectProps } from '@cloudscape-design/components';
-import { generateClient } from 'aws-amplify/api';
-import { post } from 'aws-amplify/api';
 import { useNavigate } from 'react-router-dom';
-import { useTypedTranslation } from '../../utils/i18n-utils';
+import { useTypedTranslation } from '@utils/i18n-utils';
+import {
+  listCourseCatalogs
+} from '@api/catalog';
+import {
+  listReports,
+  generateReport,
+  deleteReport
+} from '@api/report';
+import { CourseCatalog } from '@api/types';
 
 // 타입 정의
-interface CourseItem {
-  id: string;
-  title: string;
-}
-
 interface ReportType {
   id: string;
   title: string;
@@ -57,47 +59,6 @@ interface GeneratedReport {
   status: 'completed' | 'in-progress' | 'failed';
 }
 
-// GraphQL 쿼리
-const listCourseCatalog = /* GraphQL */ `
-  query listCourseCatalog(
-  \$limit: Int
-  \$nextToken: String
-) {
-  listCourseCatalog(limit: \$limit, nextToken: \$nextToken) {
-    items {
-      id
-      title
-      status
-    }
-    nextToken
-  }
-}
-  }
-`;
-
-const listReports = /* GraphQL */ `
-  query ListReports(
-    \$filter: ModelReportFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listReports(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        title
-        type
-        courseId
-        courseName
-        format
-        createdAt
-        url
-        status
-      }
-      nextToken
-    }
-  }
-`;
-
 export default function ReportGenerator() {
   const navigate = useNavigate();
   const { t, tString, i18n } = useTypedTranslation();
@@ -116,7 +77,6 @@ export default function ReportGenerator() {
   const [error, setError] = useState<string | null>(null);
   const [activeTabId, setActiveTabId] = useState<string>("generate");
   const [previewData, setPreviewData] = useState<any>(null);
-  const [client] = useState(() => generateClient());
 
   // 보고서 유형 목록
   const reportTypes: ReportType[] = [
@@ -165,25 +125,33 @@ export default function ReportGenerator() {
     setLoadingCourses(true);
 
     try {
-      const response = await client.graphql({
-        query: listCourseCatalog,
-        variables: {
-          limit: 100,
-          filter: {
-            status: { eq: "ACTIVE" }
-          }
-        }
+      const response = await listCourseCatalogs({
+        // 옵션 매개변수 (필요시 설정)
       });
 
-      const responseAny: any = response;
-      const courseItems = responseAny.data?.listCourseCatalog?.items || [];
+      if (response.data && Array.isArray(response.data)) {
+        const courseItems = response.data.map(item => ({
+          catalogId: item.catalogId || '',
+          title: item.title || '',
+          status: item.status || '',
+        } as CourseCatalog));
 
-      const courseOptions: SelectProps.Option[] = courseItems.map((course: CourseItem) => ({
-        label: course.title,
-        value: course.id
-      }));
+        const courseOptions: SelectProps.Option[] = courseItems
+          .filter(course => course.status === 'ACTIVE')
+          .map(course => ({
+            label: course.title,
+            value: course.catalogId
+          }));
 
-      setCourses(courseOptions);
+        setCourses(courseOptions);
+      } else if (process.env.NODE_ENV === 'development') {
+        // 개발 환경 폴백 데이터
+        setCourses([
+          { label: 'AWS Cloud Practitioner', value: 'course-1' },
+          { label: 'AWS Solutions Architect Associate', value: 'course-2' },
+          { label: 'AWS Developer Associate', value: 'course-3' }
+        ]);
+      }
     } catch (error) {
       console.error(t('reports.errors.course_load'), error);
       setError(t('reports.errors.course_load_message'));
@@ -204,24 +172,28 @@ export default function ReportGenerator() {
   // 보고서 목록 가져오기
   const fetchReports = async () => {
     setLoadingReports(true);
-
+  
     try {
-      const response = await client.graphql({
-        query: listReports,
-        variables: {
-          limit: 50
-        }
+      const response = await listReports({
+        limit: 50
       });
-
-      const responseAny: any = response;
-      const reportItems = responseAny.data?.listReports?.items || [];
-
-      // 날짜 기준 내림차순 정렬 (최신순)
-      const sortedReports = [...reportItems].sort((a: any, b: any) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      setGeneratedReports(sortedReports);
+  
+      if (response.data) {
+        // 배열인지 확인하는 타입 가드 추가
+        if (Array.isArray(response.data)) {
+          // 배열인 경우 정렬
+          const sortedReports = [...response.data].sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          
+          setGeneratedReports(sortedReports);
+        } else {
+          // 단일 항목인 경우 배열로 변환
+          setGeneratedReports([response.data]);
+        }
+      } else {
+        setGeneratedReports([]);
+      }
     } catch (error) {
       console.error(t('reports.errors.report_load'), error);
       setError(t('reports.errors.report_load_message'));
@@ -310,7 +282,7 @@ export default function ReportGenerator() {
   };
 
   // 보고서 생성
-  const generateReport = async () => {
+  const handleGenerateReport = async () => {
     if (!selectedCourse) {
       setError(t('reports.errors.select_course'));
       return;
@@ -321,25 +293,23 @@ export default function ReportGenerator() {
 
     try {
       const selectedReportTypeObj = reportTypes.find(type => type.id === selectedReportType);
-      const selectedFormatObj = reportFormats.find(format => format.id === selectedFormat);
-
       const reportTitle = `\${selectedCourse.label} - \${selectedReportTypeObj?.title}`;
 
-      const response = await post({
-        apiName: 'reportApi',
-        path: '/generate-report',
-        options: {
-          body: JSON.stringify({
-            courseId: selectedCourse.value,
-            courseName: selectedCourse.label,
-            reportType: selectedReportType,
-            startDate,
-            endDate,
-            format: selectedFormat,
-            title: reportTitle
-          })
-        }
-      }).response;
+      // courseId가 undefined가 아님을 확인
+      const courseId = selectedCourse.value as string;
+      const courseName = selectedCourse.label as string;
+
+      const reportData = {
+        courseId,  // 이제 확실히 string 타입
+        courseName,
+        reportType: selectedReportType,
+        startDate,
+        endDate,
+        format: selectedFormat,
+        title: reportTitle
+      };
+
+      await generateReport(reportData);
 
       // 보고서 생성이 시작되었음을 알림
       alert(t('reports.alerts.generation_started'));
@@ -389,16 +359,10 @@ export default function ReportGenerator() {
   };
 
   // 보고서 삭제
-  const deleteReport = async (reportId: string) => {
+  const handleDeleteReport = async (reportId: string) => {
     if (confirm(tString('reports.alerts.confirm_delete'))) {
       try {
-        await post({
-          apiName: 'reportApi',
-          path: '/delete-report',
-          options: {
-            body: JSON.stringify({ reportId })
-          }
-        });
+        await deleteReport(reportId);
 
         // 목록에서 제거
         setGeneratedReports(prev => prev.filter(report => report.id !== reportId));
@@ -525,7 +489,7 @@ export default function ReportGenerator() {
           <Button
             variant="primary"
             loading={generating}
-            onClick={generateReport}
+            onClick={handleGenerateReport}
             disabled={!selectedCourse}
           >
             {t('reports.buttons.generate')}
@@ -704,7 +668,7 @@ export default function ReportGenerator() {
                   {t('reports.buttons.download')}
                 </Button>
                 <Button
-                  onClick={() => deleteReport(item.id)}
+                  onClick={() => handleDeleteReport(item.id)}
                   iconName="remove"
                 >
                   {t('reports.buttons.delete')}

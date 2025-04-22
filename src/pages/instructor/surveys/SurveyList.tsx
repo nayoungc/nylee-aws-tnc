@@ -1,113 +1,39 @@
-// src/pages/instructor/surveys/SurveyList.tsx
-import React, { useState, useEffect } from 'react';
-import { 
-  Button, 
-  Container, 
-  Header, 
-  Select, 
-  SpaceBetween,
-  FormField,
-  Modal,
-  Spinner,
+import {
+  listCourseCatalogs
+} from '@api/catalog';
+import {
   Box,
-  Table,
+  Button,
+  ButtonDropdown,
   Checkbox,
+  Container,
+  FormField,
+  Header,
+  Modal,
   SegmentedControl,
-  ButtonDropdown
+  Select,
+  SelectProps,
+  SpaceBetween,
+  Spinner,
+  Table
 } from '@cloudscape-design/components';
-import { post } from 'aws-amplify/api';
-import { SelectProps } from '@cloudscape-design/components';
-import { generateClient } from 'aws-amplify/api';
-import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-// 타입 정의
-interface Question {
-  id?: string;
-  question: string;
-  options: string[];
-  type: 'multiple' | 'single' | 'text';
-}
+import {
+  copySurvey as copySurveyApi,
+  deleteSurvey,
+  generateSurvey,
+  listSurveys
+} from '@api/survey';
+import {
+  CourseCatalog,
+  Survey,
+  SurveyQuestion
+} from '@api/types';
 
-interface CourseItem {
-  id: string;
-  title: string;
-  description?: string;
-  level?: string;
-  category?: string;
-  version?: string;
-}
-
-interface Survey {
-  id: string;
-  title: string;
-  courseId: string;
-  surveyType: 'pre' | 'post';
-  questionCount: number;
-  responseCount: number;
-  createdAt: string;
-  updatedAt?: string;
-}
-
-interface SurveyGenerationResponse {
-  questions: Question[];
-}
-
-// GraphQL 쿼리 정의
-const listCourseCatalog = /* GraphQL */ `
-  query listCourseCatalog(
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listCourseCatalog(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        title
-        description
-        level
-        category
-        status
-        version
-      }
-      nextToken
-    }
-  }
-`;
-
-// 설문조사 목록 쿼리
-const listSurveys = /* GraphQL */ `
-  query ListSurveys(
-    \$filter: ModelSurveyFilterInput
-    \$limit: Int
-    \$nextToken: String
-  ) {
-    listSurveys(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        id
-        title
-        courseId
-        surveyType
-        questionCount
-        responseCount
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-// 타입 가드 함수
-function isSurveyGenerationResponse(obj: unknown): obj is SurveyGenerationResponse {
-  return (
-    typeof obj === 'object' && 
-    obj !== null && 
-    'questions' in obj && 
-    Array.isArray((obj as any).questions)
-  );
-}
-
-export default function SurveyManagement() {
+export default function SurveyList() {
   const navigate = useNavigate();
   const { t, tString } = useTypedTranslation();
   
@@ -117,13 +43,12 @@ export default function SurveyManagement() {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingSurveys, setLoadingSurveys] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
-  const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
+  const [generatedQuestions, setGeneratedQuestions] = useState<SurveyQuestion[]>([]);
   const [existingSurveys, setExistingSurveys] = useState<Survey[]>([]);
   const [surveyType, setSurveyType] = useState<'pre' | 'post'>('pre');
   const [syncSurveys, setSyncSurveys] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [surveyToDelete, setSurveyToDelete] = useState<Survey | null>(null);
-  const [client] = useState(() => generateClient());
   
   // 페이지 로드 시 과정 목록 가져오기
   useEffect(() => {
@@ -142,37 +67,35 @@ export default function SurveyManagement() {
     setLoadingCourses(true);
     
     try {
-      // GraphQL API를 사용하여 데이터 가져오기      
-      try {
-        const response = await client.graphql({
-          query: listCourseCatalog,
-          variables: {
-            limit: 100,
-            filter: {
-              status: { eq: "ACTIVE" }
-            }
-          }
-        });
+      const response = await listCourseCatalogs();
 
-        const responseAny: any = response;
-        const courseItems = responseAny.data?.listCourseCatalog?.items || [];
+      if (response.data && Array.isArray(response.data)) {
+        const courseItems = response.data.map(item => ({
+          catalogId: item.catalogId || '',
+          title: item.title || '',
+          description: item.description || '',
+        } as CourseCatalog));
         
-        const courseOptions: SelectProps.Option[] = courseItems.map((course: CourseItem) => ({
+        const courseOptions: SelectProps.Option[] = courseItems.map(course => ({
           label: course.title,
-          value: course.id,
+          value: course.catalogId,
           description: course.description || '',
         }));
         
         setCourses(courseOptions);
-      } catch (error) {
-        console.error(t('survey.errors.graphql_query_error'), error);
-        throw error;
+      } else if (process.env.NODE_ENV === 'development') {
+        // 오류 발생 시 기본 데이터 사용 (개발용)
+        const fallbackOptions: SelectProps.Option[] = [
+          { label: "AWS Cloud Practitioner", value: "course-1" },
+          { label: "AWS Solutions Architect Associate", value: "course-2" },
+          { label: "AWS Developer Associate", value: "course-3" }
+        ];
+        setCourses(fallbackOptions);
       }
-      
     } catch (error) {
       console.error(t('survey.errors.load_courses_error'), error);
       
-      // 오류 발생 시 기본 데이터 사용 (개발용)
+      // 개발용 더미 데이터
       if (process.env.NODE_ENV === 'development') {
         const fallbackOptions: SelectProps.Option[] = [
           { label: "AWS Cloud Practitioner", value: "course-1" },
@@ -191,28 +114,24 @@ export default function SurveyManagement() {
     setLoadingSurveys(true);
     
     try {
-      const client = generateClient();
-      
-      const response = await client.graphql({
-        query: listSurveys,
-        variables: {
-          filter: {
-            courseId: { eq: courseId },
-            surveyType: { eq: type }
-          },
-          limit: 100
-        }
+      const response = await listSurveys({
+        filter: {
+          courseId: { eq: courseId },
+          surveyType: { eq: type }
+        } as any,
+        limit: 100
       });
 
-      const responseAny: any = response;
-      const surveyItems = responseAny.data?.listSurveys?.items || [];
-      
-      // 날짜 기준 내림차순 정렬 (최신순)
-      const sortedSurveys = [...surveyItems].sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      
-      setExistingSurveys(sortedSurveys);
+      if (response.data) {
+        // 날짜 기준 내림차순 정렬 (최신순)
+        const sortedSurveys = [...response.data].sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        setExistingSurveys(sortedSurveys);
+      } else {
+        setExistingSurveys([]);
+      }
     } catch (error) {
       console.error(t('survey.errors.load_surveys_error'), error);
       
@@ -237,7 +156,7 @@ export default function SurveyManagement() {
             responseCount: 12,
             createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
           }
-        ];
+        ] as Survey[];
         setExistingSurveys(dummyData);
       } else {
         setExistingSurveys([]);
@@ -255,28 +174,13 @@ export default function SurveyManagement() {
     setShowAiModal(true);
     
     try {
-      const response = await post({
-        apiName: 'surveyApi',
-        path: '/generate-survey',
-        options: {
-          body: JSON.stringify({
-            courseId: selectedCourse.value,
-            surveyType: surveyType,
-            questionCount: 8
-          })
-        }
-      }).response;
+      const result = await generateSurvey({
+        courseId: selectedCourse.value as string,
+        surveyType: surveyType,
+        questionCount: 8
+      });
       
-      // 안전한 타입 처리
-      const jsonData: unknown = await response.body.json();
-      
-      // 타입 가드로 응답 형식 검증
-      if (isSurveyGenerationResponse(jsonData)) {
-        setGeneratedQuestions(jsonData.questions);
-      } else {
-        console.error(t('survey.errors.invalid_response_format'), jsonData);
-        setGeneratedQuestions([]);
-      }
+      setGeneratedQuestions(result.questions);
     } catch (error) {
       console.error(t('survey.errors.generate_survey_error'), error);
       setGeneratedQuestions([]);
@@ -284,7 +188,7 @@ export default function SurveyManagement() {
       // 개발용 더미 데이터
       if (process.env.NODE_ENV === 'development') {
         setTimeout(() => {
-          const dummyQuestions: Question[] = [
+          const dummyQuestions: SurveyQuestion[] = [
             {
               question: t('survey.dummy.question1'),
               type: "single",
@@ -342,7 +246,7 @@ export default function SurveyManagement() {
   };
 
   // 새 설문조사 생성 페이지로 이동
-  const navigateToSurveyCreator = (questions?: Question[]) => {
+  const navigateToSurveyCreator = (questions?: SurveyQuestion[]) => {
     if (!selectedCourse) return;
     
     navigate('/instructor/assessments/survey-creator', { 
@@ -356,19 +260,13 @@ export default function SurveyManagement() {
   };
 
   // 설문조사 복사하기 (사전 → 사후 또는 사후 → 사전)
-  const copySurvey = async (surveyId: string) => {
+  const copySurveyToOtherType = async (surveyId: string) => {
     setLoading(true);
     
     try {
-      const response = await post({
-        apiName: 'surveyApi',
-        path: '/copy-survey',
-        options: {
-          body: JSON.stringify({
-            surveyId,
-            targetType: surveyType === 'pre' ? 'post' : 'pre'
-          })
-        }
+      await copySurveyApi({ 
+        surveyId, 
+        targetType: surveyType === 'pre' ? 'post' : 'pre'
       });
       
       // 복사 성공 후 목록 새로고침
@@ -397,13 +295,7 @@ export default function SurveyManagement() {
     if (!surveyToDelete) return;
     
     try {
-      await post({
-        apiName: 'surveyApi',
-        path: '/delete-survey',
-        options: {
-          body: JSON.stringify({ surveyId: surveyToDelete.id })
-        }
-      });
+      await deleteSurvey(surveyToDelete.id);
       
       // 삭제 후 목록 새로고침
       if (selectedCourse) {
@@ -427,7 +319,7 @@ export default function SurveyManagement() {
     if (!selectedCourse) return;
     
     // 기본 템플릿 설문조사 문항 생성
-    const templateQuestions: Question[] = [
+    const templateQuestions: SurveyQuestion[] = [
       {
         question: t('survey.template.overall_satisfaction', { 
           period: surveyType === 'pre' ? t('survey.template.before') : t('survey.template.after')
@@ -576,7 +468,7 @@ export default function SurveyManagement() {
               <Button 
                 variant="normal"
                 iconName="copy"
-                onClick={() => copySurvey(existingSurveys[0].id)}
+                onClick={() => copySurveyToOtherType(existingSurveys[0].id)}
               >
                 {t('survey.copy_from_pre_survey')}
               </Button>
@@ -651,7 +543,7 @@ export default function SurveyManagement() {
                           // TODO: 복제 로직 구현
                           break;
                         case 'copy-to-other':
-                          copySurvey(item.id);
+                          copySurveyToOtherType(item.id);
                           break;
                         case 'delete':
                           handleDeleteSurvey(item);

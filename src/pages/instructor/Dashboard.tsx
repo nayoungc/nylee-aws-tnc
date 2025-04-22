@@ -1,21 +1,21 @@
-import React from 'react';
 import {
-  Container,
-  Header,
-  Cards,
-  Box,
-  SpaceBetween,
-  Button,
-  ColumnLayout,
   Badge,
-  StatusIndicator,
+  BarChart,
+  Box,
+  Button,
+  Cards,
+  ColumnLayout,
+  Container,
   Grid,
-  BarChart, // 바차트 추가
-  PieChart  // 파이차트 추가
+  Header, // 바차트 추가
+  PieChart, // 파이차트 추가
+  SpaceBetween,
+  StatusIndicator
 } from '@cloudscape-design/components';
-import { useNavigate } from 'react-router-dom';
-import { generateClient } from 'aws-amplify/api';
 import { useTypedTranslation } from '@utils/i18n-utils'; // 수정됨: 커스텀 훅 사용
+import { generateClient } from 'aws-amplify/api';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface QuickAction {
   id: string;

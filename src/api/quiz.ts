@@ -1,3 +1,4 @@
+// src/api/quiz.ts
 import { amplifyClient } from './config';
 import { GraphQLResult } from 'aws-amplify/api';
 import { Question, Quiz, QuizParams } from './types';
