@@ -14,16 +14,10 @@ import {
     Input,
     Select,
     Alert,
+    Spinner
 } from '@cloudscape-design/components';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-    CognitoIdentityProviderClient, 
-    ListUsersCommand,
-    AdminGetUserCommand 
-} from "@aws-sdk/client-cognito-identity-provider";
-
-// 상단에 useAuth import 추가
 import { useAuth } from '@/contexts/AuthContext';
 
 // Define interfaces
@@ -45,16 +39,20 @@ interface CognitoUser {
     UserCreateDate?: Date;
 }
 
-// API functions for instructors
-const listInstructors = async (options?: any) => {
+// API functions for instructors - 백엔드 API 호출 방식으로 수정
+const listInstructors = async () => {
     try {
-        // Replace this with your actual API call
+        // 실제 API 엔드포인트로 호출
         const response = await fetch('/api/instructors', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             }
         });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch instructors');
+        }
         
         const data = await response.json();
         return { data };
@@ -66,7 +64,6 @@ const listInstructors = async (options?: any) => {
 
 const createInstructor = async (instructor: Partial<Instructor>) => {
     try {
-        // Generate ID if not provided
         const instructorWithId = {
             ...instructor,
             instructorId: instructor.instructorId || uuidv4(),
@@ -74,7 +71,6 @@ const createInstructor = async (instructor: Partial<Instructor>) => {
             updatedAt: new Date().toISOString()
         };
 
-        // Replace this with your actual API call
         const response = await fetch('/api/instructors', {
             method: 'POST',
             headers: {
@@ -82,6 +78,10 @@ const createInstructor = async (instructor: Partial<Instructor>) => {
             },
             body: JSON.stringify(instructorWithId)
         });
+        
+        if (!response.ok) {
+            throw new Error('Failed to create instructor');
+        }
         
         const data = await response.json();
         return { data };
@@ -98,7 +98,6 @@ const updateInstructor = async (instructor: Partial<Instructor>) => {
             updatedAt: new Date().toISOString()
         };
         
-        // Replace this with your actual API call
         const response = await fetch(`/api/instructors/\${instructor.instructorId}`, {
             method: 'PUT',
             headers: {
@@ -106,6 +105,10 @@ const updateInstructor = async (instructor: Partial<Instructor>) => {
             },
             body: JSON.stringify(updateData)
         });
+        
+        if (!response.ok) {
+            throw new Error('Failed to update instructor');
+        }
         
         const data = await response.json();
         return { data };
@@ -117,10 +120,13 @@ const updateInstructor = async (instructor: Partial<Instructor>) => {
 
 const deleteInstructor = async (instructorId: string) => {
     try {
-        // Replace this with your actual API call
         const response = await fetch(`/api/instructors/\${instructorId}`, {
             method: 'DELETE'
         });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete instructor');
+        }
         
         const data = await response.json();
         return { data };
@@ -130,22 +136,22 @@ const deleteInstructor = async (instructorId: string) => {
     }
 };
 
-// AWS SDK v3 Cognito client
-const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.REACT_APP_AWS_REGION || 'us-east-1' });
-const USER_POOL_ID = process.env.REACT_APP_COGNITO_USER_POOL_ID || '';
-
-// Fetch Cognito users with AWS SDK v3
+// Cognito 사용자 목록 가져오기 (안전한 백엔드 API 사용)
 const listCognitoUsers = async () => {
     try {
-        const command = new ListUsersCommand({
-            UserPoolId: USER_POOL_ID,
-            Limit: 60,
-            // Optional filter to get only certain users
-            // Filter: "cognito:user_status = \"CONFIRMED\""
+        const response = await fetch('/api/admin/cognito-users', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
         });
         
-        const response = await cognitoClient.send(command);
-        return response.Users || [];
+        if (!response.ok) {
+            throw new Error('Failed to fetch Cognito users');
+        }
+        
+        const data = await response.json();
+        return data.users || [];
     } catch (error) {
         console.error('Error fetching Cognito users:', error);
         throw error;
@@ -154,6 +160,12 @@ const listCognitoUsers = async () => {
 
 const InstructorTab: React.FC = () => {
     const { tString, t } = useTypedTranslation();
+    
+    // useAuth 훅을 사용하여 인증 상태 가져오기
+    const { isAuthenticated, userRole, loading: authLoading } = useAuth();
+    
+    // 관리자 권한 확인
+    const isAdmin = userRole === 'admin';
     
     // 상태 관리
     const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -169,15 +181,14 @@ const InstructorTab: React.FC = () => {
 
     // 강사 목록 불러오기
     const fetchInstructors = async () => {
+        if (!isAuthenticated || !isAdmin) return;
+        
         setLoading(true);
         setError(null);
 
         try {
-            const response = await listInstructors({ limit: 20 });
-
-            console.log(t('admin.instructors.log.load_result'), response);
-
-            // 응답에서 data 추출
+            const response = await listInstructors();
+            
             if (response.data) {
                 setInstructors(response.data as Instructor[]);
             }
@@ -189,8 +200,10 @@ const InstructorTab: React.FC = () => {
         }
     };
 
-    // Cognito 사용자 풀에서 사용자 가져오기 (AWS SDK v3 사용)
+    // Cognito 사용자 풀에서 사용자 가져오기
     const fetchCognitoUsers = async () => {
+        if (!isAuthenticated || !isAdmin) return;
+        
         setLoadingCognitoUsers(true);
       
         try {
@@ -204,11 +217,34 @@ const InstructorTab: React.FC = () => {
         }
     };
 
-    // 컴포넌트 마운트 시 데이터 로드
+    // 인증 상태가 변경되면 데이터 다시 로드
     useEffect(() => {
-        fetchInstructors();
-        fetchCognitoUsers();
-    }, []);
+        if (isAuthenticated && isAdmin && !authLoading) {
+            fetchInstructors();
+            fetchCognitoUsers();
+        }
+    }, [isAuthenticated, isAdmin, authLoading]);
+
+    // 인증 확인 중이면 로딩 표시
+    if (authLoading) {
+        return (
+            <Box padding="m" textAlign="center">
+                <Spinner size="large" />
+                <div>{t('common.loading')}</div>
+            </Box>
+        );
+    }
+
+    // 관리자가 아니면 접근 권한 없음 메시지 표시
+    if (!isAuthenticated || !isAdmin) {
+        return (
+            <Box padding="m">
+                <Alert type="error">
+                    {t('common.unauthorized_access')}
+                </Alert>
+            </Box>
+        );
+    }
 
     // 필터링된 아이템
     const filteredItems = instructors.filter(instructor =>
@@ -227,7 +263,7 @@ const InstructorTab: React.FC = () => {
     // 새 강사 만들기
     const handleCreateInstructor = () => {
         setCurrentInstructor({
-            instructorId: uuidv4(), // Generate a unique ID
+            instructorId: uuidv4(),
             name: '',
             email: '',
             status: 'ACTIVE',
@@ -258,7 +294,7 @@ const InstructorTab: React.FC = () => {
     const handleSaveInstructor = async () => {
         if (!currentInstructor || !currentInstructor.name || !currentInstructor.email) return;
 
-        const instructor = currentInstructor; // Create local reference to avoid null checks
+        const instructor = currentInstructor;
         setLoading(true);
         setError(null);
 
@@ -273,8 +309,6 @@ const InstructorTab: React.FC = () => {
                 };
                 
                 const response = await updateInstructor(updateInput);
-
-                console.log(t('admin.instructors.log.update_result'), response);
 
                 // 수정된 강사로 상태 업데이트
                 if (response.data) {
@@ -293,8 +327,6 @@ const InstructorTab: React.FC = () => {
                 };
                 
                 const response = await createInstructor(createInput);
-
-                console.log(t('admin.instructors.log.create_result'), response);
                 
                 // 생성된 강사 추가
                 if (response.data) {
@@ -317,14 +349,12 @@ const InstructorTab: React.FC = () => {
     const handleDeleteInstructor = async () => {
         if (!currentInstructor?.instructorId) return;
 
-        const instructor = currentInstructor; // Create local reference to avoid null checks
+        const instructor = currentInstructor;
         setLoading(true);
         setError(null);
 
         try {
             const response = await deleteInstructor(instructor.instructorId);
-
-            console.log(t('admin.instructors.log.delete_result'), response);
 
             // 삭제 확인 후 UI 업데이트
             if (response.data) {

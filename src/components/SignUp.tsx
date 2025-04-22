@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { handleSignUp } from '@utils/auth';
+// @utils/auth 대신 직접 aws-amplify에서 임포트
+import { signUp } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 import { 
@@ -58,6 +59,7 @@ const SignUp: React.FC = () => {
     if (error) setError(null);
   };
 
+  // handleSignUp 유틸리티 대신 직접 Amplify signUp 사용
   const handleSignUpClick = async () => {
     // 입력 유효성 검사
     if (!formState.username) {
@@ -97,19 +99,21 @@ const SignUp: React.FC = () => {
     
     try {
       // Gen 2 방식으로 회원가입 시도
-      const result = await handleSignUp({
+      const userAttributes: Record<string, string> = {
+        email: formState.email,
+        profile: 'instructor', // 추가 속성 전달
+      };
+      
+      // 전화번호가 있는 경우 추가
+      if (formState.usePhoneNumber && formState.phoneNumber) {
+        userAttributes.phone_number = formState.phoneNumber;
+      }
+      
+      const result = await signUp({
         username: formState.username,
         password: formState.password,
-        email: formState.email,
-        phone: formState.usePhoneNumber ? formState.phoneNumber : undefined,
         options: {
-          userAttributes: {
-            // 추가 속성 전달
-            profile: 'instructor',
-            // 필요한 경우 다른 속성 추가
-            // given_name: '',
-            // family_name: '',
-          }
+          userAttributes
         }
       });
       

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { handleSignIn } from '@utils/auth';
+// @utils/auth 대신 직접 aws-amplify에서 임포트
+import { signIn } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import AuthLayout from '../layouts/AuthLayout';
 import {
@@ -34,6 +35,7 @@ const SignIn: React.FC = () => {
     setFormState({ ...formState, [field]: value });
   };
 
+  // handleSignIn 유틸리티 대신 직접 Amplify signIn 사용
   const handleSignInClick = async () => {
     // 입력 유효성 검사
     if (!formState.username || !formState.password) {
@@ -47,10 +49,10 @@ const SignIn: React.FC = () => {
 
     try {
       console.log('로그인 시도:', formState.username);
-      const result = await handleSignIn(
-        formState.username,
-        formState.password
-      );
+      const result = await signIn({
+        username: formState.username,
+        password: formState.password
+      });
 
       console.log('로그인 결과:', result);
 
@@ -99,6 +101,7 @@ const SignIn: React.FC = () => {
     }
   };
 
+  // 나머지 컴포넌트 코드는 수정 없음
   return (
     <AuthLayout>
       <SpaceBetween direction="vertical" size="l">
