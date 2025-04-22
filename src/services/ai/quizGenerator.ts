@@ -1,6 +1,5 @@
 // src/services/ai/quizGenerator.ts
 import { v4 as uuidv4 } from 'uuid';
-import { client } from '../../graphql/client';
 
 interface Question {
   id?: string;
