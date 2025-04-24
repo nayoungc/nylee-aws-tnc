@@ -1,4 +1,3 @@
-// src/components/courses/BaseCourseView.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -8,20 +7,48 @@ import {
   Box,
   Button,
   Badge,
-  Spinner
+  Spinner,
+  Alert
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
+import { fetchAuthSession } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { listCourseCatalogs, CourseCatalog } from '@api';
-
-// AWS 자격 증명 설정을 위한 임포트
 import AWS from 'aws-sdk';
-import { fetchAuthSession } from 'aws-amplify/auth';
 
-// AWS 자격 증명 설정 함수 추가
+// BaseCourseView.tsx 파일 상단에 인증 상태 관련 변수
+let lastAuthCheck = 0;
+const AUTH_CHECK_INTERVAL = 30000; // 30초
+
+// 인증 상태 확인 함수
+async function checkAuthentication(): Promise<boolean> {
+  const now = Date.now();
+  // 30초 이내에 이미 확인했다면 중복 확인 방지
+  if (now - lastAuthCheck < AUTH_CHECK_INTERVAL) {
+    return false; // 인증 실패로 간주 (안전하게)
+  }
+  
+  lastAuthCheck = now;
+  
+  try {
+    await getCurrentUser();
+    return true;
+  } catch (err) {
+    console.log('로그인이 필요합니다');
+    return false;
+  }
+}
+
+// AWS 자격 증명 설정 함수
 async function setupAwsCredentials() {
   try {
+    // 먼저 인증 확인
+    const isAuthenticated = await checkAuthentication();
+    if (!isAuthenticated) {
+      throw new Error('먼저 로그인이 필요합니다');
+    }
+    
     const session = await fetchAuthSession();
     if (session.credentials) {
       AWS.config.credentials = new AWS.Credentials({
@@ -38,13 +65,22 @@ async function setupAwsCredentials() {
   }
 }
 
-// 데이터 로딩 도우미 함수
+// 수정된 데이터 로드 함수
 async function loadCourseData() {
   console.log('API 호출 시작...');
   
   try {
+    // 인증 확인 추가
+    const isAuthenticated = await checkAuthentication();
+    if (!isAuthenticated) {
+      throw new Error('이 기능을 사용하려면 로그인이 필요합니다');
+    }
+    
     // AWS 자격 증명 설정
-    await setupAwsCredentials();
+    const credentialsSet = await setupAwsCredentials();
+    if (!credentialsSet) {
+      throw new Error('AWS 자격 증명을 설정할 수 없습니다');
+    }
     
     // API 호출하여 데이터 로드
     const result = await listCourseCatalogs();
@@ -121,14 +157,59 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   const [courses, setCourses] = useState<CourseCatalog[]>(initialCourses || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
 
   const navigateToCreateCourse = useCallback(() => {
     if (createPath) navigate(createPath);
   }, [navigate, createPath]);
 
+  // 인증 상태 확인
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        await getCurrentUser();
+        setIsAuthenticated(true);
+      } catch (err) {
+        setIsAuthenticated(false);
+      } finally {
+        setAuthChecked(true);
+      }
+    }
+    
+    checkAuth();
+  }, []);
+
+  // 데이터 로드
   useEffect(() => {
     if (initialCourses && initialCourses.length > 0) {
       setLoading(false);
+      return;
+    }
+
+    // 인증 상태 확인이 완료된 후에만 진행
+    if (!authChecked) {
+      return;
+    }
+
+    // 인증되지 않은 상태면 API 호출 없이 종료
+    if (!isAuthenticated) {
+      setLoading(false);
+      setError(t('courses.errors.authentication'));
+      
+      if (process.env.NODE_ENV === 'development') {
+        setCourses([
+          mapToCourseViewModel({ 
+            catalogId: '1', 
+            title: '개발 환경 - 샘플 과정', 
+            description: '로그인하지 않았을 때 표시되는 샘플 데이터입니다.',
+            level: '입문',
+            category: '기타',
+            duration: 0,
+            status: 'ACTIVE',
+          })
+        ]);
+      }
       return;
     }
 
@@ -156,8 +237,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
       }, 15000);
       
       try {
-        await getCurrentUser();
-        
         // AWS 자격 증명 설정 추가
         await setupAwsCredentials();
         
@@ -189,6 +268,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         if (error.name === 'UserUnAuthenticatedException' || 
             error.message?.includes('인증')) {
           setError(t('courses.errors.authentication'));
+          setIsAuthenticated(false);
         } else {
           setError(t('courses.errors.load_message'));
         }
@@ -222,8 +302,10 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
       }
     };
     
-    checkAuthAndFetchCourses();
-  }, [t, initialCourses]);
+    if (isAuthenticated) {
+      checkAuthAndFetchCourses();
+    }
+  }, [t, initialCourses, authChecked, isAuthenticated]);
 
   const getStatusColor = (status?: string): "green" | "blue" | "grey" => {
     if (!status) return 'grey';
@@ -234,12 +316,29 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     }
   };
 
+  // 로딩 중 UI
   if (loading) {
     return (
       <Box padding="l" textAlign="center">
         <Spinner size="large" />
         <Box padding="s">{t('courses.loading')}</Box>
       </Box>
+    );
+  }
+
+  // 인증되지 않은 상태 UI
+  if (!isAuthenticated && authChecked) {
+    return (
+      <Container>
+        <Alert type="info" header={t('courses.auth_required') || "로그인 필요"}>
+          <SpaceBetween direction="vertical" size="m">
+            <div>{t('courses.please_login') || "이 기능을 사용하려면 로그인이 필요합니다."}</div>
+            <Button variant="primary" onClick={() => navigate('/login')}>
+              {t('courses.login') || "로그인하기"}
+            </Button>
+          </SpaceBetween>
+        </Alert>
+      </Container>
     );
   }
 
