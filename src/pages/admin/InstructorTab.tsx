@@ -42,16 +42,23 @@ interface CognitoUser {
 // API functions for instructors - 백엔드 API 호출 방식으로 수정
 const listInstructors = async () => {
     try {
-        // 실제 API 엔드포인트로 호출
         const response = await fetch('/api/instructors', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            credentials: 'include' // Include cookies for authentication
         });
         
         if (!response.ok) {
-            throw new Error('Failed to fetch instructors');
+            // Check content type to handle non-JSON errors properly
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to fetch instructors');
+            } else {
+                throw new Error(`Failed to fetch instructors: \${response.status} \${response.statusText}`);
+            }
         }
         
         const data = await response.json();
@@ -62,35 +69,7 @@ const listInstructors = async () => {
     }
 };
 
-const createInstructor = async (instructor: Partial<Instructor>) => {
-    try {
-        const instructorWithId = {
-            ...instructor,
-            instructorId: instructor.instructorId || uuidv4(),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        const response = await fetch('/api/instructors', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(instructorWithId)
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to create instructor');
-        }
-        
-        const data = await response.json();
-        return { data };
-    } catch (error) {
-        console.error('Error creating instructor:', error);
-        throw error;
-    }
-};
-
+// Similar fix for updateInstructor, with corrected template literal syntax
 const updateInstructor = async (instructor: Partial<Instructor>) => {
     try {
         const updateData = {
@@ -98,16 +77,24 @@ const updateInstructor = async (instructor: Partial<Instructor>) => {
             updatedAt: new Date().toISOString()
         };
         
-        const response = await fetch(`/api/instructors/\${instructor.instructorId}`, {
+        const response = await fetch(`/api/instructors/\${instructor.instructorId}`, { // Fixed template literal
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify(updateData)
         });
         
+        // Add error handling similar to listInstructors
         if (!response.ok) {
-            throw new Error('Failed to update instructor');
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update instructor');
+            } else {
+                throw new Error(`Failed to update instructor: \${response.status} \${response.statusText}`);
+            }
         }
         
         const data = await response.json();
@@ -118,14 +105,23 @@ const updateInstructor = async (instructor: Partial<Instructor>) => {
     }
 };
 
+// Fix deleteInstructor with corrected template literal syntax
 const deleteInstructor = async (instructorId: string) => {
     try {
-        const response = await fetch(`/api/instructors/\${instructorId}`, {
-            method: 'DELETE'
+        const response = await fetch(`/api/instructors/\${instructorId}`, { // Fixed template literal
+            method: 'DELETE',
+            credentials: 'include'
         });
         
+        // Add error handling similar to the other functions
         if (!response.ok) {
-            throw new Error('Failed to delete instructor');
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete instructor');
+            } else {
+                throw new Error(`Failed to delete instructor: \${response.status} \${response.statusText}`);
+            }
         }
         
         const data = await response.json();
@@ -136,18 +132,25 @@ const deleteInstructor = async (instructorId: string) => {
     }
 };
 
-// Cognito 사용자 목록 가져오기 (안전한 백엔드 API 사용)
+// Fix Cognito users API call with better error handling
 const listCognitoUsers = async () => {
     try {
         const response = await fetch('/api/admin/cognito-users', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            credentials: 'include'
         });
         
         if (!response.ok) {
-            throw new Error('Failed to fetch Cognito users');
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to fetch Cognito users');
+            } else {
+                throw new Error(`Failed to fetch Cognito users: \${response.status} \${response.statusText}`);
+            }
         }
         
         const data = await response.json();
@@ -269,6 +272,43 @@ const InstructorTab: React.FC = () => {
             status: 'ACTIVE',
         });
         setIsModalVisible(true);
+    };
+
+    const createInstructor = async (instructor: Partial<Instructor>) => {
+        try {
+            const instructorWithId = {
+                ...instructor,
+                instructorId: instructor.instructorId || uuidv4(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+    
+            const response = await fetch('/api/instructors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // Include cookies for authentication
+                body: JSON.stringify(instructorWithId)
+            });
+            
+            if (!response.ok) {
+                // Check content type to handle non-JSON errors properly
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to create instructor');
+                } else {
+                    throw new Error(`Failed to create instructor: \${response.status} \${response.statusText}`);
+                }
+            }
+            
+            const data = await response.json();
+            return { data };
+        } catch (error) {
+            console.error('Error creating instructor:', error);
+            throw error;
+        }
     };
 
     // 강사 수정

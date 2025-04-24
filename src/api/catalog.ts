@@ -1,4 +1,4 @@
-// src/spi/catalog.ts
+// src/api/catalog.ts
 import { getCurrentTimestamp } from './config';
 import { CourseCatalog, CatalogModule, CatalogLab } from './types';
 import AWS from 'aws-sdk';
@@ -42,18 +42,19 @@ async function getDocumentClient() {
     }
     
     // 세션을 강제로 새로고침하여 최신 자격 증명 확보
-    const session = await fetchAuthSession({ forceRefresh: true });
+    const { credentials } = await fetchAuthSession({ forceRefresh: true });
     
-    if (!session.credentials) {
+    if (!credentials) {
       throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
     }
     
+    // AWS.Credentials 객체를 사용하여 올바르게 자격 증명 설정
     return new AWS.DynamoDB.DocumentClient({
-      credentials: {
-        accessKeyId: session.credentials.accessKeyId,
-        secretAccessKey: session.credentials.secretAccessKey,
-        sessionToken: session.credentials.sessionToken
-      },
+      credentials: new AWS.Credentials({
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+        sessionToken: credentials.sessionToken
+      }),
       region: AWS.config.region || 'us-east-1'
     });
   } catch (error) {
@@ -67,12 +68,6 @@ export async function listCourseCatalogs(options?: any) {
   try {
     console.log('listCourseCatalogs 함수 호출됨, 옵션:', options);
 
-    // 먼저 인증 상태 확인
-    const session = await fetchAuthSession();
-    if (!session.tokens) {
-      throw new Error("인증이 필요합니다. 먼저 로그인해주세요.");
-    }
-    
     const documentClient = await getDocumentClient();
     console.log('DynamoDB DocumentClient 생성 성공');
     
@@ -108,11 +103,6 @@ export async function listCourseCatalogs(options?: any) {
 // 나머지 함수들에도 인증 확인 추가
 export async function getCourseCatalog(catalogId: string, title: string) {
   try {
-    // 인증 확인
-    if (!await checkAuthentication()) {
-      throw new Error('먼저 로그인이 필요합니다');
-    }
-    
     const documentClient = await getDocumentClient();
     
     const params = {

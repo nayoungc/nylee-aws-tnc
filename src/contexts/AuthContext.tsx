@@ -12,6 +12,7 @@ interface AuthContextValue {
   checkAuthStatus: (force?: boolean) => Promise<void>;
   logout: (global?: boolean) => Promise<void>;
   loginRedirect: (returnPath?: string) => void; // 로그인 페이지로 리디렉션 함수 추가
+  handleAuthError: (error: any) => void; // 인증 오류 처리 함수 추가
 }
 
 // 인증 상태 타입 정의 (useState용)
@@ -36,7 +37,7 @@ const TOKEN_REFRESH_MIN_INTERVAL = 30000; // 30초
  * 인증 상태를 전역으로 관리하는 Provider 컴포넌트
  * 중복된 인증 로직을 한 곳에 모아 성능 최적화
  */
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   // 인증 상태 관리 - 명시적 타입 지정
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
@@ -135,8 +136,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async (global = false) => {
     console.log('로그아웃 시작...');
     try {
+      // 1. 먼저 Amplify signOut 호출
+      console.log('Amplify signOut 호출 중...');
+      await signOut({ global });
+
+      // 2. 그 다음 상태 및 캐시 초기화
       console.log('로그아웃 상태 정리 중...');
-      // 상태 및 캐시 초기화
       setState({
         isAuthenticated: false,
         userAttributes: null,
@@ -146,20 +151,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       console.log('로그아웃 스토리지 정리 중...');
-      // 세션 스토리지 정리
+      // 3. 세션 스토리지 정리
       sessionStorage.removeItem('userAttributes');
       sessionStorage.removeItem('userAttributesTimestamp');
+      localStorage.removeItem('amplify-signin-with-hostedUI');
 
-      console.log('Amplify signOut 호출 중...');
-      await signOut({ global });
       console.log('로그아웃 완료!');
 
-      // 강제 리디렉션
-      window.location.href = '/';
+      // 4. 지연된 리디렉션으로 변경
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 300); // 약간의 지연 추가
     } catch (error) {
       console.error('로그아웃 오류:', error);
       // 오류 시에도 로그아웃 처리
-      window.location.href = '/login';
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 300);
+    }
+  }, []);
+
+  /**
+   * 인증 오류 처리 함수
+   * 자격 증명 만료, 인증 실패 등을 처리
+   */
+  const handleAuthError = useCallback((error: any) => {
+    if (
+      error.message?.includes("자격 증명이 없습니다") || 
+      error.message?.includes("세션에 유효한 자격 증명이 없습니다") ||
+      error.message?.includes("No credentials") ||
+      error.message?.includes("expired") ||
+      error.name === 'NotAuthorizedException' ||
+      error.code === 'NotAuthorizedException'
+    ) {
+      console.log("인증 세션 만료됨, 로그아웃 처리");
+      
+      // 상태 초기화
+      setState({
+        isAuthenticated: false,
+        userAttributes: null,
+        username: '',
+        userRole: 'student',
+        loading: false
+      });
+      
+      // 스토리지 정리
+      sessionStorage.removeItem('userAttributes');
+      sessionStorage.removeItem('userAttributesTimestamp');
+      localStorage.removeItem('amplify-signin-with-hostedUI');
+      
+      // 로그인 페이지로 리다이렉트 (현재 경로 저장)
+      const currentPath = window.location.pathname;
+      loginRedirect(currentPath);
     }
   }, []);
 
@@ -217,19 +260,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           tokenRefreshLastAttempt = now;
           setLastRefresh(now);
           break;
+        case 'tokenRefresh_failure':
+          console.error('토큰 갱신 실패');
+          handleAuthError(new Error('토큰 갱신 실패'));
+          break;
       }
     });
 
-    return () => listener();
-  }, [checkAuthStatus, logout]);
+    // 전역 오류 리스너 설정
+    const globalErrorHandler = (event: ErrorEvent) => {
+      if (
+        event.error?.message?.includes("자격 증명이 없습니다") || 
+        event.error?.message?.includes("세션에 유효한 자격 증명이 없습니다") ||
+        event.error?.message?.includes("No credentials")
+      ) {
+        handleAuthError(event.error);
+      }
+    };
+    
+    window.addEventListener('error', globalErrorHandler);
+
+    return () => {
+      listener();
+      window.removeEventListener('error', globalErrorHandler);
+    };
+  }, [checkAuthStatus, logout, handleAuthError]);
 
   // 컨텍스트 값 메모이제이션 (불필요한 리렌더링 방지)
   const value = useMemo(() => ({
     ...state,
     checkAuthStatus,
     logout,
-    loginRedirect  // 새 함수 추가
-  }), [state, checkAuthStatus, logout, loginRedirect]);
+    loginRedirect,
+    handleAuthError // 인증 오류 처리 함수 추가
+  }), [state, checkAuthStatus, logout, loginRedirect, handleAuthError]);
 
   return (
     <AuthContext.Provider value={value}>
@@ -247,4 +311,26 @@ export const useAuth = () => {
     throw new Error('useAuth는 AuthProvider 내부에서만 사용할 수 있습니다');
   }
   return context;
+};
+
+/**
+ * AWS API 호출을 위한 wrapper 함수
+ * 인증 오류를 자동으로 처리
+ */
+export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>>(
+  apiFunction: T,
+  auth?: ReturnType<typeof useAuth>
+) => {
+  return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+    try {
+      return await apiFunction(...args);
+    } catch (error: any) {
+      // 사용자가 auth 객체를 전달했다면 그것을 사용, 아니면 useAuth hook 사용
+      const authContext = auth || useContext(AuthContext);
+      if (authContext && authContext.handleAuthError) {
+        authContext.handleAuthError(error);
+      }
+      throw error;
+    }
+  };
 };
