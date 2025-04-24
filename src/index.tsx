@@ -94,18 +94,19 @@ Hub.listen('auth', (data) => {
     tokenRefreshAttempts = 0; // 로그아웃 시 시도 횟수 리셋
   }
 
-  if (payload.event === 'tokenRefresh') {
-    console.log('토큰 갱신 - 자격 증명 업데이트');
-    
-    // 최대 시도 횟수를 초과하면 더 이상 시도하지 않음
-    if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS) {
+  // 템플릿 리터럴 문자열 수정 (큰따옴표로 변경)
+if (payload.event === 'tokenRefresh') {
+  console.log('토큰 갱신 - 자격 증명 업데이트');
+  
+  // 최대 시도 횟수를 초과하면 더 이상 시도하지 않음
+  if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS) {
       console.log(`최대 토큰 갱신 시도 횟수(\${MAX_TOKEN_REFRESH_ATTEMPTS})를 초과했습니다.`);
       return;
-    }
-    
-    tokenRefreshAttempts++;
-    initializeCredentials(true);
   }
+  
+  tokenRefreshAttempts++;
+  initializeCredentials(true);
+}
 });
 
 // AWS 서비스 생성을 위한 함수

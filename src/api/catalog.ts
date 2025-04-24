@@ -2,21 +2,42 @@
 import { getCurrentTimestamp } from './config';
 import { CourseCatalog, CatalogModule, CatalogLab } from './types';
 import AWS from 'aws-sdk';
-import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
-
+import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 
 const CATALOG_TABLE = 'Tnc-CourseCatalog';
 const MODULES_TABLE = 'Tnc-CourseCatalog-Modules';
 const LABS_TABLE = 'Tnc-CourseCatalog-Labs';
 
+// 이미 인증되어 있는지 확인하는 전역 변수와 타임스탬프
+let lastAuthCheck = 0;
+let authCheckResult = false;
+const AUTH_CHECK_INTERVAL = 30000; // 30초
+
+// 인증 상태 확인 함수
+async function checkAuthentication(): Promise<boolean> {
+  const now = Date.now();
+  if (now - lastAuthCheck < AUTH_CHECK_INTERVAL && authCheckResult) {
+    return true; // 캐시된 결과 사용
+  }
+  
+  try {
+    await getCurrentUser();
+    lastAuthCheck = now;
+    authCheckResult = true;
+    return true;
+  } catch (err) {
+    lastAuthCheck = now;
+    authCheckResult = false;
+    return false;
+  }
+}
+
 // 인증된 DynamoDB 클라이언트를 생성하는 함수
 async function getDocumentClient() {
   try {
-    // 먼저 사용자가 로그인되어 있는지 확인
-    try {
-      await getCurrentUser();
-    } catch (err) {
-      console.error('인증이 필요합니다.');
+    // 먼저 인증 상태 확인
+    const isAuthenticated = await checkAuthentication();
+    if (!isAuthenticated) {
       throw new Error('먼저 로그인이 필요합니다');
     }
     
@@ -37,15 +58,18 @@ async function getDocumentClient() {
     });
   } catch (error) {
     console.error('DynamoDB DocumentClient 생성 실패:', error);
-    throw error;
+    throw error; // 원래 오류를 그대로 전파
   }
 }
 
 // ========== CourseCatalog 테이블 관련 함수 ==========
-
-// 이 함수 추가 - BaseCourseView.tsx에서 사용하는 중요한 함수
 export async function listCourseCatalogs(options?: any) {
   try {
+    // 인증 확인
+    if (!await checkAuthentication()) {
+      throw new Error('먼저 로그인이 필요합니다');
+    }
+    
     const documentClient = await getDocumentClient();
     
     const params = {
@@ -65,8 +89,14 @@ export async function listCourseCatalogs(options?: any) {
   }
 }
 
+// 나머지 함수들에도 인증 확인 추가
 export async function getCourseCatalog(catalogId: string, title: string) {
   try {
+    // 인증 확인
+    if (!await checkAuthentication()) {
+      throw new Error('먼저 로그인이 필요합니다');
+    }
+    
     const documentClient = await getDocumentClient();
     
     const params = {
