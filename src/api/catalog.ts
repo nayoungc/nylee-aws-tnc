@@ -3,19 +3,29 @@ import { getCurrentTimestamp } from './config';
 import { CourseCatalog, CatalogModule, CatalogLab } from './types';
 import AWS from 'aws-sdk';
 import { fetchAuthSession } from 'aws-amplify/auth'; 
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+
 
 const CATALOG_TABLE = 'Tnc-CourseCatalog';
 const MODULES_TABLE = 'Tnc-CourseCatalog-Modules';
 const LABS_TABLE = 'Tnc-CourseCatalog-Labs';
 
 // 인증된 DynamoDB 클라이언트를 생성하는 함수
+// 인증된 DynamoDB 클라이언트를 생성하는 함수
 async function getDocumentClient() {
   try {
+    // 먼저 사용자가 로그인되어 있는지 확인
+    try {
+      await getCurrentUser();
+    } catch (err) {
+      console.error('인증이 필요합니다.');
+      throw new Error('먼저 로그인이 필요합니다');
+    }
+    
     // 세션을 강제로 새로고침하여 최신 자격 증명 확보
     const session = await fetchAuthSession({ forceRefresh: true });
     
     if (!session.credentials) {
-      console.error('인증이 필요합니다.');
       throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
     }
     
@@ -29,7 +39,7 @@ async function getDocumentClient() {
     });
   } catch (error) {
     console.error('DynamoDB DocumentClient 생성 실패:', error);
-    throw error; // 원래 오류를 그대로 전파
+    throw error;
   }
 }
 
@@ -289,31 +299,6 @@ export async function listLabs(catalogId: string) {
     };
   } catch (error) {
     console.error('Error listing labs:', error);
-    throw error;
-  }
-}
-
-export async function getLabsForModule(moduleId: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: LABS_TABLE,
-      IndexName: 'Tnc-CourseCatalog-Labs-GSI1',
-      KeyConditionExpression: 'moduleId = :moduleId',
-      ExpressionAttributeValues: {
-        ':moduleId': moduleId
-      }
-    };
-    
-    const result = await documentClient.query(params).promise();
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
-  } catch (error) {
-    console.error('Error listing labs for module:', error);
     throw error;
   }
 }

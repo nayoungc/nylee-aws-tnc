@@ -16,6 +16,10 @@ let awsCredentials: AWS.Credentials | null = null;
 let credentialsInitialized = false;
 let lastCredentialAttempt = 0;
 
+// 토큰 리프레시 시도 제한 추가
+let tokenRefreshAttempts = 0;
+const MAX_TOKEN_REFRESH_ATTEMPTS = 3;
+
 // AWS 자격 증명 초기화 함수
 async function initializeCredentials(force = false): Promise<boolean> {
   // 10초 이내에 이미 시도했으면 중복 호출 방지
@@ -43,6 +47,7 @@ async function initializeCredentials(force = false): Promise<boolean> {
       
       credentialsInitialized = true;
       console.log('AWS SDK 자격 증명 설정 완료');
+      tokenRefreshAttempts = 0; // 성공 시 시도 횟수 리셋
       return true;
     } else {
       console.error('세션에서 자격 증명을 찾을 수 없음');
@@ -79,15 +84,26 @@ Hub.listen('auth', (data) => {
   const { payload } = data;
   if (payload.event === 'signedIn') {
     console.log('사용자 로그인 완료 - 자격 증명 갱신');
+    tokenRefreshAttempts = 0; // 로그인 시 시도 횟수 리셋
     initializeCredentials(true); // 자격증명 초기화 (강제 갱신)
   }
   if (payload.event === 'signedOut') {
     console.log('사용자 로그아웃');
     credentialsInitialized = false;
     awsCredentials = null;
+    tokenRefreshAttempts = 0; // 로그아웃 시 시도 횟수 리셋
   }
+
   if (payload.event === 'tokenRefresh') {
     console.log('토큰 갱신 - 자격 증명 업데이트');
+    
+    // 최대 시도 횟수를 초과하면 더 이상 시도하지 않음
+    if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS) {
+      console.log(`최대 토큰 갱신 시도 횟수(\${MAX_TOKEN_REFRESH_ATTEMPTS})를 초과했습니다.`);
+      return;
+    }
+    
+    tokenRefreshAttempts++;
     initializeCredentials(true);
   }
 });
@@ -107,9 +123,6 @@ export async function createAWSService<T>(ServiceClass: new (config: AWS.Configu
 }
 
 // 전역 함수로 등록
-// window.updateAWSCredentials = initializeCredentials;
-// window.createAWSService = createAWSService;
-
 (window as any).updateAWSCredentials = initializeCredentials;
 (window as any).createAWSService = createAWSService;
 

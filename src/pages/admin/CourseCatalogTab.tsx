@@ -175,83 +175,50 @@ const CourseCatalogTab: React.FC = () => {
     };
 
     // 인증 상태 확인 후 데이터 가져오는 함수
-    const checkAuthAndFetchCourses = async () => {
-        setLoading(true);
-        setError(null);
-        
-        try {
-            // 사용자 인증 상태 확인
-            await getCurrentUser();
-            setIsAuthenticated(true);
-            
-            // 인증 확인 후 데이터 가져오기
-            await fetchCourses();
-        } catch (err) {
-            console.error('Authentication check failed', err);
-            setError(t('admin.courses.auth_required') || '이 기능을 사용하려면 로그인이 필요합니다');
-            setIsAuthenticated(false);
-            setLoading(false);
-            
-            // 개발 환경에서는 샘플 데이터 제공
-            if (process.env.NODE_ENV === 'development') {
-                setCourses([
-                    {
-                        catalogId: '1',
-                        title: 'AWS Cloud Practitioner',
-                        version: '1.0',
-                        awsCode: 'AWS-CP',
-                        description: 'Fundamental AWS concepts',
-                        duration: 20,
-                        level: 'BEGINNER',
-                        deliveryMethod: 'Online',
-                        objectives: ['Learn AWS basics', 'Understand cloud concepts'],
-                        targetAudience: ['Beginners', 'IT Professionals'],
-                        status: 'ACTIVE',
-                        isPublished: true,
-                        category: 'Cloud',
-                        price: 299,
-                        currency: 'USD'
-                    },
-                    {
-                        catalogId: '2',
-                        title: 'AWS Solutions Architect',
-                        version: '2.0',
-                        awsCode: 'AWS-SAA',
-                        description: 'Advanced architecture patterns',
-                        duration: 40,
-                        level: 'ADVANCED',
-                        deliveryMethod: 'Blended',
-                        objectives: ['Design resilient architectures', 'Design high-performance architectures'],
-                        targetAudience: ['Architects', 'Cloud Engineers'],
-                        status: 'ACTIVE',
-                        isPublished: true,
-                        category: 'Architecture',
-                        price: 499,
-                        currency: 'USD'
-                    }
-                ]);
-
-                setObjectiveOptions([
-                    { label: 'Learn AWS basics', value: 'Learn AWS basics' },
-                    { label: 'Understand cloud concepts', value: 'Understand cloud concepts' },
-                    { label: 'Design resilient architectures', value: 'Design resilient architectures' },
-                    { label: 'Design high-performance architectures', value: 'Design high-performance architectures' }
-                ]);
-
-                setAudienceOptions([
-                    { label: 'Beginners', value: 'Beginners' },
-                    { label: 'IT Professionals', value: 'IT Professionals' },
-                    { label: 'Architects', value: 'Architects' },
-                    { label: 'Cloud Engineers', value: 'Cloud Engineers' }
-                ]);
-            }
-        }
+    // 인증 상태 확인 후 데이터 가져오는 함수
+const checkAuthAndFetchCourses = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // 사용자 인증 상태 확인
+      await getCurrentUser();
+      setIsAuthenticated(true);
+      
+      try {
+        // 인증 확인 후 데이터 가져오기
+        await fetchCourses();
+      } catch (apiError) {
+        console.error('API 오류:', apiError);
+        setError(t('admin.courses.error_loading') || 'API 오류 발생');
+      }
+    } catch (authError) {
+      console.error('Authentication check failed:', authError);
+      setIsAuthenticated(false);
+      setError(t('admin.courses.auth_required') || '로그인이 필요합니다');
+      
+      // 개발 환경에서 샘플 데이터 (이미 구현됨)
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // 컴포넌트 마운트 시 한 번만 호출
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      await checkAuthAndFetchCourses();
     };
-
-    // 컴포넌트 마운트 시 인증 확인 후 데이터 로드
-    useEffect(() => {
-        checkAuthAndFetchCourses();
-    }, []);
+    
+    if (isMounted) {
+      fetchData();
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
     // 검색 텍스트 기반 필터링
     const filteredItems = courses.filter(course =>
