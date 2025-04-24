@@ -2,7 +2,6 @@
 import { getCurrentTimestamp } from './config';
 import { CourseCatalog, CatalogModule, CatalogLab } from './types';
 import AWS from 'aws-sdk';
-import { fetchAuthSession } from 'aws-amplify/auth'; 
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 
 
@@ -10,7 +9,6 @@ const CATALOG_TABLE = 'Tnc-CourseCatalog';
 const MODULES_TABLE = 'Tnc-CourseCatalog-Modules';
 const LABS_TABLE = 'Tnc-CourseCatalog-Labs';
 
-// 인증된 DynamoDB 클라이언트를 생성하는 함수
 // 인증된 DynamoDB 클라이언트를 생성하는 함수
 async function getDocumentClient() {
   try {
