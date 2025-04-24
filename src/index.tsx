@@ -9,6 +9,9 @@ import './styles/theme.css';
 import './styles/auth.css';
 import './i18n';
 
+// AuthProvider 임포트 추가
+import { AuthProvider } from './contexts/AuthContext'; // 실제 AuthContext 파일 경로로 수정해주세요
+
 import awsExports from './aws-exports';
 
 // AWS 자격 증명을 저장할 전역 변수
@@ -132,11 +135,13 @@ export async function createAWSService<T>(ServiceClass: new (config: AWS.Configu
 (window as any).updateAWSCredentials = initializeCredentials;
 (window as any).createAWSService = createAWSService;
 
-// 앱 초기화 후 렌더링
+// 앱 초기화 후 렌더링 - AuthProvider로 App 컴포넌트를 감싸기
 initializeApp().then(() => {
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </React.StrictMode>
   );
 });
