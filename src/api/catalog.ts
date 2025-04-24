@@ -15,6 +15,7 @@ async function getDocumentClient() {
     const session = await fetchAuthSession({ forceRefresh: true });
     
     if (!session.credentials) {
+      console.error('인증이 필요합니다.');
       throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
     }
     
@@ -33,6 +34,8 @@ async function getDocumentClient() {
 }
 
 // ========== CourseCatalog 테이블 관련 함수 ==========
+
+// 이 함수 추가 - BaseCourseView.tsx에서 사용하는 중요한 함수
 export async function listCourseCatalogs(options?: any) {
   try {
     const documentClient = await getDocumentClient();

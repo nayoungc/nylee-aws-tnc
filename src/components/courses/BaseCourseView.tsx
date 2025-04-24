@@ -15,7 +15,7 @@ import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { listCourseCatalogs, CourseCatalog } from '@api';
 
-// BaseCourseView.tsx 파일 상단에 추가
+// AWS 자격 증명 설정을 위한 임포트
 import AWS from 'aws-sdk';
 import { fetchAuthSession } from 'aws-amplify/auth';
 
@@ -38,7 +38,7 @@ async function setupAwsCredentials() {
   }
 }
 
-// 이 함수는 사용되지 않으므로 제거하거나 아래와 같이 수정할 수 있습니다
+// 데이터 로딩 도우미 함수
 async function loadCourseData() {
   console.log('API 호출 시작...');
   
