@@ -18,6 +18,7 @@ import {
 } from '@cloudscape-design/components';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
+import { getCurrentUser } from 'aws-amplify/auth';
 import {
     CourseCatalog
 } from '@api/types';
@@ -76,6 +77,7 @@ const CourseCatalogTab: React.FC = () => {
     const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
     const [error, setError] = useState<string | null>(null);
     const [lastEvaluatedKey, setLastEvaluatedKey] = useState<any>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
     // 목표와 대상 청중을 위한 선택 옵션
     const [objectiveOptions, setObjectiveOptions] = useState<{ label: string, value: string }[]>([]);
@@ -111,7 +113,7 @@ const CourseCatalogTab: React.FC = () => {
                 setAudienceOptions(Array.from(allAudiences).map(audience => ({ label: audience, value: audience })));
             }
         } catch (err) {
-            console.error(t('admin.courses.error_loading'), err);
+            console.error('Error loading course data', err);
             setError(t('admin.courses.error_loading'));
 
             // 개발 환경에서는 샘플 데이터 제공
@@ -172,9 +174,83 @@ const CourseCatalogTab: React.FC = () => {
         }
     };
 
-    // 컴포넌트 마운트 시 데이터 로드
+    // 인증 상태 확인 후 데이터 가져오는 함수
+    const checkAuthAndFetchCourses = async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            // 사용자 인증 상태 확인
+            await getCurrentUser();
+            setIsAuthenticated(true);
+            
+            // 인증 확인 후 데이터 가져오기
+            await fetchCourses();
+        } catch (err) {
+            console.error('Authentication check failed', err);
+            setError(t('admin.courses.auth_required') || '이 기능을 사용하려면 로그인이 필요합니다');
+            setIsAuthenticated(false);
+            setLoading(false);
+            
+            // 개발 환경에서는 샘플 데이터 제공
+            if (process.env.NODE_ENV === 'development') {
+                setCourses([
+                    {
+                        catalogId: '1',
+                        title: 'AWS Cloud Practitioner',
+                        version: '1.0',
+                        awsCode: 'AWS-CP',
+                        description: 'Fundamental AWS concepts',
+                        duration: 20,
+                        level: 'BEGINNER',
+                        deliveryMethod: 'Online',
+                        objectives: ['Learn AWS basics', 'Understand cloud concepts'],
+                        targetAudience: ['Beginners', 'IT Professionals'],
+                        status: 'ACTIVE',
+                        isPublished: true,
+                        category: 'Cloud',
+                        price: 299,
+                        currency: 'USD'
+                    },
+                    {
+                        catalogId: '2',
+                        title: 'AWS Solutions Architect',
+                        version: '2.0',
+                        awsCode: 'AWS-SAA',
+                        description: 'Advanced architecture patterns',
+                        duration: 40,
+                        level: 'ADVANCED',
+                        deliveryMethod: 'Blended',
+                        objectives: ['Design resilient architectures', 'Design high-performance architectures'],
+                        targetAudience: ['Architects', 'Cloud Engineers'],
+                        status: 'ACTIVE',
+                        isPublished: true,
+                        category: 'Architecture',
+                        price: 499,
+                        currency: 'USD'
+                    }
+                ]);
+
+                setObjectiveOptions([
+                    { label: 'Learn AWS basics', value: 'Learn AWS basics' },
+                    { label: 'Understand cloud concepts', value: 'Understand cloud concepts' },
+                    { label: 'Design resilient architectures', value: 'Design resilient architectures' },
+                    { label: 'Design high-performance architectures', value: 'Design high-performance architectures' }
+                ]);
+
+                setAudienceOptions([
+                    { label: 'Beginners', value: 'Beginners' },
+                    { label: 'IT Professionals', value: 'IT Professionals' },
+                    { label: 'Architects', value: 'Architects' },
+                    { label: 'Cloud Engineers', value: 'Cloud Engineers' }
+                ]);
+            }
+        }
+    };
+
+    // 컴포넌트 마운트 시 인증 확인 후 데이터 로드
     useEffect(() => {
-        fetchCourses();
+        checkAuthAndFetchCourses();
     }, []);
 
     // 검색 텍스트 기반 필터링
@@ -193,7 +269,15 @@ const CourseCatalogTab: React.FC = () => {
     );
 
     // 새 과정 생성
-    const handleCreateCourse = () => {
+    const handleCreateCourse = async () => {
+        // 인증 상태 확인
+        try {
+            await getCurrentUser();
+        } catch (err) {
+            setError(t('admin.courses.auth_required') || '이 기능을 사용하려면 로그인이 필요합니다');
+            return;
+        }
+
         const newCourse: CourseViewModel = {
             catalogId: uuidv4(), // Generate a unique ID
             title: '',
@@ -217,6 +301,14 @@ const CourseCatalogTab: React.FC = () => {
 
     // 기존 과정 수정
     const handleEditCourse = async (course: CourseViewModel) => {
+        // 인증 상태 확인
+        try {
+            await getCurrentUser();
+        } catch (err) {
+            setError(t('admin.courses.auth_required') || '이 기능을 사용하려면 로그인이 필요합니다');
+            return;
+        }
+
         setLoading(true);
         try {
             // 최신 과정 데이터 가져오기
@@ -242,7 +334,15 @@ const CourseCatalogTab: React.FC = () => {
     };
 
     // 삭제 확인 모달 표시
-    const handleDeleteCourseClick = (course: CourseViewModel) => {
+    const handleDeleteCourseClick = async (course: CourseViewModel) => {
+        // 인증 상태 확인
+        try {
+            await getCurrentUser();
+        } catch (err) {
+            setError(t('admin.courses.auth_required') || '이 기능을 사용하려면 로그인이 필요합니다');
+            return;
+        }
+
         setCurrentCourse(course);
         setIsDeleteModalVisible(true);
     };
@@ -250,6 +350,14 @@ const CourseCatalogTab: React.FC = () => {
     // 과정 저장 (생성 또는 수정)
     const handleSaveCourse = async () => {
         if (!currentCourse || !currentCourse.title) return;
+
+        // 인증 상태 확인
+        try {
+            await getCurrentUser();
+        } catch (err) {
+            setError(t('admin.courses.auth_required') || '이 기능을 사용하려면 로그인이 필요합니다');
+            return;
+        }
 
         const course = currentCourse; // Create a local reference to avoid null checks
         setLoading(true);
@@ -308,6 +416,14 @@ const CourseCatalogTab: React.FC = () => {
     const handleDeleteCourse = async () => {
         if (!currentCourse?.catalogId || !currentCourse?.title) return;
         
+        // 인증 상태 확인
+        try {
+            await getCurrentUser();
+        } catch (err) {
+            setError(t('admin.courses.auth_required') || '이 기능을 사용하려면 로그인이 필요합니다');
+            return;
+        }
+        
         const course = currentCourse; // Create a local reference to avoid null checks
         setLoading(true);
         setError(null);
@@ -339,6 +455,20 @@ const CourseCatalogTab: React.FC = () => {
             default: return level;
         }
     };
+
+    // 인증되지 않은 상태에서 로그인 안내 표시
+    if (!isAuthenticated && !loading && error) {
+        return (
+            <Box padding="m">
+                <Alert type="warning" header={t('admin.common.auth_required') || '인증 필요'}>
+                    <p>{t('admin.common.please_login') || '이 기능을 사용하려면 로그인이 필요합니다.'}</p>
+                    <Button variant="primary" onClick={checkAuthAndFetchCourses}>
+                        {t('admin.common.retry') || '다시 시도'}
+                    </Button>
+                </Alert>
+            </Box>
+        );
+    }
 
     return (
         <Box padding="m">
