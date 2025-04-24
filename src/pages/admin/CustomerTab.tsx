@@ -24,6 +24,7 @@ import {
   Customer
 } from '@api/types';
 import { v4 as uuidv4 } from 'uuid';
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 const CustomerTab: React.FC = () => {
   const { tString, t } = useTypedTranslation();
@@ -37,25 +38,93 @@ const CustomerTab: React.FC = () => {
   const [filterText, setFilterText] = useState<string>('');
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState<number>(0);
 
-  // 고객사 목록 불러오기
-  const fetchCustomers = async () => {
+  // 인증 관련 오류인지 확인하는 함수
+  const isAuthError = (err: any): boolean => {
+    if (!err) return false;
+    
+    const message = err.message || '';
+    return (
+      message.includes('자격 증명') ||
+      message.includes('세션') || 
+      message.includes('인증') ||
+      message.includes('로그인') ||
+      err.code === 'CredentialsError' ||
+      err.code === 'NotAuthorizedException' ||
+      err.code === 'UnrecognizedClientException'
+    );
+  };
+
+  // 인증 상태 확인 함수
+  const checkAuth = async (): Promise<boolean> => {
+    try {
+      const session = await fetchAuthSession({ forceRefresh: true });
+      return !!session.tokens;
+    } catch (err) {
+      console.error('인증 체크 실패:', err);
+      return false;
+    }
+  };
+
+  // 고객사 목록 불러오기 - 개선된 버전
+  const fetchCustomers = async (retryAttempt = 0) => {
     setLoading(true);
     setError(null);
     
     try {
+      // 인증 지연을 위한 짧은 대기
+      if (retryAttempt > 0) {
+        console.log(`재시도 #\${retryAttempt}: 인증 상태 확인 중...`);
+        const isAuthenticated = await checkAuth();
+        if (!isAuthenticated) {
+          throw new Error('인증이 필요합니다');
+        }
+        
+        // 지연 추가 (자격 증명 전파를 위해)
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
       const response = await listCustomers({
         limit: 20
       });
       
       if (response.data) {
         setCustomers(response.data as Customer[]);
+        
+        // 성공 시 재시도 카운트 초기화
+        setRetryCount(0);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(t('admin.customers.error_loading'), err);
+      
+      // 인증 오류이고 최대 재시도 횟수(2)에 도달하지 않았다면 재시도
+      if (isAuthError(err) && retryAttempt < 2) {
+        console.log(`인증 오류 발생, 잠시 후 재시도합니다... (\${retryAttempt + 1}/2)`);
+        setRetryCount(retryAttempt + 1);
+        
+        // 0.5초 후 재시도
+        setTimeout(() => {
+          fetchCustomers(retryAttempt + 1);
+        }, 500);
+        return;
+      }
+      
       setError(t('admin.customers.error_loading'));
+      
+      // 인증 오류이고 최대 재시도를 초과했을 경우 로그인 페이지로 리디렉션
+      if (isAuthError(err) && retryAttempt >= 2) {
+        console.error('인증 오류가 계속됩니다. 로그인 페이지로 이동합니다.');
+        setTimeout(() => {
+          const returnUrl = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?returnTo=\${returnUrl}`;
+        }, 1000);
+      }
     } finally {
-      setLoading(false);
+      // 로딩 상태는 재시도하지 않을 때만 해제
+      if (retryCount === 0) {
+        setLoading(false);
+      }
     }
   };
   
@@ -78,24 +147,69 @@ const CustomerTab: React.FC = () => {
   );
   
   // 새 고객사 만들기
-  const handleCreateCustomer = () => {
-    setCurrentCustomer({
-      customerId: uuidv4(),
-      customerName: '',
-    });
-    setIsModalVisible(true);
+  const handleCreateCustomer = async () => {
+    // 인증 확인 후 진행
+    try {
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        setError(t('admin.common.auth_required') || '인증이 필요합니다');
+        setTimeout(() => {
+          const returnUrl = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?returnTo=\${returnUrl}`;
+        }, 1000);
+        return;
+      }
+      
+      setCurrentCustomer({
+        customerId: uuidv4(),
+        customerName: '',
+      });
+      setIsModalVisible(true);
+    } catch (err) {
+      setError(t('admin.common.auth_required') || '인증이 필요합니다');
+    }
   };
   
   // 고객사 수정
-  const handleEditCustomer = (customer: Customer) => {
-    setCurrentCustomer({...customer});
-    setIsModalVisible(true);
+  const handleEditCustomer = async (customer: Customer) => {
+    // 인증 확인 후 진행
+    try {
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        setError(t('admin.common.auth_required') || '인증이 필요합니다');
+        setTimeout(() => {
+          const returnUrl = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?returnTo=\${returnUrl}`;
+        }, 1000);
+        return;
+      }
+      
+      setCurrentCustomer({...customer});
+      setIsModalVisible(true);
+    } catch (err) {
+      setError(t('admin.common.auth_required') || '인증이 필요합니다');
+    }
   };
   
   // 고객사 삭제 모달 표시
-  const handleDeleteCustomerClick = (customer: Customer) => {
-    setCurrentCustomer(customer);
-    setIsDeleteModalVisible(true);
+  const handleDeleteCustomerClick = async (customer: Customer) => {
+    // 인증 확인 후 진행
+    try {
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        setError(t('admin.common.auth_required') || '인증이 필요합니다');
+        setTimeout(() => {
+          const returnUrl = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?returnTo=\${returnUrl}`;
+        }, 1000);
+        return;
+      }
+      
+      setCurrentCustomer(customer);
+      setIsDeleteModalVisible(true);
+    } catch (err) {
+      setError(t('admin.common.auth_required') || '인증이 필요합니다');
+    }
   };
   
   // 고객사 저장 (생성/수정)
@@ -106,6 +220,12 @@ const CustomerTab: React.FC = () => {
     setError(null);
     
     try {
+      // 인증 확인
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        throw new Error(t('admin.common.auth_required') || '인증이 필요합니다');
+      }
+      
       if (currentCustomer.customerId) {
         // 기존 고객사 수정
         const customerInput = {
@@ -139,9 +259,17 @@ const CustomerTab: React.FC = () => {
       // 모달 닫기
       setIsModalVisible(false);
       setCurrentCustomer(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error(t('admin.customers.error_saving'), err);
       setError(t('admin.customers.error_saving'));
+      
+      // 인증 오류 처리
+      if (isAuthError(err)) {
+        setTimeout(() => {
+          const returnUrl = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?returnTo=\${returnUrl}`;
+        }, 1000);
+      }
     } finally {
       setLoading(false);
     }
@@ -155,6 +283,12 @@ const CustomerTab: React.FC = () => {
     setError(null);
     
     try {
+      // 인증 확인
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        throw new Error(t('admin.common.auth_required') || '인증이 필요합니다');
+      }
+      
       const response = await deleteCustomer(currentCustomer.customerId);
       
       if (response.data) {
@@ -167,23 +301,41 @@ const CustomerTab: React.FC = () => {
       // 모달 닫기
       setIsDeleteModalVisible(false);
       setCurrentCustomer(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error(t('admin.customers.error_deleting'), err);
       setError(t('admin.customers.error_deleting'));
+      
+      // 인증 오류 처리
+      if (isAuthError(err)) {
+        setTimeout(() => {
+          const returnUrl = encodeURIComponent(window.location.pathname);
+          window.location.href = `/login?returnTo=\${returnUrl}`;
+        }, 1000);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // 새로고침 버튼 핸들러
+  const handleRefresh = () => {
+    fetchCustomers();
+  };
+
   return (
     <Box padding="m">
-      {error && <Alert type="error">{error}</Alert>}
+      {error && <Alert type="error" dismissible>{error}</Alert>}
       
       <Header
         actions={
-          <Button variant="primary" onClick={handleCreateCustomer}>
-            {t('admin.customers.add_new')}
-          </Button>
+          <SpaceBetween direction="horizontal" size="xs">
+            <Button iconName="refresh" onClick={handleRefresh}>
+              {t('admin.common.refresh')}
+            </Button>
+            <Button variant="primary" onClick={handleCreateCustomer}>
+              {t('admin.customers.add_new')}
+            </Button>
+          </SpaceBetween>
         }
       >
         {t('admin.customers.title')}
@@ -199,7 +351,9 @@ const CustomerTab: React.FC = () => {
       <Table
         items={paginatedItems}
         loading={loading}
-        columnDefinitions={[
+        loadingText={retryCount > 0 
+          ? `\${t('admin.common.retrying') || '재시도 중'} (\${retryCount}/2)...` 
+          : (t('admin.common.loading') || '로딩 중')}        columnDefinitions={[
           {
             id: 'customerName',
             header: t('admin.customers.name'),
@@ -232,13 +386,14 @@ const CustomerTab: React.FC = () => {
             <Box padding={{ bottom: 's' }} variant="p" color="inherit">
               {t('admin.customers.no_resources_to_display')}
             </Box>
+            <Button onClick={handleRefresh}>{t('admin.common.refresh')}</Button>
           </Box>
         }
       />
       
       <Pagination
         currentPageIndex={currentPageIndex}
-        pagesCount={Math.ceil(filteredItems.length / PAGE_SIZE)}
+        pagesCount={Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))}
         onChange={({ detail }) => setCurrentPageIndex(detail.currentPageIndex)}
       />
       

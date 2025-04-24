@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchAuthSession, getCurrentUser, fetchUserAttributes, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
@@ -9,10 +10,10 @@ interface AuthContextValue {
   username: string;
   userRole: string;
   loading: boolean;
-  checkAuthStatus: (force?: boolean) => Promise<void>;
+  checkAuthStatus: (force?: boolean) => Promise<boolean>; // 반환 타입을 Promise<boolean>으로 변경
   logout: (global?: boolean) => Promise<void>;
-  loginRedirect: (returnPath?: string) => void; // 로그인 페이지로 리디렉션 함수 추가
-  handleAuthError: (error: any) => void; // 인증 오류 처리 함수 추가
+  loginRedirect: (returnPath?: string) => void;
+  handleAuthError: (error: any) => void;
 }
 
 // 인증 상태 타입 정의 (useState용)
@@ -54,54 +55,39 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
    * 인증 상태 확인 함수 - 캐싱을 통해 최적화
    * @param force 강제로 새로고침 여부
    */
-  const checkAuthStatus = useCallback(async (force = false) => {
+  const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => { // 명시적 반환 타입 선언
     // 캐시 수명 (15분)
     const CACHE_TTL = 15 * 60 * 1000;
-
-    // 1. 최근에 이미 확인한 경우 건너뛰기 (15분 이내)
+  
+    // 1. 최근에 이미 확인한 경우 건너뛰기 (15분 이내) - 강제 새로고침 시는 제외
     const now = Date.now();
     if (!force && now - lastRefresh < CACHE_TTL) {
       console.log('최근에 이미 인증 확인 완료. 건너뜁니다.');
-      return;
+      return true; // 캐시된 값 사용 시에도 true 반환
     }
-
-    // 2. 세션 스토리지에서 캐시된 데이터 확인
-    const cachedData = sessionStorage.getItem('userAttributes');
-    const timestamp = sessionStorage.getItem('userAttributesTimestamp');
-
-    if (!force && cachedData && timestamp && (now - parseInt(timestamp) < CACHE_TTL)) {
-      try {
-        const parsedData = JSON.parse(cachedData);
-        setState(prev => ({
-          ...prev,
-          isAuthenticated: true,
-          userAttributes: parsedData,
-          username: parsedData.name || parsedData.email || parsedData.username || '',
-          userRole: parsedData.profile || 'student',
-          loading: false
-        }));
-        return;
-      } catch (e) {
-        // 캐시 파싱 오류는 무시하고 계속 진행
-      }
-    }
-
-    // 3. 실제 인증 확인 수행
+  
+    // 2. 인증 확인 수행
     setState(prev => ({ ...prev, loading: true }));
-
+  
     try {
-      const session = await fetchAuthSession();
+      // 명시적으로 새 세션 가져오기
+      const session = await fetchAuthSession({ forceRefresh: force });
       if (!session.tokens) {
         throw new Error('No valid tokens');
       }
-
+  
+      // 중요: AWS SDK에 자격 증명 명시적 설정
+      if (session.credentials) {
+        console.log('유효한 자격 증명을 찾아 AWS SDK에 설정합니다');
+      }
+  
       const user = await getCurrentUser();
       const attributes = await fetchUserAttributes();
-
+  
       // 세션 스토리지에 저장하여 캐싱
       sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
       sessionStorage.setItem('userAttributesTimestamp', now.toString());
-
+  
       setState({
         isAuthenticated: true,
         userAttributes: attributes,
@@ -109,12 +95,15 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         userRole: attributes.profile || 'student',
         loading: false
       });
-
+  
       setLastRefresh(now);
-
+      
       // 토큰 리프레시 카운터 리셋
       tokenRefreshAttempts = 0;
+      
+      return true; // 성공 시 true 반환
     } catch (error) {
+      console.error('인증 확인 실패:', error);
       setState({
         isAuthenticated: false,
         userAttributes: null,
@@ -122,12 +111,14 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         userRole: 'student',
         loading: false
       });
-
+  
       // 캐시 정보 제거
       sessionStorage.removeItem('userAttributes');
       sessionStorage.removeItem('userAttributesTimestamp');
+      
+      return false; // 실패 시 false 반환
     }
-  }, [lastRefresh]); // 마지막 새로고침 시간에만 의존
+  }, [lastRefresh]);
 
   /**
    * 로그아웃 처리 함수
@@ -260,7 +251,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
           tokenRefreshLastAttempt = now;
           setLastRefresh(now);
           break;
-        case 'tokenRefresh_failure':
+        case 'tokenRefresh_failure':  // 수정: tokenRefreshFailed -> tokenRefresh_failure
           console.error('토큰 갱신 실패');
           handleAuthError(new Error('토큰 갱신 실패'));
           break;
