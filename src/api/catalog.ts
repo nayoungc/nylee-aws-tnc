@@ -65,26 +65,36 @@ async function getDocumentClient() {
 // ========== CourseCatalog 테이블 관련 함수 ==========
 export async function listCourseCatalogs(options?: any) {
   try {
-    // 인증 확인
-    if (!await checkAuthentication()) {
-      throw new Error('먼저 로그인이 필요합니다');
-    }
+    console.log('listCourseCatalogs 함수 호출됨, 옵션:', options);
     
     const documentClient = await getDocumentClient();
+    console.log('DynamoDB DocumentClient 생성 성공');
     
     const params = {
       TableName: CATALOG_TABLE,
       ...options
     };
+    console.log('DynamoDB scan 요청 파라미터:', params);
     
     const result = await documentClient.scan(params).promise();
+    console.log('DynamoDB scan 응답:', result);
+    
+    if (!result.Items || result.Items.length === 0) {
+      console.log('반환된 항목 없음');
+    } else {
+      console.log(`\${result.Items.length}개 항목 반환됨`);
+    }
     
     return {
       data: result.Items || [],
       lastEvaluatedKey: result.LastEvaluatedKey,
     };
   } catch (error) {
-    console.error('Error listing course catalogs:', error);
+    console.error('Error listing course catalogs (상세):', error);
+    if (error instanceof Error) {
+      console.error('에러 메시지:', error.message);
+      console.error('에러 이름:', error.name);
+    }
     throw error;
   }
 }
