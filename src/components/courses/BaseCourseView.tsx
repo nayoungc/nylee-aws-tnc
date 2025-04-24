@@ -1,4 +1,4 @@
-// src/components/courses/BaseCourseView.tsx - 수정
+// src/components/courses/BaseCourseView.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -14,6 +14,49 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { listCourseCatalogs, CourseCatalog } from '@api';
+
+// BaseCourseView.tsx 파일 상단에 추가
+import AWS from 'aws-sdk';
+import { fetchAuthSession } from 'aws-amplify/auth';
+
+// AWS 자격 증명 설정 함수 추가
+async function setupAwsCredentials() {
+  try {
+    const session = await fetchAuthSession();
+    if (session.credentials) {
+      AWS.config.credentials = new AWS.Credentials({
+        accessKeyId: session.credentials.accessKeyId,
+        secretAccessKey: session.credentials.secretAccessKey,
+        sessionToken: session.credentials.sessionToken
+      });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('자격 증명 설정 실패:', error);
+    return false;
+  }
+}
+
+// 이 함수는 사용되지 않으므로 제거하거나 아래와 같이 수정할 수 있습니다
+async function loadCourseData() {
+  console.log('API 호출 시작...');
+  
+  try {
+    // AWS 자격 증명 설정
+    await setupAwsCredentials();
+    
+    // API 호출하여 데이터 로드
+    const result = await listCourseCatalogs();
+    
+    // 코드가 계속 실행되면 성공
+    console.log('데이터 로드 성공');
+    return result;
+  } catch (error) {
+    console.error('API 오류:', error);
+    throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
+  }
+}
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
@@ -114,6 +157,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
       
       try {
         await getCurrentUser();
+        
+        // AWS 자격 증명 설정 추가
+        await setupAwsCredentials();
         
         console.log('API 호출 시작...');
         

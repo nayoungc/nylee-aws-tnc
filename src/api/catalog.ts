@@ -1,13 +1,42 @@
-import { documentClient, getCurrentTimestamp } from './config';
+// src/spi/catalog.ts
+import { getCurrentTimestamp } from './config';
 import { CourseCatalog, CatalogModule, CatalogLab } from './types';
+import AWS from 'aws-sdk';
+import { fetchAuthSession } from 'aws-amplify/auth'; 
 
 const CATALOG_TABLE = 'Tnc-CourseCatalog';
 const MODULES_TABLE = 'Tnc-CourseCatalog-Modules';
 const LABS_TABLE = 'Tnc-CourseCatalog-Labs';
 
+// 인증된 DynamoDB 클라이언트를 생성하는 함수
+async function getDocumentClient() {
+  try {
+    // 세션을 강제로 새로고침하여 최신 자격 증명 확보
+    const session = await fetchAuthSession({ forceRefresh: true });
+    
+    if (!session.credentials) {
+      throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
+    }
+    
+    return new AWS.DynamoDB.DocumentClient({
+      credentials: {
+        accessKeyId: session.credentials.accessKeyId,
+        secretAccessKey: session.credentials.secretAccessKey,
+        sessionToken: session.credentials.sessionToken
+      },
+      region: AWS.config.region || 'us-east-1'
+    });
+  } catch (error) {
+    console.error('DynamoDB DocumentClient 생성 실패:', error);
+    throw error; // 원래 오류를 그대로 전파
+  }
+}
+
 // ========== CourseCatalog 테이블 관련 함수 ==========
 export async function listCourseCatalogs(options?: any) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: CATALOG_TABLE,
       ...options
@@ -27,6 +56,8 @@ export async function listCourseCatalogs(options?: any) {
 
 export async function getCourseCatalog(catalogId: string, title: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: CATALOG_TABLE,
       Key: {
@@ -48,6 +79,8 @@ export async function getCourseCatalog(catalogId: string, title: string) {
 
 export async function createCourseCatalog(item: CourseCatalog) {
   try {
+    const documentClient = await getDocumentClient();
+    
     // 타임스탬프 추가
     const now = getCurrentTimestamp();
     const catalogItem = {
@@ -74,6 +107,8 @@ export async function createCourseCatalog(item: CourseCatalog) {
 
 export async function queryCatalogByTitle(title: string, version?: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     let params: any = {
       TableName: CATALOG_TABLE,
       IndexName: 'Tnc-CourseCatalog-GSI1',
@@ -102,6 +137,8 @@ export async function queryCatalogByTitle(title: string, version?: string) {
 
 export async function queryCatalogByAwsCode(awsCode: string, version?: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     let params: any = {
       TableName: CATALOG_TABLE,
       IndexName: 'Tnc-CourseCatalog-GSI2',
@@ -131,6 +168,8 @@ export async function queryCatalogByAwsCode(awsCode: string, version?: string) {
 // ========== Module 테이블 관련 함수 ==========
 export async function listModules(catalogId: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: MODULES_TABLE,
       KeyConditionExpression: 'catalogId = :catalogId',
@@ -153,6 +192,8 @@ export async function listModules(catalogId: string) {
 
 export async function getModule(catalogId: string, moduleNumber: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: MODULES_TABLE,
       Key: {
@@ -174,6 +215,8 @@ export async function getModule(catalogId: string, moduleNumber: string) {
 
 export async function createModule(item: CatalogModule) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const now = getCurrentTimestamp();
     const moduleItem = {
       ...item,
@@ -199,6 +242,8 @@ export async function createModule(item: CatalogModule) {
 
 export async function queryModuleByTitle(title: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: MODULES_TABLE,
       IndexName: 'Tnc-CourseCatalog-Modules-GSI1',
@@ -223,6 +268,8 @@ export async function queryModuleByTitle(title: string) {
 // ========== Lab 테이블 관련 함수 ==========
 export async function listLabs(catalogId: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: LABS_TABLE,
       KeyConditionExpression: 'catalogId = :catalogId',
@@ -245,6 +292,8 @@ export async function listLabs(catalogId: string) {
 
 export async function getLabsForModule(moduleId: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: LABS_TABLE,
       IndexName: 'Tnc-CourseCatalog-Labs-GSI1',
@@ -268,6 +317,8 @@ export async function getLabsForModule(moduleId: string) {
 
 export async function getLab(catalogId: string, labNumber: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: LABS_TABLE,
       Key: {
@@ -289,6 +340,8 @@ export async function getLab(catalogId: string, labNumber: string) {
 
 export async function createLab(item: CatalogLab) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const now = getCurrentTimestamp();
     const labItem = {
       ...item,
@@ -314,6 +367,8 @@ export async function createLab(item: CatalogLab) {
 
 export async function queryLabByTitle(title: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: LABS_TABLE,
       IndexName: 'Tnc-CourseCatalog-Labs-GSI2',
@@ -334,4 +389,3 @@ export async function queryLabByTitle(title: string) {
     throw error;
   }
 }
-
