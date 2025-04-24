@@ -1,5 +1,5 @@
 // src/components/AuthRequired.tsx
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import {
   Container,
@@ -11,14 +11,15 @@ import {
 } from '@cloudscape-design/components';
 
 interface AuthRequiredProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
+  children: ReactNode;
+  fallback?: ReactNode;  // ReactNode 타입으로 명시
 }
 
-export const AuthRequired: React.FC<AuthRequiredProps> = ({ 
+// JSX.Element 반환 타입 명시
+export const AuthRequired = ({ 
   children, 
   fallback 
-}) => {
+}: AuthRequiredProps): JSX.Element => {
   const { isAuthenticated, loading, loginRedirect } = useAuth();
   
   if (loading) {
@@ -31,7 +32,13 @@ export const AuthRequired: React.FC<AuthRequiredProps> = ({
   }
   
   if (!isAuthenticated) {
-    return fallback || (
+    // fallback이 제공되면 사용하고, 아니면 기본 UI 렌더링
+    if (fallback) {
+      // React 노드로 명시적 캐스팅
+      return <>{fallback}</>;
+    }
+    
+    return (
       <Container>
         <Alert type="info" header="로그인 필요">
           <SpaceBetween direction="vertical" size="m">
