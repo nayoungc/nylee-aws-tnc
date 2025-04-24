@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchAuthSession, getCurrentUser, fetchUserAttributes, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
@@ -12,6 +11,7 @@ interface AuthContextValue {
   loading: boolean;
   checkAuthStatus: (force?: boolean) => Promise<void>;
   logout: (global?: boolean) => Promise<void>;
+  loginRedirect: (returnPath?: string) => void; // 로그인 페이지로 리디렉션 함수 추가
 }
 
 // 인증 상태 타입 정의 (useState용)
@@ -25,6 +25,12 @@ interface AuthState {
 
 // 기본값으로 undefined 설정 (후에 useAuth 훅이 올바른 사용을 강제함)
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+// 토큰 리프레시 제한을 위한 변수
+let tokenRefreshAttempts = 0;
+const MAX_TOKEN_REFRESH_ATTEMPTS = 3;
+let tokenRefreshLastAttempt = 0;
+const TOKEN_REFRESH_MIN_INTERVAL = 30000; // 30초
 
 /**
  * 인증 상태를 전역으로 관리하는 Provider 컴포넌트
@@ -104,6 +110,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       setLastRefresh(now);
+      
+      // 토큰 리프레시 카운터 리셋
+      tokenRefreshAttempts = 0;
     } catch (error) {
       setState({
         isAuthenticated: false,
@@ -145,6 +154,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
   
+  /**
+   * 로그인 페이지로 리디렉션하는 함수
+   */
+  const loginRedirect = useCallback((returnPath?: string) => {
+    const returnUrl = returnPath || window.location.pathname;
+    window.location.href = `/login?returnTo=\${encodeURIComponent(returnUrl)}`;
+  }, []);
+  
   // 초기 로드 시 인증 확인 및 이벤트 리스너 설정
   useEffect(() => {
     // 앱 로드 시 인증 상태 확인
@@ -170,7 +187,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           sessionStorage.removeItem('userAttributesTimestamp');
           break;
         case 'tokenRefresh':
-          setLastRefresh(Date.now());
+          // 토큰 리프레시 제한 로직 추가
+          const now = Date.now();
+          if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS || 
+              (now - tokenRefreshLastAttempt < TOKEN_REFRESH_MIN_INTERVAL && tokenRefreshAttempts > 0)) {
+            console.log(`토큰 갱신 제한: 시도 횟수(\${tokenRefreshAttempts}/\${MAX_TOKEN_REFRESH_ATTEMPTS})`);
+            return;
+          }
+          
+          tokenRefreshAttempts++;
+          tokenRefreshLastAttempt = now;
+          setLastRefresh(now);
           break;
         case 'tokenRefresh_failure':
           logout();
@@ -185,8 +212,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = useMemo(() => ({
     ...state,
     checkAuthStatus,
-    logout
-  }), [state, checkAuthStatus, logout]);
+    logout,
+    loginRedirect  // 새 함수 추가
+  }), [state, checkAuthStatus, logout, loginRedirect]);
   
   return (
     <AuthContext.Provider value={value}>

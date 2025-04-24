@@ -16,6 +16,8 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { listCourseCatalogs, CourseCatalog } from '@api';
 import AWS from 'aws-sdk';
+import { AuthRequired } from '../AuthRequired';
+import { useAuth } from '../../contexts/AuthContext';
 
 // BaseCourseView.tsx 파일 상단에 인증 상태 관련 변수
 let lastAuthCheck = 0;
