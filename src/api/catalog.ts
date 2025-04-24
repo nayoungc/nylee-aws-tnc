@@ -66,6 +66,12 @@ async function getDocumentClient() {
 export async function listCourseCatalogs(options?: any) {
   try {
     console.log('listCourseCatalogs 함수 호출됨, 옵션:', options);
+
+    // 먼저 인증 상태 확인
+    const session = await fetchAuthSession();
+    if (!session.tokens) {
+      throw new Error("인증이 필요합니다. 먼저 로그인해주세요.");
+    }
     
     const documentClient = await getDocumentClient();
     console.log('DynamoDB DocumentClient 생성 성공');

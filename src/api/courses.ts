@@ -1,12 +1,41 @@
 // src/api/courses.ts
-import { documentClient, getCurrentTimestamp } from './config';
+import AWS from 'aws-sdk';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { getCurrentTimestamp } from './config';
 import { Course } from './types';
 
 const TABLE_NAME = 'Tnc-Courses';
 
+// 자격 증명이 있는 DocumentClient 가져오기
+async function getDocumentClient() {
+  try {
+    // 세션에서 자격 증명 가져오기
+    const session = await fetchAuthSession();
+    
+    if (!session.credentials) {
+      throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
+    }
+    
+    // 자격 증명으로 새 DocumentClient 생성
+    return new AWS.DynamoDB.DocumentClient({
+      credentials: new AWS.Credentials({
+        accessKeyId: session.credentials.accessKeyId,
+        secretAccessKey: session.credentials.secretAccessKey,
+        sessionToken: session.credentials.sessionToken
+      }),
+      region: AWS.config.region || 'us-east-1'
+    });
+  } catch (error) {
+    console.error('DocumentClient 생성 실패:', error);
+    throw error;
+  }
+}
+
 // 과정 인스턴스 목록 조회
 export async function listCourses(options?: any) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       ...options
@@ -27,6 +56,8 @@ export async function listCourses(options?: any) {
 // 특정 과정 인스턴스 조회
 export async function getCourse(lmsId: string, startDate: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       Key: {
@@ -49,6 +80,8 @@ export async function getCourse(lmsId: string, startDate: string) {
 // 과정 인스턴스 생성
 export async function createCourse(item: Course) {
   try {
+    const documentClient = await getDocumentClient();
+    
     // 타임스탬프 추가
     const now = getCurrentTimestamp();
     const courseItem = {
@@ -76,6 +109,8 @@ export async function createCourse(item: Course) {
 // 과정 인스턴스 업데이트
 export async function updateCourse(item: Partial<Course> & { lmsId: string, startDate: string }) {
   try {
+    const documentClient = await getDocumentClient();
+    
     // 업데이트할 표현식과 속성 값 준비
     const updateExpressionParts: string[] = [];
     const expressionAttributeNames: Record<string, string> = {};
@@ -134,6 +169,8 @@ export async function updateCourse(item: Partial<Course> & { lmsId: string, star
 // 과정 인스턴스 삭제
 export async function deleteCourse(lmsId: string, startDate: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       Key: {
@@ -157,6 +194,8 @@ export async function deleteCourse(lmsId: string, startDate: string) {
 // GSI 조회 함수들
 export async function getCoursesByCatalogId(catalogId: string, options?: any) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       IndexName: 'GSI1',
@@ -181,6 +220,8 @@ export async function getCoursesByCatalogId(catalogId: string, options?: any) {
 
 export async function getCourseByShareCode(shareCode: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       IndexName: 'GSI2',
@@ -203,6 +244,8 @@ export async function getCourseByShareCode(shareCode: string) {
 
 export async function getCoursesByInstructor(instructor: string, options?: any) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       IndexName: 'GSI3',
@@ -227,6 +270,8 @@ export async function getCoursesByInstructor(instructor: string, options?: any) 
 
 export async function getCoursesByCustomerId(customerId: string, options?: any) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       IndexName: 'GSI4',
@@ -252,6 +297,8 @@ export async function getCoursesByCustomerId(customerId: string, options?: any) 
 // 과정 평가 관련 함수
 export async function addAssessment(lmsId: string, startDate: string, assessmentType: string, assessmentId: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       Key: { lmsId, startDate },
@@ -279,6 +326,8 @@ export async function addAssessment(lmsId: string, startDate: string, assessment
 
 export async function getAssessmentId(lmsId: string, startDate: string, assessmentType: string): Promise<string | undefined> {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       Key: { lmsId, startDate },

@@ -1,12 +1,42 @@
 // src/api/customers.ts
-import { documentClient, getCurrentTimestamp } from './config';
+import AWS from 'aws-sdk';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import { getCurrentTimestamp } from './config';
 import { Customer } from './types';
 
 const TABLE_NAME = 'Tnc-Customers';
 
+// 자격 증명이 있는 DocumentClient 가져오기
+async function getDocumentClient() {
+  try {
+    // 세션에서 자격 증명 가져오기
+    const session = await fetchAuthSession();
+    
+    if (!session.credentials) {
+      throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
+    }
+    
+    // 자격 증명으로 새 DocumentClient 생성
+    return new AWS.DynamoDB.DocumentClient({
+      credentials: new AWS.Credentials({
+        accessKeyId: session.credentials.accessKeyId,
+        secretAccessKey: session.credentials.secretAccessKey,
+        sessionToken: session.credentials.sessionToken
+      }),
+      region: AWS.config.region || 'us-east-1'
+    });
+  } catch (error) {
+    console.error('DocumentClient 생성 실패:', error);
+    throw error;
+  }
+}
+
 // 고객사 목록 조회
 export async function listCustomers(options?: any) {
   try {
+    // 자격 증명이 설정된 DocumentClient 가져오기
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       ...options
@@ -27,6 +57,8 @@ export async function listCustomers(options?: any) {
 // 특정 고객사 조회
 export async function getCustomer(customerId: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       Key: {
@@ -48,6 +80,8 @@ export async function getCustomer(customerId: string) {
 // 이름으로 고객사 조회 (GSI1)
 export async function getCustomerByName(customerName: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       IndexName: 'GSI1',
@@ -71,6 +105,8 @@ export async function getCustomerByName(customerName: string) {
 // 고객사 생성
 export async function createCustomer(item: Customer) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const now = getCurrentTimestamp();
     const customerItem = {
       ...item,
@@ -97,6 +133,8 @@ export async function createCustomer(item: Customer) {
 // 고객사 업데이트
 export async function updateCustomer(item: { customerId: string; customerName?: string }) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const now = getCurrentTimestamp();
     const params = {
       TableName: TABLE_NAME,
@@ -125,6 +163,8 @@ export async function updateCustomer(item: { customerId: string; customerName?: 
 // 고객사 삭제
 export async function deleteCustomer(customerId: string) {
   try {
+    const documentClient = await getDocumentClient();
+    
     const params = {
       TableName: TABLE_NAME,
       Key: {

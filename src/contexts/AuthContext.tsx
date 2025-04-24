@@ -144,16 +144,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userRole: 'student',
         loading: false
       });
-      
+
       console.log('로그아웃 스토리지 정리 중...');
       // 세션 스토리지 정리
       sessionStorage.removeItem('userAttributes');
       sessionStorage.removeItem('userAttributesTimestamp');
-      
+
       console.log('Amplify signOut 호출 중...');
       await signOut({ global });
       console.log('로그아웃 완료!');
-      
+
       // 강제 리디렉션
       window.location.href = '/';
     } catch (error) {
@@ -199,24 +199,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLastRefresh(0);
           tokenRefreshAttempts = 0;
           break;
-          case 'tokenRefresh':
-            // 이미 로그아웃된 상태라면 토큰 갱신 중단
-            if (!state.isAuthenticated) {
-              console.log('로그아웃 상태. 토큰 갱신 중단');
-              return;
-            }
-            
-            const now = Date.now();
-            if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS || 
-                (now - tokenRefreshLastAttempt < TOKEN_REFRESH_MIN_INTERVAL && tokenRefreshAttempts > 0)) {
-              console.log(`토큰 갱신 제한: 시도 횟수(\${tokenRefreshAttempts}/\${MAX_TOKEN_REFRESH_ATTEMPTS})`);
-              return;
-            }
-            
-            tokenRefreshAttempts++;
-            tokenRefreshLastAttempt = now;
-            setLastRefresh(now);
-            break;
+        case 'tokenRefresh':
+          // 이미 로그아웃된 상태라면 토큰 갱신 중단
+          if (!state.isAuthenticated) {
+            console.log('로그아웃 상태. 토큰 갱신 중단');
+            return;
+          }
+
+          const now = Date.now();
+          if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS ||
+            (now - tokenRefreshLastAttempt < TOKEN_REFRESH_MIN_INTERVAL && tokenRefreshAttempts > 0)) {
+            console.log(`토큰 갱신 제한: 시도 횟수(\${tokenRefreshAttempts}/\${MAX_TOKEN_REFRESH_ATTEMPTS})`);
+            return;
+          }
+
+          tokenRefreshAttempts++;
+          tokenRefreshLastAttempt = now;
+          setLastRefresh(now);
+          break;
       }
     });
 
