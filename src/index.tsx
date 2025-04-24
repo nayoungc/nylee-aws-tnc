@@ -1,64 +1,108 @@
+// scr/index.tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Amplify } from 'aws-amplify';
+import AWS from 'aws-sdk'; // AWS SDK import 추가
+// Amplify Gen 2 방식으로 Auth import 변경
+import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 import App from './App';
 import './styles/theme.css';
 import './styles/auth.css';
 import './i18n';
 
-// Amplify Gen 2 설정 방식으로 변경
-// aws-exports.js 대신 amplify_outputs.json 사용
-//import outputs from '../amplify_outputs.json';
 import awsExports from './aws-exports';
-
-// GraphQL 스키마 정보 요청을 위한 쿼리
-const introspectionQuery = `
-  query IntrospectionQuery {
-    __schema {
-      queryType {
-        name
-        fields {
-          name
-          description
-        }
-      }
-      mutationType {
-        name
-        fields {
-          name
-          description
-        }
-      }
-    }
-  }
-`;
 
 // Amplify 설정
 console.log('Amplify 설정 적용 시작');
 try {
-  // Gen 2 방식으로 설정
-  //Amplify.configure(outputs);
-  Amplify.configure(awsExports); 
+  Amplify.configure(awsExports);
   console.log('Amplify Gen 2 설정 완료', Amplify.getConfig());
+  
+  // AWS SDK 자격 증명 설정 추가
+  const region = awsExports.API?.GraphQL?.region || 'ap-northeast-2'; // 리전 가져오기
+  AWS.config.region = region;
+  
+  // Amplify Gen 2 방식으로 자격 증명 설정
+  async function setupCredentials() {
+    try {
+      const session = await fetchAuthSession();
+      if (session.credentials) {
+        // AWS SDK에 자격 증명 설정
+        AWS.config.credentials = new AWS.Credentials({
+          accessKeyId: session.credentials.accessKeyId,
+          secretAccessKey: session.credentials.secretAccessKey,
+          sessionToken: session.credentials.sessionToken
+        });
+        console.log('AWS SDK 자격 증명 설정 완료');
+      }
+    } catch (err) {
+      console.error('AWS 자격 증명 설정 실패:', err);
+    }
+  }
+  
+  // 자격 증명 설정 실행
+  setupCredentials();
+  
 } catch (error) {
   console.error('Amplify 설정 실패:', error);
-  
-  // 폴백: 이전 방식으로 시도
-  try {
-    import('./aws-exports').then(module => {
-      const awsExports = module.default;
-      Amplify.configure(awsExports);
-      console.log('Amplify Gen 1 설정으로 폴백 완료');
-    });
-  } catch (fallbackError) {
-    console.error('Amplify 폴백 설정도 실패:', fallbackError);
+  // 기존 폴백 코드 유지...
+}
+
+// TypeScript 타입 선언 추가
+declare global {
+  interface Window {
+    updateAWSCredentials: () => Promise<boolean>;
   }
 }
 
-// 디버그 정보 래퍼 컴포넌트
+// AWS SDK 자격 증명을 갱신하는 함수 (필요시 호출)
+window.updateAWSCredentials = async (): Promise<boolean> => {
+  try {
+    const session = await fetchAuthSession();
+    if (session.credentials) {
+      AWS.config.credentials = new AWS.Credentials({
+        accessKeyId: session.credentials.accessKeyId,
+        secretAccessKey: session.credentials.secretAccessKey,
+        sessionToken: session.credentials.sessionToken
+      });
+      
+      console.log('AWS 자격 증명 갱신 완료');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('AWS 자격 증명 갱신 실패:', error);
+    return false;
+  }
+};
+
+// 디버그 정보 래퍼 컴포넌트 (기존 코드 사용)
 const AppWithDebugInfo = () => {
+  // 기존 코드...
   const [showDebugPanel, setShowDebugPanel] = React.useState(false);
   const [schemaInfo, setSchemaInfo] = React.useState<any>(null);
+  
+  // introspectionQuery 변수를 컴포넌트 내부로 이동
+  const introspectionQuery = `
+    query IntrospectionQuery {
+      __schema {
+        queryType {
+          name
+          fields {
+            name
+            description
+          }
+        }
+        mutationType {
+          name
+          fields {
+            name
+            description
+          }
+        }
+      }
+    }
+  `;
   
   return (
     <>
