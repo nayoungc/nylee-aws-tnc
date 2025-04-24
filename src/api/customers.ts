@@ -6,22 +6,22 @@ import { Customer } from './types';
 
 const TABLE_NAME = 'Tnc-Customers';
 
-// 자격 증명이 있는 DocumentClient 가져오기
+// Gen 2 방식의 DocumentClient 획득
 async function getDocumentClient() {
   try {
-    // 세션에서 자격 증명 가져오기
-    const session = await fetchAuthSession();
+    // 구조 분해 할당으로 간소화
+    const { credentials } = await fetchAuthSession();
     
-    if (!session.credentials) {
+    if (!credentials) {
       throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
     }
     
-    // 자격 증명으로 새 DocumentClient 생성
+    // AWS SDK에 자격 증명 적용
     return new AWS.DynamoDB.DocumentClient({
       credentials: new AWS.Credentials({
-        accessKeyId: session.credentials.accessKeyId,
-        secretAccessKey: session.credentials.secretAccessKey,
-        sessionToken: session.credentials.sessionToken
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+        sessionToken: credentials.sessionToken
       }),
       region: AWS.config.region || 'us-east-1'
     });
@@ -34,7 +34,6 @@ async function getDocumentClient() {
 // 고객사 목록 조회
 export async function listCustomers(options?: any) {
   try {
-    // 자격 증명이 설정된 DocumentClient 가져오기
     const documentClient = await getDocumentClient();
     
     const params = {

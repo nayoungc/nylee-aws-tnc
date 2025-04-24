@@ -1,3 +1,4 @@
+// src/components/courses/BaseCourseView.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -23,7 +24,7 @@ import { useAuth } from '../../contexts/AuthContext';
 let lastAuthCheck = 0;
 const AUTH_CHECK_INTERVAL = 30000; // 30초
 
-// 인증 상태 확인 함수
+// Gen 2 방식의 인증 상태 확인 함수
 async function checkAuthentication(): Promise<boolean> {
   const now = Date.now();
   // 30초 이내에 이미 확인했다면 중복 확인 방지
@@ -34,15 +35,16 @@ async function checkAuthentication(): Promise<boolean> {
   lastAuthCheck = now;
   
   try {
-    await getCurrentUser();
-    return true;
+    // Gen 2 방식의 사용자 정보 조회
+    const user = await getCurrentUser();
+    return Boolean(user);
   } catch (err) {
     console.log('로그인이 필요합니다');
     return false;
   }
 }
 
-// AWS 자격 증명 설정 함수
+// Gen 2 방식의 AWS 자격 증명 설정 함수
 async function setupAwsCredentials() {
   try {
     // 먼저 인증 확인
@@ -51,12 +53,15 @@ async function setupAwsCredentials() {
       throw new Error('먼저 로그인이 필요합니다');
     }
     
-    const session = await fetchAuthSession();
-    if (session.credentials) {
+    // Gen 2 방식의 세션 및 자격 증명 조회
+    const { credentials } = await fetchAuthSession();
+    
+    if (credentials) {
+      // AWS SDK에 자격 증명 설정
       AWS.config.credentials = new AWS.Credentials({
-        accessKeyId: session.credentials.accessKeyId,
-        secretAccessKey: session.credentials.secretAccessKey,
-        sessionToken: session.credentials.sessionToken
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+        sessionToken: credentials.sessionToken
       });
       return true;
     }

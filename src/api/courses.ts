@@ -1,27 +1,27 @@
 // src/api/courses.ts
-import AWS from 'aws-sdk';
 import { fetchAuthSession } from 'aws-amplify/auth';
+import AWS from 'aws-sdk';
 import { getCurrentTimestamp } from './config';
 import { Course } from './types';
 
 const TABLE_NAME = 'Tnc-Courses';
 
-// 자격 증명이 있는 DocumentClient 가져오기
+// Gen 2 방식의 DocumentClient 획득
 async function getDocumentClient() {
   try {
-    // 세션에서 자격 증명 가져오기
-    const session = await fetchAuthSession();
+    // 구조 분해 할당으로 간소화
+    const { credentials } = await fetchAuthSession();
     
-    if (!session.credentials) {
+    if (!credentials) {
       throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
     }
     
-    // 자격 증명으로 새 DocumentClient 생성
+    // AWS SDK에 자격 증명 적용
     return new AWS.DynamoDB.DocumentClient({
       credentials: new AWS.Credentials({
-        accessKeyId: session.credentials.accessKeyId,
-        secretAccessKey: session.credentials.secretAccessKey,
-        sessionToken: session.credentials.sessionToken
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+        sessionToken: credentials.sessionToken
       }),
       region: AWS.config.region || 'us-east-1'
     });
@@ -48,7 +48,7 @@ export async function listCourses(options?: any) {
       lastEvaluatedKey: result.LastEvaluatedKey,
     };
   } catch (error) {
-    console.error('Error listing course :', error);
+    console.error('Error listing course:', error);
     throw error;
   }
 }
@@ -72,7 +72,7 @@ export async function getCourse(lmsId: string, startDate: string) {
       data: result.Item,
     };
   } catch (error) {
-    console.error('Error getting course :', error);
+    console.error('Error getting course:', error);
     throw error;
   }
 }
@@ -101,7 +101,7 @@ export async function createCourse(item: Course) {
       data: courseItem,
     };
   } catch (error) {
-    console.error('Error creating course :', error);
+    console.error('Error creating course:', error);
     throw error;
   }
 }
@@ -161,7 +161,7 @@ export async function updateCourse(item: Partial<Course> & { lmsId: string, star
       data: result.Attributes,
     };
   } catch (error) {
-    console.error('Error updating course :', error);
+    console.error('Error updating course:', error);
     throw error;
   }
 }
@@ -186,12 +186,12 @@ export async function deleteCourse(lmsId: string, startDate: string) {
       data: result.Attributes,
     };
   } catch (error) {
-    console.error('Error deleting course :', error);
+    console.error('Error deleting course:', error);
     throw error;
   }
 }
 
-// GSI 조회 함수들
+// GSI 조회 함수들 - 카탈로그 ID로 과정 조회
 export async function getCoursesByCatalogId(catalogId: string, options?: any) {
   try {
     const documentClient = await getDocumentClient();
@@ -218,6 +218,7 @@ export async function getCoursesByCatalogId(catalogId: string, options?: any) {
   }
 }
 
+// 공유 코드로 과정 조회
 export async function getCourseByShareCode(shareCode: string) {
   try {
     const documentClient = await getDocumentClient();
@@ -242,6 +243,7 @@ export async function getCourseByShareCode(shareCode: string) {
   }
 }
 
+// 강사별 과정 조회
 export async function getCoursesByInstructor(instructor: string, options?: any) {
   try {
     const documentClient = await getDocumentClient();
@@ -268,6 +270,7 @@ export async function getCoursesByInstructor(instructor: string, options?: any) 
   }
 }
 
+// 고객사 ID별 과정 조회
 export async function getCoursesByCustomerId(customerId: string, options?: any) {
   try {
     const documentClient = await getDocumentClient();
@@ -294,7 +297,7 @@ export async function getCoursesByCustomerId(customerId: string, options?: any) 
   }
 }
 
-// 과정 평가 관련 함수
+// 과정 평가 관련 함수 - 평가 추가
 export async function addAssessment(lmsId: string, startDate: string, assessmentType: string, assessmentId: string) {
   try {
     const documentClient = await getDocumentClient();
@@ -324,6 +327,7 @@ export async function addAssessment(lmsId: string, startDate: string, assessment
   }
 }
 
+// 평가 ID 조회
 export async function getAssessmentId(lmsId: string, startDate: string, assessmentType: string): Promise<string | undefined> {
   try {
     const documentClient = await getDocumentClient();
