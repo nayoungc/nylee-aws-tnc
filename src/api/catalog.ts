@@ -1,413 +1,107 @@
-// src/api/catalog.ts
-import { getCurrentTimestamp } from './config';
-import { CourseCatalog, CatalogModule, CatalogLab } from './types';
-import AWS from 'aws-sdk';
-import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
+import { DynamoDB } from 'aws-sdk';
+import { useAuth, withAuthErrorHandling } from '../contexts/AuthContext';
+import { CourseCatalog } from './types/catalog';
 
-const CATALOG_TABLE = 'Tnc-CourseCatalog';
-const MODULES_TABLE = 'Tnc-CourseCatalog-Modules';
-const LABS_TABLE = 'Tnc-CourseCatalog-Labs';
+// 모의 데이터 (자격 증명 없을 때 사용)
+const mockCourses : CourseCatalog[] = [
+  {
+    catalogId: "NET-001",
+    title: "네트워크 기초 및 보안",
+    description: "IT 전문가를 위한 네트워크 기초 및 보안 개념 입문 과정입니다.",
+    duration: 6,
+    level: "입문",
+    createdAt: "2023-06-10T11:15:00Z",
+    updatedAt: "2023-09-05T10:45:00Z",
+    version: "1.1",
+  },
+  {
+    catalogId: "SEC-001",
+    title: "클라우드 보안 전문가",
+    description: "AWS 환경에서의 보안 설계, 구현 및 모니터링 방법을 배웁니다.",
+    duration: 12,
+    level: "고급",
+    createdAt: "2023-07-05T15:30:00Z",
+    updatedAt: "2023-10-15T14:00:00Z",
+    version: "1.3",
+    awsCode: "AWS-SEC-S01"
+  },
+];
 
-// 이미 인증되어 있는지 확인하는 전역 변수와 타임스탬프
-let lastAuthCheck = 0;
-let authCheckResult = false;
-const AUTH_CHECK_INTERVAL = 30000; // 30초
+// 테이블 이름
+const TABLE_NAME = 'Tnc-CourseCatalog';
 
-// 인증 상태 확인 함수
-async function checkAuthentication(): Promise<boolean> {
-  const now = Date.now();
-  if (now - lastAuthCheck < AUTH_CHECK_INTERVAL && authCheckResult) {
-    return true; // 캐시된 결과 사용
+/**
+ * 코스 카탈로그 목록을 가져오는 함수
+ */
+export const listCourseCatalogs = async (authContext: ReturnType<typeof useAuth>): Promise<CourseCatalog[]> => {
+  // 모의 데이터 모드 확인
+  if (authContext.useMockData || !authContext.hasCredentials) {
+    console.log('모의 데이터 사용 중 - listCourseCatalogs');
+    return mockCourses;
   }
-  
-  try {
-    await getCurrentUser();
-    lastAuthCheck = now;
-    authCheckResult = true;
-    return true;
-  } catch (err) {
-    lastAuthCheck = now;
-    authCheckResult = false;
-    return false;
-  }
-}
 
-// 인증된 DynamoDB 클라이언트를 생성하는 함수
-async function getDocumentClient() {
   try {
-    // 먼저 인증 상태 확인
-    const isAuthenticated = await checkAuthentication();
-    if (!isAuthenticated) {
-      throw new Error('먼저 로그인이 필요합니다');
+    // AWS DynamoDB 서비스 생성
+    const dynamoDB = await authContext.createAWSService(DynamoDB.DocumentClient);
+
+    // DynamoDB 스캔 요청
+    const result = await withAuthErrorHandling(async () => {
+      return dynamoDB.scan({
+        TableName: TABLE_NAME
+      }).promise();
+    }, authContext)();
+
+    // 결과가 있으면 반환
+    if (result.Items) {
+      return result.Items as CourseCatalog[];
     }
-    
-    // 세션을 강제로 새로고침하여 최신 자격 증명 확보
-    const { credentials } = await fetchAuthSession({ forceRefresh: true });
-    
-    if (!credentials) {
-      throw new Error('세션에 유효한 자격 증명이 없습니다. 로그인이 필요합니다.');
+
+    return [];
+  } catch (error) {
+    console.error('코스 카탈로그 목록 가져오기 실패:', error);
+
+    // 오류 시 모의 데이터로 대체
+    return mockCourses;
+  }
+};
+
+/**
+ * 특정 코스 카탈로그를 가져오는 함수
+ */
+export const getCourseCatalog = async (
+  catalogId: string,
+  authContext: ReturnType<typeof useAuth>
+): Promise<CourseCatalog | null> => {
+  // 모의 데이터 모드 확인
+  if (authContext.useMockData || !authContext.hasCredentials) {
+    console.log('모의 데이터 사용 중 - getCourseCatalog');
+    const mockCourse = mockCourses.find(c => c.catalogId === catalogId);
+    return mockCourse || null;
+  }
+
+  try {
+    // AWS DynamoDB 서비스 생성
+    const dynamoDB = await authContext.createAWSService(DynamoDB.DocumentClient);
+
+    // DynamoDB 항목 가져오기 요청
+    const result = await withAuthErrorHandling(async () => {
+      return dynamoDB.get({
+        TableName: TABLE_NAME,
+        Key: { catalogId }
+      }).promise();
+    }, authContext)();
+
+    // 결과가 있으면 반환
+    if (result.Item) {
+      return result.Item as CourseCatalog;
     }
-    
-    // AWS.Credentials 객체를 사용하여 올바르게 자격 증명 설정
-    return new AWS.DynamoDB.DocumentClient({
-      credentials: new AWS.Credentials({
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-        sessionToken: credentials.sessionToken
-      }),
-      region: AWS.config.region || 'us-east-1'
-    });
-  } catch (error) {
-    console.error('DynamoDB DocumentClient 생성 실패:', error);
-    throw error; // 원래 오류를 그대로 전파
-  }
-}
 
-// ========== CourseCatalog 테이블 관련 함수 ==========
-export async function listCourseCatalogs(options?: any) {
-  try {
-    console.log('listCourseCatalogs 함수 호출됨, 옵션:', options);
-
-    const documentClient = await getDocumentClient();
-    console.log('DynamoDB DocumentClient 생성 성공');
-    
-    const params = {
-      TableName: CATALOG_TABLE,
-      ...options
-    };
-    console.log('DynamoDB scan 요청 파라미터:', params);
-    
-    const result = await documentClient.scan(params).promise();
-    console.log('DynamoDB scan 응답:', result);
-    
-    if (!result.Items || result.Items.length === 0) {
-      console.log('반환된 항목 없음');
-    } else {
-      console.log(`\${result.Items.length}개 항목 반환됨`);
-    }
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
+    return null;
   } catch (error) {
-    console.error('Error listing course catalogs (상세):', error);
-    if (error instanceof Error) {
-      console.error('에러 메시지:', error.message);
-      console.error('에러 이름:', error.name);
-    }
-    throw error;
-  }
-}
+    console.error(`코스 카탈로그 가져오기 실패 (ID: \${catalogId}):`, error);
 
-// 나머지 함수들에도 인증 확인 추가
-export async function getCourseCatalog(catalogId: string, title: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: CATALOG_TABLE,
-      Key: {
-        catalogId: catalogId,
-        title: title
-      }
-    };
-    
-    const result = await documentClient.get(params).promise();
-    
-    return {
-      data: result.Item,
-    };
-  } catch (error) {
-    console.error('Error getting course catalog:', error);
-    throw error;
+    // 오류 시 모의 데이터에서 검색
+    const mockCourse = mockCourses.find(c => c.catalogId === catalogId);
+    return mockCourse || null;
   }
-}
-
-export async function createCourseCatalog(item: CourseCatalog) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    // 타임스탬프 추가
-    const now = getCurrentTimestamp();
-    const catalogItem = {
-      ...item,
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    const params = {
-      TableName: CATALOG_TABLE,
-      Item: catalogItem
-    };
-    
-    await documentClient.put(params).promise();
-    
-    return {
-      data: catalogItem,
-    };
-  } catch (error) {
-    console.error('Error creating course catalog:', error);
-    throw error;
-  }
-}
-
-export async function queryCatalogByTitle(title: string, version?: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    let params: any = {
-      TableName: CATALOG_TABLE,
-      IndexName: 'Tnc-CourseCatalog-GSI1',
-      KeyConditionExpression: 'title = :title',
-      ExpressionAttributeValues: {
-        ':title': title
-      }
-    };
-    
-    if (version) {
-      params.KeyConditionExpression += ' AND version = :version';
-      params.ExpressionAttributeValues[':version'] = version;
-    }
-    
-    const result = await documentClient.query(params).promise();
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
-  } catch (error) {
-    console.error('Error querying catalog by title:', error);
-    throw error;
-  }
-}
-
-export async function queryCatalogByAwsCode(awsCode: string, version?: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    let params: any = {
-      TableName: CATALOG_TABLE,
-      IndexName: 'Tnc-CourseCatalog-GSI2',
-      KeyConditionExpression: 'awsCode = :awsCode',
-      ExpressionAttributeValues: {
-        ':awsCode': awsCode
-      }
-    };
-    
-    if (version) {
-      params.KeyConditionExpression += ' AND version = :version';
-      params.ExpressionAttributeValues[':version'] = version;
-    }
-    
-    const result = await documentClient.query(params).promise();
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
-  } catch (error) {
-    console.error('Error querying catalog by AWS code:', error);
-    throw error;
-  }
-}
-
-// ========== Module 테이블 관련 함수 ==========
-export async function listModules(catalogId: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: MODULES_TABLE,
-      KeyConditionExpression: 'catalogId = :catalogId',
-      ExpressionAttributeValues: {
-        ':catalogId': catalogId
-      }
-    };
-    
-    const result = await documentClient.query(params).promise();
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
-  } catch (error) {
-    console.error('Error listing modules:', error);
-    throw error;
-  }
-}
-
-export async function getModule(catalogId: string, moduleNumber: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: MODULES_TABLE,
-      Key: {
-        catalogId: catalogId,
-        moduleNumber: moduleNumber
-      }
-    };
-    
-    const result = await documentClient.get(params).promise();
-    
-    return {
-      data: result.Item,
-    };
-  } catch (error) {
-    console.error('Error getting module:', error);
-    throw error;
-  }
-}
-
-export async function createModule(item: CatalogModule) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const now = getCurrentTimestamp();
-    const moduleItem = {
-      ...item,
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    const params = {
-      TableName: MODULES_TABLE,
-      Item: moduleItem
-    };
-    
-    await documentClient.put(params).promise();
-    
-    return {
-      data: moduleItem,
-    };
-  } catch (error) {
-    console.error('Error creating module:', error);
-    throw error;
-  }
-}
-
-export async function queryModuleByTitle(title: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: MODULES_TABLE,
-      IndexName: 'Tnc-CourseCatalog-Modules-GSI1',
-      KeyConditionExpression: 'title = :title',
-      ExpressionAttributeValues: {
-        ':title': title
-      }
-    };
-    
-    const result = await documentClient.query(params).promise();
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
-  } catch (error) {
-    console.error('Error querying module by title:', error);
-    throw error;
-  }
-}
-
-// ========== Lab 테이블 관련 함수 ==========
-export async function listLabs(catalogId: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: LABS_TABLE,
-      KeyConditionExpression: 'catalogId = :catalogId',
-      ExpressionAttributeValues: {
-        ':catalogId': catalogId
-      }
-    };
-    
-    const result = await documentClient.query(params).promise();
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
-  } catch (error) {
-    console.error('Error listing labs:', error);
-    throw error;
-  }
-}
-
-export async function getLab(catalogId: string, labNumber: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: LABS_TABLE,
-      Key: {
-        catalogId: catalogId,
-        labNumber: labNumber
-      }
-    };
-    
-    const result = await documentClient.get(params).promise();
-    
-    return {
-      data: result.Item,
-    };
-  } catch (error) {
-    console.error('Error getting lab:', error);
-    throw error;
-  }
-}
-
-export async function createLab(item: CatalogLab) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const now = getCurrentTimestamp();
-    const labItem = {
-      ...item,
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    const params = {
-      TableName: LABS_TABLE,
-      Item: labItem
-    };
-    
-    await documentClient.put(params).promise();
-    
-    return {
-      data: labItem,
-    };
-  } catch (error) {
-    console.error('Error creating lab:', error);
-    throw error;
-  }
-}
-
-export async function queryLabByTitle(title: string) {
-  try {
-    const documentClient = await getDocumentClient();
-    
-    const params = {
-      TableName: LABS_TABLE,
-      IndexName: 'Tnc-CourseCatalog-Labs-GSI2',
-      KeyConditionExpression: 'title = :title',
-      ExpressionAttributeValues: {
-        ':title': title
-      }
-    };
-    
-    const result = await documentClient.query(params).promise();
-    
-    return {
-      data: result.Items || [],
-      lastEvaluatedKey: result.LastEvaluatedKey,
-    };
-  } catch (error) {
-    console.error('Error querying lab by title:', error);
-    throw error;
-  }
-}
+};

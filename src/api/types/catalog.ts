@@ -5,14 +5,8 @@ export interface CourseCatalog {
     version: string;          // GSI1 정렬 키
     awsCode?: string;         // GSI2 해시 키
     description?: string;
-    isPublished: boolean;
-    publishedDate?: string;
     level?: string;
     duration?: number;
-    price?: number;
-    currency?: string;
-    status?: string;
-    category?: string;
     deliveryMethod?: string;
     objectives?: string[];
     targetAudience?: string[];
