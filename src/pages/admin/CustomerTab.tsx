@@ -202,15 +202,19 @@ const CustomerTab: React.FC = () => {
         throw new Error(tString('admin.common.auth_required'));
       }
       
-      // 인증 오류 핸들러 생성
-      const authErrorHandler = createAuthErrorHandler(
-        (err) => setError(t('admin.customers.error_saving')),
-        navigate
-      );
+      // 인증 오류 핸들러 생성 - 여기서 문제 발생
+      // navigate 함수 직접 전달 대신 구조 변경
+      const authContext = {
+        handleAuthError: (error: any) => {
+          console.error('인증 오류:', error);
+          setError(t('admin.customers.error_saving'));
+          navigate('/signin'); // navigate 함수는 컴포넌트 스코프 내에서 사용 가능
+        }
+      };
       
-      // withAuthErrorHandling 래퍼 적용 - 두 함수 모두 선언
-      const wrappedUpdateCustomer = withAuthErrorHandling(updateCustomer, authErrorHandler);
-      const wrappedCreateCustomer = withAuthErrorHandling(createCustomer, authErrorHandler);
+      // withAuthErrorHandling 래퍼 적용
+      const wrappedUpdateCustomer = withAuthErrorHandling(updateCustomer, authContext);
+      const wrappedCreateCustomer = withAuthErrorHandling(createCustomer, authContext);
       
       if (currentCustomer.customerId) {
         // 기존 고객사 수정
@@ -252,6 +256,7 @@ const CustomerTab: React.FC = () => {
       setLoading(false);
     }
   };
+  
   
   // 고객사 삭제
   const handleDeleteCustomer = async () => {

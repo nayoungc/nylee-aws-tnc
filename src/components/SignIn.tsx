@@ -1,7 +1,6 @@
-// src/components/SignIn.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { signIn } from 'aws-amplify/auth'; // signOut, fetchAuthSession 제거
+import { signIn } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { useAuth } from '@contexts/AuthContext';
 import AuthLayout from '@layouts/AuthLayout';
@@ -20,6 +19,9 @@ const SignIn: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, checkAuthStatus } = useAuth();
+  
+  // 인증 확인 완료 여부를 추적하기 위한 ref
+  const authCheckCompletedRef = useRef(false);
 
   // URL에서 returnUrl 파라미터 추출
   const queryParams = new URLSearchParams(location.search);
@@ -34,23 +36,37 @@ const SignIn: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
+  // 리디렉션 중 상태 추가
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // 페이지 로드 시 인증 상태 확인 및 이미 로그인된 경우 리디렉션
+  // 페이지 로드 시 한 번만 인증 상태 확인
   useEffect(() => {
+    // 이미 확인 완료된 경우 중복 실행 방지
+    if (authCheckCompletedRef.current) return;
+    
     const verifyAuth = async () => {
-      // AuthContext의 checkAuthStatus 사용하여 일관된 인증 확인
-      const isAuth = await checkAuthStatus();
-      
-      if (isAuth) {
-        console.log('이미 인증된 사용자입니다. 리다이렉트합니다.');
-        navigate(returnUrl);
-      } else {
-        console.log('인증되지 않은 상태입니다. 로그인 폼을 표시합니다.');
+      try {
+        // 한 번만 인증 상태 확인 실행
+        const isAuth = await checkAuthStatus();
+        
+        if (isAuth) {
+          console.log('이미 인증된 사용자입니다. 리다이렉트합니다.');
+          setIsRedirecting(true);
+          navigate(returnUrl);
+        } else {
+          console.log('인증되지 않은 상태입니다. 로그인 폼을 표시합니다.');
+        }
+      } catch (err) {
+        console.error('인증 상태 확인 중 오류:', err);
+      } finally {
+        // 확인 완료 표시
+        authCheckCompletedRef.current = true;
       }
     };
     
     verifyAuth();
-  }, [checkAuthStatus, navigate, returnUrl]);
+    // 의존성 배열에서 checkAuthStatus 제거하여 한 번만 실행되도록 함
+  }, [navigate, returnUrl]); 
 
   const handleChange = (field: string, value: string) => {
     setFormState({ ...formState, [field]: value });
@@ -78,6 +94,9 @@ const SignIn: React.FC = () => {
       console.log('로그인 결과:', result);
 
       if (result.isSignedIn) {
+        // 로그인 성공 시 리디렉션 상태 설정
+        setIsRedirecting(true);
+        
         // 로그인 성공 - 인증 상태 갱신
         await checkAuthStatus(true);
         
@@ -100,7 +119,8 @@ const SignIn: React.FC = () => {
       
       // 이미 로그인된 사용자 오류는 특별히 처리
       if (err.name === 'UserAlreadyAuthenticatedException') {
-        console.log('이미 로그인된 상태입니다. 인증 상태를 갱신하고 리디렉션합니다.');
+        console.log('이미 로그인된 상태입니다. 리디렉션합니다.');
+        setIsRedirecting(true);
         await checkAuthStatus(true); // 인증 상태 갱신
         navigate(returnUrl); // 원하는 페이지로 이동
         return;
@@ -124,8 +144,8 @@ const SignIn: React.FC = () => {
     }
   };
 
-  // 이미 인증된 경우 로딩 상태 표시
-  if (isAuthenticated && returnUrl) {
+  // 이미 인증되었거나 리디렉션 중인 경우 로딩 상태 표시
+  if (isAuthenticated || isRedirecting) {
     return (
       <AuthLayout>
         <SpaceBetween direction="vertical" size="l">
