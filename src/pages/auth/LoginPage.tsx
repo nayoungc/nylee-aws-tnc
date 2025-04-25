@@ -9,7 +9,7 @@ import {
   SpaceBetween,
   Grid,
 } from '@cloudscape-design/components';
-import LoginForm from '../../components/auth/LoginForm';
+import LoginForm from '@components/auth/LoginForm';
 import { useAuth } from '../../hooks/useAuth';
 
 const LoginPage: React.FC = () => {
