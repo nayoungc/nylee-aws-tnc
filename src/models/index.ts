@@ -1,4 +1,4 @@
-export * from './course-catalog';
+export * from './catalog';
 export * from './course-modules';
 export * from './course-labs';
 export * from './course-materials';
