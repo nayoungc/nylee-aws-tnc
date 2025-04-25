@@ -1,7 +1,6 @@
 // src/pages/admin/CourseCatalogTab.tsx
 import { listQuizzes, listSurveys } from '@api';
 import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '@contexts/AuthContext';
-
 import {
   Box,
   Button,

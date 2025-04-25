@@ -59,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 마지막 새로고침 시간 추적
   const [lastRefresh, setLastRefresh] = useState<number>(0);
-  
+
   // 최초 앱 로딩 시 인증 확인 횟수 제한
   const [initialAuthChecked, setInitialAuthChecked] = useState<boolean>(false);
 
@@ -73,58 +73,95 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('이미 인증 확인 중입니다. 중복 요청 무시.');
       return state.isAuthenticated;
     }
-    
+
     // 캐시 수명 (3분)
     const CACHE_TTL = 3 * 60 * 1000;
-  
+
     // 최근에 이미 확인한 경우 (캐시 유효)
     const now = Date.now();
     if (!force && now - lastRefresh < CACHE_TTL && state.isAuthenticated) {
       console.log('최근에 이미 인증 확인 완료. 캐시된 상태 반환.');
       return state.isAuthenticated;
     }
-  
+
     // 로딩 플래그 설정
     console.log('인증 상태 확인 시작');
     authCheckInProgress = true;
-    
+
     setState(prev => ({
       ...prev,
       loading: true
     }));
-  
+
     try {
-      // 세션 가져오기 전에 catch 블록에서도 처리할 수 있도록 변수 선언
-      let session;
-      
       try {
         // 세션 가져오기
-        session = await fetchAuthSession({ 
+        const session = await fetchAuthSession({
           forceRefresh: force || (now - lastRefresh > CACHE_TTL * 2)
         });
-        
-        // 토큰 확인
+
+        // 토큰이 없으면 로그아웃 상태
         if (!session.tokens) {
           console.log('유효한 토큰 없음, 로그아웃 상태로 설정');
-          throw new Error('No valid tokens');
+          setState({
+            isAuthenticated: false,
+            userAttributes: null,
+            username: '',
+            userRole: 'student',
+            loading: false
+          });
+          return false;
         }
-        
-        // 자격 증명 확인
+
+        // 자격 증명 확인 (없어도 계속 진행, 일부 작업은 자격 증명 없이도 가능)
         if (!session.credentials) {
-          console.log('자격 증명 없음, 오류 발생');
-          throw new Error('No valid credentials');
+          console.log('자격 증명 없음, 토큰만 있는 상태 - 부분 인증 상태');
+          // 인증 상태는 토큰 기반으로 판단
+          try {
+            // 사용자 정보만 가져오기 시도
+            const user = await getCurrentUser();
+            const attributes = await fetchUserAttributes();
+
+            // 세션에 저장
+            sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
+            sessionStorage.setItem('userAttributesTimestamp', now.toString());
+
+            // 상태 업데이트
+            setState({
+              isAuthenticated: true,
+              userAttributes: attributes,
+              username: user.username,
+              userRole: attributes.profile || 'student',
+              loading: false
+            });
+
+            setLastRefresh(now);
+            return true;
+          } catch (userError) {
+            console.log('사용자 정보 가져오기 실패:', userError);
+            // 사용자 정보 가져오기 실패시 로그아웃 상태로 간주
+            setState({
+              isAuthenticated: false,
+              userAttributes: null,
+              username: '',
+              userRole: 'student',
+              loading: false
+            });
+            return false;
+          }
         }
-        
+
+        // 토큰과 자격 증명 모두 있는 경우
         console.log('유효한 토큰과 자격 증명 발견: 로그인된 상태');
-        
+
         // 사용자 정보 가져오기
         const user = await getCurrentUser();
         const attributes = await fetchUserAttributes();
-        
+
         // 세션에 저장
         sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
         sessionStorage.setItem('userAttributesTimestamp', now.toString());
-        
+
         // 상태 업데이트
         setState({
           isAuthenticated: true,
@@ -133,24 +170,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           userRole: attributes.profile || 'student',
           loading: false
         });
-        
+
         setLastRefresh(now);
         tokenRefreshAttempts = 0;
         return true;
       } catch (error) {
-        console.log('자격 증명 없음 또는 오류 발생');
-        
-        // 세션 객체가 존재하지만 토큰만 없는 특이 케이스 확인
-        if (session && !session.tokens) {
-          console.log('세션은 있으나 토큰이 없음 - 부분적으로 로그인된 상태일 수 있음');
-          try {
-            await signOut({ global: false });
-          } catch (signOutErr) {
-            console.log('세션 정리 중 오류 발생:', signOutErr);
-          }
-        }
-        
-        console.error('인증 확인 실패:', error);
+        console.log('인증 확인 중 오류:', error);
+
+        // 오류 발생 시 로그아웃 상태로 설정
         setState({
           isAuthenticated: false,
           userAttributes: null,
@@ -158,23 +185,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           userRole: 'student',
           loading: false
         });
-  
+
         // 캐시 정리
         sessionStorage.removeItem('userAttributes');
         sessionStorage.removeItem('userAttributesTimestamp');
-        
+
         return false;
       }
     } finally {
       // 로딩 플래그 해제
       authCheckInProgress = false;
-      
+
       // 로딩 상태 종료
-      setState(prev => ({ 
-        ...prev, 
-        loading: false 
+      setState(prev => ({
+        ...prev,
+        loading: false
       }));
-      
+
       // 첫 인증 확인 완료 표시
       if (!initialAuthChecked) {
         setInitialAuthChecked(true);
@@ -212,7 +239,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 3. 세션 스토리지 및 캐시 정리
       console.log('로그아웃 스토리지 정리 중...');
       sessionStorage.clear();
-      
+
       // Cognito 관련 모든 항목 제거
       Object.keys(localStorage).forEach(key => {
         if (key.includes('CognitoIdentityServiceProvider') || key.includes('amplify-signin')) {
@@ -296,14 +323,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // 앱 로드 시 한번만 인증 상태 확인
     let authCheckAttempted = false;
-    
+
     const initialAuthCheck = async () => {
       if (!authCheckAttempted) {
         authCheckAttempted = true;
         await checkAuthStatus(true);
       }
     };
-    
+
     initialAuthCheck();
 
     // Auth 이벤트 리스너 설정
@@ -314,7 +341,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'signedIn':
           checkAuthStatus(true); // 강제 새로고침
           break;
-          
+
         case 'signedOut':
           console.log('signedOut 이벤트 감지 - 상태 초기화');
           // 상태 초기화
@@ -325,23 +352,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             userRole: 'student',
             loading: false
           });
-          
+
           // 스토리지 정리
           sessionStorage.clear();
           localStorage.removeItem('amplify-signin-with-hostedUI');
-          
+
           // Cognito 관련 모든 항목 제거
           Object.keys(localStorage).forEach(key => {
             if (key.includes('CognitoIdentityServiceProvider')) {
               localStorage.removeItem(key);
             }
           });
-          
+
           setLastRefresh(0);
           tokenRefreshAttempts = 0;
           break;
-          
+
         case 'tokenRefresh':
+          // 로그아웃 상태에서는 토큰 갱신을 시도하지 않음
           if (!state.isAuthenticated) {
             console.log('로그아웃 상태. 토큰 갱신 중단');
             return;
@@ -354,22 +382,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('토큰 갱신 제한: 너무 빈번한 요청');
             return;
           }
-          
+
           if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS) {
             console.log(`토큰 갱신 제한: 최대 시도 횟수 초과 (\${tokenRefreshAttempts}/\${MAX_TOKEN_REFRESH_ATTEMPTS})`);
-            // 제한 횟수 도달 시 인증 상태 강제 확인
-            checkAuthStatus(true);
+            // 제한 횟수 도달 후 일정 시간 후 다시 허용
+            if (now - tokenRefreshLastAttempt > TOKEN_REFRESH_MIN_INTERVAL * 10) {
+              console.log('토큰 갱신 카운터 초기화');
+              tokenRefreshAttempts = 0;
+            }
             return;
           }
 
           tokenRefreshAttempts++;
           tokenRefreshLastAttempt = now;
-          break;
-          
-        case 'tokenRefresh_failure':
-          console.error('토큰 갱신 실패');
-          // 토큰 갱신 실패 시 인증 상태 확인
-          checkAuthStatus(true);
+          console.log('토큰 갱신 시도:', tokenRefreshAttempts);
+
+          // 토큰 갱신 시 조용히 인증 상태 확인
+          checkAuthStatus(true).catch(err =>
+            console.error('토큰 갱신 중 인증 상태 확인 실패:', err)
+          );
           break;
       }
     });
@@ -437,19 +468,19 @@ export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>
       return await apiFunction(...args);
     } catch (error: any) {
       // 인증 오류 확인
-      const isAuthError = 
-        error.message?.includes("자격 증명이 없습니다") || 
+      const isAuthError =
+        error.message?.includes("자격 증명이 없습니다") ||
         error.message?.includes("세션에 유효한 자격 증명이 없습니다") ||
         error.message?.includes("No credentials") ||
         error.message?.includes("expired") ||
         error.name === 'NotAuthorizedException' ||
         error.code === 'NotAuthorizedException';
-        
+
       // 인증 오류인 경우 처리기 호출
       if (isAuthError && authContext.handleAuthError) {
         authContext.handleAuthError(error);
       }
-      
+
       throw error;
     }
   };

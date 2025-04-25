@@ -46,15 +46,14 @@ const SignIn: React.FC = () => {
     
     const verifyAuth = async () => {
       try {
-        // 한 번만 인증 상태 확인 실행
-        const isAuth = await checkAuthStatus();
+        console.log('인증 상태 확인 시작 - SignIn 컴포넌트');
+        // 실제 인증 상태만 확인하고 자격 증명 초기화를 강제하지 않음
+        const isAuth = await checkAuthStatus(false);
         
         if (isAuth) {
           console.log('이미 인증된 사용자입니다. 리다이렉트합니다.');
           setIsRedirecting(true);
           navigate(returnUrl);
-        } else {
-          console.log('인증되지 않은 상태입니다. 로그인 폼을 표시합니다.');
         }
       } catch (err) {
         console.error('인증 상태 확인 중 오류:', err);
@@ -64,8 +63,8 @@ const SignIn: React.FC = () => {
       }
     };
     
+    // 인증 확인 시작
     verifyAuth();
-    // 의존성 배열에서 checkAuthStatus 제거하여 한 번만 실행되도록 함
   }, [navigate, returnUrl]); 
 
   const handleChange = (field: string, value: string) => {
@@ -96,6 +95,10 @@ const SignIn: React.FC = () => {
       if (result.isSignedIn) {
         // 로그인 성공 시 리디렉션 상태 설정
         setIsRedirecting(true);
+        setSuccessMessage('로그인 성공! 리디렉션 중...');
+        
+        // 잠시 대기하여 토큰이 설정될 시간을 확보
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // 로그인 성공 - 인증 상태 갱신
         await checkAuthStatus(true);
