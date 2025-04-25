@@ -1,3 +1,4 @@
+// src/pages/Home.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,9 +12,14 @@ import {
 } from '@cloudscape-design/components';
 import { useAuth } from '../hooks/useAuth';
 
-const Home: React.FC = () => {
+const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { logout, userInfo, isAdmin, isInstructor } = useAuth();
+  // 속성 이름 수정: userInfo -> user, isLoading -> loading
+  const { logout, user, loading } = useAuth();
+
+  // user 객체에서 권한 정보 추출
+  const isAdmin = user?.attributes?.['custom:role'] === 'admin';
+  const isInstructor = user?.attributes?.['custom:role'] === 'instructor';
 
   const handleLogout = async () => {
     try {
@@ -25,6 +31,10 @@ const Home: React.FC = () => {
   };
 
   const userRole = isAdmin ? '관리자' : (isInstructor ? '강사' : '사용자');
+
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
 
   return (
     <AppLayout
@@ -52,7 +62,8 @@ const Home: React.FC = () => {
               }
             >
               <Box>
-                <p><strong>사용자:</strong> {userInfo?.attributes?.name || userInfo?.user?.username}</p>
+                {/* userInfo -> user로 변경 */}
+                <p><strong>사용자:</strong> {user?.attributes?.name || user?.username}</p>
                 <p><strong>권한:</strong> {userRole}</p>
               </Box>
             </Container>
@@ -82,4 +93,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default HomePage;
