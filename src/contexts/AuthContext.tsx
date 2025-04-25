@@ -55,76 +55,91 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * 인증 상태 확인 함수 - 캐싱을 통해 최적화
    * @param force 강제로 새로고침 여부
    */
-  const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => { // 명시적 반환 타입 선언
+  const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => {
     // 캐시 수명 (15분)
     const CACHE_TTL = 15 * 60 * 1000;
-
-    // 1. 최근에 이미 확인한 경우 건너뛰기 (15분 이내) - 강제 새로고침 시는 제외
+  
+    // 1. 최근에 이미 확인한 경우 건너뛰기 (강제 새로고침 시는 제외)
     const now = Date.now();
     if (!force && now - lastRefresh < CACHE_TTL) {
       console.log('최근에 이미 인증 확인 완료. 건너뜁니다.');
-      return true; // 캐시된 값 사용 시에도 true 반환
+      return state.isAuthenticated;
     }
-
+  
     // 2. 인증 확인 수행
     setState(prev => ({ ...prev, loading: true }));
-
+    console.log('자격 증명 확인 중...');
+  
     try {
-      // 명시적으로 새 세션 가져오기
-      console.log('자격 증명 확인 중...');
-      const session = await fetchAuthSession({ forceRefresh: force });
-      if (!session.tokens) {
-        console.log('유효한 토큰 없음, 로그아웃 상태로 설정');
-        throw new Error('No valid tokens');
+      // 세션 가져오기 전에 catch 블록에서도 처리할 수 있도록 변수 선언
+      let session;
+      
+      try {
+        // 명시적으로 새 세션 가져오기
+        session = await fetchAuthSession({ forceRefresh: true });
+        
+        // 세션이 있지만 토큰이 없는 경우 
+        if (!session.tokens) {
+          throw new Error('No valid tokens');
+        }
+        
+        // 로그인 되어 있음
+        console.log('유효한 토큰 발견: 로그인된 상태');
+        
+        const user = await getCurrentUser();
+        const attributes = await fetchUserAttributes();
+  
+        // 세션 스토리지에 저장하여 캐싱
+        sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
+        sessionStorage.setItem('userAttributesTimestamp', now.toString());
+  
+        setState({
+          isAuthenticated: true,
+          userAttributes: attributes,
+          username: user.username,
+          userRole: attributes.profile || 'student',
+          loading: false
+        });
+  
+        setLastRefresh(now);
+        tokenRefreshAttempts = 0;
+        
+        return true;
+      } catch (error) {
+        console.log('자격 증명 없음 또는 오류 발생');
+        
+        // 세션 객체가 존재하지만 토큰만 없는 특이 케이스 확인
+        if (session && !session.tokens) {
+          console.log('세션은 있으나 토큰이 없음 - 부분적으로 로그인된 상태일 수 있음');
+          // 이 경우 로그아웃 실행하여 상태 초기화
+          try {
+            await signOut({ global: false });
+          } catch (signOutErr) {
+            console.log('로그아웃 중 오류 발생:', signOutErr);
+          }
+        }
+        
+        console.error('인증 확인 실패:', error);
+        setState({
+          isAuthenticated: false,
+          userAttributes: null,
+          username: '',
+          userRole: 'student',
+          loading: false
+        });
+  
+        sessionStorage.removeItem('userAttributes');
+        sessionStorage.removeItem('userAttributesTimestamp');
+        
+        return false;
       }
-
-      // 중요: AWS SDK에 자격 증명 명시적 설정
-      if (session.credentials) {
-        console.log('유효한 자격 증명 찾음');
-      } else {
-        console.log('자격 증명 없음, 오류 발생');
-        throw new Error('No valid credentials');
+    } finally {
+      // 최종적으로 로딩 상태가 유지되지 않도록 보장
+      if (state.loading) {
+        setState(prev => ({ ...prev, loading: false }));
       }
-
-      const user = await getCurrentUser();
-      const attributes = await fetchUserAttributes();
-
-      // 세션 스토리지에 저장하여 캐싱
-      sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
-      sessionStorage.setItem('userAttributesTimestamp', now.toString());
-
-      setState({
-        isAuthenticated: true,
-        userAttributes: attributes,
-        username: user.username,
-        userRole: attributes.profile || 'student',
-        loading: false
-      });
-
-      setLastRefresh(now);
-
-      // 토큰 리프레시 카운터 리셋
-      tokenRefreshAttempts = 0;
-
-      return true; // 성공 시 true 반환
-    } catch (error) {
-      console.error('인증 확인 실패:', error);
-      // 로그아웃 상태로 설정
-      setState({
-        isAuthenticated: false,
-        userAttributes: null,
-        username: '',
-        userRole: 'student',
-        loading: false
-      });
-
-      // 캐시 정보 제거
-      sessionStorage.removeItem('userAttributes');
-      sessionStorage.removeItem('userAttributesTimestamp');
-
-      return false; // 실패 시 false 반환
     }
-  }, [lastRefresh]);
+  }, [lastRefresh, state.isAuthenticated, state.loading]);
 
   /**
    * 로그아웃 처리 함수
