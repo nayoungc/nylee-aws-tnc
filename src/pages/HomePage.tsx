@@ -49,7 +49,7 @@ const HomePage: React.FC = () => {
                 </Button>
               }
             >
-              AWS T&C 교육 정보 대시보드
+              AWS T&C 교육 정보 대시보드ㅈㅂㅈㅂㅈㄷ
             </Header>
           }
         >

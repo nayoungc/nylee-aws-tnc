@@ -5,6 +5,7 @@ import TopNavigationHeader from '@layouts/TopNavigationHeader';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import LoginPage from '@pages/auth/LoginPage';
 import HomePage from '@/pages/HomePage';
+import TncHome from '@/pages/public/TncPage'; // TncHome 컴포넌트 추가
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 
@@ -58,6 +59,10 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          
+          {/* TNC 라우트 추가 */}
+          <Route path="/tnc" element={<TncHome />} />
+          <Route path="/tnc/*" element={<TncHome />} /> {/* 중첩 라우트 처리 */}
           
           {/* 어드민 라우트 그룹 - 관리자 권한 체크는 AdminProtectedRoute에서 처리 */}
           <Route path="/admin" element={<AdminDashboardPage />} />
