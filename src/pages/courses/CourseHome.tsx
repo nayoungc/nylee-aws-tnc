@@ -12,22 +12,22 @@ import {
   Alert,
   Spinner,
   Badge,
-  Link,
+  Modal,
   ColumnLayout,
-  Cards,
-  StatusIndicator
+  ExpandableSection
 } from '@cloudscape-design/components';
 
 // Types
-interface Course {
+interface CalendarEvent {
   id: string;
   title: string;
-  description: string;
-  instructor: string;
-  date: string;
-  time: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
   location: string;
-  materials: { title: string; url: string; type: string }[];
+  description: string;
+  type: 'lecture' | 'workshop' | 'exam' | 'deadline' | 'other';
+  instructors?: string[];
 }
 
 interface Announcement {
@@ -39,27 +39,20 @@ interface Announcement {
   isImportant: boolean;
 }
 
-interface Assessment {
-  id: string;
-  title: string;
-  type: 'survey' | 'pre-quiz' | 'post-quiz';
-  description: string;
-  isActive: boolean;
-  dueDate?: string;
-  estimatedTime: string;
-  status: 'completed' | 'pending' | 'overdue';
-}
-
 const CourseHome: React.FC = () => {
   const navigate = useNavigate();
-  const { t, tString, i18n } = useTypedTranslation();
+  const { t } = useTypedTranslation();
 
   // State management
-  const [course, setCourse] = useState<Course | null>(null);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isEventModalVisible, setIsEventModalVisible] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     // Initial loading
@@ -72,72 +65,100 @@ const CourseHome: React.FC = () => {
 
       // In a real app, this would be an API call
       setTimeout(() => {
-        // Sample course data - this would come from your API
-        setCourse({
-          id: 'aws-cloud-essentials',
-          title: 'Generative AI on AWS',
-          description: 'A hands-on introduction to core AWS services and best practices.',
-          instructor: 'Nayoun Lee',
-          date: '2025-05-01',
-          time: '09:00 - 17:00',
-          location: '서울 강남구 테헤란로 231, 캠퍼스 3층',
-          materials: [
-            { title: '워크샵 슬라이드', url: '/materials/slides.pdf', type: 'pdf' },
-            { title: '실습 가이드', url: '/materials/lab-guide.pdf', type: 'pdf' },
-            { title: '참고 자료', url: '/materials/references.zip', type: 'zip' },
-            { title: 'AWS 계정 생성 가이드', url: '/materials/account-setup.pdf', type: 'pdf' }
-          ]
-        });
+        // Sample events data - this would come from your API
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        setEvents([
+          {
+            id: '1',
+            title: 'AWS 클라우드 기초 강의',
+            date: new Date(year, month, 15), // 15th of current month
+            startTime: '10:00',
+            endTime: '12:00',
+            location: '강의실 A102',
+            description: 'AWS 클라우드의 기본 개념과 서비스에 대한 소개 강의입니다.',
+            type: 'lecture',
+            instructors: ['김지훈 강사']
+          },
+          {
+            id: '2',
+            title: 'EC2 실습 워크샵',
+            date: new Date(year, month, 16), // 16th of current month
+            startTime: '14:00',
+            endTime: '17:00',
+            location: '실습실 B201',
+            description: 'EC2 인스턴스 생성 및 관리에 대한 실습 워크샵입니다.',
+            type: 'workshop',
+            instructors: ['박서연 강사', '이민준 조교']
+          },
+          {
+            id: '3',
+            title: '중간 프로젝트 제출 마감',
+            date: new Date(year, month, 20), // 20th of current month
+            startTime: '23:59',
+            endTime: '23:59',
+            location: '온라인',
+            description: '클라우드 아키텍처 설계 중간 프로젝트 제출 마감일입니다.',
+            type: 'deadline'
+          },
+          {
+            id: '4',
+            title: 'AWS 보안 강의',
+            date: new Date(year, month, 22), // 22nd of current month
+            startTime: '13:00',
+            endTime: '15:00',
+            location: '강의실 A102',
+            description: 'AWS 클라우드 환경에서의 보안 설정과 모범 사례에 대한 강의입니다.',
+            type: 'lecture',
+            instructors: ['최서현 강사']
+          },
+          {
+            id: '5',
+            title: '기말고사',
+            date: new Date(year, month, 28), // 28th of current month
+            startTime: '10:00',
+            endTime: '12:00',
+            location: '시험장 C301',
+            description: 'AWS 클라우드 과정 기말고사입니다.',
+            type: 'exam'
+          }
+        ]);
 
         // Sample announcements
         setAnnouncements([
           {
             id: '1',
             title: '워크샵 사전 준비 안내',
-            message: '워크샵에 참여하시는 모든 분들은 개인 노트북을 지참해주세요. 실습을 위한 AWS 계정은 현장에서 제공됩니다.',
+            message: '16일에 진행되는 EC2 실습 워크샵 참여를 위해 모든 수강생은 개인 노트북을 지참해주세요. AWS 계정은 교육장에서 제공됩니다.',
             type: 'info',
-            date: '2023-10-16',
+            date: '2023-10-10',
             isImportant: true
           },
           {
             id: '2',
-            title: '점심 식사 안내',
-            message: '점심 식사는 12시부터 13시까지 제공됩니다. 식이 제한이 있으신 분들은 진행자에게 미리 알려주세요.',
-            type: 'success',
-            date: '2023-10-17',
-            isImportant: false
-          }
-        ]);
-
-        // Sample assessments
-        setAssessments([
-          {
-            id: '1',
-            title: '사전 설문조사',
-            type: 'survey', // 이것이 'survey' 타입으로 되어있는지 확인
-            description: '워크샵 참여자의 경험과 기대를 파악하기 위한 간단한 설문조사입니다.',
-            isActive: true,
-            estimatedTime: '5분',
-            status: 'pending'
-          },
-          {
-            id: '2',
-            title: '사전 퀴즈',
-            type: 'pre-quiz',
-            description: 'AWS 기본 개념에 대한 이해도를 측정하는 짧은 퀴즈입니다.',
-            isActive: true,
-            dueDate: '2023-10-18',
-            estimatedTime: '10분',
-            status: 'pending'
+            title: '중간 프로젝트 요구사항 업데이트',
+            message: '중간 프로젝트의 요구사항이 업데이트되었습니다. 자세한 내용은 강의 자료실에서 확인해주세요.',
+            type: 'warning',
+            date: '2023-10-12',
+            isImportant: true
           },
           {
             id: '3',
-            title: '사후 퀴즈',
-            type: 'post-quiz',
-            description: '워크샵 이후 지식 습득을 확인하기 위한 평가입니다.',
-            isActive: true, // 수정: false → true로 변경하여 활성화
-            estimatedTime: '15분',
-            status: 'pending'
+            title: '보충 수업 안내',
+            message: '25일(토) 오후 2시부터 4시까지 보충 수업이 진행될 예정입니다. 참석을 원하시는 분들은 사전에 신청해주세요.',
+            type: 'success',
+            date: '2023-10-14',
+            isImportant: false
+          },
+          {
+            id: '4',
+            title: '기말고사 범위 안내',
+            message: '기말고사는 1주차부터 10주차까지의 모든 내용을 포함합니다. 시험 준비에 참고하시기 바랍니다.',
+            type: 'info',
+            date: '2023-10-15',
+            isImportant: true
           }
         ]);
 
@@ -150,26 +171,151 @@ const CourseHome: React.FC = () => {
     }
   };
 
-  // 수정된 부분: 평가 유형에 따라 다른 페이지로 이동
-  const navigateToAssessment = (assessment: Assessment) => {
-    console.log('Navigating to assessment:', assessment.type, assessment.id);
+  const openEventDetails = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsEventModalVisible(true);
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
     
-    // 필요한 정보를 직접 경로에 포함해 리디렉션 없이 바로 해당 페이지로 이동
-    switch (assessment.type) {
-      case 'pre-quiz':
-        navigate(`/pre-quiz/\${assessment.id}`);
-        break;
-      case 'post-quiz':
-        navigate(`/post-quiz/\${assessment.id}`);
-        break;
-      case 'survey':
-        navigate(`/survey/\${assessment.id}`);
-        break;
-      default:
-        navigate(`/assessment/\${assessment.type}/\${assessment.id}`);
+    // Check if there are events on this date
+    const eventsOnSelectedDate = events.filter(
+      event => event.date.toDateString() === date.toDateString()
+    );
+    
+    if (eventsOnSelectedDate.length === 1) {
+      // If there's only one event, show it directly
+      setSelectedEvent(eventsOnSelectedDate[0]);
+      setIsEventModalVisible(true);
+    } else if (eventsOnSelectedDate.length > 1) {
+      // If there are multiple events, we'll show them in the daily events section
+      setSelectedEvent(null);
+    } else {
+      setSelectedEvent(null);
     }
   };
-  
+
+  // Helper function to get events for selected date
+  const getEventsForSelectedDate = () => {
+    return events.filter(
+      event => event.date.toDateString() === selectedDate.toDateString()
+    );
+  };
+
+  // Helper function to get event type badge
+  const getEventTypeBadge = (type: string) => {
+    switch (type) {
+      case 'lecture':
+        return <Badge color="blue">강의</Badge>;
+      case 'workshop':
+        return <Badge color="green">워크샵</Badge>;
+      case 'exam':
+        return <Badge color="red">시험</Badge>;
+      case 'deadline':
+        // 수정: "orange" → "severity-high"로 변경 (유효한 값)
+        return <Badge color="severity-high">마감</Badge>;
+      default:
+        return <Badge color="grey">기타</Badge>;
+    }
+  };
+
+  // Calendar navigation
+  const prevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
+  };
+
+  const nextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
+  };
+
+  const goToToday = () => {
+    const now = new Date();
+    setCurrentMonth(now.getMonth());
+    setCurrentYear(now.getFullYear());
+    setSelectedDate(now);
+  };
+
+  // Generate calendar days
+  const generateCalendarDays = () => {
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    
+    // Previous month days needed to fill the first row
+    const prevMonthDays = [];
+    const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+    
+    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+      prevMonthDays.push({
+        day: prevMonthLastDay - i,
+        month: currentMonth - 1,
+        year: currentMonth === 0 ? currentYear - 1 : currentYear,
+        isCurrentMonth: false
+      });
+    }
+    
+    // Current month days
+    const currentMonthDays = [];
+    for (let i = 1; i <= daysInMonth; i++) {
+      currentMonthDays.push({
+        day: i,
+        month: currentMonth,
+        year: currentYear,
+        isCurrentMonth: true
+      });
+    }
+    
+    // Next month days needed to fill the last row
+    const nextMonthDays = [];
+    const totalDaysDisplayed = prevMonthDays.length + currentMonthDays.length;
+    const remainingCells = 42 - totalDaysDisplayed; // 6 rows * 7 days = 42
+    
+    for (let i = 1; i <= remainingCells; i++) {
+      nextMonthDays.push({
+        day: i,
+        month: currentMonth + 1,
+        year: currentMonth === 11 ? currentYear + 1 : currentYear,
+        isCurrentMonth: false
+      });
+    }
+    
+    return [...prevMonthDays, ...currentMonthDays, ...nextMonthDays];
+  };
+
+  // Get events for a specific day
+  const getEventsForDay = (day: number, month: number, year: number) => {
+    return events.filter(event => 
+      event.date.getDate() === day && 
+      event.date.getMonth() === month && 
+      event.date.getFullYear() === year
+    );
+  };
+
+  // Helper function to get event color
+  const getEventColor = (type: string) => {
+    switch (type) {
+      case 'lecture':
+        return '#0073bb';
+      case 'workshop':
+        return '#16a34a';
+      case 'exam':
+        return '#dc2626';
+      case 'deadline':
+        return '#f59e0b'; // 주황색 계열 색상 사용
+      default:
+        return '#6b7280';
+    }
+  };
 
   // Loading indicator
   if (loading) {
@@ -182,257 +328,310 @@ const CourseHome: React.FC = () => {
   }
 
   // Error display
-  if (error || !course) {
+  if (error) {
     return (
       <Container>
         <Alert type="error" header="과정을 불러올 수 없습니다">
-          {error || "과정 정보가 없습니다."}
+          {error}
         </Alert>
       </Container>
     );
   }
 
-  // Course detail page rendering
+  const renderCalendar = () => {
+    const monthNames = [
+      '1월', '2월', '3월', '4월', '5월', '6월', 
+      '7월', '8월', '9월', '10월', '11월', '12월'
+    ];
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const calendarDays = generateCalendarDays();
+    
+    return (
+      <div>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '16px' 
+        }}>
+          <h3>{currentYear}년 {monthNames[currentMonth]}</h3>
+          <div>
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button onClick={prevMonth} iconName="angle-left" variant="icon" />
+              <Button onClick={goToToday} variant="normal">오늘</Button>
+              <Button onClick={nextMonth} iconName="angle-right" variant="icon" />
+            </SpaceBetween>
+          </div>
+        </div>
+        
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              {days.map((day, index) => (
+                <th key={index} style={{ 
+                  padding: '8px', 
+                  textAlign: 'center',
+                  color: index === 0 ? '#d91e18' : index === 6 ? '#2471a3' : 'inherit'
+                }}>
+                  {day}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 6 }, (_, rowIndex) => (
+              <tr key={rowIndex}>
+                {Array.from({ length: 7 }, (_, colIndex) => {
+                  const dayIndex = rowIndex * 7 + colIndex;
+                  const dayData = calendarDays[dayIndex];
+                  const isSelected = 
+                    selectedDate.getDate() === dayData.day && 
+                    selectedDate.getMonth() === dayData.month && 
+                    selectedDate.getFullYear() === dayData.year;
+                  
+                  const isToday = 
+                    new Date().getDate() === dayData.day && 
+                    new Date().getMonth() === dayData.month && 
+                    new Date().getFullYear() === dayData.year;
+                  
+                  const dayEvents = getEventsForDay(dayData.day, dayData.month, dayData.year);
+                  const hasEventOnDay = dayEvents.length > 0;
+                  
+                  return (
+                    <td 
+                      key={colIndex}
+                      onClick={() => handleDateSelect(new Date(dayData.year, dayData.month, dayData.day))}
+                      style={{ 
+                        padding: '8px',
+                        textAlign: 'center',
+                        backgroundColor: isSelected ? '#f0f7ff' : 'transparent',
+                        opacity: dayData.isCurrentMonth ? 1 : 0.3,
+                        border: isToday ? '2px solid #0073bb' : '1px solid #eaeded',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        height: '60px',
+                        verticalAlign: 'top'
+                      }}
+                    >
+                      <div style={{ 
+                        fontWeight: isToday ? 'bold' : 'normal',
+                        color: colIndex === 0 ? '#d91e18' : colIndex === 6 ? '#2471a3' : 'inherit'
+                      }}>
+                        {dayData.day}
+                      </div>
+                      
+                      {hasEventOnDay && (
+                        <div style={{ 
+                          marginTop: '4px',
+                          fontSize: '0.7em', 
+                          lineHeight: '1.2',
+                          maxHeight: '36px',
+                          overflow: 'hidden'
+                        }}>
+                          {dayEvents.map((event, idx) => (
+                            idx < 2 && (
+                              <div key={event.id} style={{
+                                backgroundColor: getEventColor(event.type),
+                                color: 'white',
+                                padding: '1px 3px',
+                                borderRadius: '2px',
+                                marginBottom: '1px',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden'
+                              }}>
+                                {event.title}
+                              </div>
+                            )
+                          ))}
+                          {dayEvents.length > 2 && (
+                            <div style={{ fontSize: '0.9em', color: '#666' }}>
+                              +{dayEvents.length - 2}개 더보기
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <SpaceBetween size="l">
-      {/* Course header section */}
       <Container
-        header={
-          <Header
-            variant="h1"
-            description={course.description}
-          >
-            {course.title}
-          </Header>
-        }
+        header={<Header variant="h1">강의 일정 및 공지사항</Header>}
       >
-        <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
-          <SpaceBetween size="m">
-            <Box variant="awsui-key-label">일시</Box>
-            <Box variant="p">{course.date}, {course.time}</Box>
-
-            <Box variant="awsui-key-label">장소</Box>
-            <Box variant="p">{course.location}</Box>
-          </SpaceBetween>
-
-          <SpaceBetween size="m">
-            <Box variant="awsui-key-label">강사</Box>
-            <Box variant="p">{course.instructor}</Box>
-
-            <Alert type="info" header="오늘의 과정">
-              이 페이지에서는 오늘 진행되는 과정에 관한 모든 정보와 자료를 확인하실 수 있습니다.
-            </Alert>
-          </SpaceBetween>
-        </Grid>
-      </Container>
-
-      {/* Announcements section */}
-      <Container
-        header={<Header variant="h2">공지사항</Header>}
-      >
-        {announcements.length > 0 ? (
-          <SpaceBetween size="m">
-            {announcements.map(announcement => (
-              <Alert
-                key={announcement.id}
-                type={announcement.type}
-                header={
-                  <>
-                    {announcement.title}
-                    {announcement.isImportant && (
-                      <Badge color="red">중요</Badge>
-                    )}
-                  </>
-                }
-              >
-                <Box variant="p">{announcement.message}</Box>
-                <Box variant="small" color="text-body-secondary">
-                  작성일: {new Date(announcement.date).toLocaleDateString()}
-                </Box>
-              </Alert>
-            ))}
-          </SpaceBetween>
-        ) : (
-          <Box textAlign="center" padding="l">
-            현재 공지사항이 없습니다.
-          </Box>
-        )}
-      </Container>
-
-      {/* Assessments section */}
-      <Container
-        header={<Header variant="h2">퀴즈 및 설문조사</Header>}
-      >
-        <Cards
-          cardDefinition={{
-            header: item => (
-              <Box>
-                {item.title}
-                {getAssessmentStatusBadge(item.status, item.isActive)}
-              </Box>
-            ),
-            sections: [
-              {
-                id: "description",
-                content: item => (
-                  <>
-                    <Box variant="p">{item.description}</Box>
-                    <Box variant="small" padding={{ top: "s" }}>
-                      예상 소요시간: {item.estimatedTime}
+        <Grid gridDefinition={[{ colspan: 7 }, { colspan: 5 }]}>
+          {/* Calendar Panel */}
+          <Container header={<Header variant="h2">강의 일정</Header>}>
+            <Box padding="m">
+              <SpaceBetween size="l">
+                {renderCalendar()}
+                
+                <div>
+                  <Header variant="h3">{selectedDate.toLocaleDateString('ko-KR', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    weekday: 'long' 
+                  })} 일정</Header>
+                  
+                  {getEventsForSelectedDate().length > 0 ? (
+                    <SpaceBetween size="s">
+                      {getEventsForSelectedDate().map(event => (
+                        <div 
+                          key={event.id} 
+                          style={{ 
+                            padding: '10px', 
+                            border: '1px solid #eaeded', 
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => openEventDetails(event)}
+                        >
+                          <SpaceBetween size="xs">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box variant="h4">{event.title}</Box>
+                              {getEventTypeBadge(event.type)}
+                            </div>
+                            <Box variant="small">
+                              {event.startTime} - {event.endTime} | {event.location}
+                            </Box>
+                          </SpaceBetween>
+                        </div>
+                      ))}
+                    </SpaceBetween>
+                  ) : (
+                    <Box padding="m" textAlign="center" color="text-body-secondary">
+                      이 날짜에는 예정된 일정이 없습니다.
                     </Box>
-                    {item.dueDate && (
-                      <Box variant="small" padding={{ top: "s" }}>
-                        마감일: {item.dueDate}
-                      </Box>
-                    )}
-                  </>
-                )
-              },
-              {
-                id: "action",
-                content: item => (
-                  <Button
-                    variant="primary"
-                    onClick={() => navigateToAssessment(item)}
-                    disabled={!item.isActive}
-                  >
-                    {item.status === 'completed' ? '결과 보기' : '시작하기'}
-                  </Button>
-                )
-              }
-            ]
-          }}
-          items={assessments}
-          cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 3 }]}
-        />
-      </Container>
-
-      {/* Materials section */}
-      <Container
-        header={<Header variant="h2">과정 자료</Header>}
-      >
-        <ColumnLayout columns={2} variant="text-grid">
-          {course.materials.map((material, index) => (
-            <Box key={index} padding="s">
-              <Link href={material.url} external target="_blank">
-                <SpaceBetween direction="horizontal" size="xs">
-                  {getFileIcon(material.type)}
-                  {material.title}
-                </SpaceBetween>
-              </Link>
+                  )}
+                </div>
+              </SpaceBetween>
             </Box>
-          ))}
-        </ColumnLayout>
-      </Container>
-
-      {/* Schedule section */}
-      <Container
-        header={<Header variant="h2">일정 안내</Header>}
-      >
-        <Box padding="m">
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <th style={{ padding: '10px', textAlign: 'left' }}>시간</th>
-                <th style={{ padding: '10px', textAlign: 'left' }}>내용</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>09:00 - 09:30</td>
-                <td style={{ padding: '10px' }}>등록 및 오리엔테이션</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>09:30 - 10:30</td>
-                <td style={{ padding: '10px' }}>AWS 소개 및 기본 개념</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>10:30 - 10:45</td>
-                <td style={{ padding: '10px' }}>휴식</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>10:45 - 12:00</td>
-                <td style={{ padding: '10px' }}>실습 1: EC2 인스턴스 생성</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>12:00 - 13:00</td>
-                <td style={{ padding: '10px' }}>점심 식사</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>13:00 - 14:30</td>
-                <td style={{ padding: '10px' }}>실습 2: S3 및 스토리지 서비스</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>14:30 - 14:45</td>
-                <td style={{ padding: '10px' }}>휴식</td>
-              </tr>
-              <tr style={{ borderBottom: '1px solid #eaeded' }}>
-                <td style={{ padding: '10px' }}>14:45 - 16:30</td>
-                <td style={{ padding: '10px' }}>실습 3: 데이터베이스 서비스</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '10px' }}>16:30 - 17:00</td>
-                <td style={{ padding: '10px' }}>Q&A 및 마무리</td>
-              </tr>
-            </tbody>
-          </table>
-        </Box>
-      </Container>
-
-      {/* Support information */}
-      <Container
-        header={<Header variant="h2">문의 및 도움말</Header>}
-      >
-        <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
-          <Box padding="m">
-            <SpaceBetween size="m">
-              <Box variant="h3">기술적 문의</Box>
-              <Box variant="p">
-                실습 중 기술적 문제가 있으신 경우 강사에게 문의하거나<br />
-                <Link href="mailto:support@example.com">support@example.com</Link>으로 이메일을 보내주세요.
-              </Box>
-            </SpaceBetween>
-          </Box>
-          <Box padding="m">
-            <SpaceBetween size="m">
-              <Box variant="h3">과정 관련 문의</Box>
-              <Box variant="p">
-                과정 내용이나 일정에 대한 문의는<br />
-                <Link href="mailto:training@example.com">training@example.com</Link>으로 연락해 주세요.
-              </Box>
-            </SpaceBetween>
-          </Box>
+          </Container>
+          
+          {/* Announcements Panel */}
+          <Container header={<Header variant="h2">공지사항</Header>}>
+            <Box padding="m">
+              {announcements.length > 0 ? (
+                <SpaceBetween size="m">
+                  {announcements.map(announcement => (
+                    <ExpandableSection
+                      key={announcement.id}
+                      headerText={
+                        <SpaceBetween direction="horizontal" size="xs">
+                          {announcement.title}
+                          {announcement.isImportant && (
+                            <Badge color="red">중요</Badge>
+                          )}
+                        </SpaceBetween>
+                      }
+                      variant="container"
+                    >
+                      <Alert type={announcement.type} header={null}>
+                        <Box variant="p">{announcement.message}</Box>
+                        <Box variant="small" color="text-body-secondary">
+                          작성일: {new Date(announcement.date).toLocaleDateString('ko-KR')}
+                        </Box>
+                      </Alert>
+                    </ExpandableSection>
+                  ))}
+                </SpaceBetween>
+              ) : (
+                <Box textAlign="center" padding="l">
+                  현재 공지사항이 없습니다.
+                </Box>
+              )}
+            </Box>
+          </Container>
         </Grid>
       </Container>
+      
+      {/* Event Detail Modal */}
+      {selectedEvent && (
+        <Modal
+          visible={isEventModalVisible}
+          onDismiss={() => setIsEventModalVisible(false)}
+          header={selectedEvent.title}
+          size="medium"
+          footer={
+            <Box float="right">
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button variant="link" onClick={() => setIsEventModalVisible(false)}>
+                  닫기
+                </Button>
+                {(selectedEvent.type === 'lecture' || selectedEvent.type === 'workshop') && (
+                  <Button variant="primary" onClick={() => navigate(`/event/\${selectedEvent.id}/materials`)}>
+                    강의 자료 보기
+                  </Button>
+                )}
+              </SpaceBetween>
+            </Box>
+          }
+        >
+          <SpaceBetween size="l">
+            <ColumnLayout columns={2}>
+              <div>
+                <Box variant="awsui-key-label">일시</Box>
+                <Box variant="p">
+                  {selectedEvent.date.toLocaleDateString('ko-KR')} ({selectedEvent.date.toLocaleDateString('ko-KR', {weekday: 'long'})})
+                  <br />
+                  {selectedEvent.startTime} - {selectedEvent.endTime}
+                </Box>
+              </div>
+              
+              <div>
+                <Box variant="awsui-key-label">장소</Box>
+                <Box variant="p">{selectedEvent.location}</Box>
+              </div>
+              
+              {selectedEvent.instructors && (
+                <div>
+                  <Box variant="awsui-key-label">담당 강사</Box>
+                  <Box variant="p">{selectedEvent.instructors.join(', ')}</Box>
+                </div>
+              )}
+              
+              <div>
+                <Box variant="awsui-key-label">유형</Box>
+                <Box variant="p">{getEventTypeBadge(selectedEvent.type)}</Box>
+              </div>
+            </ColumnLayout>
+            
+            <div>
+              <Box variant="awsui-key-label">설명</Box>
+              <Box variant="p">{selectedEvent.description}</Box>
+            </div>
+            
+            {selectedEvent.type === 'workshop' && (
+              <Alert type="info">
+                워크샵 참여를 위해 개인 노트북을 지참해 주시기 바랍니다.
+              </Alert>
+            )}
+            
+            {selectedEvent.type === 'exam' && (
+              <Alert type="warning">
+                시험은 정시에 시작되며, 지각 시 입실이 제한될 수 있습니다. 학생증을 반드시 지참하세요.
+              </Alert>
+            )}
+            
+            {selectedEvent.type === 'deadline' && (
+              <Alert type="error">
+                마감 시간 이후에는 제출이 불가능합니다. 반드시 기한 내에 제출해주세요.
+              </Alert>
+            )}
+          </SpaceBetween>
+        </Modal>
+      )}
     </SpaceBetween>
   );
 };
-
-// Helper functions
-function getAssessmentStatusBadge(status: string, isActive: boolean) {
-  if (!isActive) {
-    return <Badge color="grey">준비 중</Badge>;
-  }
-
-  switch (status) {
-    case 'completed':
-      return <StatusIndicator type="success">완료됨</StatusIndicator>;
-    case 'overdue':
-      return <StatusIndicator type="error">기한 초과</StatusIndicator>;
-    default:
-      return <StatusIndicator type="pending">대기 중</StatusIndicator>;
-  }
-}
-
-function getFileIcon(type: string) {
-  switch (type) {
-    case 'pdf':
-      return <Box color="text-status-error">📄</Box>;
-    case 'zip':
-      return <Box color="text-status-info">📦</Box>;
-    default:
-      return <Box color="text-status-info">📄</Box>;
-  }
-}
 
 export default CourseHome;

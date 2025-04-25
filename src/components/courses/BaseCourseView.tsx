@@ -14,10 +14,47 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { listCourseCatalogs, CourseCatalog } from '@api';
-import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '../../contexts/AuthContext';
+import { useAuth, withAuthErrorHandling } from '../../contexts/AuthContext';
+
+// createAuthErrorHandler 함수를 직접 구현
+const createAuthErrorHandler = (
+  errorCallback: (error: any) => void,
+  navigate?: (path: string) => void,
+  loginPath: string = '/signin'
+) => {
+  return {
+    handleAuthError: (error: any) => {
+      console.error('인증 오류:', error);
+      errorCallback(error);
+      if (navigate) {
+        navigate(loginPath);
+      }
+    }
+  };
+};
+
+// 확장된 코스 카탈로그 인터페이스 정의
+interface ExtendedCourseCatalog extends CourseCatalog {
+  category?: string;
+  price?: number;
+  currency?: string;
+  isPublished?: boolean;
+  publishedDate?: string;
+  deliveryMethod?: string;
+  objectives?: string[];
+  targetAudience?: string[];
+  status?: string;
+}
+
+// API 결과 타입 정의 추가
+interface ApiResult {
+  data?: any[];
+  items?: any[];
+  [key: string]: any;
+}
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
-const mapToCourseViewModel = (item: any): CourseCatalog => {
+const mapToCourseViewModel = (item: any): ExtendedCourseCatalog => {
   return {
     catalogId: item.catalogId || '',
     version: item.version || 'v1',
@@ -53,11 +90,11 @@ interface BaseCourseViewProps {
   showManageButton?: boolean;
   showViewButton?: boolean;
   additionalActions?: React.ReactNode;
-  courses?: CourseCatalog[];
-  onSelectCourse?: (course: CourseCatalog) => void;
+  courses?: ExtendedCourseCatalog[];
+  onSelectCourse?: (course: ExtendedCourseCatalog) => void;
 }
 
-export { mapToCourseViewModel, type CourseCatalog };
+export { mapToCourseViewModel, type CourseCatalog, type ExtendedCourseCatalog };
 
 export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   title,
@@ -76,8 +113,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { t, tString } = useTypedTranslation();
-  const { isAuthenticated, checkAuthStatus } = useAuth();
-  const [courses, setCourses] = useState<CourseCatalog[]>(initialCourses || []);
+  const auth = useAuth();
+  const { isAuthenticated, checkAuthStatus } = auth;
+  const [courses, setCourses] = useState<ExtendedCourseCatalog[]>(initialCourses || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState<boolean>(false);
@@ -161,22 +199,39 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
         }, navigate);
         
         // API 호출
-        const wrappedAPI = withAuthErrorHandling(listCourseCatalogs, authErrorHandler);
+        const wrappedAPI = withAuthErrorHandling((authContext) => {
+          return listCourseCatalogs(authContext); 
+        }, authErrorHandler);
         
         // 타임아웃과 API 호출 경쟁
-        // @ts-ignore - race 타입 문제 무시
-        const result = await Promise.race([
-          wrappedAPI(),
+        const result = await Promise.race<ApiResult | CourseCatalog[] | null>([
+          wrappedAPI(auth),  // auth 객체 전달
           timeoutPromise
         ]);
         
-        // 데이터 처리
-        if (result && result.data && Array.isArray(result.data)) {
-          const mappedItems = result.data.map(mapToCourseViewModel);
-          setCourses(mappedItems);
-        } else {
-          setCourses([]);
+        // 결과 처리 로직 수정
+        let coursesData: any[] = [];
+        
+        if (Array.isArray(result)) {
+          // 배열이 직접 반환된 경우
+          coursesData = result;
+        } 
+        else if (result && typeof result === 'object') {
+          // 객체 형태로 반환된 경우 (data 속성이 있을 수 있음)
+          if ('data' in result && Array.isArray(result.data)) {
+            coursesData = result.data;
+          } else if ('items' in result && Array.isArray(result.items)) {
+            coursesData = result.items;
+          } else {
+            // 다른 객체 구조인 경우 (객체 자체가 코스 목록일 수 있음)
+            coursesData = [result];
+          }
         }
+        
+        // 매핑 및 상태 업데이트
+        const mappedItems = coursesData.map(mapToCourseViewModel);
+        setCourses(mappedItems);
+        
       } catch (error: any) {
         console.error('API 오류:', error);
         
@@ -227,7 +282,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     if (isAuthenticated) {
       fetchCourses();
     }
-  }, [t, initialCourses, authChecked, isAuthenticated, checkAuthStatus, navigate]);
+  }, [t, initialCourses, authChecked, isAuthenticated, checkAuthStatus, navigate, auth]);
 
   const getStatusColor = (status?: string): "green" | "blue" | "grey" => {
     if (!status) return 'grey';
@@ -264,7 +319,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     );
   }
 
-  const renderActionButtons = (item: CourseCatalog) => {
+  const renderActionButtons = (item: ExtendedCourseCatalog) => {
     return (
       <SpaceBetween direction="horizontal" size="xs">
         {onSelectCourse && (
