@@ -9,11 +9,11 @@ import {
   Button, 
   Header 
 } from '@cloudscape-design/components';
-import { useAuth } from '../../auth/auth-context';
+//import { useAuth } from '@auth/auth-context';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  //const { register } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +35,7 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      await register(username, password, email);
+      //await register(username, password, email);
       setConfirmation(true);
     } catch (err: any) {
       setError(err.message || '등록 중 오류가 발생했습니다.');
@@ -60,7 +60,6 @@ const RegisterPage: React.FC = () => {
                 </Button>
                 <Button
                   variant="primary"
-                  type="submit"
                   loading={loading}
                 >
                   등록

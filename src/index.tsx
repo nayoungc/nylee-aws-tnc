@@ -2,12 +2,14 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import { Amplify } from 'aws-amplify';
-import { amplifyConfig } from './amplify-config';
-import '@cloudscape-design/global-styles/index.css';
+import { configureAmplify } from './amplify-config';
+import { Amplify } from "aws-amplify";
 
-// Amplify 설정 (Gen 2 스타일)
-Amplify.configure(amplifyConfig);
+import '@cloudscape-design/global-styles/index.css';
+import outputs from "amplify_outputs.json";
+
+// Amplify Gen 2 초기화
+Amplify.configure(outputs);
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element not found');
@@ -18,3 +20,4 @@ root.render(
     <App />
   </React.StrictMode>
 );
+

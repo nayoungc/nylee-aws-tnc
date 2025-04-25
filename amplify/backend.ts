@@ -1,11 +1,19 @@
-import { defineBackend } from '@aws-amplify/backend';
-import { auth } from './auth/resource';
-import { data } from './data/resource';
+// amplify/backend.ts
+import { defineBackend } from "@aws-amplify/backend";
+import { auth } from "./auth/resource";
+import { data } from "./data/resource";
 
-/**
- * @see https://docs.amplify.aws/react/build-a-backend/ to add storage, functions, and more
- */
-defineBackend({
-  auth,
-  data,
+const backend = defineBackend({
+  auth, 
+  data, 
+});
+
+// amplify_outputs.json에 사용자 정의 값 추가
+backend.addOutput({
+  custom: {
+    api_endpoint: "https://api.example.com",
+    feature_flags: {
+      enableNewFeature: true
+    }
+  },
 });

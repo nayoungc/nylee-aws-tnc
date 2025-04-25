@@ -17,9 +17,13 @@
         "@/*": ["src/*"],
         "@services/*": ["src/services/*"],
         "@components/*": ["src/components/*"],
+        "@contexts/*": ["src/contexts/*"],
         "@hooks/*": ["src/hooks/*"],
         "@utils/*": ["src/utils/*"],
-        "@pages/*": ["src/pages/*"]
+        "@pages/*": ["src/pages/*"],
+        "@layouts/*": ["src/layouts/*"],
+        "@theme/*": ["src/theme/*"],
+        "@language/*": ["src/language/*"]
       }
     },
     "include": ["src"]

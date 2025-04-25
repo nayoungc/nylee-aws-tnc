@@ -8,5 +8,5 @@ export const data = defineData({
     defaultAuthorizationMode: 'userPool',
   },
   // 기존 API 연결
-  apiId: '34jyk55wjngtlbwbbzdjfraooe' // AppSync URL에서 추출한 ID
+  //apiId: '34jyk55wjngtlbwbbzdjfraooe' // AppSync URL에서 추출한 ID
 });
