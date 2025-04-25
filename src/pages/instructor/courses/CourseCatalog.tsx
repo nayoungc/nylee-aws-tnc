@@ -1,5 +1,7 @@
 // src/pages/instructor/courses/CourseCatalog.tsx
 import { listQuizzes, listSurveys } from '@api';
+import { useAuth, withAuthErrorHandling } from '../../../contexts/AuthContext';
+
 import {
   Box,
   Button,
@@ -34,17 +36,41 @@ interface AssessmentStats {
 const CourseCatalogPage: React.FC = () => {
   const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
+  const { isAuthenticated, checkAuthStatus } = useAuth(); // Auth 상태 확인
   const [activeTabId, setActiveTabId] = useState('catalog');
   const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
   const [selectedCourse, setSelectedCourse] = useState<CourseCatalogType | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  // 인증 상태 확인
+  useEffect(() => {
+    const verifyAuthentication = async () => {
+      const isAuth = await checkAuthStatus();
+      if (!isAuth) {
+        console.log('인증되지 않은 상태, 로그인 페이지로 이동');
+        navigate('/signin');
+      }
+    };
+
+    verifyAuthentication();
+  }, [checkAuthStatus, navigate]);
+
+  // 선택된 과정에 대한 평가 통계 불러오기
   useEffect(() => {
     const fetchAssessmentStats = async () => {
-      if (!selectedCourse?.catalogId) return;
+      if (!selectedCourse?.catalogId || !isAuthenticated) return;
 
+      setLoading(true);
       try {
-        // 1. 퀴즈 데이터 가져오기 (DynamoDB 방식)
-        const preQuizResult = await listQuizzes({
+        // API 호출 전 인증 확인
+        const isAuth = await checkAuthStatus();
+        if (!isAuth) {
+          console.log('인증되지 않은 상태, API 호출 중단');
+          return;
+        }
+
+        // 1. 퀴즈 데이터 가져오기 (DynamoDB 방식) - 인증 오류 자동 처리
+        const preQuizResult = await withAuthErrorHandling(listQuizzes)({
           filter: {
             expression: 'courseId = :courseId AND quizType = :quizType',
             expressionValues: {
@@ -54,7 +80,7 @@ const CourseCatalogPage: React.FC = () => {
           }
         });
 
-        const postQuizResult = await listQuizzes({
+        const postQuizResult = await withAuthErrorHandling(listQuizzes)({
           filter: {
             expression: 'courseId = :courseId AND quizType = :quizType',
             expressionValues: {
@@ -65,7 +91,7 @@ const CourseCatalogPage: React.FC = () => {
         });
 
         // 2. 설문조사 데이터 가져오기
-        const surveysResult = await listSurveys({
+        const surveysResult = await withAuthErrorHandling(listSurveys)({
           filter: {
             expression: 'courseId = :courseId',
             expressionValues: {
@@ -93,81 +119,36 @@ const CourseCatalogPage: React.FC = () => {
           }
         };
 
-
-
         setAssessmentStats(stats);
 
-        // 실제 구현에서는 위의 API 호출로 데이터를 가져와서 통계를 계산하면 됩니다
-        // 현재는 샘플 데이터 사용
-        const mockStats: Record<string, AssessmentStats> = {
-          '1': {
-            courseId: '1',
-            preQuiz: { total: 15, completed: 10 },
-            postQuiz: { total: 12, completed: 8 },
-            surveys: { total: 20, completed: 15 }
-          },
-          '2': {
-            courseId: '2',
-            preQuiz: { total: 25, completed: 18 },
-            postQuiz: { total: 22, completed: 15 },
-            surveys: { total: 30, completed: 25 }
-          }
-        };
+        // 통계 데이터가 없으면 샘플 데이터 사용 (개발용)
+        if (Object.keys(stats).length === 0) {
+          console.log('샘플 데이터 사용');
+          
+          // 샘플 데이터
+          const mockStats: Record<string, AssessmentStats> = {
+            [selectedCourse.catalogId]: {
+              courseId: selectedCourse.catalogId,
+              preQuiz: { total: 15, completed: 10 },
+              postQuiz: { total: 12, completed: 8 },
+              surveys: { total: 20, completed: 15 }
+            }
+          };
+          
+          setAssessmentStats(mockStats);
+        }
 
       } catch (error) {
         console.error('평가 현황 데이터 로드 중 오류:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (selectedCourse?.catalogId) {
+    if (selectedCourse?.catalogId && isAuthenticated) {
       fetchAssessmentStats();
     }
-  }, [selectedCourse]);
-
-  // useEffect(() => {
-  //   const fetchAssessmentStats = async () => {
-  //     try {
-  //       // Gen 2 방식으로 API 호출
-  //       // 실제 API를 구현할 경우 아래와 같이 사용
-  //       // const preQuizResult = await listQuizzes({ filter: { 
-  //       //   courseId: { eq: selectedCourse?.catalogId },
-  //       //   quizType: { eq: 'pre' }
-  //       // }});
-  //       // 
-  //       // const postQuizResult = await listQuizzes({ filter: { 
-  //       //   courseId: { eq: selectedCourse?.catalogId },
-  //       //   quizType: { eq: 'post' }
-  //       // }});
-  //       // 
-  //       // const surveysResult = await listSurveys({ filter: { 
-  //       //   courseId: { eq: selectedCourse?.catalogId }
-  //       // }});
-
-  //       // 실제 구현에서는 위의 API 호출로 데이터를 가져와서 통계를 계산하면 됩니다
-  //       // 현재는 샘플 데이터 사용
-  //       const mockStats: Record<string, AssessmentStats> = {
-  //         '1': {
-  //           courseId: '1',
-  //           preQuiz: { total: 15, completed: 10 },
-  //           postQuiz: { total: 12, completed: 8 },
-  //           surveys: { total: 20, completed: 15 }
-  //         },
-  //         '2': {
-  //           courseId: '2',
-  //           preQuiz: { total: 25, completed: 18 },
-  //           postQuiz: { total: 22, completed: 15 },
-  //           surveys: { total: 30, completed: 25 }
-  //         }
-  //       };
-
-  //       setAssessmentStats(mockStats);
-  //     } catch (error) {
-  //       console.error('평가 현황 데이터 로드 중 오류:', error);
-  //     }
-  //   };
-
-  //   fetchAssessmentStats();
-  // }, []);
+  }, [selectedCourse, isAuthenticated, checkAuthStatus]);
 
   const handleCourseSelect = (course: CourseCatalogType) => {
     setSelectedCourse(course);
@@ -229,7 +210,11 @@ const CourseCatalogPage: React.FC = () => {
                 </Header>
               }
             >
-              {assessmentStats && selectedCourse.catalogId && assessmentStats[selectedCourse.catalogId] ? (
+              {loading ? (
+                <Box textAlign="center" padding="l">
+                  {t('common.loading')}
+                </Box>
+              ) : assessmentStats && selectedCourse.catalogId && assessmentStats[selectedCourse.catalogId] ? (
                 <ColumnLayout columns={3}>
                   <Box variant="awsui-key-label">
                     <h3>{t('courses.pre_quiz_stats')}</h3>

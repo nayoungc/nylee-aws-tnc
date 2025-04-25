@@ -1,3 +1,4 @@
+// src/pages/admin/CustomerTab.tsx
 import {
   Alert,
   Box,
@@ -59,8 +60,22 @@ const CustomerTab: React.FC = () => {
   // 인증 상태 확인 함수
   const checkAuth = async (): Promise<boolean> => {
     try {
-      const session = await fetchAuthSession({ forceRefresh: true });
-      return !!session.tokens;
+      // 자격 증명 강제 새로고침 및 토큰 확인
+      const session = await fetchAuthSession({ 
+        forceRefresh: true // 중요: 항상 새로운 세션 가져오기
+      });
+      
+      // 토큰이 있으면 인증된 것으로 판단
+      const isAuth = !!session.tokens;
+      
+      // 추가 디버깅 정보
+      if (isAuth) {
+        console.log('인증 확인 성공: 유효한 토큰 발견');
+      } else {
+        console.log('인증 확인 실패: 토큰 없음');
+      }
+      
+      return isAuth;
     } catch (err) {
       console.error('인증 체크 실패:', err);
       return false;
@@ -82,7 +97,7 @@ const CustomerTab: React.FC = () => {
         }
         
         // 지연 추가 (자격 증명 전파를 위해)
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
       
       const response = await listCustomers({
@@ -106,7 +121,7 @@ const CustomerTab: React.FC = () => {
         // 0.5초 후 재시도
         setTimeout(() => {
           fetchCustomers(retryAttempt + 1);
-        }, 500);
+        }, 800);
         return;
       }
       
@@ -130,7 +145,10 @@ const CustomerTab: React.FC = () => {
   
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
-    fetchCustomers();
+    // 페이지 로드 시 잠시 지연 후 데이터 로드 (인증 처리 시간 확보)
+    setTimeout(() => {
+      fetchCustomers();
+    }, 500);
   }, []);
   
   // 필터링된 아이템
@@ -319,7 +337,9 @@ const CustomerTab: React.FC = () => {
 
   // 새로고침 버튼 핸들러
   const handleRefresh = () => {
-    fetchCustomers();
+    // 재시도 카운트 초기화하고 데이터 다시 로드
+    setRetryCount(0);
+    fetchCustomers(0);
   };
 
   return (
@@ -353,7 +373,8 @@ const CustomerTab: React.FC = () => {
         loading={loading}
         loadingText={retryCount > 0 
           ? `\${t('admin.common.retrying') || '재시도 중'} (\${retryCount}/2)...` 
-          : (t('admin.common.loading') || '로딩 중')}        columnDefinitions={[
+          : (t('admin.common.loading') || '로딩 중')}
+        columnDefinitions={[
           {
             id: 'customerName',
             header: t('admin.customers.name'),

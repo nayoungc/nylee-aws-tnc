@@ -38,7 +38,7 @@ const TOKEN_REFRESH_MIN_INTERVAL = 30000; // 30초
  * 인증 상태를 전역으로 관리하는 Provider 컴포넌트
  * 중복된 인증 로직을 한 곳에 모아 성능 최적화
  */
-export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 인증 상태 관리 - 명시적 타입 지정
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
@@ -58,36 +58,41 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => { // 명시적 반환 타입 선언
     // 캐시 수명 (15분)
     const CACHE_TTL = 15 * 60 * 1000;
-  
+
     // 1. 최근에 이미 확인한 경우 건너뛰기 (15분 이내) - 강제 새로고침 시는 제외
     const now = Date.now();
     if (!force && now - lastRefresh < CACHE_TTL) {
       console.log('최근에 이미 인증 확인 완료. 건너뜁니다.');
       return true; // 캐시된 값 사용 시에도 true 반환
     }
-  
+
     // 2. 인증 확인 수행
     setState(prev => ({ ...prev, loading: true }));
-  
+
     try {
       // 명시적으로 새 세션 가져오기
+      console.log('자격 증명 확인 중...');
       const session = await fetchAuthSession({ forceRefresh: force });
       if (!session.tokens) {
+        console.log('유효한 토큰 없음, 로그아웃 상태로 설정');
         throw new Error('No valid tokens');
       }
-  
+
       // 중요: AWS SDK에 자격 증명 명시적 설정
       if (session.credentials) {
-        console.log('유효한 자격 증명을 찾아 AWS SDK에 설정합니다');
+        console.log('유효한 자격 증명 찾음');
+      } else {
+        console.log('자격 증명 없음, 오류 발생');
+        throw new Error('No valid credentials');
       }
-  
+
       const user = await getCurrentUser();
       const attributes = await fetchUserAttributes();
-  
+
       // 세션 스토리지에 저장하여 캐싱
       sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
       sessionStorage.setItem('userAttributesTimestamp', now.toString());
-  
+
       setState({
         isAuthenticated: true,
         userAttributes: attributes,
@@ -95,15 +100,16 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         userRole: attributes.profile || 'student',
         loading: false
       });
-  
+
       setLastRefresh(now);
-      
+
       // 토큰 리프레시 카운터 리셋
       tokenRefreshAttempts = 0;
-      
+
       return true; // 성공 시 true 반환
     } catch (error) {
       console.error('인증 확인 실패:', error);
+      // 로그아웃 상태로 설정
       setState({
         isAuthenticated: false,
         userAttributes: null,
@@ -111,11 +117,11 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         userRole: 'student',
         loading: false
       });
-  
+
       // 캐시 정보 제거
       sessionStorage.removeItem('userAttributes');
       sessionStorage.removeItem('userAttributesTimestamp');
-      
+
       return false; // 실패 시 false 반환
     }
   }, [lastRefresh]);
@@ -125,13 +131,19 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
    * @param global 모든 기기에서 로그아웃 여부
    */
   const logout = useCallback(async (global = false) => {
-    console.log('로그아웃 시작...');
+    console.log('로그아웃 시작 - AuthContext');
     try {
-      // 1. 먼저 Amplify signOut 호출
-      console.log('Amplify signOut 호출 중...');
-      await signOut({ global });
+      // 1. Amplify signOut 호출 - 오류 방지를 위해 try-catch로 분리
+      try {
+        console.log('Amplify signOut 호출 중...');
+        await signOut({ global });
+        console.log('Amplify signOut 성공');
+      } catch (signOutError) {
+        console.warn('Amplify signOut 중 오류 (계속 진행):', signOutError);
+        // signOut에 실패하더라도 계속 진행
+      }
 
-      // 2. 그 다음 상태 및 캐시 초기화
+      // 2. 상태 초기화 - 로그아웃의 핵심
       console.log('로그아웃 상태 정리 중...');
       setState({
         isAuthenticated: false,
@@ -141,24 +153,43 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         loading: false
       });
 
+      // 3. 세션 스토리지 및 캐시 정리 - 철저하게
       console.log('로그아웃 스토리지 정리 중...');
-      // 3. 세션 스토리지 정리
-      sessionStorage.removeItem('userAttributes');
-      sessionStorage.removeItem('userAttributesTimestamp');
+      sessionStorage.clear(); // 모든 세션 스토리지 정리
       localStorage.removeItem('amplify-signin-with-hostedUI');
+      localStorage.removeItem('CognitoIdentityServiceProvider.*.idToken');
+      localStorage.removeItem('CognitoIdentityServiceProvider.*.accessToken');
+      localStorage.removeItem('CognitoIdentityServiceProvider.*.refreshToken');
+      localStorage.removeItem('CognitoIdentityServiceProvider.*.LastAuthUser');
+
+      // 4. 토큰 관련 상태 초기화
+      tokenRefreshAttempts = 0;
+      tokenRefreshLastAttempt = 0;
+      setLastRefresh(0);
 
       console.log('로그아웃 완료!');
 
-      // 4. 지연된 리디렉션으로 변경
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 300); // 약간의 지연 추가
+      // 여기서 리다이렉트하지 않고 MainLayout에서 처리하도록 함
+      return;
     } catch (error) {
-      console.error('로그아웃 오류:', error);
-      // 오류 시에도 로그아웃 처리
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 300);
+      console.error('로그아웃 처리 중 오류:', error);
+      // 오류가 있더라도 상태는 로그아웃으로 설정
+      setState({
+        isAuthenticated: false,
+        userAttributes: null,
+        username: '',
+        userRole: 'student',
+        loading: false
+      });
+
+      // 세션/로컬 스토리지 정리 시도
+      try {
+        sessionStorage.clear();
+      } catch (storageError) {
+        console.warn('세션 스토리지 정리 중 오류:', storageError);
+      }
+
+      throw error; // 오류를 상위로 전달
     }
   }, []);
 
@@ -168,7 +199,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
    */
   const handleAuthError = useCallback((error: any) => {
     if (
-      error.message?.includes("자격 증명이 없습니다") || 
+      error.message?.includes("자격 증명이 없습니다") ||
       error.message?.includes("세션에 유효한 자격 증명이 없습니다") ||
       error.message?.includes("No credentials") ||
       error.message?.includes("expired") ||
@@ -176,7 +207,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       error.code === 'NotAuthorizedException'
     ) {
       console.log("인증 세션 만료됨, 로그아웃 처리");
-      
+
       // 상태 초기화
       setState({
         isAuthenticated: false,
@@ -185,12 +216,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
         userRole: 'student',
         loading: false
       });
-      
+
       // 스토리지 정리
       sessionStorage.removeItem('userAttributes');
       sessionStorage.removeItem('userAttributesTimestamp');
       localStorage.removeItem('amplify-signin-with-hostedUI');
-      
+
       // 로그인 페이지로 리다이렉트 (현재 경로 저장)
       const currentPath = window.location.pathname;
       loginRedirect(currentPath);
@@ -220,7 +251,8 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
           break;
         // Auth 이벤트 리스너에서 signedOut 이벤트 처리 부분
         case 'signedOut':
-          // 강제로 모든 상태와 캐시 정리
+          console.log('signedOut 이벤트 감지 - 상태 초기화');
+          // 상태 초기화
           setState({
             isAuthenticated: false,
             userAttributes: null,
@@ -228,11 +260,14 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
             userRole: 'student',
             loading: false
           });
-          sessionStorage.clear(); // 모든 세션 스토리지 정리
-          localStorage.removeItem('amplify-signin-with-hostedUI'); // Amplify 관련 항목 정리
-          setLastRefresh(0);
-          tokenRefreshAttempts = 0;
-          break;
+
+          // 스토리지 정리
+        sessionStorage.clear();
+        localStorage.removeItem('amplify-signin-with-hostedUI');
+        setLastRefresh(0);
+        tokenRefreshAttempts = 0;
+        break;
+        
         case 'tokenRefresh':
           // 이미 로그아웃된 상태라면 토큰 갱신 중단
           if (!state.isAuthenticated) {
@@ -261,21 +296,22 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     // 전역 오류 리스너 설정
     const globalErrorHandler = (event: ErrorEvent) => {
       if (
-        event.error?.message?.includes("자격 증명이 없습니다") || 
+        event.error?.message?.includes("자격 증명이 없습니다") ||
         event.error?.message?.includes("세션에 유효한 자격 증명이 없습니다") ||
         event.error?.message?.includes("No credentials")
       ) {
         handleAuthError(event.error);
       }
     };
-    
+
     window.addEventListener('error', globalErrorHandler);
 
     return () => {
       listener();
       window.removeEventListener('error', globalErrorHandler);
     };
-  }, [checkAuthStatus, logout, handleAuthError]);
+  }, [checkAuthStatus, handleAuthError]);
+  //, [checkAuthStatus, logout, handleAuthError]);
 
   // 컨텍스트 값 메모이제이션 (불필요한 리렌더링 방지)
   const value = useMemo(() => ({

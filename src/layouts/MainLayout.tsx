@@ -44,15 +44,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
   const handleSignOut = useCallback(async () => {
     setSignoutLoading(true);
     try {
+      console.log('로그아웃 시작 - MainLayout');
+      // 로그아웃 전에 모달 닫기
+      setShowSignOutModal(false);
+      
+      // 로그아웃 처리 (AuthContext)
       await logout();
-      navigate('/signin');
+      
+      console.log('로그아웃 성공 - 페이지 이동');
+      // 로그아웃 후 signin 페이지로 이동
+      navigate('/signin', { replace: true });
     } catch (error) {
       console.error('로그아웃 오류:', error);
+      
+      // 오류 처리
+      alert(t('auth.logout_error') || '로그아웃 중 오류가 발생했습니다.');
     } finally {
       setSignoutLoading(false);
-      setShowSignOutModal(false);
     }
-  }, [logout, navigate]);
+  }, [logout, navigate, t]);
 
   // 사이드 네비게이션 클릭 핸들러 - useCallback 사용
   const handleNavigationFollow = useCallback((event: CustomEvent<SideNavigationProps.FollowDetail>) => {
@@ -234,7 +244,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
     return items;
   }, [location.pathname, t]);
 
-  // TopNavigation utilities 메모이제이션
+  // TopNavigation utilities - 중복 제거하고 한번만 정의
   const topNavUtilities = useMemo(() => {
     const utilities: TopNavigationProps.Utility[] = [];
     
@@ -260,9 +270,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
                     tString('role.student'),
         iconName: 'user-profile',
         items: [
-          { id: 'profile', text: tString('auth.profile'), href: '#profile' },
-          { id: 'preferences', text: tString('auth.preferences'), href: '#preferences' },
-          { id: 'security', text: tString('auth.security'), href: '#security' },
+          { id: 'profile', text: tString('auth.profile') },
+          { id: 'preferences', text: tString('auth.preferences') },
+          { id: 'security', text: tString('auth.security') },
           {
             id: 'help-group',
             text: tString('common.help'),
@@ -270,30 +280,41 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
               {
                 id: 'documentation',
                 text: tString('common.documentation'),
-                href: "#",
                 external: true,
-                externalIconAriaLabel: tString('common.opens_in_new_tab')
+                externalIconAriaLabel: tString('common.opens_in_new_tab'),
+                href: "#" // 외부 링크는 유지
               },
-              { 
-                id: 'support', 
-                text: tString('common.support'),
-                href: '#support'
-              },
+              { id: 'support', text: tString('common.support') },
               {
                 id: 'feedback',
                 text: tString('common.feedback'),
-                href: "#",
                 external: true,
-                externalIconAriaLabel: tString('common.opens_in_new_tab')
+                externalIconAriaLabel: tString('common.opens_in_new_tab'),
+                href: "#" // 외부 링크는 유지
               }
             ]
           },
-          { id: 'signout-divider', text: '', href: '#divider', disabled: true },
-          { id: 'signout', text: tString('auth.sign_out'), href: '#signout' }
+          { id: 'signout-divider', text: '', disabled: true },
+          { id: 'signout', text: tString('auth.sign_out') }
         ],
         onItemClick: (e) => {
-          if (e.detail.id === 'signout') {
-            setShowSignOutModal(true);
+          switch (e.detail.id) {
+            case 'signout':
+              console.log('로그아웃 메뉴 클릭됨');
+              setShowSignOutModal(true);
+              break;
+            case 'profile':
+              navigate('/profile');
+              break;
+            case 'preferences':
+              navigate('/preferences');
+              break;
+            case 'security':
+              navigate('/security');
+              break;
+            case 'support':
+              navigate('/support');
+              break;
           }
         }
       });
@@ -377,7 +398,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, title }) => {
           <SideNavigation
             activeHref={location.pathname}
             header={{ text: tString('app.title'), href: '/' }}
-            items={sideNavigationItems as any} // 또는 as readonly Item[]
+            items={sideNavigationItems as any}
             onFollow={handleNavigationFollow}
           />
         }

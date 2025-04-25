@@ -488,7 +488,7 @@ const CourseCatalogTab: React.FC = () => {
                         header: t('admin.courses.duration'),
                         cell: item => item.duration ? `\${item.duration} \${t('admin.courses.hours')}` : '-',
                         sortingField: 'duration',
-                    },
+                      },
                     {
                         id: 'status',
                         header: t('admin.courses.status'),
