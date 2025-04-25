@@ -79,18 +79,21 @@ export default function QuizList() {
             const response = await listCourseCatalogs();
 
             if (response.data && Array.isArray(response.data)) {
-                const mappedCourses = response.data.map(item => ({
+                const mappedCourses = response.data.map((item: any) => ({
                     catalogId: item.catalogId || '',
                     title: item.title || '',
+                    version: item.version || 'v1',
                     description: item.description,
-                } as CourseCatalog));
-
-                const courseOptions: SelectProps.Option[] = mappedCourses.map(course => ({
+                    level: item.level,
+                    // 기타 필요한 필드...
+                  } as CourseCatalog));
+                  
+                  setCourses(mappedCourses);
+                  
+                  const courseOptions = mappedCourses.map((course: CourseCatalog) => ({
                     label: course.title,
-                    value: course.catalogId,
-                    description: course.description || '',
-                }));
-
+                    value: course.catalogId
+                  }));
                 setCourses(courseOptions);
             } else if (process.env.NODE_ENV === 'development') {
                 // 개발 환경에서 더미 데이터 제공

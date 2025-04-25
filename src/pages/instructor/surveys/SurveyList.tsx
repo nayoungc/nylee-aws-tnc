@@ -70,18 +70,22 @@ export default function SurveyList() {
       const response = await listCourseCatalogs();
 
       if (response.data && Array.isArray(response.data)) {
-        const courseItems = response.data.map(item => ({
+        const mappedCourses = response.data.map((item: any) => ({
           catalogId: item.catalogId || '',
           title: item.title || '',
-          description: item.description || '',
+          version: item.version || 'v1',
+          description: item.description,
+          level: item.level,
+          // 기타 필요한 필드...
         } as CourseCatalog));
         
-        const courseOptions: SelectProps.Option[] = courseItems.map(course => ({
-          label: course.title,
-          value: course.catalogId,
-          description: course.description || '',
-        }));
+        //setCourses(mappedCourses);
         
+        const courseOptions = mappedCourses.map((course: CourseCatalog) => ({
+          label: course.title,
+          value: course.catalogId
+        }));
+
         setCourses(courseOptions);
       } else if (process.env.NODE_ENV === 'development') {
         // 오류 발생 시 기본 데이터 사용 (개발용)
