@@ -1,4 +1,19 @@
 {
+  "appName": "AWS Training Portal",
+  "nav": {
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "instructors": "Instructors",
+    "customers": "Customers",
+    "settings": "Settings"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create"
+  },
   "loading": "Loading...",
   "error": "An error occurred",
   "unauthorized": "You don't have permission to access this page",

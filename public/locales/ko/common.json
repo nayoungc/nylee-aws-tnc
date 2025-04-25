@@ -1,4 +1,19 @@
 {
+  "appName": "AWS 교육 포털",
+  "nav": {
+    "dashboard": "대시보드",
+    "courses": "교육 과정",
+    "instructors": "강사",
+    "customers": "고객사",
+    "settings": "설정"
+  },
+  "actions": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "create": "생성"
+  },
   "loading": "로딩 중...",
   "error": "오류가 발생했습니다",
   "unauthorized": "접근 권한이 없습니다",

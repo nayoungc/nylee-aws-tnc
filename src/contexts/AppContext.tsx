@@ -1,77 +1,55 @@
 // src/contexts/AppContext.tsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { applyMode, Mode } from '@cloudscape-design/global-styles';
-import { useTranslation } from 'react-i18next';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AppContextType {
-  theme: Mode;
+  theme: 'light' | 'dark';
   toggleTheme: () => void;
   language: string;
   changeLanguage: (lang: string) => void;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { i18n } = useTranslation();
-  
-  // 테마 상태
-  const [theme, setTheme] = useState<Mode>(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    // Mode 타입에 맞는 값만 사용
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      return savedTheme;
-    }
-    return prefersDark ? 'dark' : 'light';
-  });
-
-  // 언어 상태
-  const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('language') || i18n.language;
-  });
-
-  const toggleTheme = () => {
-    // 명시적으로 Mode 타입으로 처리
-    const newTheme: Mode = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
-
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    setLanguage(lang);
-    localStorage.setItem('language', lang);
-  };
-
-  // 테마 적용
-  useEffect(() => {
-    applyMode(theme);
-    document.documentElement.setAttribute('data-mode', theme);
-  }, [theme]);
-
-  // 언어 적용
-  useEffect(() => {
-    if (language !== i18n.language) {
-      i18n.changeLanguage(language);
-    }
-  }, [language, i18n]);
-
-  const value = {
-    theme,
-    toggleTheme,
-    language,
-    changeLanguage,
-  };
-
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+const defaultContext: AppContextType = {
+  theme: 'light',
+  toggleTheme: () => {},
+  language: 'ko',
+  changeLanguage: () => {},
 };
+
+const AppContext = createContext<AppContextType>(defaultContext);
 
 export const useApp = () => {
   const context = useContext(AppContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useApp must be used within an AppProvider');
   }
   return context;
 };
+
+interface AppProviderProps {
+  children: ReactNode;
+}
+
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [language, setLanguage] = useState<string>('ko');
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  const changeLanguage = (lang: string) => {
+    setLanguage(lang);
+    // 언어 변경 시 i18next도 함께 변경 (i18n이 초기화된 경우에만)
+    if (window.i18n) {
+      window.i18n.changeLanguage(lang);
+    }
+  };
+
+  return (
+    <AppContext.Provider value={{ theme, toggleTheme, language, changeLanguage }}>
+      {children}
+    </AppContext.Provider>
+  );
+};
+
+export default AppContext;

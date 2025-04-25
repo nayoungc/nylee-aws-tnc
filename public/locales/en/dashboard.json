@@ -1,0 +1,13 @@
+{
+    "title": "Dashboard",
+    "description": "View your key metrics and recent activities",
+    "welcome": "Welcome, {{name}}!",
+    "metrics": {
+      "totalCourses": "Total Courses",
+      "activeUsers": "Active Users",
+      "completedCourses": "Completed Trainings",
+      "averageSatisfaction": "Average Satisfaction"
+    },
+    "recentActivities": "Recent Activities",
+    "upcomingCourses": "Upcoming Courses"
+  }

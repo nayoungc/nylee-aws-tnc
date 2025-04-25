@@ -1,21 +1,27 @@
-// src/index.tsx
+// src/main.tsx 또는 src/index.tsx
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import { Amplify } from "aws-amplify";
-import '@cloudscape-design/global-styles/index.css';
-import outputs from "../amplify_outputs.json"; // 상대 경로 사용
+import { AppProvider } from './contexts/AppContext';
+import './i18n'; // i18n 설정 임포트
 
-// Amplify Gen 2 초기화
-Amplify.configure(outputs);
+// i18n을 전역적으로 접근할 수 있도록 window 객체에 추가
+import i18n from './i18n';
+declare global {
+  interface Window {
+    i18n: typeof i18n;
+  }
+}
+window.i18n = i18n;
 
-const rootElement = document.getElementById('root');
-if (!rootElement) throw new Error('Root element not found');
-const root = createRoot(rootElement);
-
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );
-

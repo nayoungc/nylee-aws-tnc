@@ -6,6 +6,8 @@ import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import LoginPage from '@pages/auth/LoginPage';
 import HomePage from '@/pages/HomePage';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
+
 
 // 알림 컨텍스트 및 공급자 임포트
 import { NotificationProvider, useNotification } from '@/contexts/NotificationContext';
@@ -48,7 +50,8 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const App: React.FC = () => {
   const { isAuthenticated, isAdmin } = useAuth();
-  
+  const { t } = useTranslation();
+
   return (
     <NotificationProvider>
       <MainLayout>

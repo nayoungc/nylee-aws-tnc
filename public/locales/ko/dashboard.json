@@ -1,0 +1,14 @@
+{
+    "title": "대시보드",
+    "description": "주요 지표와 최근 활동을 확인하세요",
+    "welcome": "환영합니다, {{name}}님!",
+    "metrics": {
+      "totalCourses": "총 교육 과정",
+      "activeUsers": "활성 사용자",
+      "completedCourses": "완료된 교육",
+      "averageSatisfaction": "평균 만족도"
+    },
+    "recentActivities": "최근 활동",
+    "upcomingCourses": "예정된 교육"
+  }
+  

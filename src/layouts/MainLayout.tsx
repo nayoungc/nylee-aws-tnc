@@ -21,7 +21,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   // 기본 메뉴 항목 (모든 사용자에게 표시)
   const publicItems = [
     // 학생용 페이지 (로그인 불필요)
-    { type: 'link' as const, text: t('nav.courses.public'), href: '/courses/public' }
+    { type: 'link' as const, text: t('nav.tnc'), href: '/tnc' }
   ];
   
   // 강사용 메뉴 항목
