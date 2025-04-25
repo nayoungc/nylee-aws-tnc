@@ -1,4 +1,4 @@
-// src/pages/instructor/courses/CourseCatalog.tsx
+// src/pages/admin/CourseCatalogTab.tsx
 import { listQuizzes, listSurveys } from '@api';
 import { useAuth, withAuthErrorHandling } from '@contexts/AuthContext';
 
@@ -25,6 +25,9 @@ import {
   Survey
 } from '@api/types';
 
+// Amplify Gen 2 임포트 추가
+import { fetchAuthSession } from 'aws-amplify/auth';
+
 // 평가 현황 인터페이스
 interface AssessmentStats {
   courseId: string;
@@ -36,7 +39,8 @@ interface AssessmentStats {
 const CourseCatalogPage: React.FC = () => {
   const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated, checkAuthStatus } = useAuth(); // Auth 상태 확인
+  const auth = useAuth();
+  const { isAuthenticated, checkAuthStatus } = auth;
   const [activeTabId, setActiveTabId] = useState('catalog');
   const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
   const [selectedCourse, setSelectedCourse] = useState<CourseCatalogType | null>(null);
@@ -45,7 +49,7 @@ const CourseCatalogPage: React.FC = () => {
   // 인증 상태 확인
   useEffect(() => {
     const verifyAuthentication = async () => {
-      const isAuth = await checkAuthStatus();
+      const isAuth = await checkAuthStatus(true); // 강제 새로고침
       if (!isAuth) {
         console.log('인증되지 않은 상태, 로그인 페이지로 이동');
         navigate('/signin');
@@ -69,8 +73,8 @@ const CourseCatalogPage: React.FC = () => {
           return;
         }
 
-        // 1. 퀴즈 데이터 가져오기 (DynamoDB 방식) - 인증 오류 자동 처리
-        const preQuizResult = await withAuthErrorHandling(listQuizzes)({
+        // 1. 퀴즈 데이터 가져오기 - 인증 오류 자동 처리
+        const preQuizResult = await withAuthErrorHandling(listQuizzes, auth)({
           filter: {
             expression: 'courseId = :courseId AND quizType = :quizType',
             expressionValues: {
@@ -80,7 +84,7 @@ const CourseCatalogPage: React.FC = () => {
           }
         });
 
-        const postQuizResult = await withAuthErrorHandling(listQuizzes)({
+        const postQuizResult = await withAuthErrorHandling(listQuizzes, auth)({
           filter: {
             expression: 'courseId = :courseId AND quizType = :quizType',
             expressionValues: {
@@ -91,7 +95,7 @@ const CourseCatalogPage: React.FC = () => {
         });
 
         // 2. 설문조사 데이터 가져오기
-        const surveysResult = await withAuthErrorHandling(listSurveys)({
+        const surveysResult = await withAuthErrorHandling(listSurveys, auth)({
           filter: {
             expression: 'courseId = :courseId',
             expressionValues: {
@@ -148,7 +152,7 @@ const CourseCatalogPage: React.FC = () => {
     if (selectedCourse?.catalogId && isAuthenticated) {
       fetchAssessmentStats();
     }
-  }, [selectedCourse, isAuthenticated, checkAuthStatus]);
+  }, [selectedCourse, isAuthenticated, checkAuthStatus, auth]);
 
   const handleCourseSelect = (course: CourseCatalogType) => {
     setSelectedCourse(course);

@@ -14,7 +14,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { listCourseCatalogs, CourseCatalog } from '@api';
-import { useAuth, withAuthErrorHandling } from '../../contexts/AuthContext';
+import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '../../contexts/AuthContext';
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
@@ -147,8 +147,21 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
       try {
         console.log('API 호출 시작...');
         
-        // withAuthErrorHandling 래퍼 함수 사용 - 인증 오류 자동 처리
-        const wrappedAPI = withAuthErrorHandling(listCourseCatalogs);
+        // 인증 상태 확인
+        const isAuth = await checkAuthStatus(true);
+        if (!isAuth) {
+          setError(t('courses.errors.authentication'));
+          setLoading(false);
+          return;
+        }
+        
+        // 인증 에러 핸들러 생성
+        const authErrorHandler = createAuthErrorHandler((err) => {
+          setError(t('courses.errors.authentication'));
+        }, navigate);
+        
+        // API 호출
+        const wrappedAPI = withAuthErrorHandling(listCourseCatalogs, authErrorHandler);
         
         // 타임아웃과 API 호출 경쟁
         // @ts-ignore - race 타입 문제 무시
@@ -157,6 +170,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           timeoutPromise
         ]);
         
+        // 데이터 처리
         if (result && result.data && Array.isArray(result.data)) {
           const mappedItems = result.data.map(mapToCourseViewModel);
           setCourses(mappedItems);
@@ -213,7 +227,7 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     if (isAuthenticated) {
       fetchCourses();
     }
-  }, [t, initialCourses, authChecked, isAuthenticated, checkAuthStatus]);
+  }, [t, initialCourses, authChecked, isAuthenticated, checkAuthStatus, navigate]);
 
   const getStatusColor = (status?: string): "green" | "blue" | "grey" => {
     if (!status) return 'grey';

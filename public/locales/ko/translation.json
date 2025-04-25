@@ -9,7 +9,12 @@
     "sign_out_message": "정말로 로그아웃하시겠습니까?",
     "profile": "프로필",
     "preferences": "환경설정",
-    "security": "보안"
+    "security": "보안",
+    "logout_error": "로그아웃 중 오류가 발생했습니다",
+    "login_required": "로그인 필요",
+    "please_login": "계속하려면 로그인해주세요",
+    "session_expired": "세션이 만료되었습니다, 다시 로그인해주세요",
+    "authentication_error": "인증 오류"
   },
   "common": {
     "loading": "로딩 중...",
@@ -31,7 +36,11 @@
     "opens_in_new_tab": "새 탭에서 열기",
     "help": "도움말",
     "course_detail": "과정 상세",
-    "required": "필수"
+    "required": "필수",
+    "retrying": "재시도 중",
+    "refresh": "새로고침",
+    "retry_attempt": "{max}번 중 {count}번째 재시도",
+    "try_again": "다시 시도"
   },
   "nav": {
     "home": "홈",
@@ -738,6 +747,19 @@
         "bio": "약력",
         "created": "등록일"
       }
+    },
+    "common": {
+      "refresh": "새로고침",
+      "loading": "데이터 로딩 중...",
+      "retrying": "재시도 중",
+      "edit": "수정",
+      "delete": "삭제",
+      "actions": "작업",
+      "save": "저장",
+      "cancel": "취소",
+      "auth_required": "인증이 필요합니다",
+      "permission_denied": "이 기능에 접근할 권한이 없습니다",
+      "retry_message": "재시도 중... {count}/{max}"
     }
   }
 }

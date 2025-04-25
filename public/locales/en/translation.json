@@ -9,7 +9,12 @@
     "sign_out_message": "Are you sure you want to sign out?",
     "profile": "Profile",
     "preferences": "Preferences",
-    "security": "Security"
+    "security": "Security",
+    "logout_error": "Error occurred during sign out",
+    "login_required": "Login Required",
+    "please_login": "Please log in to continue",
+    "session_expired": "Your session has expired, please log in again",
+    "authentication_error": "Authentication Error"
   },
   "common": {
     "loading": "Loading...",
@@ -31,7 +36,11 @@
     "opens_in_new_tab": "Opens in new tab",
     "help": "Help",
     "course_detail": "Course Details",
-    "required": "Required"
+    "required": "Required",
+    "retrying": "Retrying",
+    "refresh": "Refresh",
+    "retry_attempt": "Retry attempt {count} of {max}",
+    "try_again": "Try Again"
   },
   "nav": {
     "home": "Home",
@@ -737,6 +746,19 @@
         "courses_teaching": "Courses Teaching",
         "bio": "Bio",
         "created": "Created Date"
+      },
+      "common": {
+        "refresh": "Refresh",
+        "loading": "Loading data...",
+        "retrying": "Retrying",
+        "edit": "Edit",
+        "delete": "Delete",
+        "actions": "Actions",
+        "save": "Save",
+        "cancel": "Cancel",
+        "auth_required": "Authentication Required",
+        "permission_denied": "You don't have permission to access this feature",
+        "retry_message": "Retrying... {count}/{max}"
       }
     }
   }
