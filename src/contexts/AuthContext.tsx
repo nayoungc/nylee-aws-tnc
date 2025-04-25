@@ -59,13 +59,13 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
  * 인증 상태를 전역으로 관리하는 Provider 컴포넌트
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // 인증 상태 관리
+  // 인증 상태 관리 - 초기 로딩 상태를 false로 설정
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
     userAttributes: null,
     username: '',
     userRole: 'student',
-    loading: true,
+    loading: false, // 초기에는 로딩 상태가 아님
     hasCredentials: false,
     useMockData: sessionStorage.getItem('useMockData') === 'true'
   });
@@ -80,6 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // 처리 중 상태 추적용 ref
   const processingRef = useRef<boolean>(false);
+  const loadingTimeoutRef = useRef<number | null>(null);
 
   // 모의 데이터 모드 설정 함수
   const setMockDataMode = useCallback((enabled: boolean) => {
@@ -230,7 +231,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state.useMockData, setMockDataMode]);
 
   /**
-   * 인증 상태 확인 함수 - 디바운스 및 중복 호출 방지 로직 추가
+   * 인증 상태 확인 함수 - 디바운스, 중복 호출 방지 및 타임아웃 로직 추가
    */
   const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => {
     // 이미 진행 중인 인증 확인이 있으면 그 Promise를 반환
@@ -265,45 +266,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return state.isAuthenticated;
     }
 
+    // 로딩 상태 설정
+    setState(prev => ({ ...prev, loading: true }));
+
+    // 로딩 타임아웃 설정 - 최대 10초 후 강제 해제
+    if (loadingTimeoutRef.current) {
+      window.clearTimeout(loadingTimeoutRef.current);
+    }
+    loadingTimeoutRef.current = window.setTimeout(() => {
+      setState(prev => {
+        if (!prev.loading) return prev;
+        console.warn('인증 상태 확인 타임아웃 - 로딩 상태 해제');
+        return { ...prev, loading: false };
+      });
+      loadingTimeoutRef.current = null;
+    }, 10000);
+
     // 새 인증 확인 Promise 생성 및 저장
     const authCheckPromise = (async (): Promise<boolean> => {
       try {
-        setState(prev => ({ ...prev, loading: true }));
-        
         // 세션 가져오기
         let session: AuthSession;
         try {
           session = await fetchAuthSession();
         } catch (sessionError) {
-          setState(prev => {
-            if (!prev.isAuthenticated) return prev;
-            return {
-              isAuthenticated: false,
-              userAttributes: null,
-              username: '',
-              userRole: 'student',
-              loading: false,
-              hasCredentials: false,
-              useMockData: false
-            };
-          });
+          setState(prev => ({
+            ...prev,
+            isAuthenticated: false,
+            userAttributes: null,
+            username: '',
+            userRole: 'student',
+            loading: false,
+            hasCredentials: false,
+            useMockData: false
+          }));
           return false;
         }
 
         // 토큰이 없으면 로그아웃 상태
         if (!session.tokens) {
-          setState(prev => {
-            if (!prev.isAuthenticated) return prev;
-            return {
-              isAuthenticated: false,
-              userAttributes: null,
-              username: '',
-              userRole: 'student',
-              loading: false,
-              hasCredentials: false,
-              useMockData: false
-            };
-          });
+          setState(prev => ({
+            ...prev,
+            isAuthenticated: false,
+            userAttributes: null,
+            username: '',
+            userRole: 'student',
+            loading: false,
+            hasCredentials: false,
+            useMockData: false
+          }));
           
           sessionStorage.removeItem('userAttributes');
           sessionStorage.removeItem('partialAuthState');
@@ -350,56 +361,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (userError) {
           console.error('사용자 정보 가져오기 실패:', userError);
           
-          setState(prev => {
-            if (prev.isAuthenticated) {
-              return {
-                ...prev,
-                loading: false,
-                userAttributes: {},
-                username: 'unknown'
-              };
-            }
-            
-            return {
-              isAuthenticated: true,
-              userAttributes: {},
-              username: 'unknown',
-              userRole: 'student',
-              loading: false,
-              hasCredentials: !!session.credentials,
-              useMockData: !session.credentials
-            };
-          });
+          setState(prev => ({
+            ...prev,
+            isAuthenticated: true,
+            userAttributes: {},
+            username: 'unknown',
+            userRole: 'student',
+            loading: false,
+            hasCredentials: !!session.credentials,
+            useMockData: !session.credentials
+          }));
           
           return true;
         }
       } catch (error) {
         console.error('인증 확인 중 오류:', error);
         
-        setState(prev => {
-          if (!prev.isAuthenticated) return prev;
-          return {
-            isAuthenticated: false,
-            userAttributes: null,
-            username: '',
-            userRole: 'student',
-            loading: false,
-            hasCredentials: false,
-            useMockData: false
-          };
-        });
+        setState(prev => ({
+          ...prev,
+          isAuthenticated: false,
+          userAttributes: null,
+          username: '',
+          userRole: 'student',
+          loading: false,
+          hasCredentials: false,
+          useMockData: false
+        }));
         
         return false;
       } finally {
+        // 로딩 상태 해제 보장
         setState(prev => ({ ...prev, loading: false }));
         setInitialAuthChecked(true);
         authCheckPromiseRef.current = null;
         pendingAuthChecks--;
+        
+        // 타임아웃 타이머 정리
+        if (loadingTimeoutRef.current) {
+          window.clearTimeout(loadingTimeoutRef.current);
+          loadingTimeoutRef.current = null;
+        }
       }
     })();
 
-    authCheckPromiseRef.current = authCheckPromise;
-    return authCheckPromise;
+    // 인증 확인과 타임아웃 경쟁 - 최대 10초 후 완료 보장
+    authCheckPromiseRef.current = Promise.race([
+      authCheckPromise,
+      new Promise<boolean>(resolve => {
+        setTimeout(() => {
+          console.warn('인증 확인 시간 초과');
+          resolve(state.isAuthenticated);
+        }, 10000);
+      })
+    ]);
+    
+    return authCheckPromiseRef.current;
   }, [lastRefresh, state.isAuthenticated, initializeCredentials]);
   
   /**
@@ -555,11 +571,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // 초기 인증 상태 확인
     const initialAuthCheck = async () => {
-      await new Promise(resolve => setTimeout(resolve, 200));
       try {
-        await checkAuthStatus(true);
+        // 최대 5초 후에는 어떻게든 로딩 상태 해제 보장
+        const timeoutPromise = new Promise(resolve => 
+          setTimeout(() => {
+            setState(prev => ({ ...prev, loading: false }));
+            resolve(false);
+          }, 5000)
+        );
+        
+        // 인증 상태 확인 시도
+        const authPromise = checkAuthStatus(true).catch(err => {
+          console.error('초기 인증 상태 확인 중 오류:', err);
+          return false;
+        });
+        
+        // 둘 중 먼저 완료되는 것을 사용
+        await Promise.race([authPromise, timeoutPromise]);
+        
+        // 어떤 경우에도 로딩은 완료 처리
+        setState(prev => ({ ...prev, loading: false }));
       } catch (err) {
-        console.error('초기 인증 상태 확인 중 오류:', err);
+        console.error('초기 인증 상태 확인 중 예기치 못한 오류:', err);
+        setState(prev => ({ ...prev, loading: false }));
       }
     };
 
@@ -660,10 +694,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         window.clearTimeout(debounceTimerRef.current);
         debounceTimerRef.current = null;
       }
+      if (loadingTimeoutRef.current) {
+        window.clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
     };
   }, [checkAuthStatus, handleAuthError, setMockDataMode]);
 
-  // 부분 인증 상태 감지 시 모의 데이터 모드 자동 활성화
+  // 부분 인증 상태 감지 시 모의 데이터 모드 자동 활성화 - 초기 한번만 실행
   useEffect(() => {
     // 이미 처리 중이면 중단
     if (processingRef.current) return;
@@ -679,11 +717,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setMockDataMode(true);
         }
         processingRef.current = false;
-      }, 500);
+      }, 300);
     }
-  }, []);
+  }, []); // 의존성 배열 비움 - 마운트 시 한 번만 실행
 
-  // 컨텍스트 값 메모이제이션
+  // 인증 컨텍스트의 모든 값을 생성
   const value = useMemo(() => ({
     ...state,
     checkAuthStatus,

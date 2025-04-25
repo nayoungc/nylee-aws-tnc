@@ -2,6 +2,12 @@
 import { getDocumentClient, shouldUseMockData } from './auth-provider';
 import { CourseCatalog } from './types/catalog';
 
+// 로그 출력 제한을 위한 변수
+let lastCatalogLogTime = 0;
+// 결과 캐싱 변수
+let cachedResults: any = null;
+let lastCacheTime = 0;
+
 // 모의 데이터
 const mockCourses: CourseCatalog[] = [
   {
@@ -31,59 +37,93 @@ const mockCourses: CourseCatalog[] = [
 const TABLE_NAME = 'Tnc-CourseCatalog';
 
 /**
- * 코스 카탈로그 목록을 가져오는 함수 - Gen 2 스타일
- * (authContext 매개변수 선택적으로 변경)
+ * 코스 카탈로그 목록을 가져오는 함수 - auth-provider 활용한 최적화 버전
  */
 export const listCourseCatalogs = async (authContext?: any): Promise<any> => {
-  // 모의 데이터 모드 확인
-  if (shouldUseMockData() || (authContext?.useMockData || authContext?.hasCredentials === false)) {
-    console.log('모의 데이터 사용 중 - listCourseCatalogs');
-    return { 
-      data: mockCourses, // 모의 데이터도 data 속성 안에 배열로 반환
+  // 캐시된 결과가 있고 10초 이내이면 재사용
+  const now = Date.now();
+  if (cachedResults && now - lastCacheTime < 10000) {
+    return cachedResults;
+  }
+
+  // 모의 데이터 모드 확인 - auth-provider의 shouldUseMockData() 활용
+  if (shouldUseMockData()) {
+    // 로그 출력 제한 - 3초에 한 번만
+    if (now - lastCatalogLogTime > 3000) {
+      console.log('모의 데이터 사용 중 - listCourseCatalogs');
+      lastCatalogLogTime = now;
+    }
+
+    const mockResult = {
+      data: mockCourses,
       success: true
     };
+
+    // 결과 캐싱
+    cachedResults = mockResult;
+    lastCacheTime = now;
+
+    return mockResult;
   }
 
   try {
-    // Gen 2 스타일로 DynamoDB 클라이언트 생성
+    // auth-provider의 getDocumentClient 함수 활용
     const documentClient = await getDocumentClient();
-    
+
     // DynamoDB 스캔 요청
     const result = await documentClient.scan({
       TableName: TABLE_NAME
     }).promise();
 
-    // 결과가 있으면 반환
-    return {
+    // 결과가 있으면 반환 및 캐싱
+    const apiResult = {
       data: result.Items || [],
       success: true
     };
+
+    cachedResults = apiResult;
+    lastCacheTime = now;
+
+    return apiResult;
   } catch (error) {
     console.error('코스 카탈로그 목록 가져오기 실패:', error);
-    
-    // 오류 발생 시 모의 데이터 반환
-    return {
+
+    // 오류 발생 시 모의 데이터 사용
+    const errorResult = {
       data: mockCourses,
       success: false,
       error: error
     };
+
+    cachedResults = errorResult;
+    lastCacheTime = now;
+
+    return errorResult;
   }
 };
 
 /**
- * 특정 코스 카탈로그를 가져오는 함수 - Gen 2 스타일
- * (authContext 매개변수 선택적으로 변경)
+ * 특정 코스 카탈로그를 가져오는 함수 - auth-provider 활용한 최적화 버전
  */
-export const getCourseCatalog = async (catalogId: string, authContext?: any): Promise<CourseCatalog | null> => {
-  // 모의 데이터 모드 확인
-  if (shouldUseMockData() || (authContext?.useMockData || authContext?.hasCredentials === false)) {
-    console.log('모의 데이터 사용 중 - getCourseCatalog');
+export const getCourseCatalog = async (
+  catalogId: string,
+  authContext?: any
+): Promise<CourseCatalog | null> {
+  // 모의 데이터 모드 확인 
+  if (shouldUseMockData()) {
+    // 로그 출력 제한
+    const now = Date.now();
+    if (now - lastCatalogLogTime > 3000) {
+      console.log('모의 데이터 사용 중 - getCourseCatalog');
+      lastCatalogLogTime = now;
+    }
+
     const mockCourse = mockCourses.find(c => c.catalogId === catalogId);
     return mockCourse || null;
   }
 
   try {
-    // Gen 2 스타일로 DynamoDB 클라이언트 생성
+    // auth-provider의 getDocumentClient 함수 활용
     const documentClient = await getDocumentClient();
 
     // DynamoDB 항목 가져오기 요청
@@ -99,10 +139,16 @@ export const getCourseCatalog = async (catalogId: string, authContext?: any): Pr
 
     return null;
   } catch (error) {
-    console.error(`코스 카탈로그 가져오기 실패 (ID: \${catalogId}):`, error);
+   // console.error(`코스 카탈로그 가져오기 실패 (ID: \${catalogId}):`, error);
 
     // 오류 시 모의 데이터에서 검색
     const mockCourse = mockCourses.find(c => c.catalogId === catalogId);
     return mockCourse || null;
   }
+};
+
+// 캐시 강제 초기화 함수
+export const clearCatalogCache = () => {
+  cachedResults = null;
+  lastCacheTime = 0;
 };
