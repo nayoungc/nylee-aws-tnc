@@ -1,10 +1,9 @@
 // app/App.tsx
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AppLayout } from '@cloudscape-design/components';
-import TopNavigationHeader from '@/components/layout/TopNavigationHeader';
+import TopNavigationHeader from '@layouts/TopNavigationHeader';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-import LoginPage from '@/pages/LoginPage';
+import LoginPage from '@pages/auth/LoginPage';
 import HomePage from '@/pages/HomePage';
 import { useAuth } from '@/hooks/useAuth';
 

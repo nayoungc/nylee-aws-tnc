@@ -11,9 +11,9 @@ import {
   BreadcrumbGroup
 } from '@cloudscape-design/components';
 import AdminProtectedRoute from '@components/common/AdminProtectedRoute';
-import CourseCatalogTab from '@components/admin/catalog/CourseCatalogTab';
-import CustomersTab from '@components/admin/customers/CustomersTab';
-import InstructorsTab from '@components/admin/instructors/InstructorsTab';
+import CourseCatalogTab from '@pages/admin/catalog/CourseCatalogTab';
+import CustomersTab from '@pages/admin/customers/CustomersTab';
+import InstructorsTab from '@pages/admin/instructors/InstructorsTab';
 
 const AdminDashboardPage: React.FC = () => {
   const [activeTabId, setActiveTabId] = useState('courses');
