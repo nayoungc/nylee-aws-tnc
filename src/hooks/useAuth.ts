@@ -50,6 +50,8 @@ export const AuthProvider = (props: AuthProviderProps) => {
   
   const checkUserRole = useCallback((attributes: Partial<Record<UserAttributeKey, string>>) => {
     const profile = attributes.profile || '';
+
+    console.log('profile', profile);
     
     setIsAdmin(profile === 'admin');
     setIsInstructor(profile === 'instructor');

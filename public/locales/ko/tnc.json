@@ -1,0 +1,54 @@
+{
+    "title": "AWS T&C 교육 포털",
+    "description": "AWS Training & Certification 교육 정보 사이트",
+    
+    "announcements": {
+      "title": "공지사항",
+      "view_all": "전체 보기",
+      "no_announcements": "등록된 공지사항이 없습니다."
+    },
+    
+    "tabs": {
+      "calendar": "교육 일정",
+      "resources": "자료실"
+    },
+    
+    "calendar": {
+      "title": "교육 일정",
+      "upcoming": "예정된 교육",
+      "noEvents": "이 날짜에 예정된 교육 일정이 없습니다.",
+      "session_count": "{{count}}개 세션",
+      "view_details": "상세 보기",
+      "register": "참가 신청"
+    },
+    
+    "resources": {
+      "title": "교육 자료",
+      "search_placeholder": "자료 검색...",
+      "filters": {
+        "category": "카테고리",
+        "all": "전체",
+        "lecture": "강의 자료",
+        "exercise": "실습 자료",
+        "reference": "참고 자료"
+      },
+      "table": {
+        "columns": {
+          "title": "제목",
+          "category": "카테고리",
+          "description": "설명",
+          "uploadDate": "등록일",
+          "actions": "작업"
+        },
+        "loading": "자료 로딩 중",
+        "filterPlaceholder": "자료명 또는 카테고리 검색",
+        "filterAriaLabel": "자료 검색"
+      },
+      "actions": {
+        "download": "다운로드",
+        "view": "보기"
+      },
+      "no_resources": "자료가 없습니다."
+    }
+  }
+  

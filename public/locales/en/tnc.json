@@ -1,0 +1,53 @@
+{
+    "title": "AWS T&C Education Portal",
+    "description": "AWS Training & Certification Education Information Site",
+    
+    "announcements": {
+      "title": "Announcements",
+      "view_all": "View All",
+      "no_announcements": "There are no announcements."
+    },
+    
+    "tabs": {
+      "calendar": "Course Calendar",
+      "resources": "Resources"
+    },
+    
+    "calendar": {
+      "title": "Course Schedule",
+      "upcoming": "Upcoming Courses",
+      "noEvents": "No scheduled courses for this date.",
+      "session_count": "{{count}} sessions",
+      "view_details": "View Details",
+      "register": "Register"
+    },
+    
+    "resources": {
+      "title": "Training Resources",
+      "search_placeholder": "Search resources...",
+      "filters": {
+        "category": "Category",
+        "all": "All",
+        "lecture": "Lecture Materials",
+        "exercise": "Exercise Materials",
+        "reference": "Reference Materials"
+      },
+      "table": {
+        "columns": {
+          "title": "Title",
+          "category": "Category",
+          "description": "Description",
+          "uploadDate": "Upload Date",
+          "actions": "Actions"
+        },
+        "loading": "Loading resources",
+        "filterPlaceholder": "Search by title or category",
+        "filterAriaLabel": "Search resources"
+      },
+      "actions": {
+        "download": "Download",
+        "view": "View"
+      },
+      "no_resources": "No resources available."
+    }
+  }

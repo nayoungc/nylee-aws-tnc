@@ -1,30 +1,38 @@
 // src/components/layout/MainLayout.tsx
 import React from 'react';
-import { AppLayout, SideNavigation } from '@cloudscape-design/components';
+import { AppLayout, SideNavigation, Box, Spinner } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
 import TopNavigationHeader from './TopNavigationHeader';
 import { useAuth } from '@hooks/useAuth';
+import './MainLayout.css';
 
 interface MainLayoutProps {
   children: React.ReactNode;
   activeHref?: string;
+  title?: string;
 }
 
-// 함수형 컴포넌트를 화살표 함수로 올바르게 정의하고 JSX 반환
 const MainLayout: React.FC<MainLayoutProps> = ({ 
   children, 
-  activeHref = '/'
+  activeHref = '/',
+  title
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(['common', 'navigation']);
   const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
   
   // 기본 메뉴 항목 (모든 사용자에게 표시)
   const publicItems = [
-    // 학생용 페이지 (로그인 불필요)
-    { type: 'link' as const, text: t('nav.tnc'), href: '/tnc' }
+    { type: 'link' as const, text: t('navigation:tnc'), href: '/tnc' }
   ];
   
-  // 강사용 메뉴 항목
+  // 인증된 사용자를 위한 메뉴 항목
+  const authenticatedItems = isAuthenticated ? [
+    { type: 'link' as const, text: t('navigation:dashboard'), href: '/' },
+    { type: 'link' as const, text: t('navigation:resources'), href: '/resources' },
+    { type: 'link' as const, text: t('navigation:calendar'), href: '/calendar' }
+  ] : [];
+  
+  // 강사용 메뉴 항목 - 수정된 부분: 올바른 구조로 변경
   const instructorItems = isInstructor || isAdmin ? [
     // 구분선
     { type: 'divider' as const },
@@ -32,41 +40,47 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     // 강사용 섹션
     { 
       type: 'section' as const, 
-      text: t('nav.instructor.title'),
+      text: t('navigation:instructor.title'),
       items: [
         // 과정 관리
         { 
           type: 'link' as const, 
-          text: t('nav.instructor.courseManagement.catalog'), 
-          href: '/instructor/catalog'
-        },
-        { 
-          type: 'link' as const, 
-          text: t('nav.instructor.courseManagement.courses'), 
+          text: t('navigation:instructor.courseManagement'), 
           href: '/instructor/courses'
         },
         
-        // 평가 도구
+        // 과정 카탈로그
         { 
           type: 'link' as const, 
-          text: t('nav.instructor.assessmentTools.quizzes'), 
+          text: t('navigation:instructor.catalog'), 
+          href: '/instructor/catalog'
+        },
+        
+        // 퀴즈 관리
+        { 
+          type: 'link' as const, 
+          text: t('navigation:instructor.quizzes'), 
           href: '/instructor/quizzes'
         },
+        
+        // 설문조사
         { 
           type: 'link' as const, 
-          text: t('nav.instructor.assessmentTools.surveys'), 
+          text: t('navigation:instructor.surveys'), 
           href: '/instructor/surveys'
         },
         
-        // 관리 도구
+        // 보고서
         { 
           type: 'link' as const, 
-          text: t('nav.instructor.managementTools.reports'), 
+          text: t('navigation:instructor.reports'), 
           href: '/instructor/reports'
         },
+        
+        // 통계
         { 
           type: 'link' as const, 
-          text: t('nav.instructor.managementTools.statistics'), 
+          text: t('navigation:instructor.statistics'), 
           href: '/instructor/statistics'
         }
       ]
@@ -81,38 +95,56 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     // 관리자 섹션
     {
       type: 'section' as const,
-      text: t('nav.admin.title'),
+      text: t('navigation:admin.title'),
       items: [
-        { type: 'link' as const, text: t('nav.admin.dashboard'), href: '/admin/dashboard' },
-        { type: 'link' as const, text: t('nav.admin.users'), href: '/admin/users' },
-        { type: 'link' as const, text: t('nav.admin.settings'), href: '/admin/settings' }
+        { type: 'link' as const, text: t('navigation:admin.dashboard'), href: '/admin/dashboard' },
+        { type: 'link' as const, text: t('navigation:admin.users'), href: '/admin/users' },
+        { type: 'link' as const, text: t('navigation:admin.settings'), href: '/admin/settings' }
       ]
     }
   ] : [];
 
   // 모든 메뉴 항목 결합
-  const navItems = [...publicItems, ...instructorItems, ...adminItems];
+  const navItems = [...publicItems, ...authenticatedItems, ...instructorItems, ...adminItems];
 
-  // 반환문이 있어야 함 (return 키워드 확인)
   return (
     <>
-      {/* 최상단 헤더 */}
-      <div id="header" style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
+      <div id="header" className="main-layout-header">
         <TopNavigationHeader />
       </div>
 
-      {/* 메인 레이아웃 */}
       <AppLayout
         navigation={
           <SideNavigation 
             items={navItems}
             activeHref={activeHref}
-            header={{ text: t('nav.header'), href: '/' }}
+            header={{ 
+              text: t('navigation:header'), 
+              href: '/',
+              logo: {
+                src: '/assets/aws-logo.svg',
+                alt: t('common:app.logo_alt')
+              }
+            }}
           />
         }
-        content={loading ? <div>로딩 중...</div> : children}
+        content={
+          loading ? (
+            <Box textAlign="center" padding={{ top: 'xxxl' }}>
+              <Spinner size="large" />
+              <Box variant="p" padding={{ top: 'l' }}>
+                {t('common:loading')}
+              </Box>
+            </Box>
+          ) : children
+        }
         headerSelector="#header"
         toolsHide
+        breadcrumbs={title ? (
+          <Box padding={{ top: 's', bottom: 's' }}>
+            <h1>{title}</h1>
+          </Box>
+        ) : undefined}
       />
     </>
   );
