@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
 import { GraphQLQuery } from '@aws-amplify/api';
@@ -136,29 +136,23 @@ const CourseCatalogTab: React.FC = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  
+  // 초기화 완료 플래그 - 무한 호출 방지
+  const [initialized, setInitialized] = useState(false);
 
-  // 실제 데이터 로드 함수 - Tnc-CourseCatalog 테이블에서만 데이터를 가져옵니다
-  const loadRealData = async (retryAttempt = 0) => {
-    // 이미 데이터가 로드되었고 재시도가 아니면 중복 로드 방지
+  // 실제 데이터 로드 함수 - useCallback으로 메모이제이션
+  const loadRealData = useCallback(async (retryAttempt = 0) => {
+    // 이미 로딩 중이면 중복 실행 방지
+    if (loading) return;
+    
+    // 이미 데이터가 로드되었다면 재시도가 아닐 때만 중복 로드 방지
     if (dataLoaded && !retryAttempt) return;
     
     setLoading(true);
     setError(null);
     
     try {
-      // 1. 인증 상태 확인
-      if (retryAttempt > 0) {
-        console.log(`재시도 #\${retryAttempt}: 인증 상태 확인 중...`);
-        const isAuth = await checkAuthStatus(true);
-        if (!isAuth) {
-          throw new Error('인증이 필요합니다');
-        }
-        
-        // 인증 확인 후 지연 추가 (자격 증명 전파를 위해)
-        await new Promise(resolve => setTimeout(resolve, 800));
-      }
-  
-      // 2. 자격 증명 체크 - 없으면 모의 데이터 사용
+      // 자격 증명이 없으면 즉시 모의 데이터 사용
       if (!hasCredentials) {
         console.log('자격 증명 없음, 모의 데이터 사용');
         setUseMockData(true);
@@ -168,19 +162,18 @@ const CourseCatalogTab: React.FC = () => {
         return;
       }
       
-      console.log('실제 코스 데이터 로드 시도 - AWS 자격 증명 확인됨');
-  
-      // 3. 인증 오류 핸들러 생성
+      console.log('실제 코스 데이터 로드 시도...');
+      
+      // 인증 오류 핸들러 생성
       const authErrorHandler = createAuthErrorHandler(
         (error) => {
           console.error('인증 오류:', error);
           setUseMockData(true);
           setCourses(mockCourses);
-        },
-        navigate
+        }
       );
-  
-      // 4. GraphQL API 호출 준비
+
+      // API 호출
       const result = await withAuthErrorHandling(
         async () => {
           try {
@@ -203,35 +196,26 @@ const CourseCatalogTab: React.FC = () => {
                 }
               }
             `;
-  
-            // GraphQL 쿼리 실행 - 명시적 타입 지정
+
             const response = await client.graphql<GraphQLQuery<ListCourseCatalogsQuery>>({
               query,
-              authMode: 'userPool' // 명시적으로 인증 모드 지정
+              authMode: 'userPool'
             });
-            
-            // 응답 확인 로그
-            console.log('GraphQL 응답:', response);
             
             return response.data?.listCourseCatalogs;
           } catch (error) {
             console.error('GraphQL 호출 중 오류:', error);
-            throw error; // 오류를 상위로 전파
+            throw error;
           }
         },
         authErrorHandler
       )();
-  
-      // 5. 응답 데이터 처리
-      console.log('API 응답 데이터:', result);
-  
+
+      // API 응답 처리
       if (result && result.items && result.items.length > 0) {
-        console.log(`코스 \${result.items.length}개 로드됨. 첫 번째 항목:`, result.items[0]);
+        console.log(`실제 데이터 로드 성공: \${result.items.length}개 항목`);
         
-        // 실제 데이터 사용 모드로 설정
         setUseMockData(false);
-  
-        // 데이터 매핑 및 상태 업데이트
         setCourses(result.items.map((course) => ({
           catalogId: course.catalogId,
           title: course.title || '제목 없음',
@@ -245,154 +229,152 @@ const CourseCatalogTab: React.FC = () => {
           version: course.version,
           awsCode: course.awsCode
         })));
-        
-        console.log('실제 코스 데이터 로드 성공');
       } else {
-        console.log('API 결과에 과정 데이터가 없거나 형식이 잘못됨:', result);
+        console.log('API 결과에 데이터가 없습니다');
         
-        // 데이터가 없으면 빈 배열 설정 또는 모의 데이터 사용
+        // 최대 재시도 횟수 초과 시 모의 데이터 사용
         if (retryAttempt >= 2) {
-          console.log('최대 재시도 횟수 초과, 모의 데이터 사용');
           setUseMockData(true);
           setCourses(mockCourses);
         } else {
-          setUseMockData(false);
+          // 데이터가 없는 경우 빈 배열 설정
           setCourses([]);
         }
       }
       
-      // 성공적으로 처리 완료
-      setRetryCount(0);
-      setDataLoaded(true);
-      
     } catch (error: any) {
-      console.error('과정 데이터 로드 오류:', error);
+      console.error('데이터 로드 오류:', error);
       
-      // 타임아웃 또는 네트워크 오류 확인
-      const isNetworkError = 
-        error.message?.includes('timeout') || 
-        error.message?.includes('network') ||
-        error.name === 'NetworkError';
-        
-      // 권한 오류 확인
-      const isPermissionError = 
-        error.message?.includes('not authorized') || 
-        error.code === 'NotAuthorizedException';
-      
-      // 6. 재시도 로직
-      if (retryAttempt < 2 && (isNetworkError || !isPermissionError)) {
-        console.log(`오류 발생, 잠시 후 재시도합니다... (\${retryAttempt + 1}/2)`);
+      // 재시도 로직
+      if (retryAttempt < 2) {
+        console.log(`오류 발생, 재시도 \${retryAttempt + 1}/2...`);
         setRetryCount(retryAttempt + 1);
         
-        // 지연 후 재시도 (네트워크 오류는 더 길게 대기)
-        const delay = isNetworkError ? 2000 : 1000;
+        // 일정 시간 후 재시도
         setTimeout(() => {
           loadRealData(retryAttempt + 1);
-        }, delay);
+        }, 1000);
         return;
       }
       
-      // 7. 최대 재시도 횟수 초과 또는 권한 오류
-      console.log('최종 오류 발생 또는 최대 재시도 횟수 초과, 모의 데이터 사용');
+      // 최대 재시도 횟수 초과 시 모의 데이터 사용
+      console.log('최대 재시도 횟수 초과, 모의 데이터 사용');
       setUseMockData(true);
       setCourses(mockCourses);
-      
-      // 사용자에게 오류 메시지 표시
-      if (isPermissionError) {
-        setError('이 데이터에 접근할 권한이 없습니다. 관리자에게 문의하세요.');
-      } else {
-        setError('데이터를 불러오는 중 오류가 발생했습니다. 나중에 다시 시도하세요.');
-      }
-      
-      setDataLoaded(true);
+      setError('데이터를 불러오는 중 오류가 발생했습니다. 모의 데이터를 표시합니다.');
     } finally {
+      // 상태 업데이트
       setLoading(false);
+      setDataLoaded(true);
+      setInitialized(true); // 초기화 완료 표시
+      setRetryCount(0);
     }
-  };
+  }, [hasCredentials, loading, dataLoaded]);
 
-  // 인증 상태 확인
+  // 초기 데이터 로드 - 컴포넌트 마운트 시 한 번만 실행
   useEffect(() => {
-    if (dataLoaded && !retryCount) return;
-
-    const verifyAuthentication = async () => {
+    // 이미 초기화되었으면 중복 실행 방지
+    if (initialized) return;
+    
+    const initData = async () => {
       try {
+        // 인증 상태 확인
         const isAuth = await checkAuthStatus(false);
         if (!isAuth) {
           console.log('인증되지 않은 상태, 로그인 페이지로 이동');
           navigate('/signin');
           return;
         }
-
-        // 데이터 로드 시작
-        loadRealData();
+        
+        // 세션 스토리지에 이미 로딩 중 플래그가 있는지 확인 (새로고침 케이스 방지)
+        const isAlreadyLoading = sessionStorage.getItem('courseDataLoading') === 'true';
+        if (isAlreadyLoading) {
+          console.log('이미 다른 인스턴스에서 데이터 로딩 중, 중복 요청 방지');
+          setUseMockData(true);
+          setCourses(mockCourses);
+          setDataLoaded(true);
+          setInitialized(true);
+          return;
+        }
+        
+        // 로딩 중 플래그 설정
+        sessionStorage.setItem('courseDataLoading', 'true');
+        
+        // 자료 로드
+        await loadRealData();
+        
+        // 로딩 완료 후 플래그 제거
+        sessionStorage.removeItem('courseDataLoading');
       } catch (error) {
-        console.error('인증 확인 중 오류:', error);
-        setError('인증 확인 중 오류가 발생했습니다');
-        setLoading(false);
+        console.error('초기 데이터 로드 중 오류:', error);
+        setUseMockData(true);
+        setCourses(mockCourses);
+        setDataLoaded(true);
+        setInitialized(true);
+        sessionStorage.removeItem('courseDataLoading');
       }
     };
 
-    verifyAuthentication();
-  }, [isAuthenticated, dataLoaded, retryCount]);
+    initData();
+    
+    // 언마운트 시 로딩 플래그 정리
+    return () => {
+      sessionStorage.removeItem('courseDataLoading');
+    };
+  }, []);  // 빈 배열로 컴포넌트 마운트 시 한 번만 실행
 
-  // 선택된 과정에 대한 평가 통계 처리 - 모의 데이터만 사용
+  // 평가 통계 로드 로직 - 선택된 과목 변경 시만 실행
   useEffect(() => {
-    const fetchAssessmentStats = async () => {
-      if (!selectedCourse?.catalogId || !isAuthenticated) return;
-
-      setLoading(true);
-
-      try {
-        // 퀴즈나 서베이 데이터는 가져오지 않고 항상 모의 데이터 사용
-        console.log('평가 통계에 모의 데이터 사용');
-        const mockStat = mockAssessmentStats[selectedCourse.catalogId] || {
+    if (!selectedCourse?.catalogId || !isAuthenticated) return;
+    
+    // 평가 통계는 항상 모의 데이터 사용
+    setAssessmentStats({
+      [selectedCourse.catalogId]: 
+        mockAssessmentStats[selectedCourse.catalogId] || 
+        {
           courseId: selectedCourse.catalogId,
           preQuiz: { total: 10, completed: 5 },
           postQuiz: { total: 10, completed: 4 },
           surveys: { total: 15, completed: 8 }
-        };
-
-        setAssessmentStats({
-          [selectedCourse.catalogId]: mockStat
-        });
-      } catch (error) {
-        console.error('평가 현황 데이터 처리 중 오류:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (selectedCourse?.catalogId && isAuthenticated) {
-      fetchAssessmentStats();
-    }
+        }
+    });
   }, [selectedCourse, isAuthenticated]);
 
-  const handleCourseSelect = (course: CourseCatalogType) => {
+  // 수동 새로고침 핸들러
+  const handleRefresh = useCallback(() => {
+    setError(null);
+    setDataLoaded(false);
+    setRetryCount(0);
+    loadRealData();
+  }, [loadRealData]);
+
+  // 과정 선택 핸들러
+  const handleCourseSelect = useCallback((course: CourseCatalogType) => {
     setSelectedCourse(course);
     setActiveTabId('assessments');
-  };
+  }, []);
 
-  // 자격 증명 갱신 시도
-  const handleRefreshCredentials = async () => {
+  // 자격 증명 갱신 핸들러
+  const handleRefreshCredentials = useCallback(async () => {
     setCredentialLoading(true);
     try {
       const success = await refreshCredentials();
       if (success) {
-        // 성공 시 실제 데이터 로드
         setUseMockData(false);
-        setDataLoaded(false); // 데이터 재로드 플래그
+        setDataLoaded(false);
         loadRealData();
       } else {
-        alert(t('auth.credentials_refresh_failed') || '자격 증명 갱신에 실패했습니다. 다시 로그인해주세요.');
+        alert(t('auth.credentials_refresh_failed') || '자격 증명 갱신에 실패했습니다.');
       }
     } catch (error) {
       console.error('자격 증명 갱신 중 오류:', error);
     } finally {
       setCredentialLoading(false);
     }
-  };
+  }, [refreshCredentials, loadRealData, t]);
 
-  const handleLogoutAndLogin = async () => {
+  // 로그아웃 및 로그인 핸들러
+  const handleLogoutAndLogin = useCallback(() => {
     setCredentialLoading(true);
     try {
       sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
@@ -401,16 +383,9 @@ const CourseCatalogTab: React.FC = () => {
       console.error('로그아웃 중 오류:', error);
       setCredentialLoading(false);
     }
-  };
+  }, [navigate]);
 
-  // 새로고침 버튼 핸들러
-  const handleRefresh = () => {
-    setRetryCount(0);
-    setDataLoaded(false);
-    loadRealData();
-  };
-
-  // 카탈로그 테이블 직접 구현
+  // 카탈로그 테이블 렌더링
   const renderCourseTable = () => (
     <Box>
       {useMockData && (
@@ -440,7 +415,7 @@ const CourseCatalogTab: React.FC = () => {
           {
             id: 'duration',
             header: t('courses.duration') || '기간',
-            cell: item => `\${item.duration}시간`, // 숫자를 표시할 때 문자열 포맷 지정
+            cell: item => `\${item.duration}시간`,
             sortingField: 'duration'
           },
           {
@@ -505,6 +480,7 @@ const CourseCatalogTab: React.FC = () => {
     </Box>
   );
 
+  // 평가 탭 렌더링
   const renderAssessmentTab = () => (
     selectedCourse ? (
       <Container
@@ -527,11 +503,7 @@ const CourseCatalogTab: React.FC = () => {
           </Header>
         }
       >
-        {loading ? (
-          <Box textAlign="center" padding="l">
-            {t('common.loading') || "로딩 중..."}
-          </Box>
-        ) : assessmentStats && selectedCourse.catalogId && assessmentStats[selectedCourse.catalogId] ? (
+        {assessmentStats && selectedCourse.catalogId && assessmentStats[selectedCourse.catalogId] ? (
           <ColumnLayout columns={3}>
             <Box variant="awsui-key-label">
               <h3>{t('courses.pre_quiz_stats') || "사전 퀴즈 현황"}</h3>
@@ -571,6 +543,7 @@ const CourseCatalogTab: React.FC = () => {
     )
   );
 
+  // 탭 렌더링
   const renderTabs = () => (
     <Tabs
       activeTabId={activeTabId}
@@ -597,7 +570,7 @@ const CourseCatalogTab: React.FC = () => {
         <Alert
           type="warning"
           header={t('auth.credentials_required') || "AWS 자격 증명 필요"}
-          action={  // action 속성 사용 (단수형)
+          action={
             <SpaceBetween direction="horizontal" size="xs">
               <Button
                 onClick={handleRefreshCredentials}
@@ -621,6 +594,7 @@ const CourseCatalogTab: React.FC = () => {
     )
   );
 
+  // 메인 렌더링
   return (
     <SpaceBetween size="l">
       <Container
@@ -640,7 +614,8 @@ const CourseCatalogTab: React.FC = () => {
       >
         {error && <Alert type="error" dismissible>{error}</Alert>}
         {renderCredentialsWarning()}
-        {loading && !dataLoaded ? (
+        
+        {!initialized || (loading && !dataLoaded) ? (
           <Box textAlign="center" padding="l">
             {retryCount > 0
               ? `\${t('admin.common.retrying') || '재시도 중'} (\${retryCount}/2)...`
