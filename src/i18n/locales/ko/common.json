@@ -1,0 +1,32 @@
+{
+    "nav": {
+      "header": "탐색",
+      "courses": {
+        "public": "공개 과정"
+      },
+      "instructor": {
+        "title": "강사 대시보드",
+        "courseManagement": {
+          "title": "과정 관리",
+          "catalog": "과정 카탈로그",
+          "courses": "과정 관리"
+        },
+        "assessmentTools": {
+          "title": "평가 도구",
+          "quizzes": "퀴즈 관리",
+          "surveys": "설문조사 관리"
+        },
+        "managementTools": {
+          "title": "관리 도구",
+          "reports": "보고서 생성",
+          "statistics": "통계"
+        }
+      },
+      "admin": {
+        "title": "관리자 설정",
+        "dashboard": "관리자 대시보드",
+        "users": "사용자 관리",
+        "settings": "시스템 설정"
+      }
+    }
+  }

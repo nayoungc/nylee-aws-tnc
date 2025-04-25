@@ -1,0 +1,33 @@
+{
+    "nav": {
+      "header": "Navigation",
+      "courses": {
+        "public": "Public Courses"
+      },
+      "instructor": {
+        "title": "Instructor Dashboard",
+        "courseManagement": {
+          "title": "Course Management",
+          "catalog": "Course Catalog",
+          "courses": "Manage Courses"
+        },
+        "assessmentTools": {
+          "title": "Assessment Tools",
+          "quizzes": "Quiz Management",
+          "surveys": "Survey Management"
+        },
+        "managementTools": {
+          "title": "Management Tools",
+          "reports": "Generate Reports",
+          "statistics": "Statistics"
+        }
+      },
+      "admin": {
+        "title": "Administration",
+        "dashboard": "Admin Dashboard",
+        "users": "User Management",
+        "settings": "System Settings"
+      }
+    }
+  }
+  

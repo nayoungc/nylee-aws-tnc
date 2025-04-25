@@ -2,7 +2,7 @@
 import React from 'react';
 import { ButtonDropdown } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '@contexts/AppContext';
 
 const LanguageSelector: React.FC = () => {
   const { language, changeLanguage } = useApp();
