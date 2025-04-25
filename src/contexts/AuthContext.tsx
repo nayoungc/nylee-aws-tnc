@@ -783,6 +783,32 @@ export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>
   authContext: AuthErrorHandlerContext
 ) => {
   return async (...args: Parameters<T>): Promise<ReturnType<T>> => {
+    // 자격 증명 상태 확인
+    if (authContext.isAuthenticated === false) {
+      // 인증되지 않은 경우 로그인 필요
+      authContext.handleAuthError(new Error('인증이 필요합니다. 로그인해주세요.'));
+      throw new Error('인증이 필요합니다');
+    }
+    
+    // 부분 인증 상태 확인 (자격 증명 부재 확인)
+    if (sessionStorage.getItem('partialAuthState') === 'true') {
+      console.warn('부분 인증 상태: AWS 자격 증명이 없어 API 호출이 실패할 수 있습니다');
+      
+      // 자격 증명 갱신 시도
+      try {
+        if (authContext.refreshCredentials) {
+          const refreshed = await authContext.refreshCredentials();
+          if (!refreshed) {
+            throw new Error('AWS 자격 증명 갱신 실패');
+          }
+          // 갱신 성공하면 API 호출 진행
+        }
+      } catch (refreshError) {
+        console.error('자격 증명 갱신 실패:', refreshError);
+        throw new Error('AWS 자격 증명이 없어 작업을 수행할 수 없습니다. 다시 로그인하세요.');
+      }
+    }
+
     try {
       return await apiFunction(...args);
     } catch (error: any) {
@@ -795,15 +821,29 @@ export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>
         error.name === 'NotAuthorizedException' ||
         error.code === 'NotAuthorizedException';
 
-      // 인증 오류인 경우 처리기 호출
-      if (isAuthError && authContext.handleAuthError) {
-        authContext.handleAuthError(error);
+      // 인증 오류인 경우 자격 증명 문제로 표시하고 처리기 호출
+      if (isAuthError) {
+        console.error('API 호출 중 AWS 자격 증명 오류:', error);
+        sessionStorage.setItem('partialAuthState', 'true');  // 부분 인증 상태 표시
+        
+        if (authContext.handleAuthError) {
+          authContext.handleAuthError(error);
+        }
       }
 
       throw error;
     }
   };
 };
+
+// AuthErrorHandlerContext 인터페이스 확장
+interface AuthErrorHandlerContext {
+  handleAuthError: (error: any) => void;
+  isAuthenticated?: boolean;
+  checkAuthStatus?: (force?: boolean) => Promise<boolean>;
+  refreshCredentials?: () => Promise<boolean>;  // 추가
+}
+
 
 /**
  * API 호출 시 인증 컨텍스트와 함께 사용하기 위한 헬퍼 함수

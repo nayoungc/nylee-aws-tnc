@@ -1,32 +1,59 @@
-// src/pages/admin/CourseCatalogTab.tsx
-import { listQuizzes, listSurveys, listCourses } from '@api';
-import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '@contexts/AuthContext';
-import {
-  Box,
-  Button,
-  ColumnLayout,
-  Container,
-  Header,
-  SpaceBetween,
-  StatusIndicator,
-  Tabs,
-  Alert,
-  Table,
-  Pagination
-} from '@cloudscape-design/components';
-import {
-  BaseCourseView,
-  CourseCatalog as CourseCatalogType
-} from '@components/courses/BaseCourseView';
-import { useTypedTranslation } from '@utils/i18n-utils';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { generateClient } from 'aws-amplify/api';
+import { 
+  Box, 
+  Button, 
+  ColumnLayout, 
+  Container, 
+  Header, 
+  SpaceBetween, 
+  StatusIndicator, 
+  Tabs, 
+  Alert, 
+  Table, 
+  Pagination 
+} from '@cloudscape-design/components';
+import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '@contexts/AuthContext';
+import { useTypedTranslation } from '@utils/i18n-utils';
+import { GraphQLQuery } from '@aws-amplify/api';
 
-import {
-  Quiz,
-  Survey,
-  Course
-} from '@api/types';
+// API 클라이언트 생성
+const client = generateClient();
+
+// API 응답 타입 정의
+interface ListCourseCatalogsQuery {
+  listCourseCatalogs: {
+    items: Array<{
+      catalogId: string;
+      title: string;
+      description?: string;
+      imageUrl?: string;
+      instructor?: string;
+      duration?: number;
+      level?: string;
+      createdAt?: string;
+      updatedAt?: string;
+      version?: string;
+      awsCode?: string;
+    }>
+  }
+}
+
+// 코스 카탈로그 인터페이스
+interface CourseCatalogType {
+  catalogId: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  instructor?: string;
+  duration: number;
+  level?: string;
+  createdAt: string;
+  updatedAt: string;
+  version?: string;
+  awsCode?: string;
+}
 
 // 평가 현황 인터페이스
 interface AssessmentStats {
@@ -44,7 +71,7 @@ const mockCourses: CourseCatalogType[] = [
     description: '클라우드 컴퓨팅 및 AWS의 기본 개념을 배웁니다.',
     imageUrl: 'https://via.placeholder.com/300x200?text=AWS+Basics',
     instructor: '김강사',
-    duration: '8시간',
+    duration: 8,
     level: '입문',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -55,7 +82,7 @@ const mockCourses: CourseCatalogType[] = [
     description: 'AWS의 다양한 데이터베이스 서비스에 대해 학습합니다.',
     imageUrl: 'https://via.placeholder.com/300x200?text=Database+Services',
     instructor: '이강사',
-    duration: '10시간',
+    duration: 10,
     level: '중급',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -66,7 +93,7 @@ const mockCourses: CourseCatalogType[] = [
     description: 'AWS Lambda와 serverless 개발 방법을 배웁니다.',
     imageUrl: 'https://via.placeholder.com/300x200?text=Serverless',
     instructor: '박강사',
-    duration: '12시간',
+    duration: 12,
     level: '고급',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -96,9 +123,9 @@ const mockAssessmentStats: Record<string, AssessmentStats> = {
 };
 
 const CourseCatalogTab: React.FC = () => {
-  const { t, tString } = useTypedTranslation();
+  const { t } = useTypedTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated, checkAuthStatus, handleAuthError, hasCredentials, refreshCredentials } = useAuth();
+  const { isAuthenticated, checkAuthStatus, hasCredentials, refreshCredentials } = useAuth();
   const [activeTabId, setActiveTabId] = useState('catalog');
   const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
   const [selectedCourse, setSelectedCourse] = useState<CourseCatalogType | null>(null);
@@ -133,7 +160,7 @@ const CourseCatalogTab: React.FC = () => {
     verifyAuthentication();
   }, [checkAuthStatus, hasCredentials, navigate]);
 
-  // 실제 데이터 로드 함수
+  // 실제 데이터 로드 함수 - Tnc-CourseCatalog 테이블에서만 데이터를 가져옵니다
   const loadRealData = async () => {
     setLoading(true);
     try {
@@ -147,137 +174,111 @@ const CourseCatalogTab: React.FC = () => {
         navigate
       );
 
-      // listCourses API를 사용하여 실제 데이터 로드
-      const result = await withAuthErrorHandling(listCourses, authErrorHandler)({});
-      
-      if (result.success && result.data && result.data.length > 0) {
-        setCourses(result.data.map((course: any) => ({
-          catalogId: course.id,
-          title: course.title,
-          description: course.description,
-          imageUrl: course.imageUrl || 'https://via.placeholder.com/300x200?text=Course',
-          instructor: course.instructor || '강사 정보 없음',
-          duration: course.duration || '기간 정보 없음',
-          level: course.level || '난이도 정보 없음',
-          createdAt: course.createdAt,
-          updatedAt: course.updatedAt
-        })));
-        setDataLoaded(true);
-      } else {
-        // API 결과가 비어있으면 모의 데이터 사용
-        console.log('API 결과가 없습니다. 모의 데이터 사용');
+      try {
+        // Amplify Gen2 방식으로 API 호출 - Tnc-CourseCatalog 테이블만 조회
+        const result = await withAuthErrorHandling(
+          async () => {
+            try {
+              const query = `
+                query ListCourseCatalogs {
+                  listCourseCatalogs {
+                    items {
+                      catalogId
+                      title
+                      description
+                      imageUrl
+                      instructor
+                      duration
+                      level
+                      createdAt
+                      updatedAt
+                      version
+                      awsCode
+                    }
+                  }
+                }
+              `;
+
+              // GraphQL 쿼리 실행 - 타입 명시적으로 지정
+              const response = await client.graphql<GraphQLQuery<ListCourseCatalogsQuery>>({
+                query,
+                variables: {}
+              });
+              
+              // 올바른 데이터 경로로 접근
+              return response.data?.listCourseCatalogs;
+            } catch (error) {
+              console.error('GraphQL 호출 중 오류:', error);
+              throw error;
+            }
+          }, 
+          authErrorHandler
+        )();
+
+        // 디버깅을 위한 로그 추가
+        console.log('API 응답 데이터:', result);
+
+        // 안전한 데이터 변환
+        if (result && result.items && result.items.length > 0) {
+          console.log('첫 번째 과정 항목:', result.items[0]);
+
+          setCourses(result.items.map((course) => ({
+            catalogId: course.catalogId,
+            title: course.title || '제목 없음',
+            description: course.description || '설명 없음',
+            imageUrl: course.imageUrl || 'https://via.placeholder.com/300x200?text=Course',
+            instructor: course.instructor || '강사 정보 없음',
+            duration: typeof course.duration === 'number' ? course.duration : 0,
+            level: course.level || '난이도 정보 없음',
+            createdAt: course.createdAt || new Date().toISOString(),
+            updatedAt: course.updatedAt || new Date().toISOString(),
+            version: course.version,
+            awsCode: course.awsCode
+          })));
+
+          setDataLoaded(true);
+        } else {
+          console.log('API 결과에 과정 데이터가 없습니다. 모의 데이터 사용');
+          setUseMockData(true);
+          setCourses(mockCourses);
+        }
+      } catch (error) {
+        console.error('과정 데이터 로드 오류:', error);
+        console.log('오류로 인해 모의 데이터 사용');
         setUseMockData(true);
         setCourses(mockCourses);
-        setDataLoaded(true);
-      }
+      } 
     } catch (error) {
-      console.error('과정 데이터 로드 오류:', error);
+      console.error('인증 오류 처리 중 문제 발생:', error);
       setUseMockData(true);
       setCourses(mockCourses);
-      setDataLoaded(true);
     } finally {
       setLoading(false);
     }
   };
 
-  // 선택된 과정에 대한 평가 통계 불러오기
+  // 선택된 과정에 대한 평가 통계 처리 - 모의 데이터만 사용
   useEffect(() => {
     const fetchAssessmentStats = async () => {
       if (!selectedCourse?.catalogId || !isAuthenticated) return;
 
       setLoading(true);
-      
-      // 자격 증명이 없거나 모의 데이터 모드면 모의 통계 사용
-      if (!hasCredentials || useMockData) {
-        console.log('자격 증명 없음 또는 모의 데이터 모드, 모의 통계 사용');
-        const mockStat = mockAssessmentStats[selectedCourse.catalogId] || {
-          courseId: selectedCourse.catalogId,
-          preQuiz: { total: 10, completed: 5 },
-          postQuiz: { total: 10, completed: 4 },
-          surveys: { total: 15, completed: 8 }
-        };
-        
-        setAssessmentStats({
-          [selectedCourse.catalogId]: mockStat
-        });
-        setLoading(false);
-        return;
-      }
 
       try {
-        // createAuthErrorHandler 사용
-        const authErrorHandler = createAuthErrorHandler(
-          (error) => {
-            console.error('인증 오류:', error);
-            setLoading(false);
-          },
-          navigate
-        );
-
-        // 1. 퀴즈 데이터 가져오기
-        const preQuizResult = await withAuthErrorHandling(listQuizzes, authErrorHandler)({
-          filter: {
-            expression: 'courseId = :courseId AND quizType = :quizType',
-            expressionValues: {
-              ':courseId': selectedCourse.catalogId,
-              ':quizType': 'pre'
-            }
-          }
-        });
-
-        const postQuizResult = await withAuthErrorHandling(listQuizzes, authErrorHandler)({
-          filter: {
-            expression: 'courseId = :courseId AND quizType = :quizType',
-            expressionValues: {
-              ':courseId': selectedCourse.catalogId,
-              ':quizType': 'post'
-            }
-          }
-        });
-
-        // 2. 설문조사 데이터 가져오기
-        const surveysResult = await withAuthErrorHandling(listSurveys, authErrorHandler)({
-          filter: {
-            expression: 'courseId = :courseId',
-            expressionValues: {
-              ':courseId': selectedCourse.catalogId
-            }
-          }
-        });
-
-        // 3. 통계 계산 및 상태 업데이트
-        const stats: Record<string, AssessmentStats> = {
-          [selectedCourse.catalogId]: {
-            courseId: selectedCourse.catalogId,
-            preQuiz: {
-              total: preQuizResult.data.length,
-              completed: (preQuizResult.data as Quiz[]).filter(q => q.status === 'COMPLETED').length
-            },
-            postQuiz: {
-              total: postQuizResult.data.length,
-              completed: (postQuizResult.data as Quiz[]).filter(q => q.status === 'COMPLETED').length
-            },
-            surveys: {
-              total: surveysResult.data.length,
-              completed: (surveysResult.data as Survey[]).filter(s => s.responseCount > 0).length
-            }
-          }
-        };
-
-        setAssessmentStats(stats);
-      } catch (error) {
-        console.error('평가 현황 데이터 로드 중 오류:', error);
-        // 오류 발생 시 모의 데이터로 대체
+        // 퀴즈나 서베이 데이터는 가져오지 않고 항상 모의 데이터 사용
+        console.log('평가 통계에 모의 데이터 사용');
         const mockStat = mockAssessmentStats[selectedCourse.catalogId] || {
           courseId: selectedCourse.catalogId,
           preQuiz: { total: 10, completed: 5 },
           postQuiz: { total: 10, completed: 4 },
           surveys: { total: 15, completed: 8 }
         };
-        
+
         setAssessmentStats({
           [selectedCourse.catalogId]: mockStat
         });
+      } catch (error) {
+        console.error('평가 현황 데이터 처리 중 오류:', error);
       } finally {
         setLoading(false);
       }
@@ -286,7 +287,7 @@ const CourseCatalogTab: React.FC = () => {
     if (selectedCourse?.catalogId && isAuthenticated) {
       fetchAssessmentStats();
     }
-  }, [selectedCourse, isAuthenticated, checkAuthStatus, hasCredentials, useMockData]);
+  }, [selectedCourse, isAuthenticated]);
 
   const handleCourseSelect = (course: CourseCatalogType) => {
     setSelectedCourse(course);
@@ -323,7 +324,7 @@ const CourseCatalogTab: React.FC = () => {
     }
   };
 
-  // 카탈로그 테이블 직접 구현 (BaseCourseView 대체)
+  // 카탈로그 테이블 직접 구현
   const renderCourseTable = () => (
     <Box>
       {useMockData && (
@@ -334,7 +335,7 @@ const CourseCatalogTab: React.FC = () => {
           {t('courses.mock_data_description') || "현재 AWS 자격 증명 부족으로 실제 데이터를 불러올 수 없어 모의 데이터를 표시합니다."}
         </Alert>
       )}
-      
+
       <Table
         items={courses}
         columnDefinitions={[
@@ -345,12 +346,6 @@ const CourseCatalogTab: React.FC = () => {
             sortingField: 'title'
           },
           {
-            id: 'instructor',
-            header: t('courses.instructor') || '강사',
-            cell: item => item.instructor,
-            sortingField: 'instructor'
-          },
-          {
             id: 'level',
             header: t('courses.level') || '난이도',
             cell: item => item.level,
@@ -359,7 +354,7 @@ const CourseCatalogTab: React.FC = () => {
           {
             id: 'duration',
             header: t('courses.duration') || '기간',
-            cell: item => item.duration,
+            cell: item => `\${item.duration}시간`, // 숫자를 표시할 때 문자열 포맷 지정
             sortingField: 'duration'
           },
           {
@@ -506,22 +501,13 @@ const CourseCatalogTab: React.FC = () => {
         <Alert
           type="warning"
           header={t('auth.credentials_required') || "AWS 자격 증명 필요"}
-          actionLinks={
-            <SpaceBetween direction="horizontal" size="xs">
-              <Button
-                onClick={handleRefreshCredentials}
-                loading={credentialLoading}
-              >
-                {t('auth.refresh_credentials') || "자격 증명 갱신"}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleLogoutAndLogin}
-                loading={credentialLoading}
-              >
-                {t('auth.logout_and_login') || "로그아웃 후 다시 로그인"}
-              </Button>
-            </SpaceBetween>
+          action={  // action 속성 사용 (단수형)
+            <Button
+              onClick={handleRefreshCredentials}
+              loading={credentialLoading}
+            >
+              {t('auth.refresh_credentials') || "자격 증명 갱신"}
+            </Button>
           }
         >
           {t('auth.mock_data_warning') || "AWS 자격 증명 부족으로 모의 데이터가 표시되고 있습니다. 실제 데이터를 보려면 자격 증명을 갱신하세요."}
