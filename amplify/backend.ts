@@ -1,12 +1,9 @@
-import { defineBackend } from "@amplify/backend";
-import { auth } from "./auth/resource"; // 이 줄 추가 필요
-import { data } from "./data/resource";
-import { storage } from "./storage/resource";
+// amplify/backend.ts
+import { defineBackend } from "@aws-amplify/backend";
+import { auth } from "./auth/resource";
+//import { data } from "./data/resource";
 
 const backend = defineBackend({
   auth, 
-  data, 
-  storage
+ // data, 
 });
-
-export default backend;
