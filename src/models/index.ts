@@ -1,3 +1,4 @@
+// src/models/index.ts
 export * from './catalog';
 export * from './course-modules';
 export * from './course-labs';
@@ -12,3 +13,6 @@ export * from './user-surveys';
 export * from './user-survey-responses';
 export * from './survey-analytics';
 export * from './dashboard-metrics';
+export * from './events';
+// export * from './resources';
+// export * from './announcements';
