@@ -1,4 +1,3 @@
-// src/pages/auth/LoginPage.tsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -8,19 +7,20 @@ import {
   Grid,
   SpaceBetween,
   Link,
+  Container,
+  Header
 } from '@cloudscape-design/components';
 import LoginForm from '@/components/auth/LoginForm';
-import TopNavigationHeader from '@layouts/TopNavigationHeader';
+import TopNavigationHeader from '@/components/layout/TopNavigationHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
-import './LoginPage.css'; // 스타일 추가
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation(['auth', 'common']);
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
 
-  // 이미 로그인한 경우 홈 페이지로 리다이렉트
+  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && !loading) {
       navigate('/');
@@ -32,12 +32,20 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <>
-      <div id="top-navigation">
+    <div>
+      <div style={{ paddingBottom: 'var(--space-l)', borderBottom: '1px solid var(--color-border-divider)' }}>
         <TopNavigationHeader />
       </div>
       
-      <div className="login-page-container">
+      <div 
+        style={{
+          padding: 'var(--space-xxxl)',
+          minHeight: 'calc(100vh - 70px)',
+          background: 'linear-gradient(to bottom, #f2f8fd, #e4f0f9)',
+          display: 'flex',
+          alignItems: 'center'
+        }}
+      >
         <ContentLayout disableOverlap>
           <Grid
             gridDefinition={[{ 
@@ -45,34 +53,48 @@ const LoginPage: React.FC = () => {
               offset: { default: 0, xs: 1, s: 2, m: 3, l: 4 } 
             }]}
           >
-            <Box 
-              padding="l" 
-              className="login-card"
-            >
-              <SpaceBetween size="xl">
-                <Box textAlign="center" padding={{ bottom: 'l' }}>
+            <Container
+              header={
+                <Box padding={{ top: 'l', bottom: 'l' }} textAlign="center">
                   <img
                     src="/assets/aws-logo.svg"
                     alt="AWS Logo"
-                    className="aws-logo"
+                    style={{ 
+                      maxWidth: '180px', 
+                      height: 'auto'
+                    }}
                   />
                 </Box>
-                
-                <LoginForm onLoginSuccess={handleLoginSuccess} />
-                
-                <Box textAlign="center" color="text-body-secondary">
-                  <SpaceBetween size="s" direction="horizontal">
-                    <Link href="/quiz/start">{t('auth:quiz_participation')}</Link>
-                    <Box color="text-body-secondary" fontSize="body-s">|</Box>
-                    <Link href="/survey/start">{t('auth:survey_participation')}</Link>
-                  </SpaceBetween>
+              }
+              footer={
+                <Box textAlign="center" color="text-body-secondary" padding={{ top: 's', bottom: 's' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <Link href="/quiz/start" fontSize="body-s">{t('auth:quiz_participation')}</Link>
+                    <Box color="text-body-secondary" fontSize="body-s" padding={{ horizontal: 'xs' }}>|</Box>
+                    <Link href="/survey/start" fontSize="body-s">{t('auth:survey_participation')}</Link>
+                  </div>
                 </Box>
-              </SpaceBetween>
+              }
+            >
+              <div style={{
+                padding: 'var(--space-l)',
+                backgroundColor: 'var(--color-background-paper)',
+                borderRadius: 'var(--border-radius-container)',
+                boxShadow: 'var(--shadow-container)'
+              }}>
+                <LoginForm onLoginSuccess={handleLoginSuccess} />
+              </div>
+            </Container>
+
+            <Box textAlign="center" padding={{ top: 'l' }}>
+              <Box fontSize="body-s" color="text-body-secondary">
+                {t('common:footer.copyright', { year: new Date().getFullYear() })}
+              </Box>
             </Box>
           </Grid>
         </ContentLayout>
       </div>
-    </>
+    </div>
   );
 };
 

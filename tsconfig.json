@@ -23,7 +23,7 @@
       "@models/*": ["src/models/*"],
       "@utils/*": ["src/utils/*"],
       "@pages/*": ["src/pages/*"],
-      "@layouts/*": ["src/layouts/*"],
+      "@layouts/*": ["src/components/layout/*"],
       "@theme/*": ["src/theme/*"],
       "@language/*": ["src/language/*"]
     }
