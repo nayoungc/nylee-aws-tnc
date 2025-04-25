@@ -5,7 +5,6 @@ import { Hub } from 'aws-amplify/utils';
 import AWS from 'aws-sdk';
 import { AuthSession } from 'aws-amplify/auth';
 
-
 // 로그 레벨 타입 및 설정
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 const LOG_LEVEL: LogLevel = process.env.NODE_ENV === 'production' ? 'error' : 'info';
@@ -44,6 +43,11 @@ let awsCredentials: AWS.Credentials | null = null;
 let credentialsInitialized = false;
 let lastCredentialAttempt = 0;
 
+// 세션 캐싱 변수
+let lastSessionCheck = 0;
+let cachedSessionInfo: { hasTokens: boolean; hasCredentials: boolean } | null = null;
+let lastLogOutput = 0;
+
 // 상태 변경 추적 변수
 let lastAuthCheckTime = 0;
 let pendingAuthChecks = 0;
@@ -73,6 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // 디바운스 타이머 레퍼런스
   const debounceTimerRef = useRef<number | null>(null);
+  
+  // 처리 중 상태 추적용 ref
+  const processingRef = useRef<boolean>(false);
 
   // 모의 데이터 모드 설정 함수
   const setMockDataMode = useCallback((enabled: boolean) => {
@@ -82,13 +89,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sessionStorage.removeItem('useMockData');
     }
 
-    setState(prev => ({
-      ...prev,
-      useMockData: enabled
-    }));
+    setState(prev => {
+      if (prev.useMockData === enabled) return prev; // 변경 없으면 상태 업데이트 안함
+      return {
+        ...prev,
+        useMockData: enabled
+      };
+    });
 
-    // 템플릿 리터럴 수정
-    console.log('모의 데이터 모드 ' + (enabled ? '활성화' : '비활성화'));
+    // 로그 출력은 3초에 한 번만
+    const now = Date.now();
+    if (now - lastLogOutput > 3000) {
+      console.log('모의 데이터 모드 ' + (enabled ? '활성화' : '비활성화'));
+      lastLogOutput = now;
+    }
   }, []);
 
   /**
@@ -101,15 +115,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     }
 
-    lastCredentialAttempt = Date.now();
+    // 세션 캐싱 - 빈번한 호출 방지
+    const now = Date.now();
+    if (!force && cachedSessionInfo && now - lastSessionCheck < 5000) {
+      return cachedSessionInfo.hasCredentials;
+    }
+
+    lastCredentialAttempt = now;
+    lastSessionCheck = now;
 
     try {
       // 세션 상태 확인
       const session = await fetchAuthSession();
-      console.log('AWS 세션 정보:', {
+      const sessionInfo = {
         hasTokens: !!session.tokens,
         hasCredentials: !!session.credentials
-      });
+      };
+      
+      // 이전 상태와 다를 때만 로그 출력
+      if (!cachedSessionInfo || 
+          cachedSessionInfo.hasTokens !== sessionInfo.hasTokens || 
+          cachedSessionInfo.hasCredentials !== sessionInfo.hasCredentials) {
+        console.log('AWS 세션 정보:', sessionInfo);
+      }
+      
+      cachedSessionInfo = sessionInfo;
 
       // 토큰이 없으면 로그인되지 않은 상태
       if (!session.tokens) {
@@ -208,11 +238,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return authCheckPromiseRef.current;
     }
     
-    // 짧은 시간 내에 여러 번 호출 방지 (디바운스)
+    // 디바운스 강화 - 60초 내에 다시 체크하지 않음
     const now = Date.now();
+    if (!force && now - lastAuthCheckTime < 60000 && state.isAuthenticated) {
+      return state.isAuthenticated;
+    }
+    
+    // 짧은 시간 내에 여러 번 호출 방지 (디바운스)
     if (!force && now - lastAuthCheckTime < 1000 && pendingAuthChecks > 0) {
       pendingAuthChecks++;
-      console.log(`중복 인증 확인 요청 대기 중: \${pendingAuthChecks}`);
       return new Promise(resolve => {
         setTimeout(() => resolve(state.isAuthenticated), 100);
       });
@@ -237,7 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setState(prev => ({ ...prev, loading: true }));
         
         // 세션 가져오기
-        let session: any;
+        let session: AuthSession;
         try {
           session = await fetchAuthSession();
         } catch (sessionError) {
@@ -631,23 +665,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 부분 인증 상태 감지 시 모의 데이터 모드 자동 활성화
   useEffect(() => {
+    // 이미 처리 중이면 중단
+    if (processingRef.current) return;
+    
     const isPartialAuth = sessionStorage.getItem('partialAuthState') === 'true';
-
+    
     if (isPartialAuth && !state.useMockData) {
-      const alreadyProcessing = sessionStorage.getItem('processingMockDataMode');
-
-      if (!alreadyProcessing) {
-        sessionStorage.setItem('processingMockDataMode', 'true');
-        console.log('부분 인증 상태 감지 - 자동으로 모의 데이터 모드 활성화');
-
-        // 지연 시간을 늘려 잦은 상태 업데이트 방지
-        setTimeout(() => {
+      processingRef.current = true;
+      
+      // 지연 시간을 늘려 잦은 상태 업데이트 방지
+      setTimeout(() => {
+        if (!state.useMockData) { // 상태 재확인
           setMockDataMode(true);
-          sessionStorage.removeItem('processingMockDataMode');
-        }, 100);
-      }
+        }
+        processingRef.current = false;
+      }, 500);
     }
-  }, [state.hasCredentials]); // 불필요한 의존성 제거
+  }, []);
 
   // 컨텍스트 값 메모이제이션
   const value = useMemo(() => ({
