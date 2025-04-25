@@ -180,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * 인증 상태 확인 함수
+   * 인증 상태 확인 함수 - 모든 경로에서 명시적 반환 보장
    */
   const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => {
     // 이미 진행 중인 인증 확인이 있으면 그 Promise를 반환
@@ -243,6 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           sessionStorage.removeItem('userAttributes');
           sessionStorage.removeItem('userAttributesTimestamp');
           sessionStorage.removeItem('partialAuthState');
+          sessionStorage.removeItem('limitFetchAttributes'); 
 
           return false;
         }
@@ -250,11 +251,91 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // 자격 증명 상태 업데이트
         await initializeCredentials(force);
 
+        // 부분 인증 상태 처리 (자격 증명 없음)
+        if (!session.credentials) {
+          console.log('자격 증명 없음, 토큰만 있는 상태 - 부분 인증 상태 처리');
+          
+          try {
+            // 이미 캐싱된 속성이 있는지 확인
+            const cachedAttributes = sessionStorage.getItem('userAttributes');
+            const cachedUsername = sessionStorage.getItem('username');
+            
+            if (cachedAttributes && cachedUsername) {
+              console.log('캐싱된 사용자 정보 사용 (부분 인증 상태)');
+              setState({
+                isAuthenticated: true,
+                userAttributes: JSON.parse(cachedAttributes),
+                username: cachedUsername,
+                userRole: JSON.parse(cachedAttributes).profile || 'student',
+                loading: false,
+                hasCredentials: false
+              });
+              
+              // 부분 인증 상태 표시
+              sessionStorage.setItem('partialAuthState', 'true');
+              setLastRefresh(now);
+              
+              return true;
+            }
+            
+            // 먼저 사용자 기본 정보만 가져오기
+            const user = await getCurrentUser();
+            
+            // 속성 가져오기 시도 - 오류 발생 가능성이 높음
+            let attributes = {};
+            try {
+              attributes = await fetchUserAttributes();
+              // 성공적으로 가져온 경우 캐싱
+              sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
+              sessionStorage.setItem('username', user.username);
+            } catch (attributesError) {
+              console.log('사용자 속성 가져오기 실패 - 제한된 모드로 진행:', attributesError);
+              // 기본 정보만 사용하는 제한 모드 표시
+              sessionStorage.setItem('limitFetchAttributes', 'true');
+            }
+            
+            // 부분 인증 상태 설정
+            setState({
+              isAuthenticated: true,
+              userAttributes: attributes || {},
+              username: user.username,
+              userRole: (attributes as any)?.profile || 'student',
+              loading: false,
+              hasCredentials: false
+            });
+            
+            // 부분 인증 상태 플래그 설정
+            sessionStorage.setItem('partialAuthState', 'true');
+            setLastRefresh(now);
+            
+            return true;
+          } catch (userError) {
+            // 사용자 기본 정보도 가져올 수 없으면 로그아웃
+            console.error('사용자 정보 가져오기 실패:', userError);
+            try {
+              await signOut();
+            } catch (signOutError) {
+              console.warn('로그아웃 처리 중 오류:', signOutError);
+            }
+            
+            setState({
+              isAuthenticated: false,
+              userAttributes: null,
+              username: '',
+              userRole: 'student',
+              loading: false,
+              hasCredentials: false
+            });
+            
+            return false;
+          }
+        }
+        
+        // 정상 인증 상태 (토큰과 자격 증명이 모두 있음)
         try {
-          // 사용자 정보 가져오기
           const user = await getCurrentUser();
           const attributes = await fetchUserAttributes();
-
+          
           // 상태 업데이트
           setState({
             isAuthenticated: true,
@@ -262,51 +343,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             username: user.username,
             userRole: attributes.profile || 'student',
             loading: false,
-            hasCredentials: !!session.credentials
+            hasCredentials: true
           });
-
+          
           // 세션 저장
           sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
           sessionStorage.setItem('userAttributesTimestamp', now.toString());
-
-          // 부분 인증 상태 플래그 관리
-          if (!session.credentials) {
-            sessionStorage.setItem('partialAuthState', 'true');
-            console.log('인증은 유효하지만 AWS 자격 증명이 없습니다.');
-          } else {
-            sessionStorage.removeItem('partialAuthState');
-          }
-
+          sessionStorage.setItem('username', user.username);
+          sessionStorage.removeItem('partialAuthState');
+          sessionStorage.removeItem('limitFetchAttributes');
+          
           setLastRefresh(now);
           return true;
         } catch (userError) {
           console.error('사용자 정보 가져오기 실패:', userError);
-
-          // 사용자 정보를 가져올 수 없으면 로그아웃 처리
-          try {
-            await signOut({ global: false });
-          } catch (signOutError) {
-            console.warn('로그아웃 중 오류:', signOutError);
-          }
-
+          
+          // 사용자 정보는 가져올 수 없지만 토큰이 있는 경우
           setState({
-            isAuthenticated: false,
-            userAttributes: null,
-            username: '',
+            isAuthenticated: true,
+            userAttributes: {},
+            username: 'unknown',
             userRole: 'student',
             loading: false,
-            hasCredentials: false
+            hasCredentials: !!session.credentials
           });
-
-          // 세션 스토리지 정리
-          sessionStorage.removeItem('userAttributes');
-          sessionStorage.removeItem('userAttributesTimestamp');
-          sessionStorage.removeItem('partialAuthState');
-
-          return false;
+          
+          return true;
         }
       } catch (error) {
         console.error('인증 확인 중 오류:', error);
+        
+        // 오류 발생 시 로그아웃 상태로 설정
+        setState({
+          isAuthenticated: false,
+          userAttributes: null,
+          username: '',
+          userRole: 'student',
+          loading: false,
+          hasCredentials: false
+        });
+        
         return false;
       } finally {
         // 로딩 상태 종료
@@ -348,6 +424,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         tokenRefreshAttempts = 0;
         // 부분 인증 상태 플래그 제거
         sessionStorage.removeItem('partialAuthState');
+        sessionStorage.removeItem('limitFetchAttributes');
         return true;
       } else {
         console.log('AWS 자격 증명 갱신 실패');
@@ -558,13 +635,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
 
         case 'tokenRefresh':
-          // 부분 인증 상태면 토큰 갱신 무시
-          if (sessionStorage.getItem('partialAuthState') === 'true') {
-            console.log('부분 인증 상태 - 토큰 갱신 시도 중단');
+          // 부분 인증 상태에서는 즉시 중단
+          if (sessionStorage.getItem('partialAuthState') === 'true' || 
+              sessionStorage.getItem('limitFetchAttributes') === 'true') {
+            console.log('제한된 인증 모드에서는 토큰 갱신을 시도하지 않습니다.');
             return;
           }
-
-          // 로그아웃 상태면 토큰 갱신 무시
+          
+          // 로그인 상태가 아니면 처리하지 않음
           if (!state.isAuthenticated) {
             console.log('로그아웃 상태. 토큰 갱신 중단');
             return;
@@ -648,9 +726,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // 모든 타이머 정리
       const timeoutIds = window.timeoutIds || {};
-      for (const timerId in timeoutIds) {
-        clearTimeout(parseInt(timerId));
-        delete timeoutIds[timerId];
+      for (const id in timeoutIds) {
+        clearTimeout(parseInt(id));
+        delete timeoutIds[id];
       }
     };
   }, [checkAuthStatus, handleAuthError, safeSetTimeout]);

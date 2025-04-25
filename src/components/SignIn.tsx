@@ -253,12 +253,20 @@ const SignIn: React.FC = () => {
           </Box>
 
           <Alert type="warning">
-            <h3>AWS 자격 증명이 필요합니다</h3>
-            <p>
-              로그인은 되었지만 AWS 서비스 접근에 필요한 자격 증명이 없습니다. 
-              자격 증명을 갱신하거나 로그아웃 후 다시 로그인해주세요.
-            </p>
-          </Alert>
+          <h3>제한된 인증 상태</h3>
+          <p>
+            AWS 서비스 접근 권한이 제한된 상태입니다. 이는 보안 토큰은 유효하지만 
+            AWS 자격 증명을 가져올 수 없기 때문입니다.
+          </p>
+          <p>
+            다음 방법을 시도해 보세요:
+          </p>
+          <ul>
+            <li>로그아웃 후 다시 로그인</li>
+            <li>브라우저 캐시 및 쿠키 삭제</li>
+            <li>관리자에게 문의</li>
+          </ul>
+        </Alert>
 
           {error && (
             <Alert type="error" dismissible onDismiss={() => setError(null)}>
