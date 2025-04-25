@@ -11,7 +11,6 @@ import {
   Pagination,
   TextFilter,
   StatusIndicator,
-  ColumnLayout
 } from '@cloudscape-design/components';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCustomers } from '../../hooks/useCustomers';
@@ -125,24 +124,6 @@ const CustomerTab: React.FC = () => {
           {error}
         </Alert>
       )}
-
-      {/* 통계 */}
-      {/* <Box padding="m">
-        <ColumnLayout columns={3} variant="text-grid">
-          <div>
-            <Box variant="awsui-key-label">활성 고객</Box>
-            <Box variant="h3">{activeCount}</Box>
-          </div>
-          <div>
-            <Box variant="awsui-key-label">비활성 고객</Box>
-            <Box variant="h3">{inactiveCount}</Box>
-          </div>
-          <div>
-            <Box variant="awsui-key-label">대기 고객</Box>
-            <Box variant="h3">{pendingCount}</Box>
-          </div>
-        </ColumnLayout>
-      </Box> */}
 
       {/* 테이블 */}
       <Table
