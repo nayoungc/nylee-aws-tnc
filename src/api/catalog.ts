@@ -39,7 +39,7 @@ export const listCourseCatalogs = async (authContext?: any): Promise<any> => {
   if (shouldUseMockData() || (authContext?.useMockData || authContext?.hasCredentials === false)) {
     console.log('모의 데이터 사용 중 - listCourseCatalogs');
     return { 
-      data: mockCourses,
+      data: mockCourses, // 모의 데이터도 data 속성 안에 배열로 반환
       success: true
     };
   }

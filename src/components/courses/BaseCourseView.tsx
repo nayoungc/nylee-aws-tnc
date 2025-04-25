@@ -103,8 +103,6 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
   isReadOnly = false,
   isAdminView = false,
   createPath = '',
-  managePath,
-  viewPath,
   showCreateButton = false,
   showManageButton = true,
   showViewButton = true,

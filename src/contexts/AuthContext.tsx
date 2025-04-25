@@ -42,6 +42,10 @@ let awsCredentials: AWS.Credentials | null = null;
 let credentialsInitialized = false;
 let lastCredentialAttempt = 0;
 
+// 상태 변경 추적 변수
+let lastAuthCheckTime = 0;
+let pendingAuthChecks = 0;
+
 // Context 생성
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
@@ -64,6 +68,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [initialAuthChecked, setInitialAuthChecked] = useState<boolean>(false);
   const authCheckPromiseRef = useRef<Promise<boolean> | null>(null);
   const [lastRefresh, setLastRefresh] = useState<number>(0);
+  
+  // 디바운스 타이머 레퍼런스
+  const debounceTimerRef = useRef<number | null>(null);
 
   // 모의 데이터 모드 설정 함수
   const setMockDataMode = useCallback((enabled: boolean) => {
@@ -78,7 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       useMockData: enabled
     }));
 
-    console.log(`모의 데이터 모드 \${enabled ? '활성화' : '비활성화'}`);
+    // 템플릿 리터럴 수정
+    console.log('모의 데이터 모드 ' + (enabled ? '활성화' : '비활성화'));
   }, []);
 
   /**
@@ -105,11 +113,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!session.tokens) {
         awsCredentials = null;
         credentialsInitialized = false;
-        setState(prev => ({
-          ...prev,
-          isAuthenticated: false,
-          hasCredentials: false
-        }));
+        setState(prev => {
+          if (prev.isAuthenticated === false && !prev.hasCredentials) return prev;
+          return {
+            ...prev,
+            isAuthenticated: false,
+            hasCredentials: false
+          };
+        });
         return false;
       }
 
@@ -122,102 +133,140 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         AWS.config.credentials = awsCredentials;
-        AWS.config.region = 'ap-northeast-2'; // 한국 리전으로 설정
+        AWS.config.region = AWS.config.region || 'ap-northeast-2'; // 한국 리전으로 설정
         credentialsInitialized = true;
 
         sessionStorage.removeItem('partialAuthState');
-        setMockDataMode(false);
+        
+        // 모의 데이터 모드가 아닐 때만 모드 설정 변경
+        if (state.useMockData) {
+          setMockDataMode(false);
+        }
 
-        setState(prev => ({
-          ...prev,
-          hasCredentials: true,
-          useMockData: false
-        }));
+        setState(prev => {
+          if (prev.hasCredentials === true && !prev.useMockData) return prev;
+          return {
+            ...prev,
+            hasCredentials: true,
+            useMockData: false
+          };
+        });
 
         return true;
       }
 
       // 토큰은 있지만 자격 증명이 없는 부분 인증 상태
       sessionStorage.setItem('partialAuthState', 'true');
-      setMockDataMode(true);
+      
+      // 모의 데이터 모드가 아닐 때만 모드 설정 변경
+      if (!state.useMockData) {
+        setMockDataMode(true);
+      }
 
       credentialsInitialized = false;
       awsCredentials = null;
-      setState(prev => ({
-        ...prev,
-        hasCredentials: false,
-        useMockData: true
-      }));
+      setState(prev => {
+        if (!prev.hasCredentials && prev.useMockData) return prev;
+        return {
+          ...prev,
+          hasCredentials: false,
+          useMockData: true
+        };
+      });
 
       return false;
     } catch (err) {
       console.error('AWS 자격 증명 설정 실패:', err);
       credentialsInitialized = false;
       awsCredentials = null;
-      setState(prev => ({
-        ...prev,
-        hasCredentials: false,
-        useMockData: true
-      }));
+      setState(prev => {
+        if (!prev.hasCredentials && prev.useMockData) return prev;
+        return {
+          ...prev,
+          hasCredentials: false,
+          useMockData: true
+        };
+      });
 
       sessionStorage.setItem('partialAuthState', 'true');
-      setMockDataMode(true);
+      if (!state.useMockData) {
+        setMockDataMode(true);
+      }
 
       return false;
     }
-  }, [setMockDataMode]);
+  }, [state.useMockData, setMockDataMode]);
 
   /**
-   * 인증 상태 확인 함수
+   * 인증 상태 확인 함수 - 디바운스 및 중복 호출 방지 로직 추가
    */
   const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => {
     // 이미 진행 중인 인증 확인이 있으면 그 Promise를 반환
     if (authCheckPromiseRef.current && !force) {
       return authCheckPromiseRef.current;
     }
+    
+    // 짧은 시간 내에 여러 번 호출 방지 (디바운스)
+    const now = Date.now();
+    if (!force && now - lastAuthCheckTime < 1000 && pendingAuthChecks > 0) {
+      pendingAuthChecks++;
+      console.log(`중복 인증 확인 요청 대기 중: \${pendingAuthChecks}`);
+      return new Promise(resolve => {
+        setTimeout(() => resolve(state.isAuthenticated), 100);
+      });
+    }
+    
+    lastAuthCheckTime = now;
+    pendingAuthChecks++;
 
     // 캐시 TTL 및 인증 상태 확인
-    const now = Date.now();
     const isPartialAuth = sessionStorage.getItem('partialAuthState') === 'true';
     const CACHE_TTL = isPartialAuth ? 300000 : 120000; // 5분 또는 2분
 
     // 캐시 유효성 검사
     if (!force && now - lastRefresh < CACHE_TTL && state.isAuthenticated) {
+      pendingAuthChecks--;
       return state.isAuthenticated;
     }
 
     // 새 인증 확인 Promise 생성 및 저장
     const authCheckPromise = (async (): Promise<boolean> => {
-      setState(prev => ({ ...prev, loading: true }));
-      
       try {
+        setState(prev => ({ ...prev, loading: true }));
+        
         // 세션 가져오기
         let session;
         try {
           session = await fetchAuthSession();
         } catch (sessionError) {
-          setState({
-            isAuthenticated: false,
-            userAttributes: null,
-            username: '',
-            userRole: 'student',
-            loading: false,
-            hasCredentials: false,
-            useMockData: false
+          setState(prev => {
+            if (!prev.isAuthenticated) return prev;
+            return {
+              isAuthenticated: false,
+              userAttributes: null,
+              username: '',
+              userRole: 'student',
+              loading: false,
+              hasCredentials: false,
+              useMockData: false
+            };
           });
           return false;
         }
 
         // 토큰이 없으면 로그아웃 상태
         if (!session.tokens) {
-          setState({
-            isAuthenticated: false,
-            userAttributes: null,
-            username: '',
-            userRole: 'student',
-            loading: false,
-            hasCredentials: false,
-            useMockData: false
+          setState(prev => {
+            if (!prev.isAuthenticated) return prev;
+            return {
+              isAuthenticated: false,
+              userAttributes: null,
+              username: '',
+              userRole: 'student',
+              loading: false,
+              hasCredentials: false,
+              useMockData: false
+            };
           });
           
           sessionStorage.removeItem('userAttributes');
@@ -234,14 +283,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const user = await getCurrentUser();
           const attributes = await fetchUserAttributes();
           
-          setState({
-            isAuthenticated: true,
-            userAttributes: attributes,
-            username: user.username,
-            userRole: attributes.profile || 'student',
-            loading: false,
-            hasCredentials: !!session.credentials,
-            useMockData: !session.credentials
+          setState(prev => {
+            // 상태가 크게 변하지 않았으면 업데이트하지 않음
+            if (prev.isAuthenticated && 
+                prev.username === user.username && 
+                prev.hasCredentials === !!session.credentials) {
+              return {
+                ...prev,
+                loading: false,
+                userAttributes: attributes,
+                userRole: attributes.profile || prev.userRole
+              };
+            }
+            
+            return {
+              isAuthenticated: true,
+              userAttributes: attributes,
+              username: user.username,
+              userRole: attributes.profile || 'student',
+              loading: false,
+              hasCredentials: !!session.credentials,
+              useMockData: !session.credentials
+            };
           });
 
           sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
@@ -251,14 +314,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (userError) {
           console.error('사용자 정보 가져오기 실패:', userError);
           
-          setState({
-            isAuthenticated: true,
-            userAttributes: {},
-            username: 'unknown',
-            userRole: 'student',
-            loading: false,
-            hasCredentials: !!session.credentials,
-            useMockData: !session.credentials
+          setState(prev => {
+            if (prev.isAuthenticated) {
+              return {
+                ...prev,
+                loading: false,
+                userAttributes: {},
+                username: 'unknown'
+              };
+            }
+            
+            return {
+              isAuthenticated: true,
+              userAttributes: {},
+              username: 'unknown',
+              userRole: 'student',
+              loading: false,
+              hasCredentials: !!session.credentials,
+              useMockData: !session.credentials
+            };
           });
           
           return true;
@@ -266,14 +340,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('인증 확인 중 오류:', error);
         
-        setState({
-          isAuthenticated: false,
-          userAttributes: null,
-          username: '',
-          userRole: 'student',
-          loading: false,
-          hasCredentials: false,
-          useMockData: false
+        setState(prev => {
+          if (!prev.isAuthenticated) return prev;
+          return {
+            isAuthenticated: false,
+            userAttributes: null,
+            username: '',
+            userRole: 'student',
+            loading: false,
+            hasCredentials: false,
+            useMockData: false
+          };
         });
         
         return false;
@@ -281,6 +358,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setState(prev => ({ ...prev, loading: false }));
         setInitialAuthChecked(true);
         authCheckPromiseRef.current = null;
+        pendingAuthChecks--;
       }
     })();
 
@@ -288,7 +366,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return authCheckPromise;
   }, [lastRefresh, state.isAuthenticated, initializeCredentials]);
   
-
   /**
    * AWS 자격 증명 갱신 함수
    */
@@ -404,9 +481,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sessionStorage.clear();
       localStorage.removeItem('amplify-signin-with-hostedUI');
 
-      // 로그인 페이지로 리다이렉트
+      // 로그인 페이지로 리다이렉트 (디바운스 적용)
       const currentPath = window.location.pathname;
-      loginRedirect(currentPath);
+      if (debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current);
+      
+      debounceTimerRef.current = window.setTimeout(() => {
+        loginRedirect(currentPath);
+        debounceTimerRef.current = null;
+      }, 100);
     }
   }, [loginRedirect, state.isAuthenticated, state.hasCredentials, setMockDataMode]);
 
@@ -480,12 +562,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         case 'tokenRefresh':
           if (state.isAuthenticated) {
-            setTimeout(async () => {
-              try {
-                await checkAuthStatus(true);
-              } catch (refreshError) {
-                console.error('토큰 갱신 중 오류:', refreshError);
-              }
+            // 디바운스 처리
+            if (debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current);
+            debounceTimerRef.current = window.setTimeout(() => {
+              checkAuthStatus(true).catch(err =>
+                console.error('토큰 갱신 중 오류:', err)
+              );
+              debounceTimerRef.current = null;
             }, 100);
           }
           break;
@@ -513,16 +596,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
-        checkAuthStatus(true)
-          .then(isAuth => {
-            if (!isAuth) {
+        // 디바운스 처리
+        if (debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = window.setTimeout(() => {
+          checkAuthStatus(true)
+            .then(isAuth => {
+              if (!isAuth) {
+                handleAuthError(event.error);
+              }
+            })
+            .catch(err => {
+              console.error('오류 처리 중 추가 오류:', err);
               handleAuthError(event.error);
-            }
-          })
-          .catch(err => {
-            console.error('오류 처리 중 추가 오류:', err);
-            handleAuthError(event.error);
-          });
+            });
+          debounceTimerRef.current = null;
+        }, 100);
       }
     };
 
@@ -531,6 +619,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       listener();
       window.removeEventListener('error', globalErrorHandler);
+      // 타이머 정리
+      if (debounceTimerRef.current) {
+        window.clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
     };
   }, [checkAuthStatus, handleAuthError, setMockDataMode]);
 
@@ -545,13 +638,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         sessionStorage.setItem('processingMockDataMode', 'true');
         console.log('부분 인증 상태 감지 - 자동으로 모의 데이터 모드 활성화');
 
+        // 지연 시간을 늘려 잦은 상태 업데이트 방지
         setTimeout(() => {
           setMockDataMode(true);
           sessionStorage.removeItem('processingMockDataMode');
-        }, 0);
+        }, 100);
       }
     }
-  }, [state.isAuthenticated, state.hasCredentials, setMockDataMode]);
+  }, [state.hasCredentials]); // 불필요한 의존성 제거
 
   // 컨텍스트 값 메모이제이션
   const value = useMemo(() => ({

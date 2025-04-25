@@ -10,25 +10,35 @@ export const AuthStateManager = {
   
   // 초기화 및 상태 확인 함수
   async checkAuthState() {
+    // 이전 상태와 큰 변화가 없으면 업데이트하지 않음
+    const prevState = {
+      isAuthenticated: this.isAuthenticated,
+      hasCredentials: this.hasCredentials,
+      useMockData: this.useMockData
+    };
+    
     try {
       const session = await fetchAuthSession();
-      this.isAuthenticated = !!session.tokens;
-      this.hasCredentials = !!session.credentials;
-      this.useMockData = sessionStorage.getItem('useMockData') === 'true' || 
+      const newIsAuthenticated = !!session.tokens;
+      const newHasCredentials = !!session.credentials;
+      const newUseMockData = sessionStorage.getItem('useMockData') === 'true' || 
                          sessionStorage.getItem('partialAuthState') === 'true' ||
-                         !this.hasCredentials ||
+                         !newHasCredentials ||
                          process.env.NODE_ENV === 'development';
       
-      // 성공 시 AWS 설정도 업데이트
-      if (session.credentials) {
-        AWS.config.credentials = new AWS.Credentials({
-          accessKeyId: session.credentials.accessKeyId,
-          secretAccessKey: session.credentials.secretAccessKey,
-          sessionToken: session.credentials.sessionToken
-        });
+      // 변경사항이 있을 때만 업데이트
+      if (prevState.isAuthenticated !== newIsAuthenticated || 
+          prevState.hasCredentials !== newHasCredentials || 
+          prevState.useMockData !== newUseMockData) {
         
-        // 리전 설정
-        AWS.config.region = AWS.config.region || 'ap-northeast-2';
+        this.isAuthenticated = newIsAuthenticated;
+        this.hasCredentials = newHasCredentials;
+        this.useMockData = newUseMockData;
+        
+        console.log('AWS 세션 정보:', {
+          hasTokens: !!session.tokens,
+          hasCredentials: !!session.credentials
+        });
       }
       
       return {

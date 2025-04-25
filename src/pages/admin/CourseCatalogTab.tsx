@@ -24,11 +24,14 @@ const CourseCatalogTab: React.FC = () => {
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const PAGE_SIZE = 10;
 
+  // 안전하게 courses가 배열인지 확인
+  const coursesArray = Array.isArray(courses) ? courses : [];
+
   // 필터링된 코스
-  const filteredCourses = courses.filter(course => 
-    course.title.toLowerCase().includes(filterText.toLowerCase()) ||
-    course.description?.toLowerCase().includes(filterText.toLowerCase()) ||
-    course.level?.toLowerCase().includes(filterText.toLowerCase())
+  const filteredCourses = coursesArray.filter(course => 
+    course?.title?.toLowerCase().includes(filterText.toLowerCase()) ||
+    course?.description?.toLowerCase().includes(filterText.toLowerCase()) ||
+    course?.level?.toLowerCase().includes(filterText.toLowerCase())
   );
 
   // 페이지네이션
@@ -136,25 +139,25 @@ const CourseCatalogTab: React.FC = () => {
           {
             id: 'title',
             header: t('courses.title') || '제목',
-            cell: item => item.title,
+            cell: (item) => item.title,
             sortingField: 'title'
           },
           {
             id: 'level',
             header: t('courses.level') || '난이도',
-            cell: item => item.level || '-',
+            cell: (item) => item.level || '-',
             sortingField: 'level'
           },
           {
             id: 'duration',
             header: t('courses.duration') || '기간',
-            cell: item => `\${item.duration}시간`,
+            cell: (item) => `\${item.duration || 0}시간`,
             sortingField: 'duration'
           },
           {
             id: 'actions',
             header: t('courses.actions') || '작업',
-            cell: item => (
+            cell: (item) => (
               <SpaceBetween direction="horizontal" size="xs">
                 <Button onClick={() => navigate(`/courses/\${item.catalogId}`)}>
                   {t('courses.view') || '보기'}
