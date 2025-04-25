@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/api';
+import { GraphQLQuery } from '@aws-amplify/api';
 import { 
   Box, 
   Button, 
@@ -16,10 +17,24 @@ import {
 } from '@cloudscape-design/components';
 import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '@contexts/AuthContext';
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { GraphQLQuery } from '@aws-amplify/api';
 
 // API 클라이언트 생성
 const client = generateClient();
+
+// 코스 카탈로그 인터페이스
+interface CourseCatalogType {
+  catalogId: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  instructor?: string;
+  duration: number;
+  level?: string;
+  createdAt: string;
+  updatedAt: string;
+  version?: string;
+  awsCode?: string;
+}
 
 // API 응답 타입 정의
 interface ListCourseCatalogsQuery {
@@ -38,21 +53,6 @@ interface ListCourseCatalogsQuery {
       awsCode?: string;
     }>
   }
-}
-
-// 코스 카탈로그 인터페이스
-interface CourseCatalogType {
-  catalogId: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  instructor?: string;
-  duration: number;
-  level?: string;
-  createdAt: string;
-  updatedAt: string;
-  version?: string;
-  awsCode?: string;
 }
 
 // 평가 현황 인터페이스
@@ -134,36 +134,42 @@ const CourseCatalogTab: React.FC = () => {
   const [courses, setCourses] = useState<CourseCatalogType[]>([]);
   const [useMockData, setUseMockData] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // 인증 상태 확인
-  useEffect(() => {
-    const verifyAuthentication = async () => {
-      const isAuth = await checkAuthStatus(true);
-      if (!isAuth) {
-        console.log('인증되지 않은 상태, 로그인 페이지로 이동');
-        navigate('/signin');
-        return;
-      }
-
+  // 실제 데이터 로드 함수 - Tnc-CourseCatalog 테이블에서만 데이터를 가져옵니다
+  const loadRealData = async (retryAttempt = 0) => {
+    // 이미 데이터가 로드되었다면 중복 로드 방지 (재시도가 아닌 경우)
+    if (dataLoaded && !retryAttempt) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
       // 인증은 되었지만 AWS 자격 증명이 없는 경우 모의 데이터 사용
       if (!hasCredentials) {
         console.log('자격 증명 없음, 모의 데이터 사용');
         setUseMockData(true);
         setCourses(mockCourses);
         setDataLoaded(true);
-      } else {
-        // 자격 증명이 있으면 실제 데이터 로드 시도
-        loadRealData();
+        setLoading(false);
+        return;
       }
-    };
+      
+      // 인증 상태 확인 (retryAttempt가 있을 경우 강제 갱신)
+      if (retryAttempt > 0) {
+        console.log(`재시도 #\${retryAttempt}: 인증 상태 확인 중...`);
+        const isAuth = await checkAuthStatus(true);
+        if (!isAuth) {
+          throw new Error('인증이 필요합니다');
+        }
+        
+        // 지연 추가 (자격 증명 전파를 위해)
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+      
+      console.log('실제 코스 데이터 로드 시도');
 
-    verifyAuthentication();
-  }, [checkAuthStatus, hasCredentials, navigate]);
-
-  // 실제 데이터 로드 함수 - Tnc-CourseCatalog 테이블에서만 데이터를 가져옵니다
-  const loadRealData = async () => {
-    setLoading(true);
-    try {
       // 인증 오류 핸들러 생성
       const authErrorHandler = createAuthErrorHandler(
         (error) => {
@@ -221,6 +227,7 @@ const CourseCatalogTab: React.FC = () => {
         // 안전한 데이터 변환
         if (result && result.items && result.items.length > 0) {
           console.log('첫 번째 과정 항목:', result.items[0]);
+          setUseMockData(false);
 
           setCourses(result.items.map((course) => ({
             catalogId: course.catalogId,
@@ -235,27 +242,65 @@ const CourseCatalogTab: React.FC = () => {
             version: course.version,
             awsCode: course.awsCode
           })));
-
-          setDataLoaded(true);
+          
+          console.log('실제 코스 데이터 로드 성공');
         } else {
           console.log('API 결과에 과정 데이터가 없습니다. 모의 데이터 사용');
           setUseMockData(true);
           setCourses(mockCourses);
         }
+        
+        setRetryCount(0);
+        setDataLoaded(true);
+        
       } catch (error) {
         console.error('과정 데이터 로드 오류:', error);
-        console.log('오류로 인해 모의 데이터 사용');
+        
+        // 최대 재시도 횟수에 도달하지 않았다면 재시도
+        if (retryAttempt < 2) {
+          console.log(`오류 발생, 잠시 후 재시도합니다... (\${retryAttempt + 1}/2)`);
+          setRetryCount(retryAttempt + 1);
+          
+          // 0.8초 후 재시도
+          setTimeout(() => {
+            loadRealData(retryAttempt + 1);
+          }, 800);
+          return;
+        }
+        
+        console.log('최대 재시도 횟수 초과, 모의 데이터 사용');
         setUseMockData(true);
         setCourses(mockCourses);
+        setDataLoaded(true);
       } 
     } catch (error) {
       console.error('인증 오류 처리 중 문제 발생:', error);
       setUseMockData(true);
       setCourses(mockCourses);
+      setDataLoaded(true);
     } finally {
       setLoading(false);
     }
   };
+
+  // 인증 상태 확인
+  useEffect(() => {
+    if (dataLoaded) return;
+    
+    const verifyAuthentication = async () => {
+      const isAuth = await checkAuthStatus(false);
+      if (!isAuth) {
+        console.log('인증되지 않은 상태, 로그인 페이지로 이동');
+        navigate('/signin');
+        return;
+      }
+
+      // 데이터 로드 시작
+      loadRealData();
+    };
+
+    verifyAuthentication();
+  }, [isAuthenticated]);
 
   // 선택된 과정에 대한 평가 통계 처리 - 모의 데이터만 사용
   useEffect(() => {
@@ -302,6 +347,7 @@ const CourseCatalogTab: React.FC = () => {
       if (success) {
         // 성공 시 실제 데이터 로드
         setUseMockData(false);
+        setDataLoaded(false); // 데이터 재로드 플래그
         loadRealData();
       } else {
         alert(t('auth.credentials_refresh_failed') || '자격 증명 갱신에 실패했습니다. 다시 로그인해주세요.');
@@ -322,6 +368,13 @@ const CourseCatalogTab: React.FC = () => {
       console.error('로그아웃 중 오류:', error);
       setCredentialLoading(false);
     }
+  };
+
+  // 새로고침 버튼 핸들러
+  const handleRefresh = () => {
+    setRetryCount(0);
+    setDataLoaded(false);
+    loadRealData();
   };
 
   // 카탈로그 테이블 직접 구현
@@ -372,16 +425,26 @@ const CourseCatalogTab: React.FC = () => {
             )
           }
         ]}
-        loadingText={t('common.loading') || "로딩 중"}
+        loading={loading}
+        loadingText={retryCount > 0 
+          ? `\${t('admin.common.retrying') || '재시도 중'} (\${retryCount}/2)...` 
+          : (t('common.loading') || '로딩 중')}
         empty={
           <Box textAlign="center" padding="l">
-            {t('courses.no_courses') || "과정이 없습니다."}
+            <b>{t('courses.no_courses') || "과정이 없습니다."}</b>
+            <Box padding={{ bottom: 's' }} variant="p" color="inherit">
+              {t('courses.no_courses_to_display') || "표시할 과정이 없습니다."}
+            </Box>
+            <Button onClick={handleRefresh}>{t('admin.common.refresh') || "새로고침"}</Button>
           </Box>
         }
         header={
           <Header
             actions={
               <SpaceBetween direction="horizontal" size="xs">
+                <Button iconName="refresh" onClick={handleRefresh}>
+                  {t('admin.common.refresh') || "새로고침"}
+                </Button>
                 <Button onClick={() => navigate('/instructor/courses/create')}>
                   {t('courses.create_course') || "과정 생성"}
                 </Button>
@@ -502,12 +565,21 @@ const CourseCatalogTab: React.FC = () => {
           type="warning"
           header={t('auth.credentials_required') || "AWS 자격 증명 필요"}
           action={  // action 속성 사용 (단수형)
-            <Button
-              onClick={handleRefreshCredentials}
-              loading={credentialLoading}
-            >
-              {t('auth.refresh_credentials') || "자격 증명 갱신"}
-            </Button>
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button
+                onClick={handleRefreshCredentials}
+                loading={credentialLoading}
+              >
+                {t('auth.refresh_credentials') || "자격 증명 갱신"}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleLogoutAndLogin}
+                loading={credentialLoading}
+              >
+                {t('auth.logout_and_login') || "로그아웃 후 다시 로그인"}
+              </Button>
+            </SpaceBetween>
           }
         >
           {t('auth.mock_data_warning') || "AWS 자격 증명 부족으로 모의 데이터가 표시되고 있습니다. 실제 데이터를 보려면 자격 증명을 갱신하세요."}
@@ -523,15 +595,23 @@ const CourseCatalogTab: React.FC = () => {
           <Header
             variant="h1"
             description={t('courses.catalog_admin_description') || "과정 카탈로그를 관리합니다."}
+            actions={
+              <Button iconName="refresh" onClick={handleRefresh}>
+                {t('admin.common.refresh') || "새로고침"}
+              </Button>
+            }
           >
             {t('courses.catalog_management') || "과정 카탈로그 관리"}
           </Header>
         }
       >
+        {error && <Alert type="error" dismissible>{error}</Alert>}
         {renderCredentialsWarning()}
         {loading && !dataLoaded ? (
           <Box textAlign="center" padding="l">
-            {t('common.loading') || "로딩 중..."}
+            {retryCount > 0 
+              ? `\${t('admin.common.retrying') || '재시도 중'} (\${retryCount}/2)...` 
+              : (t('common.loading') || '로딩 중...')}
           </Box>
         ) : (
           renderTabs()
