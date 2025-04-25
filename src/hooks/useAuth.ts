@@ -1,23 +1,42 @@
 // src/hooks/useAuth.ts
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { 
   signIn, 
   signOut, 
   getCurrentUser, 
   fetchUserAttributes,
-  type UserAttributeKey  // UserAttributeKey 타입 임포트 추가
+  type UserAttributeKey
 } from 'aws-amplify/auth';
 
-export function useAuth() {
+// 인증 컨텍스트 타입 정의
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: any;
+  loading: boolean;
+  login: (username: string, password: string) => Promise<any>;
+  logout: () => Promise<any>;
+  checkAuth: () => Promise<any>;
+  isAdmin: boolean;
+  isInstructor: boolean;
+}
+
+// Auth 컨텍스트 생성
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// AuthProvider props 타입 정의
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+// AuthProvider 컴포넌트 추가
+export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isInstructor, setIsInstructor] = useState<boolean>(false);
   
-  // checkUserRole 함수의 매개변수 타입 수정
   const checkUserRole = useCallback((attributes: Partial<Record<UserAttributeKey, string>>) => {
-    // profile 속성이 존재하는지 안전하게 확인
     const profile = attributes.profile || '';
     
     setIsAdmin(profile === 'admin');
@@ -29,7 +48,6 @@ export function useAuth() {
     };
   }, []);
   
-  // 현재 사용자 불러오기
   const checkAuth = useCallback(async () => {
     try {
       setLoading(true);
@@ -37,7 +55,6 @@ export function useAuth() {
       const attributes = await fetchUserAttributes();
       const userData = { ...currentUser, attributes };
       
-      // 사용자 역할 확인
       checkUserRole(attributes);
       
       setUser(userData);
@@ -54,12 +71,11 @@ export function useAuth() {
     }
   }, [checkUserRole]);
   
-  // 로그인
   const login = async (username: string, password: string) => {
     try {
       setLoading(true);
       const result = await signIn({ username, password });
-      await checkAuth(); // 사용자 정보 다시 불러오기
+      await checkAuth();
       return { success: true, result };
     } catch (error) {
       console.error('로그인 오류:', error);
@@ -69,7 +85,6 @@ export function useAuth() {
     }
   };
   
-  // 로그아웃
   const logout = async () => {
     try {
       setLoading(true);
@@ -92,7 +107,8 @@ export function useAuth() {
     checkAuth();
   }, [checkAuth]);
   
-  return {
+  // 컨텍스트 값
+  const value = {
     isAuthenticated,
     user,
     loading,
@@ -102,6 +118,21 @@ export function useAuth() {
     isAdmin,
     isInstructor
   };
+  
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-export default useAuth;
+// useAuth 훅 수정 - 컨텍스트 사용
+export function useAuth() {
+  const context = useContext(AuthContext);
+  
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  
+  return context;
+}

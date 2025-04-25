@@ -1,80 +1,32 @@
-// app/App.tsx
+// App.tsx
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import TopNavigationHeader from '@layouts/TopNavigationHeader';
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-import LoginPage from '@pages/auth/LoginPage';
-import HomePage from '@/pages/HomePage';
-import TncHome from '@/pages/public/TncPage'; // TncHome 컴포넌트 추가
-import { useAuth } from '@/hooks/useAuth';
-import { useTranslation } from 'react-i18next';
-
-
-// 알림 컨텍스트 및 공급자 임포트
-import { NotificationProvider, useNotification } from '@/contexts/NotificationContext';
-
-// 알림을 표시하는 컴포넌트
-const NotificationSystem: React.FC = () => {
-  const { notifications, dismissNotification } = useNotification();
-  
-  return (
-    <div className="notification-container">
-      {notifications.map(notification => (
-        <div 
-          key={notification.id} 
-          className={`notification notification-\${notification.type}`}
-        >
-          {notification.content}
-          {notification.dismissible && (
-            <button onClick={() => dismissNotification(notification.id)}>
-              닫기
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// 메인 레이아웃 컴포넌트
-const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <>
-      <div id="top-navigation">
-        <TopNavigationHeader />
-      </div>
-      <NotificationSystem />
-      {children}
-    </>
-  );
-};
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { AppProvider } from '@/contexts/AppContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import LoginPage from '@/pages/auth/LoginPage';
+// 이 중 하나 선택 (Dashboard 생성했으면 Dashboard, 아니면 HomePage)
+import HomePage from '@/pages/HomePage'; 
+// import Dashboard from '@/pages/Dashboard';
+import TncPage from '@/pages/public/TncPage'; // TNC 페이지 추가
+import { AuthProvider } from '@/hooks/useAuth';
+import '@/i18n';
 
 const App: React.FC = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  const { t } = useTranslation();
-
   return (
-    <NotificationProvider>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          
-          {/* TNC 라우트 추가 */}
-          <Route path="/tnc" element={<TncHome />} />
-          <Route path="/tnc/*" element={<TncHome />} /> {/* 중첩 라우트 처리 */}
-          
-          {/* 어드민 라우트 그룹 - 관리자 권한 체크는 AdminProtectedRoute에서 처리 */}
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/admin/courses" element={<Navigate to="/admin" replace state={{ activeTab: 'courses' }} />} />
-          <Route path="/admin/customers" element={<Navigate to="/admin" replace state={{ activeTab: 'customers' }} />} />
-          <Route path="/admin/instructors" element={<Navigate to="/admin" replace state={{ activeTab: 'instructors' }} />} />
-          
-          {/* 404 페이지 리다이렉션 */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </MainLayout>
-    </NotificationProvider>
+    <BrowserRouter>
+      <AppProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/" element={<HomePage />} /> {/* 또는 <Dashboard /> */}
+              <Route path="/tnc" element={<TncPage />} /> {/* TNC 페이지 추가 */}
+              {/* 추가 라우트 */}
+            </Routes>
+          </NotificationProvider>
+        </AuthProvider>
+      </AppProvider>
+    </BrowserRouter>
   );
 };
 

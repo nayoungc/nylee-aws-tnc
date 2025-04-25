@@ -114,7 +114,7 @@ const TopNavigationHeader: React.FC = () => {
         href: '/',
         title: t('header.title', 'AWS T&C 교육 포털'),
         logo: {
-          src: '/assets/logo.svg',
+          src: '/assets/aws.png',
           alt: t('header.logo.alt', 'AWS 로고')
         }
       }}

@@ -1,0 +1,33 @@
+/* app/pages/LoginPage.css */
+.login-page-container {
+    min-height: calc(100vh - 60px);
+    background: linear-gradient(135deg, #f5f7f9 0%, #e9edf2 100%);
+    padding: 60px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .login-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .login-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  .aws-logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 10px;
+  }
+  
+  @media (max-width: 768px) {
+    .login-page-container {
+      padding: 20px;
+    }
+  }

@@ -1,4 +1,4 @@
-// app/components/auth/LoginForm.tsx
+// src/components/auth/LoginForm.tsx
 import React, { useState } from 'react';
 import {
   Button,
@@ -9,21 +9,21 @@ import {
   Box,
   Alert,
   ColumnLayout,
-  Container,
   Link as CloudscapeLink,
-  Icon
+  Icon,
+  Checkbox
 } from '@cloudscape-design/components';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { validateLoginForm, getLoginErrorMessage } from '@/utils/authUtils';
 import { useTranslation } from 'react-i18next';
+import './LoginForm.css'; // 스타일 추가
 
 interface LoginFormProps {
   onLoginSuccess?: () => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
-  // auth 네임스페이스뿐만 아니라 common 네임스페이스도 사용
   const { t } = useTranslation(['auth', 'common']);
   const { login } = useAuth();
   const [username, setUsername] = useState('');
@@ -31,18 +31,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [formErrors, setFormErrors] = useState<{
     username?: string;
     password?: string;
   }>({});
 
-  // 폼 제출 처리 함수
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await attemptLogin();
   };
 
-  // 로그인 시도 처리
   const attemptLogin = async () => {
     if (!username || !password) {
       setError(t('auth:fields_required'));
@@ -50,11 +49,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     }
 
     setError(null);
-
-    // 폼 유효성 검증
     const { isValid, errors } = validateLoginForm(username, password);
     setFormErrors(errors);
-
     if (!isValid) return;
 
     setIsLoading(true);
@@ -62,7 +58,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       await login(username, password);
       setError(null);
       setSuccessMessage(t('auth:login_success_redirecting'));
-
+      
       setTimeout(() => {
         if (onLoginSuccess) {
           onLoginSuccess();
@@ -76,7 +72,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="login-form">
       <SpaceBetween direction="vertical" size="l">
         {error && (
           <Alert
@@ -103,114 +99,101 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         <Form
           header={
             <Box
-              margin={{ bottom: "m" }}
-              textAlign="left"
               fontSize="heading-l"
+              fontWeight="bold"
+              textAlign="center"
             >
               {t('auth:account_login')}
             </Box>
           }
           actions={
-            <SpaceBetween direction="vertical" size="s">
-              <Button
-                variant="primary"
-                loading={isLoading}
-                onClick={() => attemptLogin()}
-                formAction="submit"
-                fullWidth
-              >
-                {t('auth:sign_in')}
-              </Button>
-            </SpaceBetween>
+            <Button
+              variant="primary"
+              loading={isLoading}
+              onClick={() => attemptLogin()}
+              formAction="submit"
+              fullWidth
+              className="login-button"
+            >
+              {t('auth:sign_in')}
+            </Button>
           }
         >
-          <Container>
-            <SpaceBetween size="l">
-              <FormField
-                label={t('auth:username')}
-                errorText={formErrors.username}
-                constraintText={t('auth:username_constraint')}
-              >
-                <Input
-                  value={username}
-                  onChange={({ detail }) => setUsername(detail.value)}
-                  placeholder={t('auth:username_placeholder')}
-                  disabled={isLoading}
-                  autoFocus
-                  onKeyDown={({ detail }) => {
-                    if (detail.key === 'Enter') {
-                      const passwordInput = document.querySelector('input[type="password"]');
-                      if (passwordInput) (passwordInput as HTMLElement).focus();
-                    }
-                  }}
-                />
-              </FormField>
+          <SpaceBetween size="l">
+            <FormField
+              label={t('auth:username')}
+              errorText={formErrors.username}
+            >
+              <Input
+                value={username}
+                onChange={({ detail }) => setUsername(detail.value)}
+                placeholder={t('auth:username_placeholder')}
+                disabled={isLoading}
+                autoFocus
+                onKeyDown={({ detail }) => {
+                  if (detail.key === 'Enter') {
+                    const passwordInput = document.querySelector('input[type="password"]');
+                    if (passwordInput) (passwordInput as HTMLElement).focus();
+                  }
+                }}
+              />
+            </FormField>
 
-              <FormField
-                label={t('auth:password')}
-                errorText={formErrors.password}
-                info={
-                  <CloudscapeLink
-                    variant="info"
-                    href="/forgot-password"
-                    external={false}
-                  >
-                    {t('auth:forgot_password')}
-                  </CloudscapeLink>
-                }
+            <FormField
+              label={t('auth:password')}
+              errorText={formErrors.password}
+            >
+              <Input
+                value={password}
+                onChange={({ detail }) => setPassword(detail.value)}
+                type="password"
+                placeholder={t('auth:password_placeholder')}
+                disabled={isLoading}
+                onKeyDown={({ detail }) => {
+                  if (detail.key === 'Enter') attemptLogin();
+                }}
+              />
+            </FormField>
+            
+            <SpaceBetween size="l" direction="horizontal" alignItems="center">
+              <Checkbox
+                checked={rememberMe}
+                onChange={({ detail }) => setRememberMe(detail.checked)}
               >
-                <Input
-                  value={password}
-                  onChange={({ detail }) => setPassword(detail.value)}
-                  type="password"
-                  placeholder={t('auth:password_placeholder')}
-                  disabled={isLoading}
-                  onKeyDown={({ detail }) => {
-                    if (detail.key === 'Enter') attemptLogin();
-                  }}
-                />
-              </FormField>
-
-              <Box textAlign="right">
-                <Link
-                  to="/register"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <CloudscapeLink>
-                    {t('auth:no_account_signup')}
-                  </CloudscapeLink>
-                </Link>
-              </Box>
+                {t('auth:remember_me')}
+              </Checkbox>
+              
+              <CloudscapeLink
+                variant="primary"
+                href="/forgot-password"
+                external={false}
+              >
+                {t('auth:forgot_password')}
+              </CloudscapeLink>
             </SpaceBetween>
-          </Container>
+          </SpaceBetween>
         </Form>
 
-        <ColumnLayout columns={1} variant="text-grid">
-          <Box
-            color="text-body-secondary"
-            fontSize="body-s"
-            textAlign="center"
-            padding={{ top: "l", bottom: "s" }}
-          >
-            <SpaceBetween size="xs" direction="vertical">
-              <Box>
-                {t('auth:terms_agreement', {
-                  terms: <CloudscapeLink href="#">{t('auth:terms_of_service')}</CloudscapeLink>,
-                  privacy: <CloudscapeLink href="#">{t('auth:privacy_policy')}</CloudscapeLink>
-                })}
-              </Box>
-              <SpaceBetween direction="horizontal" size="xxs" alignItems="center">
-                <Icon name="envelope" />
-                <Box fontSize="body-s" color="text-status-info">
-                  {t('auth:secure_connection')}
-                </Box>
-              </SpaceBetween>
-              <Box>
-                {t('common:footer.copyright', { year: new Date().getFullYear() })}
-              </Box>
-            </SpaceBetween>
-          </Box>
-        </ColumnLayout>
+        <Box textAlign="center" padding={{ top: 'm' }}>
+          <SpaceBetween size="xs" direction="vertical" className="login-footer">
+            <Box color="text-body-secondary" fontSize="body-s">
+              {t('auth:no_account')}
+              {' '}
+              <Link to="/register" className="register-link">
+                {t('auth:create_account')}
+              </Link>
+            </Box>
+            
+            <Box className="secure-connection">
+              <Icon name="lock-private" />
+              <span>{t('auth:secure_connection')}</span>
+            </Box>
+            
+            <Box fontSize="body-s" color="text-body-secondary">
+              {t('common:footer.copyright', { year: new Date().getFullYear() })}
+            </Box>
+          </SpaceBetween>
+        </Box>
       </SpaceBetween>
     </form>
   );

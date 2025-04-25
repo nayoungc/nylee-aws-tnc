@@ -1,20 +1,22 @@
+// src/pages/auth/LoginPage.tsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AppLayout,
   Box,
-  Container,
   ContentLayout,
-  Header,
-  SpaceBetween,
   Grid,
+  SpaceBetween,
+  Link,
 } from '@cloudscape-design/components';
-import LoginForm from '@components/auth/LoginForm';
-import { useAuth } from '@hooks/useAuth';
+import LoginForm from '@/components/auth/LoginForm';
+import TopNavigationHeader from '@layouts/TopNavigationHeader';
+import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import './LoginPage.css'; // 스타일 추가
 
 const LoginPage: React.FC = () => {
-  const { t } = useTranslation('auth');
+  const { t } = useTranslation(['auth', 'common']);
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
 
@@ -30,37 +32,47 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <AppLayout
-      content={
-        <ContentLayout>
-          <SpaceBetween size="l">
-            <Container>
-              <Grid
-                gridDefinition={[{ colspan: { default: 12, xs: 10, s: 8, m: 6, l: 6 }, offset: { default: 0, xs: 1, s: 2, m: 3, l: 3 } }]}
-              >
-                <SpaceBetween size="xl">
-                  <Box textAlign="center" padding={{ top: 'xl', bottom: 'l' }}>
-                    <Header variant="h1" description="AWS T&C 교육 정보 사이트">
-                      관리자 로그인
-                    </Header>
-                  </Box>
-                  
-                  <LoginForm onLoginSuccess={handleLoginSuccess} />
-                  
-                  <Box textAlign="center">
-                    <a href="/quiz/start">퀴즈 참여하기</a>
-                    {' | '}
-                    <a href="/survey/start">설문조사 참여하기</a>
-                  </Box>
-                </SpaceBetween>
-              </Grid>
-            </Container>
-          </SpaceBetween>
+    <>
+      <div id="top-navigation">
+        <TopNavigationHeader />
+      </div>
+      
+      <div className="login-page-container">
+        <ContentLayout disableOverlap>
+          <Grid
+            gridDefinition={[{ 
+              colspan: { default: 12, xs: 10, s: 8, m: 6, l: 4 }, 
+              offset: { default: 0, xs: 1, s: 2, m: 3, l: 4 } 
+            }]}
+          >
+            <Box 
+              padding="l" 
+              className="login-card"
+            >
+              <SpaceBetween size="xl">
+                <Box textAlign="center" padding={{ bottom: 'l' }}>
+                  <img
+                    src="/assets/aws-logo.svg"
+                    alt="AWS Logo"
+                    className="aws-logo"
+                  />
+                </Box>
+                
+                <LoginForm onLoginSuccess={handleLoginSuccess} />
+                
+                <Box textAlign="center" color="text-body-secondary">
+                  <SpaceBetween size="s" direction="horizontal">
+                    <Link href="/quiz/start">{t('auth:quiz_participation')}</Link>
+                    <Box color="text-body-secondary" fontSize="body-s">|</Box>
+                    <Link href="/survey/start">{t('auth:survey_participation')}</Link>
+                  </SpaceBetween>
+                </Box>
+              </SpaceBetween>
+            </Box>
+          </Grid>
         </ContentLayout>
-      }
-      navigationHide
-      toolsHide
-    />
+      </div>
+    </>
   );
 };
 
