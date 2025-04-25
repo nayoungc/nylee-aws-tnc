@@ -164,44 +164,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * AWS 자격 증명 초기화 함수 - 개선됨
    */
   const initializeCredentials = useCallback(async (force = false): Promise<boolean> => {
-    // 부분 인증 상태가 이미 확인되었고 강제 갱신이 아니면 재시도하지 않음
-    if (!force && sessionStorage.getItem('partialAuthState') === 'true') {
-      logInfo('부분 인증 상태 인식됨 - AWS 자격 증명 초기화 건너뜀');
-      return false;
-    }
-
-    // 중복 호출 방지 (10초 내 재시도 방지)
-    const now = Date.now();
-    if (!force && credentialsInitialized && awsCredentials &&
-      now - lastCredentialAttempt < 10000) {
-      return true;
-    }
-
-    lastCredentialAttempt = now;
-
     try {
       // 세션 상태 확인
       const session = await fetchAuthSession();
-
-      // 토큰이 없으면 로그인되지 않은 상태
-      if (!session.tokens) {
-        logInfo('사용자가 로그인되어 있지 않습니다.');
-        awsCredentials = null;
-        credentialsInitialized = false;
-        setState(prev => ({
-          ...prev,
-          isAuthenticated: false,
-          hasCredentials: false
-        }));
-        return false;
-      }
-
-      // 자격 증명이 있으면 설정 완료
+      
+      // 로그 추가로 세션 내용 확인
+      console.log('AWS 세션 정보:', {
+        hasTokens: !!session.tokens,
+        hasCredentials: !!session.credentials
+      });
+      
       if (session.credentials) {
-        awsCredentials = new AWS.Credentials({
-          accessKeyId: session.credentials.accessKeyId,
-          secretAccessKey: session.credentials.secretAccessKey,
-          sessionToken: session.credentials.sessionToken
+        // AWS.config에 자격 증명 직접 설정 추가
+        AWS.config.update({
+          region: 'ap-northeast-2', // 또는 사용 중인 리전
+          credentials: new AWS.Credentials({
+            accessKeyId: session.credentials.accessKeyId,
+            secretAccessKey: session.credentials.secretAccessKey,
+            sessionToken: session.credentials.sessionToken
+          })
         });
 
         AWS.config.credentials = awsCredentials;
