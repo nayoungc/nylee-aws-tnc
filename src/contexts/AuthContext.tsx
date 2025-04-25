@@ -151,12 +151,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       sessionStorage.removeItem('useMockData');
     }
-    
+
     setState(prev => ({
       ...prev,
       useMockData: enabled
     }));
-    
+
     logInfo(`모의 데이터 모드 \${enabled ? '활성화' : '비활성화'}`);
   }, []);
 
@@ -227,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // 부분 인증 상태 플래그 설정
       sessionStorage.setItem('partialAuthState', 'true');
-      
+
       // 모의 데이터 모드 자동 활성화
       setMockDataMode(true);
 
@@ -249,12 +249,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         hasCredentials: false,
         useMockData: true
       }));
-      
+
       // 부분 인증 상태 플래그 설정
       sessionStorage.setItem('partialAuthState', 'true');
       // 모의 데이터 모드 자동 활성화
       setMockDataMode(true);
-      
+
       return false;
     }
   }, [setMockDataMode]);
@@ -280,14 +280,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const CACHE_TTL = 120000; // 2분
     const PARTIAL_AUTH_CACHE_TTL = 300000; // 5분 (부분 인증 상태)
     const isPartialAuth = sessionStorage.getItem('partialAuthState') === 'true';
-    
-    if (!force && 
-        now - lastRefresh < (isPartialAuth ? PARTIAL_AUTH_CACHE_TTL : CACHE_TTL) && 
-        state.isAuthenticated) {
+
+    if (!force &&
+      now - lastRefresh < (isPartialAuth ? PARTIAL_AUTH_CACHE_TTL : CACHE_TTL) &&
+      state.isAuthenticated) {
       logInfo('최근에 이미 인증 확인 완료. 캐시된 상태 반환.');
       return state.isAuthenticated;
     }
-    
+
     // 부분 인증 상태에서 짧은 시간 내 반복 호출 제한 (1분)
     if (isPartialAuth && !force && now - lastRefresh < 60000) {
       logInfo('부분 인증 상태 - 짧은 시간 내 반복 호출 제한');
@@ -348,12 +348,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // 부분 인증 상태 처리 (자격 증명 없음)
         if (!session.credentials) {
           logInfo('자격 증명 없음, 토큰만 있는 상태 - 부분 인증 상태 처리');
-          
+
+          // 이미 모의 데이터 모드인 경우 중복 설정 방지
+          if (!state.useMockData) {
+            // 부분 인증 상태 플래그 설정
+            sessionStorage.setItem('partialAuthState', 'true');
+            // 모의 데이터 모드 활성화 - 한 번만 실행
+            if (!sessionStorage.getItem('mockModeActivated')) {
+              sessionStorage.setItem('mockModeActivated', 'true');
+              setMockDataMode(true);
+            }
+          }
+
           try {
             // 이미 캐싱된 속성이 있는지 확인
             const cachedAttributes = sessionStorage.getItem('userAttributes');
             const cachedUsername = sessionStorage.getItem('username');
-            
+
             if (cachedAttributes && cachedUsername) {
               logInfo('캐싱된 사용자 정보 사용 (부분 인증 상태)');
               setState({
@@ -365,20 +376,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 hasCredentials: false,
                 useMockData: true // 부분 인증 상태에서 항상 모의 데이터 사용
               });
-              
+
               // 부분 인증 상태 표시
               sessionStorage.setItem('partialAuthState', 'true');
               // 모의 데이터 모드 자동 활성화
               setMockDataMode(true);
-              
+
               setLastRefresh(now);
-              
+
               return true;
             }
-            
+
             // 먼저 사용자 기본 정보만 가져오기
             const user = await getCurrentUser();
-            
+
             // 속성 가져오기 시도 - 오류 발생 가능성이 높음
             let attributes = {};
             try {
@@ -391,7 +402,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // 기본 정보만 사용하는 제한 모드 표시
               sessionStorage.setItem('limitFetchAttributes', 'true');
             }
-            
+
             // 부분 인증 상태 설정
             setState({
               isAuthenticated: true,
@@ -402,13 +413,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               hasCredentials: false,
               useMockData: true // 부분 인증 상태에서 항상 모의 데이터 사용
             });
-            
+
             // 부분 인증 상태 플래그 설정
             sessionStorage.setItem('partialAuthState', 'true');
             // 모의 데이터 모드 자동 활성화
             setMockDataMode(true);
             setLastRefresh(now);
-            
+
             return true;
           } catch (userError) {
             // 사용자 기본 정보도 가져올 수 없으면 로그아웃
@@ -418,7 +429,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } catch (signOutError) {
               logWarn('로그아웃 처리 중 오류:', signOutError);
             }
-            
+
             setState({
               isAuthenticated: false,
               userAttributes: null,
@@ -428,16 +439,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               hasCredentials: false,
               useMockData: false
             });
-            
+
             return false;
           }
         }
-        
+
         // 정상 인증 상태 (토큰과 자격 증명이 모두 있음)
         try {
           const user = await getCurrentUser();
           const attributes = await fetchUserAttributes();
-          
+
           // 상태 업데이트
           setState({
             isAuthenticated: true,
@@ -448,7 +459,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             hasCredentials: true,
             useMockData: false // 완전한 인증 상태에서는 모의 데이터 비활성화
           });
-          
+
           // 세션 저장
           sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
           sessionStorage.setItem('userAttributesTimestamp', now.toString());
@@ -456,12 +467,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           sessionStorage.removeItem('partialAuthState');
           sessionStorage.removeItem('limitFetchAttributes');
           sessionStorage.removeItem('useMockData');
-          
+
           setLastRefresh(now);
           return true;
         } catch (userError) {
           logError('사용자 정보 가져오기 실패:', userError);
-          
+
           // 사용자 정보는 가져올 수 없지만 토큰이 있는 경우
           setState({
             isAuthenticated: true,
@@ -472,12 +483,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             hasCredentials: !!session.credentials,
             useMockData: !session.credentials // 자격 증명 여부에 따라 모의 데이터 모드 설정
           });
-          
+
           return true;
         }
       } catch (error) {
         logError('인증 확인 중 오류:', error);
-        
+
         // 오류 발생 시 로그아웃 상태로 설정
         setState({
           isAuthenticated: false,
@@ -488,7 +499,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           hasCredentials: false,
           useMockData: false
         });
-        
+
         return false;
       } finally {
         // 로딩 상태 종료
@@ -769,7 +780,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             tokenRefreshAttempts = MAX_TOKEN_REFRESH_ATTEMPTS - 1;
             return;
           }
-          
+
           // 로그인 상태가 아니면 처리하지 않음
           if (!state.isAuthenticated) {
             logInfo('로그아웃 상태. 토큰 갱신 중단');
@@ -812,7 +823,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         case 'tokenRefresh_failure':
           logError('토큰 갱신 실패');
-          
+
           // 부분 인증 상태로 전환하고 모의 데이터 모드 활성화
           sessionStorage.setItem('partialAuthState', 'true');
           setMockDataMode(true);
@@ -872,11 +883,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 부분 인증 상태 감지 시 모의 데이터 모드 자동 활성화
   useEffect(() => {
-    if (sessionStorage.getItem('partialAuthState') === 'true' && !state.useMockData) {
-      logInfo('부분 인증 상태 감지 - 자동으로 모의 데이터 모드 활성화');
-      setMockDataMode(true);
+    // partialAuthState 상태가 변경될 때만 실행되도록 sessionStorage 값 추적
+    const isPartialAuth = sessionStorage.getItem('partialAuthState') === 'true';
+
+    if (isPartialAuth && !state.useMockData) {
+      // 이미 처리 중인지 확인하는 플래그 추가
+      const alreadyProcessing = sessionStorage.getItem('processingMockDataMode');
+
+      if (!alreadyProcessing) {
+        sessionStorage.setItem('processingMockDataMode', 'true');
+        logInfo('부분 인증 상태 감지 - 자동으로 모의 데이터 모드 활성화');
+
+        // setTimeout을 사용하여 렌더링 사이클 분리
+        setTimeout(() => {
+          setMockDataMode(true);
+          sessionStorage.removeItem('processingMockDataMode');
+        }, 0);
+      }
     }
-  }, [state.isAuthenticated, state.hasCredentials, state.useMockData, setMockDataMode]);
+  }, [state.isAuthenticated, state.hasCredentials]);
 
   // 전역 함수 설정
   useEffect(() => {
@@ -936,14 +961,14 @@ export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>
       authContext.handleAuthError(new Error('인증이 필요합니다. 로그인해주세요.'));
       throw new Error('인증이 필요합니다');
     }
-    
+
     // 부분 인증 상태 확인 (자격 증명 부재 확인)
     if (sessionStorage.getItem('partialAuthState') === 'true') {
       logWarn('부분 인증 상태: AWS 자격 증명이 없어 API 호출이 실패할 수 있습니다');
-      
+
       // 자격 증명 갱신 시도 - 처음 한 번만 시도
       const attemptedRefresh = sessionStorage.getItem('attemptedCredentialsRefresh');
-      
+
       if (!attemptedRefresh && authContext.refreshCredentials) {
         try {
           sessionStorage.setItem('attemptedCredentialsRefresh', 'true');
@@ -977,7 +1002,7 @@ export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>
       if (isAuthError) {
         logError('API 호출 중 AWS 자격 증명 오류:', error);
         sessionStorage.setItem('partialAuthState', 'true');  // 부분 인증 상태 표시
-        
+
         if (authContext.handleAuthError) {
           authContext.handleAuthError(error);
         }

@@ -17,7 +17,7 @@ import {
 } from '@cloudscape-design/components';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { v4 as uuidv4 } from 'uuid';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@contexts/AuthContext';
 
 
 // Define interfaces
