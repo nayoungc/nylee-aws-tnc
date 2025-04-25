@@ -1,10 +1,10 @@
 // src/components/SignIn.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { signIn, signOut, fetchAuthSession } from 'aws-amplify/auth'; // signOut, fetchAuthSession 추가
+import { signIn } from 'aws-amplify/auth'; // signOut, fetchAuthSession 제거
 import { useTypedTranslation } from '@utils/i18n-utils';
-import { useAuth } from '../contexts/AuthContext';
-import AuthLayout from '../layouts/AuthLayout';
+import { useAuth } from '@contexts/AuthContext';
+import AuthLayout from '@layouts/AuthLayout';
 import {
   Form,
   SpaceBetween,
@@ -17,10 +17,10 @@ import {
 
 const SignIn: React.FC = () => {
   const { t } = useTypedTranslation();
-  const { checkAuthStatus } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const { isAuthenticated, checkAuthStatus } = useAuth();
+
   // URL에서 returnUrl 파라미터 추출
   const queryParams = new URLSearchParams(location.search);
   const returnUrl = queryParams.get('returnTo') || '/';
@@ -37,27 +37,26 @@ const SignIn: React.FC = () => {
 
   // 페이지 로드 시 인증 상태 확인 및 이미 로그인된 경우 리디렉션
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        const session = await fetchAuthSession();
-        if (session.tokens) {
-          console.log('사용자가 이미 로그인한 상태입니다. 리다이렉트합니다.');
-          navigate(returnUrl);
-        }
-      } catch (err) {
-        // 로그인 상태가 아니면 정상적으로 로그인 페이지 표시
-        console.log('로그인 상태가 아닙니다. 로그인 폼 표시');
+    const verifyAuth = async () => {
+      // AuthContext의 checkAuthStatus 사용하여 일관된 인증 확인
+      const isAuth = await checkAuthStatus();
+      
+      if (isAuth) {
+        console.log('이미 인증된 사용자입니다. 리다이렉트합니다.');
+        navigate(returnUrl);
+      } else {
+        console.log('인증되지 않은 상태입니다. 로그인 폼을 표시합니다.');
       }
     };
     
-    checkLoginStatus();
-  }, [navigate, returnUrl]);
+    verifyAuth();
+  }, [checkAuthStatus, navigate, returnUrl]);
 
   const handleChange = (field: string, value: string) => {
     setFormState({ ...formState, [field]: value });
   };
 
-  // 로그인 처리 함수 수정
+  // 로그인 처리 함수 개선
   const handleSignInClick = async () => {
     if (!formState.username || !formState.password) {
       setError(t('auth.fields_required') || '사용자 이름과 비밀번호를 모두 입력해주세요');
@@ -69,21 +68,7 @@ const SignIn: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      // 1. 먼저 현재 세션 확인 - 이미 로그인된 상태일 수 있음
-      try {
-        const session = await fetchAuthSession();
-        if (session.tokens) {
-          console.log('이미 로그인된 사용자가 감지됨. 상태를 초기화합니다.');
-          await signOut({ global: false });
-          // 로그아웃 처리 시간을 위한 짧은 지연
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-      } catch (sessionError) {
-        // 세션 확인 오류는 무시하고 계속 진행
-        console.log('세션 확인 중 오류 발생:', sessionError);
-      }
-
-      // 2. 로그인 시도
+      // 로그인 시도
       console.log('로그인 시도:', formState.username);
       const result = await signIn({
         username: formState.username,
@@ -139,11 +124,30 @@ const SignIn: React.FC = () => {
     }
   };
 
+  // 이미 인증된 경우 로딩 상태 표시
+  if (isAuthenticated && returnUrl) {
+    return (
+      <AuthLayout>
+        <SpaceBetween direction="vertical" size="l">
+          <Box textAlign="center" padding={{ bottom: 'l' }}>
+            <img
+              src="/images/aws.png"
+              alt="AWS Logo"
+              style={{ maxWidth: '180px', marginBottom: '20px' }}
+            />
+          </Box>
+          <Alert type="info">
+            {t('auth.already_authenticated') || '이미 인증되어 있습니다. 리디렉션 중...'}
+          </Alert>
+        </SpaceBetween>
+      </AuthLayout>
+    );
+  }
+
   // 나머지 JSX 부분은 동일하게 유지
   return (
     <AuthLayout>
       <SpaceBetween direction="vertical" size="l">
-        {/* 기존 JSX 유지 */}
         <Box textAlign="center" padding={{ bottom: 'l' }}>
           <img
             src="/images/aws.png"
