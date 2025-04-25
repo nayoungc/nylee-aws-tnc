@@ -1,194 +1,161 @@
-// app/components/admin/instructors/InstructorsTab.tsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
-  Table,
-  Box,
-  Button,
+  AppLayout,
+  ContentLayout,
   SpaceBetween,
-  TextFilter,
+  Container,
   Header,
-  Pagination,
-  Modal,
-  Badge,
-  ColumnLayout
+  Box,
+  Cards,
+  ColumnLayout,
+  Link,
+  Button,
+  BreadcrumbGroup
 } from '@cloudscape-design/components';
-import InstructorForm from './InstructorForm';
-import { fetchInstructors, deleteInstructor } from '@/api/instructorsApi';
-import { Instructor } from '@/types/admin.types';
-import { useNotification } from '@/contexts/NotificationContext';
 
-const InstructorsTab: React.FC = () => {
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedItems, setSelectedItems] = useState<Instructor[]>([]);
-  const [filterText, setFilterText] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+const IsntructorTab: React.FC = () => {
+  // 여기에 페이지 로직을 추가할 수 있습니다 (필요한 경우)
   
-  const { addNotification } = useNotification();
-
-  useEffect(() => {
-    loadInstructors();
-  }, []);
-
-  const loadInstructors = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchInstructors();
-      setInstructors(data);
-    } catch (error) {
-      addNotification({
-        type: 'error',
-        content: '강사 데이터를 불러오는 중 오류가 발생했습니다.',
-        dismissible: true
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredInstructors = instructors.filter(instructor => 
-    instructor.name.toLowerCase().includes(filterText.toLowerCase()) || 
-    instructor.email.toLowerCase().includes(filterText.toLowerCase()) ||
-    instructor.specialties.some(s => s.toLowerCase().includes(filterText.toLowerCase()))
-  );
-
-  const paginatedInstructors = filteredInstructors.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const handleOpenModal = (instructor?: Instructor) => {
-    setEditingInstructor(instructor || null);
-    setIsModalVisible(true);
-  };
-
-  const handleDeleteInstructors = async () => {
-    try {
-      await Promise.all(selectedItems.map(instructor => deleteInstructor(instructor.id)));
-      
-      addNotification({
-        type: 'success',
-        content: '선택한 강사가 삭제되었습니다.',
-        dismissible: true
-      });
-      
-      loadInstructors();
-      setSelectedItems([]);
-    } catch (error) {
-      addNotification({
-        type: 'error',
-        content: '강사 삭제 중 오류가 발생했습니다.',
-        dismissible: true
-      });
-    }
-  };
-
-  const handleModalSubmit = () => {
-    setIsModalVisible(false);
-    loadInstructors();
-  };
-
   return (
-    <Box padding="s">
-      <SpaceBetween size="l">
-        <Table
-          header={
-            <Header
-              counter={`(\${filteredInstructors.length})`}
-              actions={
-                <SpaceBetween direction="horizontal" size="xs">
-                  <Button onClick={() => handleOpenModal()}>강사 추가</Button>
-                  <Button 
-                    disabled={selectedItems.length === 0}
-                    onClick={handleDeleteInstructors}
-                  >
-                    삭제
-                  </Button>
-                </SpaceBetween>
+    <AppLayout
+      navigationHide
+      content={
+        <ContentLayout>
+          <SpaceBetween size="l">
+            {/* 페이지 머리글 */}
+            <Box padding={{ top: 's' }}>
+              <BreadcrumbGroup
+                items={[
+                  { text: '홈', href: '/' },
+                  { text: '템플릿 페이지', href: '#' }
+                ]}
+                ariaLabel="탐색"
+              />
+            </Box>
+            
+            {/* 페이지 제목 및 설명 */}
+            <Container
+              header={
+                <Header
+                  variant="h1"
+                  description="이 페이지는 CloudScape 디자인 시스템을 사용한 기본 템플릿 페이지입니다."
+                  actions={
+                    <Button variant="primary">
+                      작업 버튼
+                    </Button>
+                  }
+                >
+                  템플릿 페이지 제목
+                </Header>
               }
             >
-              강사 관리
-            </Header>
-          }
-          columnDefinitions={[
-            { id: 'name', header: '이름', cell: item => item.name, sortingField: 'name' },
-            { id: 'email', header: '이메일', cell: item => item.email },
-            { id: 'phone', header: '연락처', cell: item => item.phone },
-            { 
-              id: 'specialties', 
-              header: '전문 분야', 
-              cell: item => (
-                <Box>
-                  {item.specialties.slice(0, 3).map((specialty, index) => (
-                    <Badge key={index} color="blue">{specialty}</Badge>
-                  ))}
-                  {item.specialties.length > 3 && (
-                    <Badge color="grey">+{item.specialties.length - 3}</Badge>
-                  )}
-                </Box>
-              )
-            },
-            { 
-              id: 'actions', 
-              header: '작업', 
-              cell: item => (
-                <Button variant="link" onClick={() => handleOpenModal(item)}>
-                  편집
-                </Button>
-              ) 
-            }
-          ]}
-          items={paginatedInstructors}
-          loading={loading}
-          loadingText="강사 데이터를 로드하는 중..."
-          selectionType="multi"
-          selectedItems={selectedItems}
-          onSelectionChange={({ detail }) => setSelectedItems(detail.selectedItems)}
-          pagination={
-            <Pagination
-              currentPageIndex={currentPage}
-              pagesCount={Math.ceil(filteredInstructors.length / pageSize)}
-              onChange={({ detail }) => setCurrentPage(detail.currentPageIndex)}
-            />
-          }
-          filter={
-            <TextFilter
-              filteringText={filterText}
-              filteringAriaLabel="강사 검색"
-              onChange={({ detail }) => setFilterText(detail.filteringText)}
-              countText={`\${filteredInstructors.length} 건 일치`}
-              placeholder="이름, 이메일 또는 전문분야로 검색"
-            />
-          }
-          empty={
-            <Box textAlign="center" padding="l">
-              <SpaceBetween size="m">
-                <b>강사가 없습니다</b>
-                <Button onClick={() => handleOpenModal()}>강사 추가</Button>
+              <Box padding="l">
+                <ColumnLayout columns={2} variant="text-grid">
+                  <div>
+                    <SpaceBetween size="l">
+                      <Box variant="h3">개요</Box>
+                      <Box variant="p">
+                        이 섹션에는 페이지의 주요 내용에 대한 개요나 설명이 포함됩니다.
+                        실제 애플리케이션에서는 이 부분에 중요한 정보나 요약을 표시할 수 있습니다.
+                      </Box>
+                      <Link href="#">관련 문서 보기</Link>
+                    </SpaceBetween>
+                  </div>
+                  <div>
+                    <SpaceBetween size="l">
+                      <Box variant="h3">주요 정보</Box>
+                      <Box variant="p">
+                        여기에는 주요 통계나 중요 데이터 포인트를 표시할 수 있습니다.
+                        데이터베이스에서 가져온 정보를 시각화하거나 요약할 수 있는 공간입니다.
+                      </Box>
+                    </SpaceBetween>
+                  </div>
+                </ColumnLayout>
+              </Box>
+            </Container>
+            
+            {/* 카드 섹션 */}
+            <Container
+              header={
+                <Header
+                  variant="h2"
+                >
+                  주요 항목
+                </Header>
+              }
+            >
+              <Cards
+                cardDefinition={{
+                  header: item => item.title,
+                  sections: [
+                    {
+                      id: "description",
+                      header: "설명",
+                      content: item => item.description
+                    },
+                    {
+                      id: "type",
+                      header: "유형",
+                      content: item => item.type
+                    },
+                    {
+                      id: "actions",
+                      header: "작업",
+                      content: item => (
+                        <Button variant="link">
+                          자세히 보기
+                        </Button>
+                      )
+                    }
+                  ]
+                }}
+                cardsPerRow={[
+                  { cards: 1 },
+                  { minWidth: 500, cards: 2 }
+                ]}
+                items={[
+                  {
+                    title: "항목 1",
+                    description: "첫 번째 항목에 대한 설명입니다.",
+                    type: "유형 A"
+                  },
+                  {
+                    title: "항목 2",
+                    description: "두 번째 항목에 대한 설명입니다.",
+                    type: "유형 B"
+                  },
+                  {
+                    title: "항목 3",
+                    description: "세 번째 항목에 대한 설명입니다.",
+                    type: "유형 C"
+                  }
+                ]}
+                empty={
+                  <Box textAlign="center" color="inherit">
+                    <b>표시할 항목이 없습니다</b>
+                    <Box padding={{ bottom: "s" }} variant="p" color="inherit">
+                      새 항목을 만들어 보세요.
+                    </Box>
+                    <Button>항목 생성</Button>
+                  </Box>
+                }
+              />
+            </Container>
+            
+            {/* 페이지 푸터 섹션 */}
+            <Box textAlign="center" color="text-body-secondary">
+              <SpaceBetween size="xxs">
+                <div>&copy; 2023 샘플 애플리케이션</div>
+                <div>이 페이지는 템플릿용으로 제작되었습니다</div>
               </SpaceBetween>
             </Box>
-          }
-        />
-      </SpaceBetween>
-
-      <Modal
-        visible={isModalVisible}
-        onDismiss={() => setIsModalVisible(false)}
-        size="large"
-        header={editingInstructor ? '강사 정보 편집' : '새 강사 추가'}
-        closeAriaLabel="닫기"
-      >
-        <InstructorForm 
-          instructor={editingInstructor}
-          onSubmitSuccess={handleModalSubmit}
-          onCancel={() => setIsModalVisible(false)}
-        />
-      </Modal>
-    </Box>
+          </SpaceBetween>
+        </ContentLayout>
+      }
+      toolsHide
+      headerSelector="#header"
+    />
   );
 };
 
-export default InstructorsTab;
+export default IsntructorTab;
