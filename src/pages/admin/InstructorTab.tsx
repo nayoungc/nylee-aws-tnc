@@ -1,5 +1,4 @@
 // src/pages/admin/InstructorTab.tsx
-
 import React, { useState, useEffect } from 'react';
 import {
     Table,
@@ -19,6 +18,7 @@ import {
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/contexts/AuthContext';
+
 
 // Define interfaces
 interface Instructor {

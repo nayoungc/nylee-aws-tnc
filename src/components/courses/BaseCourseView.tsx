@@ -12,94 +12,9 @@ import {
   Alert
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser } from 'aws-amplify/auth';
-import { fetchAuthSession } from 'aws-amplify/auth';
 import { useTypedTranslation } from '@utils/i18n-utils';
 import { listCourseCatalogs, CourseCatalog } from '@api';
-import AWS from 'aws-sdk';
-import { AuthRequired } from '../AuthRequired';
-import { useAuth } from '../../contexts/AuthContext';
-
-// BaseCourseView.tsx 파일 상단에 인증 상태 관련 변수
-let lastAuthCheck = 0;
-const AUTH_CHECK_INTERVAL = 30000; // 30초
-
-// Gen 2 방식의 인증 상태 확인 함수
-async function checkAuthentication(): Promise<boolean> {
-  const now = Date.now();
-  // 30초 이내에 이미 확인했다면 중복 확인 방지
-  if (now - lastAuthCheck < AUTH_CHECK_INTERVAL) {
-    return false; // 인증 실패로 간주 (안전하게)
-  }
-  
-  lastAuthCheck = now;
-  
-  try {
-    // Gen 2 방식의 사용자 정보 조회
-    const user = await getCurrentUser();
-    return Boolean(user);
-  } catch (err) {
-    console.log('로그인이 필요합니다');
-    return false;
-  }
-}
-
-// Gen 2 방식의 AWS 자격 증명 설정 함수
-async function setupAwsCredentials() {
-  try {
-    // 먼저 인증 확인
-    const isAuthenticated = await checkAuthentication();
-    if (!isAuthenticated) {
-      throw new Error('먼저 로그인이 필요합니다');
-    }
-    
-    // Gen 2 방식의 세션 및 자격 증명 조회
-    const { credentials } = await fetchAuthSession();
-    
-    if (credentials) {
-      // AWS SDK에 자격 증명 설정
-      AWS.config.credentials = new AWS.Credentials({
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-        sessionToken: credentials.sessionToken
-      });
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('자격 증명 설정 실패:', error);
-    return false;
-  }
-}
-
-// 수정된 데이터 로드 함수
-async function loadCourseData() {
-  console.log('API 호출 시작...');
-  
-  try {
-    // 인증 확인 추가
-    const isAuthenticated = await checkAuthentication();
-    if (!isAuthenticated) {
-      throw new Error('이 기능을 사용하려면 로그인이 필요합니다');
-    }
-    
-    // AWS 자격 증명 설정
-    const credentialsSet = await setupAwsCredentials();
-    if (!credentialsSet) {
-      throw new Error('AWS 자격 증명을 설정할 수 없습니다');
-    }
-    
-    // API 호출하여 데이터 로드
-    const result = await listCourseCatalogs();
-    
-    // 코드가 계속 실행되면 성공
-    console.log('데이터 로드 성공');
-    return result;
-  } catch (error) {
-    console.error('API 오류:', error);
-    throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
-  }
-}
+import { useAuth, withAuthErrorHandling } from '../../contexts/AuthContext';
 
 // 데이터 매핑 함수 - API 응답을 UI 모델로 변환
 const mapToCourseViewModel = (item: any): CourseCatalog => {
@@ -161,35 +76,35 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { t, tString } = useTypedTranslation();
+  const { isAuthenticated, checkAuthStatus } = useAuth();
   const [courses, setCourses] = useState<CourseCatalog[]>(initialCourses || []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authChecked, setAuthChecked] = useState<boolean>(false);
 
   const navigateToCreateCourse = useCallback(() => {
     if (createPath) navigate(createPath);
   }, [navigate, createPath]);
 
-  // 인증 상태 확인
+  // 향상된 인증 확인 로직
   useEffect(() => {
-    async function checkAuth() {
+    const verifyAuth = async () => {
       try {
-        await getCurrentUser();
-        setIsAuthenticated(true);
+        const isAuth = await checkAuthStatus();
+        setAuthChecked(true);
       } catch (err) {
-        setIsAuthenticated(false);
-      } finally {
         setAuthChecked(true);
       }
-    }
+    };
     
-    checkAuth();
-  }, []);
+    verifyAuth();
+  }, [checkAuthStatus]);
 
-  // 데이터 로드
+  // 데이터 로드 - 개선된 버전
   useEffect(() => {
+    // 이미 초기 데이터가 있으면 사용
     if (initialCourses && initialCourses.length > 0) {
+      setCourses(initialCourses);
       setLoading(false);
       return;
     }
@@ -220,66 +135,52 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
       return;
     }
 
-    const checkAuthAndFetchCourses = async () => {
+    const fetchCourses = async () => {
       setLoading(true);
       setError(null);
       
-      const timeoutId = setTimeout(() => {
-        setLoading(false);
-        setError(t('courses.errors.timeout'));
-        
-        if (process.env.NODE_ENV === 'development') {
-          setCourses([
-            mapToCourseViewModel({ 
-              catalogId: '1', 
-              title: '타임아웃 - 샘플 과정', 
-              description: '타임아웃으로 인한 샘플 데이터입니다.',
-              level: '입문',
-              category: '기타',
-              duration: 0,
-              status: 'ACTIVE',
-            })
-          ]);
-        }
-      }, 15000);
+      // API 타임아웃 처리
+      const timeoutPromise = new Promise<null>((_, reject) => {
+        setTimeout(() => reject(new Error('API 요청 시간 초과')), 15000);
+      });
       
       try {
-        // AWS 자격 증명 설정 추가
-        await setupAwsCredentials();
-        
         console.log('API 호출 시작...');
         
-        try {
-          // 새로운 API 구조 사용
-          const result = await listCourseCatalogs();
-          
-          console.log('API 응답:', result.data);
-          
-          if (result.data && Array.isArray(result.data)) {
-            const mappedItems = result.data.map(mapToCourseViewModel);
-            setCourses(mappedItems);
-          } else {
-            setCourses([]);
-          }
-          
-          clearTimeout(timeoutId);
-        } catch (apiError) {
-          console.error('API 오류:', apiError);
-          clearTimeout(timeoutId);
-          throw new Error('데이터를 불러오는 중 오류가 발생했습니다');
+        // withAuthErrorHandling 래퍼 함수 사용 - 인증 오류 자동 처리
+        const wrappedAPI = withAuthErrorHandling(listCourseCatalogs);
+        
+        // 타임아웃과 API 호출 경쟁
+        // @ts-ignore - race 타입 문제 무시
+        const result = await Promise.race([
+          wrappedAPI(),
+          timeoutPromise
+        ]);
+        
+        if (result && result.data && Array.isArray(result.data)) {
+          const mappedItems = result.data.map(mapToCourseViewModel);
+          setCourses(mappedItems);
+        } else {
+          setCourses([]);
         }
       } catch (error: any) {
-        console.error('Course load error:', error);
-        clearTimeout(timeoutId);
+        console.error('API 오류:', error);
         
-        if (error.name === 'UserUnAuthenticatedException' || 
-            error.message?.includes('인증')) {
+        if (error.message === 'API 요청 시간 초과') {
+          setError(t('courses.errors.timeout'));
+        } else if (
+          error.name === 'UserUnAuthenticatedException' || 
+          error.message?.includes('인증') ||
+          error.message?.includes('자격 증명')
+        ) {
           setError(t('courses.errors.authentication'));
-          setIsAuthenticated(false);
+          // 인증 상태 재확인
+          await checkAuthStatus(true);
         } else {
           setError(t('courses.errors.load_message'));
         }
         
+        // 개발 환경에서는 샘플 데이터 제공
         if (process.env.NODE_ENV === 'development') {
           setCourses([
             mapToCourseViewModel({
@@ -310,9 +211,9 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
     };
     
     if (isAuthenticated) {
-      checkAuthAndFetchCourses();
+      fetchCourses();
     }
-  }, [t, initialCourses, authChecked, isAuthenticated]);
+  }, [t, initialCourses, authChecked, isAuthenticated, checkAuthStatus]);
 
   const getStatusColor = (status?: string): "green" | "blue" | "grey" => {
     if (!status) return 'grey';

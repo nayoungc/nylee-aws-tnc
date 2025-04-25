@@ -12,6 +12,8 @@ import {
   Table,
   TextFilter
 } from '@cloudscape-design/components';
+import { useAuth, withAuthErrorHandling } from '@contexts/AuthContext';
+
 import { useTypedTranslation } from '@utils/i18n-utils';
 import React, { useEffect, useState } from 'react';
 

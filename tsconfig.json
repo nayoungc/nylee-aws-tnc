@@ -21,6 +21,7 @@
       "@/*": ["src/*"],
       "@utils/*": ["src/utils/*"],
       "@components/*": ["src/components/*"],
+      "@contexts/*": ["src/contexts/*"],
       "@graphql/*": ["src/graphql/*"],
       "@layouts/*": ["src/layouts/*"],
       "@amplify/*": ["amplify/*"],
