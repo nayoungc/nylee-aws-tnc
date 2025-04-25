@@ -24,9 +24,8 @@ const SignIn: React.FC = () => {
   const authCheckCompletedRef = useRef(false);
   const timerRef = useRef<number | null>(null);
 
-  // URL에서 returnUrl 파라미터 추출
-  const queryParams = new URLSearchParams(location.search);
-  const returnUrl = queryParams.get('returnTo') || '/';
+  // 기본 리다이렉션 경로를 /tnc로 설정 (이전에는 / 였음)
+  const returnUrl = '/tnc';
 
   const { username: initialUsername, message } = location.state || { username: '', message: '' };
 
@@ -37,18 +36,15 @@ const SignIn: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
-  // 리디렉션 중 상태 추가
   const [isRedirecting, setIsRedirecting] = useState(false);
-  // 부분 인증 상태 처리
   const [isPartialAuth, setIsPartialAuth] = useState(false);
 
   // 페이지 로드 시 한 번만 인증 상태 확인
   useEffect(() => {
-    // 이미 확인 완료된 경우 중복 실행 방지
     if (authCheckCompletedRef.current) return;
-
+    
     console.log('SignIn 컴포넌트: 인증 상태 확인 시작');
-    authCheckCompletedRef.current = true; // 중복 확인 방지
+    authCheckCompletedRef.current = true;
 
     const verifyAuth = async () => {
       try {
@@ -61,7 +57,7 @@ const SignIn: React.FC = () => {
 
         // 인증 상태 확인
         if (isAuthenticated) {
-          console.log('이미 인증된 상태입니다. 리다이렉트합니다.');
+          console.log('이미 인증된 상태입니다. /tnc로 리다이렉트합니다.');
           setIsRedirecting(true);
           navigate(returnUrl);
         } else {
@@ -72,15 +68,12 @@ const SignIn: React.FC = () => {
       }
     };
 
-    // 인증 확인 시작 (약간 지연)
     const timerId = window.setTimeout(() => {
       verifyAuth();
     }, 100);
     
-    // 타이머 참조 저장
     timerRef.current = timerId;
     
-    // 클린업 함수
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -90,16 +83,11 @@ const SignIn: React.FC = () => {
 
   // 부분 인증 상태 처리
   useEffect(() => {
-    // 부분 인증 상태 확인
-    const checkPartialAuth = () => {
-      if (isAuthenticated && !hasCredentials) {
-        setIsPartialAuth(true);
-      } else {
-        setIsPartialAuth(false);
-      }
-    };
-    
-    checkPartialAuth();
+    if (isAuthenticated && !hasCredentials) {
+      setIsPartialAuth(true);
+    } else {
+      setIsPartialAuth(false);
+    }
   }, [isAuthenticated, hasCredentials]);
 
   const handleChange = (field: string, value: string) => {
@@ -116,7 +104,7 @@ const SignIn: React.FC = () => {
       if (success) {
         setSuccessMessage('자격 증명이 성공적으로 갱신되었습니다. 리다이렉션합니다...');
         
-        // 성공 시 리디렉션
+        // 성공 시 리디렉션 - /tnc로 이동
         setTimeout(() => {
           navigate(returnUrl);
         }, 1500);
@@ -131,7 +119,7 @@ const SignIn: React.FC = () => {
     }
   };
 
-  // 로그인 처리 함수 개선
+  // 로그인 처리 함수
   const handleSignInClick = async () => {
     if (!formState.username || !formState.password) {
       setError(t('auth.fields_required') || '사용자 이름과 비밀번호를 모두 입력해주세요');
@@ -143,7 +131,6 @@ const SignIn: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      // 로그인 시도
       console.log('로그인 시도:', formState.username);
       const result = await signIn({
         username: formState.username,
@@ -153,21 +140,18 @@ const SignIn: React.FC = () => {
       console.log('로그인 결과:', result);
 
       if (result.isSignedIn) {
-        // 로그인 성공 시 리디렉션 상태 설정
         setIsRedirecting(true);
-        setSuccessMessage('로그인 성공! 리디렉션 중...');
+        setSuccessMessage('로그인 성공! /tnc로 이동 중...');
 
-        // 세션 스토리지 초기화 (부분 인증 상태 플래그 제거)
+        // 세션 스토리지 초기화
         sessionStorage.removeItem('partialAuthState');
 
         // 자격 증명 초기화를 위한 시간
         await new Promise(resolve => setTimeout(resolve, 800));
-
-        // 로그인 성공 - 인증 상태 갱신
         await checkAuthStatus(true);
 
-        // 리디렉션
-        navigate(returnUrl);
+        // /tnc로 리다이렉션 (기본값으로 설정)
+        navigate('/tnc');
       } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {
         navigate('/confirm-signup', {
           state: { username: formState.username }
@@ -183,16 +167,15 @@ const SignIn: React.FC = () => {
     } catch (err: any) {
       console.error('로그인 오류:', err);
 
-      // 이미 로그인된 사용자 오류는 특별히 처리
       if (err.name === 'UserAlreadyAuthenticatedException') {
-        console.log('이미 로그인된 상태입니다. 리디렉션합니다.');
+        console.log('이미 로그인된 상태입니다. /tnc로 이동합니다.');
         setIsRedirecting(true);
-        await checkAuthStatus(true); // 인증 상태 갱신
-        navigate(returnUrl); // 원하는 페이지로 이동
+        await checkAuthStatus(true);
+        navigate('/tnc'); // 항상 /tnc로 리다이렉션
         return;
       }
 
-      // 기타 에러 처리 로직
+      // 기타 에러 처리
       if (err.name === 'UserNotFoundException' || err.message?.includes('user') && err.message?.includes('exist')) {
         setError(t('auth.user_not_exist') || '사용자가 존재하지 않습니다');
       } else if (err.name === 'NotAuthorizedException' || err.message?.includes('password') && err.message?.includes('incorrect')) {
@@ -224,7 +207,7 @@ const SignIn: React.FC = () => {
             />
           </Box>
           <Alert type="info">
-            {t('auth.already_authenticated') || '이미 인증되어 있습니다. 리디렉션 중...'}
+            {t('auth.already_authenticated') || '이미 인증되어 있습니다. 코스 목록으로 이동 중...'}
           </Alert>
         </SpaceBetween>
       </AuthLayout>
@@ -253,20 +236,18 @@ const SignIn: React.FC = () => {
           </Box>
 
           <Alert type="warning">
-          <h3>제한된 인증 상태</h3>
-          <p>
-            AWS 서비스 접근 권한이 제한된 상태입니다. 이는 보안 토큰은 유효하지만 
-            AWS 자격 증명을 가져올 수 없기 때문입니다.
-          </p>
-          <p>
-            다음 방법을 시도해 보세요:
-          </p>
-          <ul>
-            <li>로그아웃 후 다시 로그인</li>
-            <li>브라우저 캐시 및 쿠키 삭제</li>
-            <li>관리자에게 문의</li>
-          </ul>
-        </Alert>
+            <h3>제한된 인증 상태</h3>
+            <p>
+              AWS 서비스 접근 권한이 제한된 상태입니다. 이는 보안 토큰은 유효하지만 
+              AWS 자격 증명을 가져올 수 없기 때문입니다.
+            </p>
+            <p>다음 방법을 시도해 보세요:</p>
+            <ul>
+              <li>로그아웃 후 다시 로그인</li>
+              <li>브라우저 캐시 및 쿠키 삭제</li>
+              <li>관리자에게 문의</li>
+            </ul>
+          </Alert>
 
           {error && (
             <Alert type="error" dismissible onDismiss={() => setError(null)}>

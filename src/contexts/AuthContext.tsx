@@ -287,6 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     authCheckPromiseRef.current = authCheckPromise;
     return authCheckPromise;
   }, [lastRefresh, state.isAuthenticated, initializeCredentials]);
+  
 
   /**
    * AWS 자격 증명 갱신 함수
@@ -615,6 +616,25 @@ export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>
       }
 
       throw error;
+    }
+  };
+};
+
+/**
+ * 인증 오류 처리 핸들러를 생성하는 함수
+ */
+export const createAuthErrorHandler = (
+  errorCallback: (error: any) => void,
+  navigate?: (path: string) => void,
+  loginPath: string = '/signin'
+): { handleAuthError: (error: any) => void } => {
+  return {
+    handleAuthError: (error: any) => {
+      console.error('인증 오류:', error);
+      errorCallback(error);
+      if (navigate) {
+        navigate(loginPath);
+      }
     }
   };
 };
