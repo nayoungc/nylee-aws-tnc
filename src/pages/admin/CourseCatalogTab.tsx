@@ -1,6 +1,6 @@
 // src/pages/admin/CourseCatalogTab.tsx
 import { listQuizzes, listSurveys } from '@api';
-import { useAuth, withAuthErrorHandling } from '@contexts/AuthContext';
+import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '@contexts/AuthContext';
 
 import {
   Box,
@@ -24,9 +24,6 @@ import {
   Quiz,
   Survey
 } from '@api/types';
-
-// Amplify Gen 2 임포트 추가
-import { fetchAuthSession } from 'aws-amplify/auth';
 
 // 평가 현황 인터페이스
 interface AssessmentStats {
@@ -72,6 +69,15 @@ const CourseCatalogPage: React.FC = () => {
           console.log('인증되지 않은 상태, API 호출 중단');
           return;
         }
+
+        // createAuthErrorHandler 사용 (AuthContext.tsx에 추가된 경우)
+        const authErrorHandler = createAuthErrorHandler(
+          (error) => {
+            console.error('인증 오류:', error);
+            setLoading(false);
+          },
+          navigate
+        );
 
         // 1. 퀴즈 데이터 가져오기 - 인증 오류 자동 처리
         const preQuizResult = await withAuthErrorHandling(listQuizzes, auth)({
@@ -128,7 +134,7 @@ const CourseCatalogPage: React.FC = () => {
         // 통계 데이터가 없으면 샘플 데이터 사용 (개발용)
         if (Object.keys(stats).length === 0) {
           console.log('샘플 데이터 사용');
-          
+
           // 샘플 데이터
           const mockStats: Record<string, AssessmentStats> = {
             [selectedCourse.catalogId]: {
@@ -138,7 +144,7 @@ const CourseCatalogPage: React.FC = () => {
               surveys: { total: 20, completed: 15 }
             }
           };
-          
+
           setAssessmentStats(mockStats);
         }
 
