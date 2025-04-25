@@ -1,0 +1,22 @@
+{
+    "header": "Navigation",
+    "site": {
+      "title": "AWS T&C Education System"
+    },
+    "home": "Home",
+    "account": "Account",
+    "user": {
+      "profile": "Profile",
+      "signOut": "Sign Out",
+      "login": "Login",
+      "role": "User"
+    },
+    "courses": {
+      "public": "Public Courses",
+      "title": "Courses",
+      "catalog": "Course Catalog",
+      "myLearning": "My Learning"
+    },
+    "quizzes": "Quizzes",
+    "surveys": "Surveys"
+  }

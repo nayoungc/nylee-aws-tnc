@@ -1,0 +1,19 @@
+{
+    "title": "Instructor Dashboard",
+    "role": "Instructor",
+    "courseManagement": {
+      "title": "Course Management",
+      "catalog": "Course Catalog",
+      "courses": "Manage Courses"
+    },
+    "assessmentTools": {
+      "title": "Assessment Tools",
+      "quizzes": "Quiz Management",
+      "surveys": "Survey Management"
+    },
+    "managementTools": {
+      "title": "Management Tools",
+      "reports": "Generate Reports",
+      "statistics": "Statistics"
+    }
+  }

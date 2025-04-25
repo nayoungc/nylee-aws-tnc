@@ -1,0 +1,19 @@
+{
+    "title": "강사 대시보드",
+    "role": "강사",
+    "courseManagement": {
+      "title": "과정 관리",
+      "catalog": "과정 카탈로그",
+      "courses": "과정 관리"
+    },
+    "assessmentTools": {
+      "title": "평가 도구",
+      "quizzes": "퀴즈 관리",
+      "surveys": "설문조사 관리"
+    },
+    "managementTools": {
+      "title": "관리 도구",
+      "reports": "보고서 생성",
+      "statistics": "통계"
+    }
+  }

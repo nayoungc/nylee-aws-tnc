@@ -10,16 +10,13 @@ interface MainLayoutProps {
   activeHref?: string;
 }
 
+// 함수형 컴포넌트를 화살표 함수로 올바르게 정의하고 JSX 반환
 const MainLayout: React.FC<MainLayoutProps> = ({ 
   children, 
   activeHref = '/'
 }) => {
   const { t } = useTranslation();
-  const { isAuthenticated, user, loading } = useAuth();
-  
-  // 사용자 역할 확인
-  const isAdmin = user?.attributes?.['custom:role'] === 'admin';
-  const isInstructor = user?.attributes?.['custom:role'] === 'instructor';
+  const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
   
   // 기본 메뉴 항목 (모든 사용자에게 표시)
   const publicItems = [
@@ -96,6 +93,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   // 모든 메뉴 항목 결합
   const navItems = [...publicItems, ...instructorItems, ...adminItems];
 
+  // 반환문이 있어야 함 (return 키워드 확인)
   return (
     <>
       {/* 최상단 헤더 */}

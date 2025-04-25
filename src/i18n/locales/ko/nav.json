@@ -1,0 +1,23 @@
+{
+    "header": "탐색",
+    "site": {
+      "title": "AWS T&C 교육 정보 시스템"
+    },
+    "home": "홈",
+    "account": "계정",
+    "user": {
+      "profile": "프로필",
+      "signOut": "로그아웃",
+      "login": "로그인",
+      "role": "일반 사용자"
+    },
+    "courses": {
+      "public": "공개 과정",
+      "title": "교육 과정",
+      "catalog": "과정 카탈로그",
+      "myLearning": "내 학습"
+    },
+    "quizzes": "퀴즈",
+    "surveys": "설문조사"
+  }
+  

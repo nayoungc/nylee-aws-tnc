@@ -1,32 +1,22 @@
 {
-    "nav": {
-      "header": "탐색",
-      "courses": {
-        "public": "공개 과정"
-      },
-      "instructor": {
-        "title": "강사 대시보드",
-        "courseManagement": {
-          "title": "과정 관리",
-          "catalog": "과정 카탈로그",
-          "courses": "과정 관리"
-        },
-        "assessmentTools": {
-          "title": "평가 도구",
-          "quizzes": "퀴즈 관리",
-          "surveys": "설문조사 관리"
-        },
-        "managementTools": {
-          "title": "관리 도구",
-          "reports": "보고서 생성",
-          "statistics": "통계"
-        }
-      },
-      "admin": {
-        "title": "관리자 설정",
-        "dashboard": "관리자 대시보드",
-        "users": "사용자 관리",
-        "settings": "시스템 설정"
-      }
-    }
-  }
+  "loading": "로딩 중...",
+  "error": "오류가 발생했습니다",
+  "unauthorized": "접근 권한이 없습니다",
+  "save": "저장",
+  "cancel": "취소",
+  "delete": "삭제",
+  "edit": "편집",
+  "add": "추가",
+  "search": "검색",
+  "filter": "필터",
+  "sort": "정렬",
+  "welcome": "환영합니다",
+  "footer": {
+    "copyright": "© {year} Amazon Web Services, Inc. 또는 계열사"
+  },
+  "pageSize": "페이지 크기",
+  "itemsPerPage": "페이지당 항목 수",
+  "showing": "표시 중",
+  "of": "중",
+  "columns": "표시할 열"
+}

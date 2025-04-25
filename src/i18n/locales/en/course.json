@@ -1,0 +1,27 @@
+{
+    "title": "Title",
+    "description": "Description",
+    "instructor": "Instructor",
+    "duration": "Duration",
+    "level": "Level",
+    "prerequisites": "Prerequisites",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "catalog": {
+      "title": "Course Catalog",
+      "list": "Catalog List",
+      "details": "Catalog Details",
+      "catalogId": "Catalog ID",
+      "version": "Version",
+      "awsCode": "AWS Code",
+      "hours": "Hours",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    }
+  }

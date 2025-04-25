@@ -10,9 +10,11 @@ import {
   Grid,
 } from '@cloudscape-design/components';
 import LoginForm from '@components/auth/LoginForm';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
 
