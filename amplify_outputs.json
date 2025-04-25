@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1",
   "auth": {
     "Cognito": {
       "userPoolId": "us-east-1_AFeIVnWIU",
@@ -7,9 +7,9 @@
       "region": "us-east-1"
     }
   },
-  "api": {
-    "GraphQL": {
-      "endpoint": "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
+  "storage": {
+    "S3": {
+      "bucket": "nylee-aws-tnc",
       "region": "us-east-1"
     }
   }

@@ -14,14 +14,14 @@ import { useAuth } from '../../hooks/useAuth';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   // 이미 로그인한 경우 홈 페이지로 리다이렉트
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated && !loading) {
       navigate('/');
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, loading, navigate]);
 
   const handleLoginSuccess = () => {
     navigate('/');

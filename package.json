@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@aws-amplify/api": "^6.3.10",
+    "@aws-amplify/auth": "^6.12.3",
     "@aws-amplify/backend": "^1.16.0",
     "@cloudscape-design/components": "^3.0.950",
     "@cloudscape-design/global-styles": "^1.0.42",

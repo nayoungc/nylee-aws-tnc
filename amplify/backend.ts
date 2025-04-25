@@ -1,6 +1,5 @@
-// amplify/backend.ts
-import { defineBackend } from "@aws-amplify/backend";
-import { auth } from "./auth/resource";
+import { defineBackend } from "@amplify/backend";
+import { auth } from "./auth/resource"; // 이 줄 추가 필요
 import { data } from "./data/resource";
 import { storage } from "./storage/resource";
 
@@ -10,12 +9,4 @@ const backend = defineBackend({
   storage
 });
 
-// amplify_outputs.json에 사용자 정의 값 추가
-backend.addOutput({
-  custom: {
-    api_endpoint: "https://api.example.com",
-    feature_flags: {
-      enableNewFeature: true
-    }
-  },
-});
+export default backend;

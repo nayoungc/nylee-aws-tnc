@@ -1,30 +1,30 @@
-// tsconfig.json
 {
-    "compilerOptions": {
-      "target": "ES2020",
-      "useDefineForClassFields": true,
-      "lib": ["ES2020", "DOM", "DOM.Iterable"],
-      "module": "ESNext",
-      "skipLibCheck": true,
-      "moduleResolution": "bundler",
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "noEmit": true,
-      "jsx": "react-jsx",
-      "strict": true,
-      "baseUrl": ".",
-      "paths": {
-        "@/*": ["src/*"],
-        "@services/*": ["src/services/*"],
-        "@components/*": ["src/components/*"],
-        "@contexts/*": ["src/contexts/*"],
-        "@hooks/*": ["src/hooks/*"],
-        "@utils/*": ["src/utils/*"],
-        "@pages/*": ["src/pages/*"],
-        "@layouts/*": ["src/layouts/*"],
-        "@theme/*": ["src/theme/*"],
-        "@language/*": ["src/language/*"]
-      }
-    },
-    "include": ["src"]
-  }
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@amplify/*": ["src/amplify/*"],
+      "@services/*": ["src/services/*"],
+      "@components/*": ["src/components/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@utils/*": ["src/utils/*"],
+      "@pages/*": ["src/pages/*"],
+      "@layouts/*": ["src/layouts/*"],
+      "@theme/*": ["src/theme/*"],
+      "@language/*": ["src/language/*"]
+    }
+  },
+  "include": ["src"]
+}

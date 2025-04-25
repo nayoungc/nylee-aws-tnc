@@ -10,130 +10,83 @@ signInWithRedirect - 리디렉션 로그인 시작
 signInWithRedirect_failure - 리디렉션 로그인 실패
 customOAuthState - 커스텀 OAuth 상태
 */
-import { useState, useEffect } from 'react';
-import { Hub } from 'aws-amplify/utils';
-import { getCurrentUserInfo, login, logout } from '@services/authService';
-import { AuthUser, UserAttributeKey } from 'aws-amplify/auth';
-
-
-export interface UserInfo {
-  user: AuthUser;
-  attributes: Partial<Record<UserAttributeKey, string>>;
-}
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  userInfo: UserInfo | null;
-  isAdmin: boolean;
-  isInstructor: boolean;
-}
+// src/hooks/useAuth.ts
+import { useState, useEffect, useCallback } from 'react';
+import { 
+  signIn, 
+  signOut, 
+  getCurrentUser, 
+  fetchUserAttributes 
+} from 'aws-amplify/auth';
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,
-    isLoading: true,
-    userInfo: null,
-    isAdmin: false,
-    isInstructor: false,
-  });
-
-  useEffect(() => {
-    // 초기 인증 상태 확인
-    checkAuthState();
-
-    // Auth 이벤트 리스너 설정 (Gen 2 업데이트된 이벤트 이름)
-    const listener = Hub.listen('auth', ({ payload }) => {
-      switch (payload.event) {
-        case 'signedIn':
-          checkAuthState();
-          break;
-        case 'signedOut':
-          setAuthState({
-            isAuthenticated: false,
-            isLoading: false,
-            userInfo: null,
-            isAdmin: false,
-            isInstructor: false,
-          });
-          break;
-        default:
-          break;
-      }
-    });
-
-    return () => {
-      listener();
-    };
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  
+  // 현재 사용자 불러오기
+  const checkAuth = useCallback(async () => {
+    try {
+      setLoading(true);
+      const currentUser = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+      const userData = { ...currentUser, attributes };
+      setUser(userData);
+      setIsAuthenticated(true);
+      return userData;
+    } catch (error) {
+      setUser(null);
+      setIsAuthenticated(false);
+      return null;
+    } finally {
+      setLoading(false);
+    }
   }, []);
-
-  const checkAuthState = async () => {
+  
+  // 로그인
+  const login = async (username: string, password: string) => {
     try {
-      const userInfo = await getCurrentUserInfo();
-      
-      if (userInfo) {
-        // 역할 확인 (custom:role 속성 활용)
-        const role = userInfo.attributes['custom:role'] || '';
-        
-        setAuthState({
-          isAuthenticated: true,
-          isLoading: false,
-          userInfo: userInfo,
-          isAdmin: role === 'admin',
-          isInstructor: role === 'instructor',
-        });
-      } else {
-        setAuthState({
-          isAuthenticated: false,
-          isLoading: false,
-          userInfo: null,
-          isAdmin: false,
-          isInstructor: false,
-        });
-      }
+      setLoading(true);
+      const result = await signIn({ username, password });
+      await checkAuth(); // 사용자 정보 다시 불러오기
+      return { success: true, result };
     } catch (error) {
-      console.error('인증 상태 확인 중 오류:', error);
-      setAuthState({
-        isAuthenticated: false,
-        isLoading: false,
-        userInfo: null,
-        isAdmin: false,
-        isInstructor: false,
-      });
+      console.error('로그인 오류:', error);
+      return { success: false, error };
+    } finally {
+      setLoading(false);
     }
   };
-
-  const loginUser = async (username: string, password: string) => {
+  
+  // 로그아웃
+  const logout = async () => {
     try {
-      await login(username, password);
-      await checkAuthState();
-      return true;
+      setLoading(true);
+      await signOut();
+      setUser(null);
+      setIsAuthenticated(false);
+      return { success: true };
     } catch (error) {
-      console.error('로그인 에러:', error);
-      throw error;
+      console.error('로그아웃 오류:', error);
+      return { success: false, error };
+    } finally {
+      setLoading(false);
     }
   };
-
-  const logoutUser = async () => {
-    try {
-      await logout();
-      setAuthState({
-        isAuthenticated: false,
-        isLoading: false,
-        userInfo: null,
-        isAdmin: false,
-        isInstructor: false,
-      });
-    } catch (error) {
-      console.error('로그아웃 에러:', error);
-      throw error;
-    }
-  };
-
+  
+  // 페이지 로드시 인증 상태 확인
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+  
   return {
-    ...authState,
-    login: loginUser,
-    logout: logoutUser,
-    refreshAuthState: checkAuthState,
+    isAuthenticated,
+    user,
+    loading,
+    login,
+    logout,
+    checkAuth
   };
 }
+
+export default useAuth;
