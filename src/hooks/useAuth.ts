@@ -1,5 +1,5 @@
 // src/hooks/useAuth.ts
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { 
   signIn, 
   signOut, 
@@ -20,16 +20,28 @@ interface AuthContextType {
   isInstructor: boolean;
 }
 
+// 기본값으로 사용할 빈 컨텍스트 객체 생성
+const defaultContext: AuthContextType = {
+  isAuthenticated: false,
+  user: null,
+  loading: true,
+  login: async () => ({ success: false, error: 'Not implemented' }),
+  logout: async () => ({ success: false, error: 'Not implemented' }),
+  checkAuth: async () => null,
+  isAdmin: false,
+  isInstructor: false
+};
+
 // Auth 컨텍스트 생성
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>(defaultContext);
 
 // AuthProvider props 타입 정의
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-// AuthProvider 컴포넌트 추가
-export function AuthProvider({ children }: AuthProviderProps) {
+// AuthProvider 컴포넌트 정의
+export const AuthProvider = (props: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -108,7 +120,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [checkAuth]);
   
   // 컨텍스트 값
-  const value = {
+  const contextValue: AuthContextType = {
     isAuthenticated,
     user,
     loading,
@@ -119,20 +131,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isInstructor
   };
   
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+  return React.createElement(
+    AuthContext.Provider,
+    { value: contextValue },
+    props.children
   );
-}
+};
 
-// useAuth 훅 수정 - 컨텍스트 사용
-export function useAuth() {
+// useAuth 훅
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  
   return context;
 }
