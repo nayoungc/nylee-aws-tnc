@@ -1,39 +1,41 @@
+// src/components/auth/ProtectedRoute.tsx
 import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { Spinner } from '@cloudscape-design/components';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth'; // 경로를 실제 환경에 맞게 수정
 
+// props 타입에 requiredRoles 추가
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ('admin' | 'instructor')[];
+  requiredRoles?: string[]; // 'admin', 'instructor' 같은 문자열 배열
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  allowedRoles = ['admin', 'instructor'] 
+  requiredRoles = [] // 기본값 빈 배열
 }) => {
-  const { isAuthenticated, isLoading, isAdmin, isInstructor } = useAuth();
-  
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spinner size="large" />
-      </div>
-    );
+  const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <div>로딩 중...</div>;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // 로그인 페이지로 리디렉션하면서 원래 접근하려던 경로 저장
+    return <Navigate to="/login" state={{ from: location.pathname }} />;
   }
 
-  // 역할 기반 접근 제어
-  const hasRequiredRole = (
-    (allowedRoles.includes('admin') && isAdmin) || 
-    (allowedRoles.includes('instructor') && isInstructor)
-  );
+  // 역할 체크가 필요한 경우
+  if (requiredRoles.length > 0) {
+    // 사용자의 역할에 따라 접근 여부 결정
+    const hasRequiredRole = (
+      (requiredRoles.includes('admin') && isAdmin) || 
+      (requiredRoles.includes('instructor') && isInstructor)
+    );
 
-  if (!hasRequiredRole) {
-    return <Navigate to="/unauthorized" replace />;
+    if (!hasRequiredRole) {
+      return <Navigate to="/unauthorized" />;
+    }
   }
 
   return <>{children}</>;

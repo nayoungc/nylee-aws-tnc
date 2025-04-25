@@ -23,7 +23,8 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
-  const { t } = useTranslation('auth');
+  // auth 네임스페이스뿐만 아니라 common 네임스페이스도 사용
+  const { t } = useTranslation(['auth', 'common']);
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -44,10 +45,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   // 로그인 시도 처리
   const attemptLogin = async () => {
     if (!username || !password) {
-      setError('사용자 이름과 비밀번호를 모두 입력해주세요');
+      setError(t('auth:fields_required'));
       return;
     }
-    
+
     setError(null);
 
     // 폼 유효성 검증
@@ -60,8 +61,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     try {
       await login(username, password);
       setError(null);
-      setSuccessMessage('로그인 성공! 이동 중...');
-      
+      setSuccessMessage(t('auth:login_success_redirecting'));
+
       setTimeout(() => {
         if (onLoginSuccess) {
           onLoginSuccess();
@@ -82,7 +83,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
             type="error"
             dismissible
             onDismiss={() => setError(null)}
-            header="로그인 오류"
+            header={t('auth:login_error_header')}
           >
             {error}
           </Alert>
@@ -93,7 +94,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
             type="success"
             dismissible
             onDismiss={() => setSuccessMessage(null)}
-            header="로그인 성공"
+            header={t('auth:login_success_header')}
           >
             {successMessage}
           </Alert>
@@ -101,12 +102,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
         <Form
           header={
-            <Box 
+            <Box
               margin={{ bottom: "m" }}
               textAlign="left"
               fontSize="heading-l"
             >
-              계정 로그인
+              {t('auth:account_login')}
             </Box>
           }
           actions={
@@ -118,7 +119,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 formAction="submit"
                 fullWidth
               >
-                로그인
+                {t('auth:sign_in')}
               </Button>
             </SpaceBetween>
           }
@@ -126,14 +127,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
           <Container>
             <SpaceBetween size="l">
               <FormField
-                label="사용자 이름"
+                label={t('auth:username')}
                 errorText={formErrors.username}
-                constraintText="AWS 계정과 연결된 이메일 또는 사용자 이름"
+                constraintText={t('auth:username_constraint')}
               >
                 <Input
                   value={username}
                   onChange={({ detail }) => setUsername(detail.value)}
-                  placeholder="사용자 이름 입력"
+                  placeholder={t('auth:username_placeholder')}
                   disabled={isLoading}
                   autoFocus
                   onKeyDown={({ detail }) => {
@@ -144,9 +145,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                   }}
                 />
               </FormField>
-              
+
               <FormField
-                label="비밀번호"
+                label={t('auth:password')}
                 errorText={formErrors.password}
                 info={
                   <CloudscapeLink
@@ -154,7 +155,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                     href="/forgot-password"
                     external={false}
                   >
-                    비밀번호를 잊으셨나요?
+                    {t('auth:forgot_password')}
                   </CloudscapeLink>
                 }
               >
@@ -162,7 +163,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                   value={password}
                   onChange={({ detail }) => setPassword(detail.value)}
                   type="password"
-                  placeholder="비밀번호 입력"
+                  placeholder={t('auth:password_placeholder')}
                   disabled={isLoading}
                   onKeyDown={({ detail }) => {
                     if (detail.key === 'Enter') attemptLogin();
@@ -176,14 +177,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                   style={{ textDecoration: 'none' }}
                 >
                   <CloudscapeLink>
-                    AWS 계정이 없으신가요? 가입하기
+                    {t('auth:no_account_signup')}
                   </CloudscapeLink>
                 </Link>
               </Box>
             </SpaceBetween>
           </Container>
         </Form>
-        
+
         <ColumnLayout columns={1} variant="text-grid">
           <Box
             color="text-body-secondary"
@@ -193,16 +194,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
           >
             <SpaceBetween size="xs" direction="vertical">
               <Box>
-                로그인하면 AWS의 <CloudscapeLink href="#">서비스 약관</CloudscapeLink> 및 <CloudscapeLink href="#">개인정보처리방침</CloudscapeLink>에 동의하는 것으로 간주됩니다.
+                {t('auth:terms_agreement', {
+                  terms: <CloudscapeLink href="#">{t('auth:terms_of_service')}</CloudscapeLink>,
+                  privacy: <CloudscapeLink href="#">{t('auth:privacy_policy')}</CloudscapeLink>
+                })}
               </Box>
-              <Box display="flex" justifyContent="center" alignItems="center">
-                <Icon name="lock" />
-                <Box padding={{ left: "xxs" }} fontSize="body-s" color="text-status-info">
-                  보안 연결
+              <SpaceBetween direction="horizontal" size="xxs" alignItems="center">
+                <Icon name="envelope" />
+                <Box fontSize="body-s" color="text-status-info">
+                  {t('auth:secure_connection')}
                 </Box>
-              </Box>
+              </SpaceBetween>
               <Box>
-                &copy; {new Date().getFullYear()} Amazon Web Services, Inc. 또는 계열사
+                {t('common:footer.copyright', { year: new Date().getFullYear() })}
               </Box>
             </SpaceBetween>
           </Box>
