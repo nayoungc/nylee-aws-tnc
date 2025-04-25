@@ -172,99 +172,99 @@ const CourseCatalogTab: React.FC = () => {
     </Button>
   );
 
-  const renderTabs = () => (
-    <Tabs
-      activeTabId={activeTabId}
-      onChange={({ detail }) => setActiveTabId(detail.activeTabId)}
-      tabs={[
-        {
-          id: 'catalog',
-          label: t('courses.tabs.catalog'),
-          content: (
-            <BaseCourseView
-              title={t('courses.catalog_title')}
-              description={t('courses.catalog_description')}
-              isAdminView={true}
-              showCreateButton={true}
-              createPath="/instructor/courses/create"
-              managePath="/instructor/courses/"
-              viewPath="/tnc/"
-              additionalActions={additionalActions}
-              onSelectCourse={handleCourseSelect}
-            />
-          )
-        },
-        {
-          id: 'assessments',
-          label: t('courses.tabs.assessments'),
-          content: selectedCourse ? (
-            <Container
-              header={
-                <Header
-                  variant="h2"
-                  description={selectedCourse.description}
-                  actions={
-                    <SpaceBetween direction="horizontal" size="xs">
-                      <Button onClick={() => navigate(`/instructor/assessments/quiz?courseId=\${selectedCourse.catalogId}`)}>
-                        {t('courses.manage_quizzes')}
-                      </Button>
-                      <Button onClick={() => navigate(`/instructor/assessments/survey?courseId=\${selectedCourse.catalogId}`)}>
-                        {t('courses.manage_surveys')}
-                      </Button>
-                    </SpaceBetween>
-                  }
-                >
-                  {/* course_name 필드 대신 title 필드 사용 */}
-                  {selectedCourse.title} - {t('courses.assessment_stats')}
-                </Header>
-              }
-            >
-              {loading ? (
-                <Box textAlign="center" padding="l">
-                  {t('common.loading')}
-                </Box>
-              ) : assessmentStats && selectedCourse.catalogId && assessmentStats[selectedCourse.catalogId] ? (
-                <ColumnLayout columns={3}>
-                  <Box variant="awsui-key-label">
-                    <h3>{t('courses.pre_quiz_stats')}</h3>
-                    <div>
-                      <StatusIndicator type="success">
-                        {assessmentStats[selectedCourse.catalogId]?.preQuiz?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.preQuiz?.total || 0} {t('courses.completed')}
-                      </StatusIndicator>
-                    </div>
-                  </Box>
-                  <Box variant="awsui-key-label">
-                    <h3>{t('courses.post_quiz_stats')}</h3>
-                    <div>
-                      <StatusIndicator type="info">
-                        {assessmentStats[selectedCourse.catalogId]?.postQuiz?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.postQuiz?.total || 0} {t('courses.completed')}
-                      </StatusIndicator>
-                    </div>
-                  </Box>
-                  <Box variant="awsui-key-label">
-                    <h3>{t('courses.survey_stats')}</h3>
-                    <div>
-                      <StatusIndicator type="warning">
-                        {assessmentStats[selectedCourse.catalogId]?.surveys?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.surveys?.total || 0} {t('courses.completed')}
-                      </StatusIndicator>
-                    </div>
-                  </Box>
-                </ColumnLayout>
-              ) : (
-                <Box textAlign="center" padding="l">
-                  {t('courses.no_assessment_data')}
-                </Box>
-              )}
-            </Container>
-          ) : (
-            <Box textAlign="center" padding="l">
-              {t('courses.select_course_prompt')}
-            </Box>
-          )
-        }
-      ]}
-    />
-  );
+  // const renderTabs = () => (
+  //   <Tabs
+  //     activeTabId={activeTabId}
+  //     onChange={({ detail }) => setActiveTabId(detail.activeTabId)}
+  //     tabs={[
+  //       {
+  //         id: 'catalog',
+  //         label: t('courses.tabs.catalog'),
+  //         content: (
+  //           <BaseCourseView
+  //             title={t('courses.catalog_title')}
+  //             description={t('courses.catalog_description')}
+  //             isAdminView={true}
+  //             showCreateButton={true}
+  //             createPath="/instructor/courses/create"
+  //             managePath="/instructor/courses/"
+  //             viewPath="/tnc/"
+  //             additionalActions={additionalActions}
+  //             onSelectCourse={handleCourseSelect}
+  //           />
+  //         )
+  //       },
+  //       {
+  //         id: 'assessments',
+  //         label: t('courses.tabs.assessments'),
+  //         content: selectedCourse ? (
+  //           <Container
+  //             header={
+  //               <Header
+  //                 variant="h2"
+  //                 description={selectedCourse.description}
+  //                 actions={
+  //                   <SpaceBetween direction="horizontal" size="xs">
+  //                     <Button onClick={() => navigate(`/instructor/assessments/quiz?courseId=\${selectedCourse.catalogId}`)}>
+  //                       {t('courses.manage_quizzes')}
+  //                     </Button>
+  //                     <Button onClick={() => navigate(`/instructor/assessments/survey?courseId=\${selectedCourse.catalogId}`)}>
+  //                       {t('courses.manage_surveys')}
+  //                     </Button>
+  //                   </SpaceBetween>
+  //                 }
+  //               >
+  //                 {/* course_name 필드 대신 title 필드 사용 */}
+  //                 {selectedCourse.title} - {t('courses.assessment_stats')}
+  //               </Header>
+  //             }
+  //           >
+  //             {loading ? (
+  //               <Box textAlign="center" padding="l">
+  //                 {t('common.loading')}
+  //               </Box>
+  //             ) : assessmentStats && selectedCourse.catalogId && assessmentStats[selectedCourse.catalogId] ? (
+  //               <ColumnLayout columns={3}>
+  //                 <Box variant="awsui-key-label">
+  //                   <h3>{t('courses.pre_quiz_stats')}</h3>
+  //                   <div>
+  //                     <StatusIndicator type="success">
+  //                       {assessmentStats[selectedCourse.catalogId]?.preQuiz?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.preQuiz?.total || 0} {t('courses.completed')}
+  //                     </StatusIndicator>
+  //                   </div>
+  //                 </Box>
+  //                 <Box variant="awsui-key-label">
+  //                   <h3>{t('courses.post_quiz_stats')}</h3>
+  //                   <div>
+  //                     <StatusIndicator type="info">
+  //                       {assessmentStats[selectedCourse.catalogId]?.postQuiz?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.postQuiz?.total || 0} {t('courses.completed')}
+  //                     </StatusIndicator>
+  //                   </div>
+  //                 </Box>
+  //                 <Box variant="awsui-key-label">
+  //                   <h3>{t('courses.survey_stats')}</h3>
+  //                   <div>
+  //                     <StatusIndicator type="warning">
+  //                       {assessmentStats[selectedCourse.catalogId]?.surveys?.completed || 0} / {assessmentStats[selectedCourse.catalogId]?.surveys?.total || 0} {t('courses.completed')}
+  //                     </StatusIndicator>
+  //                   </div>
+  //                 </Box>
+  //               </ColumnLayout>
+  //             ) : (
+  //               <Box textAlign="center" padding="l">
+  //                 {t('courses.no_assessment_data')}
+  //               </Box>
+  //             )}
+  //           </Container>
+  //         ) : (
+  //           <Box textAlign="center" padding="l">
+  //             {t('courses.select_course_prompt')}
+  //           </Box>
+  //         )
+  //       }
+  //     ]}
+  //   />
+  // );
 
   return (
     <SpaceBetween size="l">
@@ -285,7 +285,7 @@ const CourseCatalogTab: React.FC = () => {
           </Header>
         }
       >
-        {renderTabs()}
+        {/* {renderTabs()} */}
       </Container>
     </SpaceBetween>
   );

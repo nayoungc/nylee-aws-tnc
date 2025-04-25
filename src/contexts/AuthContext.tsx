@@ -73,33 +73,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('이미 인증 확인 중입니다. 중복 요청 무시.');
       return state.isAuthenticated;
     }
-
+    
     // 캐시 수명 (3분)
     const CACHE_TTL = 3 * 60 * 1000;
-
+  
     // 최근에 이미 확인한 경우 (캐시 유효)
     const now = Date.now();
     if (!force && now - lastRefresh < CACHE_TTL && state.isAuthenticated) {
       console.log('최근에 이미 인증 확인 완료. 캐시된 상태 반환.');
       return state.isAuthenticated;
     }
-
+  
     // 로딩 플래그 설정
     console.log('인증 상태 확인 시작');
     authCheckInProgress = true;
-
+    
     setState(prev => ({
       ...prev,
       loading: true
     }));
-
+  
     try {
       try {
         // 세션 가져오기
-        const session = await fetchAuthSession({
-          forceRefresh: force || (now - lastRefresh > CACHE_TTL * 2)
+        const session = await fetchAuthSession({ 
+          forceRefresh: force 
         });
-
+        
         // 토큰이 없으면 로그아웃 상태
         if (!session.tokens) {
           console.log('유효한 토큰 없음, 로그아웃 상태로 설정');
@@ -112,21 +112,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           return false;
         }
-
-        // 자격 증명 확인 (없어도 계속 진행, 일부 작업은 자격 증명 없이도 가능)
+        
+        // 자격 증명이 없는 경우 - 부분 인증 상태 처리
         if (!session.credentials) {
           console.log('자격 증명 없음, 토큰만 있는 상태 - 부분 인증 상태');
-          // 인증 상태는 토큰 기반으로 판단
+          
+          // 사용자 정보 가져오기 시도
           try {
-            // 사용자 정보만 가져오기 시도
             const user = await getCurrentUser();
             const attributes = await fetchUserAttributes();
-
-            // 세션에 저장
-            sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
-            sessionStorage.setItem('userAttributesTimestamp', now.toString());
-
-            // 상태 업데이트
+            
+            // 자격 증명은 없지만 유효한 사용자 정보가 있어 인증 상태로 간주
             setState({
               isAuthenticated: true,
               userAttributes: attributes,
@@ -134,12 +130,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               userRole: attributes.profile || 'student',
               loading: false
             });
-
+            
             setLastRefresh(now);
+            // 인증 상태로 간주하되, AWS 서비스 호출에는 문제가 있을 수 있음을 로그로 남김
+            console.log('인증은 유효하지만 AWS 자격 증명이 없습니다. AWS 서비스 사용에 제한이 있을 수 있습니다.');
             return true;
           } catch (userError) {
-            console.log('사용자 정보 가져오기 실패:', userError);
-            // 사용자 정보 가져오기 실패시 로그아웃 상태로 간주
+            // 사용자 정보도 가져올 수 없는 경우 - 인증 문제
+            console.log('사용자 정보 가져오기 실패 - 인증 문제로 로그아웃 처리:', userError);
+            
+            // 로그아웃 처리
+            try {
+              await signOut({ global: false });
+              console.log('부분 인증 상태에서 강제 로그아웃 완료');
+            } catch (signOutErr) {
+              console.error('로그아웃 처리 중 오류:', signOutErr);
+            }
+            
             setState({
               isAuthenticated: false,
               userAttributes: null,
@@ -150,18 +157,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return false;
           }
         }
-
-        // 토큰과 자격 증명 모두 있는 경우
+        
+        // 정상적인 인증 상태 (토큰 + 자격 증명)
         console.log('유효한 토큰과 자격 증명 발견: 로그인된 상태');
-
+        
         // 사용자 정보 가져오기
         const user = await getCurrentUser();
         const attributes = await fetchUserAttributes();
-
+        
         // 세션에 저장
         sessionStorage.setItem('userAttributes', JSON.stringify(attributes));
         sessionStorage.setItem('userAttributesTimestamp', now.toString());
-
+        
         // 상태 업데이트
         setState({
           isAuthenticated: true,
@@ -170,13 +177,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           userRole: attributes.profile || 'student',
           loading: false
         });
-
+        
         setLastRefresh(now);
-        tokenRefreshAttempts = 0;
         return true;
       } catch (error) {
-        console.log('인증 확인 중 오류:', error);
-
+        console.error('인증 확인 중 오류:', error);
+        
         // 오류 발생 시 로그아웃 상태로 설정
         setState({
           isAuthenticated: false,
@@ -185,23 +191,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           userRole: 'student',
           loading: false
         });
-
+  
         // 캐시 정리
         sessionStorage.removeItem('userAttributes');
         sessionStorage.removeItem('userAttributesTimestamp');
-
+        
         return false;
       }
     } finally {
       // 로딩 플래그 해제
       authCheckInProgress = false;
-
+      
       // 로딩 상태 종료
-      setState(prev => ({
-        ...prev,
-        loading: false
+      setState(prev => ({ 
+        ...prev, 
+        loading: false 
       }));
-
+      
       // 첫 인증 확인 완료 표시
       if (!initialAuthChecked) {
         setInitialAuthChecked(true);
@@ -369,38 +375,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
 
         case 'tokenRefresh':
-          // 로그아웃 상태에서는 토큰 갱신을 시도하지 않음
+          // 로그인 상태가 아니면 토큰 갱신 무시
           if (!state.isAuthenticated) {
             console.log('로그아웃 상태. 토큰 갱신 중단');
             return;
           }
 
           const now = Date.now();
-          
-          // 토큰 갱신 제한
+
+          // 토큰 갱신 제한 - 너무 빈번한 요청 방지
           if (now - tokenRefreshLastAttempt < TOKEN_REFRESH_MIN_INTERVAL) {
             console.log('토큰 갱신 제한: 너무 빈번한 요청');
             return;
           }
 
+          // 최대 시도 횟수 초과 시 일정 시간 후 다시 허용
           if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS) {
             console.log(`토큰 갱신 제한: 최대 시도 횟수 초과 (\${tokenRefreshAttempts}/\${MAX_TOKEN_REFRESH_ATTEMPTS})`);
-            // 제한 횟수 도달 후 일정 시간 후 다시 허용
-            if (now - tokenRefreshLastAttempt > TOKEN_REFRESH_MIN_INTERVAL * 10) {
+
+            // 마지막 시도로부터 일정 시간 경과 후 카운터 초기화 (5분)
+            if (now - tokenRefreshLastAttempt > 5 * 60 * 1000) {
               console.log('토큰 갱신 카운터 초기화');
               tokenRefreshAttempts = 0;
+            } else {
+              // 그렇지 않으면 무시
+              return;
             }
-            return;
           }
 
+          // 토큰 갱신 시도 기록
           tokenRefreshAttempts++;
           tokenRefreshLastAttempt = now;
-          console.log('토큰 갱신 시도:', tokenRefreshAttempts);
+          console.log(`토큰 갱신 시도: \${tokenRefreshAttempts}`);
 
-          // 토큰 갱신 시 조용히 인증 상태 확인
-          checkAuthStatus(true).catch(err =>
-            console.error('토큰 갱신 중 인증 상태 확인 실패:', err)
-          );
+          // 실제 갱신은 비동기로 처리하고 오류를 잡아서 무한 루프 방지
+          (async () => {
+            try {
+              const refreshed = await checkAuthStatus(true);
+              console.log('토큰 갱신 결과:', refreshed ? '성공' : '실패');
+
+              // 성공 시 카운터 초기화
+              if (refreshed) {
+                tokenRefreshAttempts = 0;
+              }
+            } catch (refreshError) {
+              console.error('토큰 갱신 중 오류:', refreshError);
+            }
+          })();
           break;
       }
     });

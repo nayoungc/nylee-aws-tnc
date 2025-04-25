@@ -19,14 +19,14 @@ const SignIn: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, checkAuthStatus } = useAuth();
-  
+
   // 인증 확인 완료 여부를 추적하기 위한 ref
   const authCheckCompletedRef = useRef(false);
 
   // URL에서 returnUrl 파라미터 추출
   const queryParams = new URLSearchParams(location.search);
   const returnUrl = queryParams.get('returnTo') || '/';
-  
+
   const { username: initialUsername, message } = location.state || { username: '', message: '' };
 
   const [formState, setFormState] = useState({
@@ -43,29 +43,28 @@ const SignIn: React.FC = () => {
   useEffect(() => {
     // 이미 확인 완료된 경우 중복 실행 방지
     if (authCheckCompletedRef.current) return;
-    
+
+    console.log('SignIn 컴포넌트: 인증 상태 확인 시작');
+    authCheckCompletedRef.current = true; // 중복 확인 방지
+
     const verifyAuth = async () => {
       try {
-        console.log('인증 상태 확인 시작 - SignIn 컴포넌트');
-        // 실제 인증 상태만 확인하고 자격 증명 초기화를 강제하지 않음
-        const isAuth = await checkAuthStatus(false);
-        
-        if (isAuth) {
-          console.log('이미 인증된 사용자입니다. 리다이렉트합니다.');
+        // 단순히 현재 상태만 확인하고 추가 갱신은 하지 않음
+        if (isAuthenticated) {
+          console.log('이미 인증된 상태입니다. 리다이렉트합니다.');
           setIsRedirecting(true);
           navigate(returnUrl);
+        } else {
+          console.log('인증되지 않은 상태입니다. 로그인 폼을 표시합니다.');
         }
       } catch (err) {
         console.error('인증 상태 확인 중 오류:', err);
-      } finally {
-        // 확인 완료 표시
-        authCheckCompletedRef.current = true;
       }
     };
-    
+
     // 인증 확인 시작
     verifyAuth();
-  }, [navigate, returnUrl]); 
+  }, [isAuthenticated, navigate, returnUrl]);
 
   const handleChange = (field: string, value: string) => {
     setFormState({ ...formState, [field]: value });
@@ -96,13 +95,13 @@ const SignIn: React.FC = () => {
         // 로그인 성공 시 리디렉션 상태 설정
         setIsRedirecting(true);
         setSuccessMessage('로그인 성공! 리디렉션 중...');
-        
+
         // 잠시 대기하여 토큰이 설정될 시간을 확보
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         // 로그인 성공 - 인증 상태 갱신
         await checkAuthStatus(true);
-        
+
         // 리디렉션
         navigate(returnUrl);
       } else if (result.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {
@@ -119,7 +118,7 @@ const SignIn: React.FC = () => {
       }
     } catch (err: any) {
       console.error('로그인 오류:', err);
-      
+
       // 이미 로그인된 사용자 오류는 특별히 처리
       if (err.name === 'UserAlreadyAuthenticatedException') {
         console.log('이미 로그인된 상태입니다. 리디렉션합니다.');
@@ -128,7 +127,7 @@ const SignIn: React.FC = () => {
         navigate(returnUrl); // 원하는 페이지로 이동
         return;
       }
-      
+
       // 기타 에러 처리 로직
       if (err.name === 'UserNotFoundException' || err.message?.includes('user') && err.message?.includes('exist')) {
         setError(t('auth.user_not_exist') || '사용자가 존재하지 않습니다');
