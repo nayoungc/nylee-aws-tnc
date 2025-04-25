@@ -1,13 +1,37 @@
 {
-    "title": "Dashboard",
-    "description": "View your key metrics and recent activities",
-    "welcome": "Welcome, {{name}}!",
-    "metrics": {
-      "totalCourses": "Total Courses",
-      "activeUsers": "Active Users",
-      "completedCourses": "Completed Trainings",
-      "averageSatisfaction": "Average Satisfaction"
-    },
-    "recentActivities": "Recent Activities",
-    "upcomingCourses": "Upcoming Courses"
+  "title": "Dashboard",
+  "description": "View your key metrics and recent activities",
+  "welcome": "Welcome, {{name}}!",
+  "today_is": "Today is {{date}}",
+  "quick_access": "Quick Access",
+  "metrics": {
+    "title": "Key Metrics",
+    "totalCourses": "Total Courses",
+    "activeUsers": "Active Users",
+    "completedCourses": "Completed Trainings",
+    "averageSatisfaction": "Average Satisfaction",
+    "value": "Value",
+    "change": "Change from last month"
+  },
+  "recent_activities": {
+    "title": "Recent Activities",
+    "new_course": "New course added",
+    "completed_training": "Users completed training",
+    "new_survey": "New survey responses",
+    "days_ago": "{{count}} days ago",
+    "weeks_ago": "{{count}} weeks ago"
+  },
+  "upcoming_courses": {
+    "title": "Upcoming Courses",
+    "date": "Date",
+    "participants": "{{count}} participants registered",
+    "status": "Status",
+    "registration_open": "Registration Open",
+    "preparation": "In Preparation"
+  },
+  "manage": {
+    "course_management": "Course Management",
+    "user_registration": "User Registration",
+    "performance_reports": "Performance Reports"
   }
+}

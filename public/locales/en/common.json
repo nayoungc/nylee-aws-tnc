@@ -1,5 +1,9 @@
 {
-  "appName": "AWS Training Portal",
+  "app": {
+    "title": "AWS T&C Education Portal",
+    "logo_alt": "AWS Logo",
+    "copyright": "© {{year}} Amazon Web Services, Inc. or its affiliates"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "courses": "Courses",

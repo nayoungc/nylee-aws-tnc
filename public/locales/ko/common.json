@@ -1,5 +1,9 @@
 {
-  "appName": "AWS 교육 포털",
+  "app": {
+    "title": "AWS T&C 교육 포털",
+    "logo_alt": "AWS 로고",
+    "copyright": "© {{year}} Amazon Web Services, Inc. 또는 계열사"
+  },
   "nav": {
     "dashboard": "대시보드",
     "courses": "교육 과정",
