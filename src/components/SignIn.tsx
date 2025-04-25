@@ -18,10 +18,11 @@ const SignIn: React.FC = () => {
   const { t } = useTypedTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, checkAuthStatus } = useAuth();
+  const { isAuthenticated, checkAuthStatus, refreshCredentials, hasCredentials } = useAuth();
 
   // 인증 확인 완료 여부를 추적하기 위한 ref
   const authCheckCompletedRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
 
   // URL에서 returnUrl 파라미터 추출
   const queryParams = new URLSearchParams(location.search);
@@ -38,6 +39,8 @@ const SignIn: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(message || null);
   // 리디렉션 중 상태 추가
   const [isRedirecting, setIsRedirecting] = useState(false);
+  // 부분 인증 상태 처리
+  const [isPartialAuth, setIsPartialAuth] = useState(false);
 
   // 페이지 로드 시 한 번만 인증 상태 확인
   useEffect(() => {
@@ -49,7 +52,14 @@ const SignIn: React.FC = () => {
 
     const verifyAuth = async () => {
       try {
-        // 단순히 현재 상태만 확인하고 추가 갱신은 하지 않음
+        // 부분 인증 상태 확인
+        if (sessionStorage.getItem('partialAuthState') === 'true' && isAuthenticated) {
+          console.log('부분 인증 상태 감지 (토큰O, 자격증명X)');
+          setIsPartialAuth(true);
+          return;
+        }
+
+        // 인증 상태 확인
         if (isAuthenticated) {
           console.log('이미 인증된 상태입니다. 리다이렉트합니다.');
           setIsRedirecting(true);
@@ -62,12 +72,63 @@ const SignIn: React.FC = () => {
       }
     };
 
-    // 인증 확인 시작
-    verifyAuth();
+    // 인증 확인 시작 (약간 지연)
+    const timerId = window.setTimeout(() => {
+      verifyAuth();
+    }, 100);
+    
+    // 타이머 참조 저장
+    timerRef.current = timerId;
+    
+    // 클린업 함수
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, [isAuthenticated, navigate, returnUrl]);
+
+  // 부분 인증 상태 처리
+  useEffect(() => {
+    // 부분 인증 상태 확인
+    const checkPartialAuth = () => {
+      if (isAuthenticated && !hasCredentials) {
+        setIsPartialAuth(true);
+      } else {
+        setIsPartialAuth(false);
+      }
+    };
+    
+    checkPartialAuth();
+  }, [isAuthenticated, hasCredentials]);
 
   const handleChange = (field: string, value: string) => {
     setFormState({ ...formState, [field]: value });
+  };
+
+  // 자격 증명 갱신 요청
+  const handleRefreshCredentials = async () => {
+    setLoading(true);
+    try {
+      console.log('자격 증명 갱신 시도...');
+      const success = await refreshCredentials();
+      
+      if (success) {
+        setSuccessMessage('자격 증명이 성공적으로 갱신되었습니다. 리다이렉션합니다...');
+        
+        // 성공 시 리디렉션
+        setTimeout(() => {
+          navigate(returnUrl);
+        }, 1500);
+      } else {
+        setError('자격 증명 갱신에 실패했습니다. 로그아웃 후 다시 로그인해보세요.');
+      }
+    } catch (err: any) {
+      console.error('자격 증명 갱신 오류:', err);
+      setError('자격 증명 갱신 중 오류가 발생했습니다: ' + (err.message || '알 수 없는 오류'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 로그인 처리 함수 개선
@@ -96,8 +157,11 @@ const SignIn: React.FC = () => {
         setIsRedirecting(true);
         setSuccessMessage('로그인 성공! 리디렉션 중...');
 
-        // 잠시 대기하여 토큰이 설정될 시간을 확보
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // 세션 스토리지 초기화 (부분 인증 상태 플래그 제거)
+        sessionStorage.removeItem('partialAuthState');
+
+        // 자격 증명 초기화를 위한 시간
+        await new Promise(resolve => setTimeout(resolve, 800));
 
         // 로그인 성공 - 인증 상태 갱신
         await checkAuthStatus(true);
@@ -135,9 +199,10 @@ const SignIn: React.FC = () => {
         setError(t('auth.incorrect_password') || '잘못된 비밀번호입니다');
       } else if (err.name === 'UserNotConfirmedException' || err.message?.includes('confirm')) {
         setError(t('auth.account_not_verified') || '계정이 확인되지 않았습니다');
-        setTimeout(() => {
+        const timerId = window.setTimeout(() => {
           navigate('/confirm-signup', { state: { username: formState.username } });
         }, 2000);
+        timerRef.current = timerId;
       } else {
         setError(err.message || t('auth.login_error_generic') || '로그인 중 오류가 발생했습니다');
       }
@@ -147,7 +212,7 @@ const SignIn: React.FC = () => {
   };
 
   // 이미 인증되었거나 리디렉션 중인 경우 로딩 상태 표시
-  if (isAuthenticated || isRedirecting) {
+  if ((isAuthenticated && !isPartialAuth) || isRedirecting) {
     return (
       <AuthLayout>
         <SpaceBetween direction="vertical" size="l">
@@ -166,7 +231,73 @@ const SignIn: React.FC = () => {
     );
   }
 
-  // 나머지 JSX 부분은 동일하게 유지
+  // 부분 인증 상태 (토큰은 있지만 자격 증명이 없는 경우)
+  if (isPartialAuth) {
+    return (
+      <AuthLayout>
+        <SpaceBetween direction="vertical" size="l">
+          <Box textAlign="center" padding={{ bottom: 'l' }}>
+            <img
+              src="/images/aws.png"
+              alt="AWS Logo"
+              style={{ maxWidth: '180px', marginBottom: '20px' }}
+            />
+            <Box
+              fontSize="heading-xl"
+              fontWeight="bold"
+              color="text-label"
+              padding={{ top: 'm' }}
+            >
+              제한된 인증 상태
+            </Box>
+          </Box>
+
+          <Alert type="warning">
+            <h3>AWS 자격 증명이 필요합니다</h3>
+            <p>
+              로그인은 되었지만 AWS 서비스 접근에 필요한 자격 증명이 없습니다. 
+              자격 증명을 갱신하거나 로그아웃 후 다시 로그인해주세요.
+            </p>
+          </Alert>
+
+          {error && (
+            <Alert type="error" dismissible onDismiss={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+
+          {successMessage && (
+            <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
+              {successMessage}
+            </Alert>
+          )}
+
+          <SpaceBetween direction="horizontal" size="s" alignItems="center">
+            <Button 
+              variant="primary" 
+              onClick={handleRefreshCredentials}
+              loading={loading}
+            >
+              자격 증명 갱신
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/signout')}
+              disabled={loading}
+            >
+              로그아웃
+            </Button>
+          </SpaceBetween>
+          
+          <Box textAlign="center" color="text-body-secondary" fontSize="body-s">
+            &copy; {new Date().getFullYear()} Amazon Web Services, Inc. 또는 계열사
+          </Box>
+        </SpaceBetween>
+      </AuthLayout>
+    );
+  }
+
+  // 일반 로그인 폼
   return (
     <AuthLayout>
       <SpaceBetween direction="vertical" size="l">
