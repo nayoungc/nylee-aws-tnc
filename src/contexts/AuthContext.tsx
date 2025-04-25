@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { fetchAuthSession, getCurrentUser, fetchUserAttributes, signOut } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 import AWS from 'aws-sdk';
+import { AuthSession } from 'aws-amplify/auth';
+
 
 // 로그 레벨 타입 및 설정
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -235,7 +237,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setState(prev => ({ ...prev, loading: true }));
         
         // 세션 가져오기
-        let session;
+        let session: any;
         try {
           session = await fetchAuthSession();
         } catch (sessionError) {
