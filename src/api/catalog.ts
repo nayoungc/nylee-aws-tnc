@@ -1,9 +1,9 @@
-import { DynamoDB } from 'aws-sdk';
-import { useAuth, withAuthErrorHandling } from '../contexts/AuthContext';
+// src/api/catalog.ts
+import { getDocumentClient, shouldUseMockData } from './auth-provider';
 import { CourseCatalog } from './types/catalog';
 
-// 모의 데이터 (자격 증명 없을 때 사용)
-const mockCourses : CourseCatalog[] = [
+// 모의 데이터
+const mockCourses: CourseCatalog[] = [
   {
     catalogId: "NET-001",
     title: "네트워크 기초 및 보안",
@@ -31,65 +31,66 @@ const mockCourses : CourseCatalog[] = [
 const TABLE_NAME = 'Tnc-CourseCatalog';
 
 /**
- * 코스 카탈로그 목록을 가져오는 함수
+ * 코스 카탈로그 목록을 가져오는 함수 - Gen 2 스타일
+ * (authContext 매개변수 선택적으로 변경)
  */
-export const listCourseCatalogs = async (authContext: ReturnType<typeof useAuth>): Promise<CourseCatalog[]> => {
+export const listCourseCatalogs = async (authContext?: any): Promise<any> => {
   // 모의 데이터 모드 확인
-  if (authContext.useMockData || !authContext.hasCredentials) {
+  if (shouldUseMockData() || (authContext?.useMockData || authContext?.hasCredentials === false)) {
     console.log('모의 데이터 사용 중 - listCourseCatalogs');
-    return mockCourses;
+    return { 
+      data: mockCourses,
+      success: true
+    };
   }
 
   try {
-    // AWS DynamoDB 서비스 생성
-    const dynamoDB = await authContext.createAWSService(DynamoDB.DocumentClient);
-
+    // Gen 2 스타일로 DynamoDB 클라이언트 생성
+    const documentClient = await getDocumentClient();
+    
     // DynamoDB 스캔 요청
-    const result = await withAuthErrorHandling(async () => {
-      return dynamoDB.scan({
-        TableName: TABLE_NAME
-      }).promise();
-    }, authContext)();
+    const result = await documentClient.scan({
+      TableName: TABLE_NAME
+    }).promise();
 
     // 결과가 있으면 반환
-    if (result.Items) {
-      return result.Items as CourseCatalog[];
-    }
-
-    return [];
+    return {
+      data: result.Items || [],
+      success: true
+    };
   } catch (error) {
     console.error('코스 카탈로그 목록 가져오기 실패:', error);
-
-    // 오류 시 모의 데이터로 대체
-    return mockCourses;
+    
+    // 오류 발생 시 모의 데이터 반환
+    return {
+      data: mockCourses,
+      success: false,
+      error: error
+    };
   }
 };
 
 /**
- * 특정 코스 카탈로그를 가져오는 함수
+ * 특정 코스 카탈로그를 가져오는 함수 - Gen 2 스타일
+ * (authContext 매개변수 선택적으로 변경)
  */
-export const getCourseCatalog = async (
-  catalogId: string,
-  authContext: ReturnType<typeof useAuth>
-): Promise<CourseCatalog | null> => {
+export const getCourseCatalog = async (catalogId: string, authContext?: any): Promise<CourseCatalog | null> => {
   // 모의 데이터 모드 확인
-  if (authContext.useMockData || !authContext.hasCredentials) {
+  if (shouldUseMockData() || (authContext?.useMockData || authContext?.hasCredentials === false)) {
     console.log('모의 데이터 사용 중 - getCourseCatalog');
     const mockCourse = mockCourses.find(c => c.catalogId === catalogId);
     return mockCourse || null;
   }
 
   try {
-    // AWS DynamoDB 서비스 생성
-    const dynamoDB = await authContext.createAWSService(DynamoDB.DocumentClient);
+    // Gen 2 스타일로 DynamoDB 클라이언트 생성
+    const documentClient = await getDocumentClient();
 
     // DynamoDB 항목 가져오기 요청
-    const result = await withAuthErrorHandling(async () => {
-      return dynamoDB.get({
-        TableName: TABLE_NAME,
-        Key: { catalogId }
-      }).promise();
-    }, authContext)();
+    const result = await documentClient.get({
+      TableName: TABLE_NAME,
+      Key: { catalogId }
+    }).promise();
 
     // 결과가 있으면 반환
     if (result.Item) {

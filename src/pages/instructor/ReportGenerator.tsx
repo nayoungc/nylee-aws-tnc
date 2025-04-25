@@ -124,49 +124,50 @@ export default function ReportGenerator() {
   const fetchCourses = async () => {
     setLoadingCourses(true);
 
-    try {
-      const response = await listCourseCatalogs({
-        // 옵션 매개변수 (필요시 설정)
-      });
+    // try {
+    //   const response = await listCourseCatalogs({
+    //     // 옵션 매개변수 (필요시 설정)
+    //   });
 
-      if (response.data && Array.isArray(response.data)) {
-        const courseItems = response.data.map(item => ({
-          catalogId: item.catalogId || '',
-          title: item.title || '',
-          status: item.status || '',
-        } as CourseCatalog));
+    //   if (response.data && Array.isArray(response.data)) {
+    //     const courseItems = response.data.map(item => ({
+    //       catalogId: item.catalogId || '',
+    //       title: item.title || '',
+    //       status: item.status || '',
+    //       version: item.version || 'v1',  
+    //     } as CourseCatalog));
 
-        const courseOptions: SelectProps.Option[] = courseItems
-          .filter(course => course.status === 'ACTIVE')
-          .map(course => ({
-            label: course.title,
-            value: course.catalogId
-          }));
+    //     const courseOptions: SelectProps.Option[] = courseItems
+    //     .filter((course: CourseCatalog) => course.status === 'ACTIVE')
+    //     .map((course: CourseCatalog) => ({
+    //       label: course.title,
+    //       value: course.catalogId
+    //     }));
 
-        setCourses(courseOptions);
-      } else if (process.env.NODE_ENV === 'development') {
-        // 개발 환경 폴백 데이터
-        setCourses([
-          { label: 'AWS Cloud Practitioner', value: 'course-1' },
-          { label: 'AWS Solutions Architect Associate', value: 'course-2' },
-          { label: 'AWS Developer Associate', value: 'course-3' }
-        ]);
-      }
-    } catch (error) {
-      console.error(t('reports.errors.course_load'), error);
-      setError(t('reports.errors.course_load_message'));
+    //     setCourses(courseOptions);
+    //   } else if (process.env.NODE_ENV === 'development') {
+    //     // 개발 환경 폴백 데이터
+    //     setCourses([
+    //       { label: 'AWS Cloud Practitioner', value: 'course-1' },
+    //       { label: 'AWS Solutions Architect Associate', value: 'course-2' },
+    //       { label: 'AWS Developer Associate', value: 'course-3' }
+    //     ]);
+    //   }
+    // } catch (error) {
+    //   console.error(t('reports.errors.course_load'), error);
+    //   setError(t('reports.errors.course_load_message'));
 
-      // 개발 환경 폴백 데이터
-      if (process.env.NODE_ENV === 'development') {
-        setCourses([
-          { label: 'AWS Cloud Practitioner', value: 'course-1' },
-          { label: 'AWS Solutions Architect Associate', value: 'course-2' },
-          { label: 'AWS Developer Associate', value: 'course-3' }
-        ]);
-      }
-    } finally {
-      setLoadingCourses(false);
-    }
+    //   // 개발 환경 폴백 데이터
+    //   if (process.env.NODE_ENV === 'development') {
+    //     setCourses([
+    //       { label: 'AWS Cloud Practitioner', value: 'course-1' },
+    //       { label: 'AWS Solutions Architect Associate', value: 'course-2' },
+    //       { label: 'AWS Developer Associate', value: 'course-3' }
+    //     ]);
+    //   }
+    // } finally {
+    //   setLoadingCourses(false);
+    // }
   };
 
   // 보고서 목록 가져오기

@@ -131,20 +131,19 @@ export default function QuizCreate() {
 
       if (response.data && Array.isArray(response.data)) {
         // 타입 변환 적용
-        const mappedCourses = response.data.map(item => ({
+        // 첫 번째 map 함수
+        const mappedCourses = response.data.map((item: any) => ({
           catalogId: item.catalogId || '',
           title: item.title || '',
           version: item.version || 'v1',
-          isPublished: item.isPublished !== undefined ? item.isPublished : true,
-          status: item.status || 'ACTIVE',
           description: item.description,
           level: item.level,
           // 기타 필요한 필드...
         } as CourseCatalog));
-        
+
         setCourses(mappedCourses);
 
-        const courseOptions = mappedCourses.map(course => ({
+        const courseOptions = mappedCourses.map((course: CourseCatalog) => ({
           label: course.title,
           value: course.catalogId
         }));
@@ -166,8 +165,6 @@ export default function QuizCreate() {
             catalogId: 'sample-1',
             title: 'AWS Cloud Practitioner',
             version: 'v1',
-            isPublished: true,
-            status: 'ACTIVE',
             description: '클라우드 기초 개념 학습',
             level: 'Foundational'
           },
@@ -175,15 +172,13 @@ export default function QuizCreate() {
             catalogId: 'sample-2',
             title: 'AWS Solutions Architect Associate',
             version: 'v1',
-            isPublished: true,
-            status: 'ACTIVE',
             description: 'AWS 아키텍처 설계 학습',
             level: 'Associate'
           }
         ] as CourseCatalog[];
-        
+
         setCourses(sampleCourses);
-        
+
         if (!selectedCourse) {
           setSelectedCourse({
             label: sampleCourses[0].title,
@@ -572,613 +567,613 @@ export default function QuizCreate() {
   };
 
   return (
-      <SpaceBetween size="l">
-        {error && <Alert type="error">{error}</Alert>}
+    <SpaceBetween size="l">
+      {error && <Alert type="error">{error}</Alert>}
 
-        {/* 과정 선택 섹션 */}
-        <Container header={<Header variant="h2">{t('quiz_creator.course_selection.title')}</Header>}>
-          <SpaceBetween size="l">
-            <FormField label={t('quiz_creator.course_selection.course')}>
-              <Select
-                placeholder={tString('quiz_creator.course_selection.placeholder')}
-                selectedOption={selectedCourse}
-                onChange={({ detail }) => handleCourseChange(detail.selectedOption)}
-                options={courses.map(course => ({
-                  label: course.title,
-                  value: course.catalogId,
-                  description: course.description
-                }))}
-                statusType={loading ? 'loading' : 'finished'}
-                loadingText={tString('quiz_creator.loading.courses')}
-                disabled={isEditMode}
-                empty={
-                  <Box textAlign="center" color="inherit">
-                    <b>{t('quiz_creator.course_selection.no_courses')}</b>
-                    <Box padding={{ bottom: "xs" }}>
-                      {t('quiz_creator.course_selection.create_course')}
-                    </Box>
+      {/* 과정 선택 섹션 */}
+      <Container header={<Header variant="h2">{t('quiz_creator.course_selection.title')}</Header>}>
+        <SpaceBetween size="l">
+          <FormField label={t('quiz_creator.course_selection.course')}>
+            <Select
+              placeholder={tString('quiz_creator.course_selection.placeholder')}
+              selectedOption={selectedCourse}
+              onChange={({ detail }) => handleCourseChange(detail.selectedOption)}
+              options={courses.map(course => ({
+                label: course.title,
+                value: course.catalogId,
+                description: course.description
+              }))}
+              statusType={loading ? 'loading' : 'finished'}
+              loadingText={tString('quiz_creator.loading.courses')}
+              disabled={isEditMode}
+              empty={
+                <Box textAlign="center" color="inherit">
+                  <b>{t('quiz_creator.course_selection.no_courses')}</b>
+                  <Box padding={{ bottom: "xs" }}>
+                    {t('quiz_creator.course_selection.create_course')}
                   </Box>
-                }
+                </Box>
+              }
+            />
+          </FormField>
+
+          <FormField label={t('quiz_creator.quiz_type_selection.label')}>
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button
+                variant={quizType === 'pre' ? 'primary' : 'normal'}
+                onClick={() => handleQuizTypeChange('pre')}
+                disabled={isEditMode}
+              >
+                {t('quiz_creator.pre_quiz')}
+              </Button>
+              <Button
+                variant={quizType === 'post' ? 'primary' : 'normal'}
+                onClick={() => handleQuizTypeChange('post')}
+                disabled={isEditMode}
+              >
+                {t('quiz_creator.post_quiz')}
+              </Button>
+            </SpaceBetween>
+          </FormField>
+        </SpaceBetween>
+      </Container>
+
+      {/* 퀴즈 메타데이터 */}
+      <Container header={<Header variant="h2">{t('quiz_creator.sections.quiz_info')}</Header>}>
+        <SpaceBetween size="l">
+          <FormField
+            label={t('quiz_creator.meta.title_label')}
+            constraintText={t('common.required')}
+          >
+            <Input
+              value={quizMeta.title}
+              onChange={({ detail }) => handleMetaChange('title', detail.value)}
+              placeholder={tString('quiz_creator.meta.title_placeholder')}
+            />
+          </FormField>
+
+          <FormField label={t('quiz_creator.meta.description_label')}>
+            <Textarea
+              value={quizMeta.description}
+              onChange={({ detail }) => handleMetaChange('description', detail.value)}
+              placeholder={tString('quiz_creator.meta.description_placeholder')}
+            />
+          </FormField>
+
+          <ColumnLayout columns={2} variant="text-grid">
+            <FormField label={t('quiz_creator.meta.time_limit')}>
+              <Input
+                type="number"
+                value={quizMeta.timeLimit.toString()}
+                onChange={({ detail }) => {
+                  const value = parseInt(detail.value) || 0;
+                  const validValue = Math.max(0, value);
+                  handleMetaChange('timeLimit', validValue);
+                }}
+                step={5}
               />
             </FormField>
 
-            <FormField label={t('quiz_creator.quiz_type_selection.label')}>
+            <FormField label={t('quiz_creator.meta.pass_score')}>
+              <Input
+                type="number"
+                value={quizMeta.passScore.toString()}
+                onChange={({ detail }) => {
+                  const value = parseInt(detail.value) || 0;
+                  const validValue = Math.min(100, Math.max(0, value));
+                  handleMetaChange('passScore', validValue);
+                }}
+                step={5}
+              />
+            </FormField>
+          </ColumnLayout>
+
+          <SpaceBetween size="s" direction="horizontal">
+            <Checkbox
+              checked={quizMeta.shuffleQuestions}
+              onChange={({ detail }) => handleMetaChange('shuffleQuestions', detail.checked)}
+            >
+              {t('quiz_creator.meta.shuffle_questions')}
+            </Checkbox>
+
+            <Checkbox
+              checked={quizMeta.shuffleOptions}
+              onChange={({ detail }) => handleMetaChange('shuffleOptions', detail.checked)}
+            >
+              {t('quiz_creator.meta.shuffle_options')}
+            </Checkbox>
+
+            <Checkbox
+              checked={quizMeta.showFeedback}
+              onChange={({ detail }) => handleMetaChange('showFeedback', detail.checked)}
+            >
+              {t('quiz_creator.meta.show_feedback')}
+            </Checkbox>
+          </SpaceBetween>
+        </SpaceBetween>
+      </Container>
+
+      {/* 질문 목록 */}
+      <Container
+        header={
+          <Header
+            variant="h2"
+            actions={
               <SpaceBetween direction="horizontal" size="xs">
-                <Button
-                  variant={quizType === 'pre' ? 'primary' : 'normal'}
-                  onClick={() => handleQuizTypeChange('pre')}
-                  disabled={isEditMode}
-                >
-                  {t('quiz_creator.pre_quiz')}
+                <Button onClick={() => setShowImportModal(true)} iconName="upload">
+                  {t('quiz_creator.actions.import_questions')}
                 </Button>
-                <Button
-                  variant={quizType === 'post' ? 'primary' : 'normal'}
-                  onClick={() => handleQuizTypeChange('post')}
-                  disabled={isEditMode}
-                >
-                  {t('quiz_creator.post_quiz')}
+                <Button onClick={() => setShowAiGenerationModal(true)} iconName="file-open">
+                  {t('quiz_creator.actions.ai_generate')}
+                </Button>
+                <Button onClick={handleAddQuestion} iconName="add-plus">
+                  {t('quiz_creator.actions.add_question')}
                 </Button>
               </SpaceBetween>
-            </FormField>
-          </SpaceBetween>
-        </Container>
+            }
+          >
+            {t('quiz_creator.sections.questions_count', { count: questions.length })}
+          </Header>
+        }
+      >
+        {questions.length > 0 ? (
+          <>
+            <Table
+              items={questions}
+              columnDefinitions={[
+                {
+                  id: "index",
+                  header: "#",
+                  cell: (item: Question) => {
+                    // items 배열에서 인덱스를 직접 계산
+                    const index = questions.findIndex(q => q.id === item.id);
+                    return index + 1;
+                  },
+                  width: 50
+                },
+                {
+                  id: "question",
+                  header: t('quiz_creator.labels.question'),
+                  cell: item => item.question
+                },
+                {
+                  id: "options",
+                  header: t('quiz_creator.labels.options'),
+                  cell: (item: Question) => (
+                    <ul>
+                      {item.options.map((opt: string, idx: number) => (
+                        <li key={idx}>
+                          {opt} {idx === item.correctAnswer || opt === item.correctAnswer ?
+                            `(\${t('quiz_creator.labels.correct')})` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  ),
+                  width: 300
+                },
+                {
+                  id: "actions",
+                  header: t('common.actions'),
+                  cell: (item: Question) => {
+                    const index = questions.findIndex(q => q.id === item.id); // Assuming you have an id field
 
-        {/* 퀴즈 메타데이터 */}
-        <Container header={<Header variant="h2">{t('quiz_creator.sections.quiz_info')}</Header>}>
-          <SpaceBetween size="l">
-            <FormField
-              label={t('quiz_creator.meta.title_label')}
-              constraintText={t('common.required')}
-            >
-              <Input
-                value={quizMeta.title}
-                onChange={({ detail }) => handleMetaChange('title', detail.value)}
-                placeholder={tString('quiz_creator.meta.title_placeholder')}
-              />
-            </FormField>
-
-            <FormField label={t('quiz_creator.meta.description_label')}>
-              <Textarea
-                value={quizMeta.description}
-                onChange={({ detail }) => handleMetaChange('description', detail.value)}
-                placeholder={tString('quiz_creator.meta.description_placeholder')}
-              />
-            </FormField>
-
-            <ColumnLayout columns={2} variant="text-grid">
-              <FormField label={t('quiz_creator.meta.time_limit')}>
-                <Input
-                  type="number"
-                  value={quizMeta.timeLimit.toString()}
-                  onChange={({ detail }) => {
-                    const value = parseInt(detail.value) || 0;
-                    const validValue = Math.max(0, value);
-                    handleMetaChange('timeLimit', validValue);
-                  }}
-                  step={5}
-                />
-              </FormField>
-
-              <FormField label={t('quiz_creator.meta.pass_score')}>
-                <Input
-                  type="number"
-                  value={quizMeta.passScore.toString()}
-                  onChange={({ detail }) => {
-                    const value = parseInt(detail.value) || 0;
-                    const validValue = Math.min(100, Math.max(0, value));
-                    handleMetaChange('passScore', validValue);
-                  }}
-                  step={5}
-                />
-              </FormField>
-            </ColumnLayout>
-
-            <SpaceBetween size="s" direction="horizontal">
-              <Checkbox
-                checked={quizMeta.shuffleQuestions}
-                onChange={({ detail }) => handleMetaChange('shuffleQuestions', detail.checked)}
-              >
-                {t('quiz_creator.meta.shuffle_questions')}
-              </Checkbox>
-
-              <Checkbox
-                checked={quizMeta.shuffleOptions}
-                onChange={({ detail }) => handleMetaChange('shuffleOptions', detail.checked)}
-              >
-                {t('quiz_creator.meta.shuffle_options')}
-              </Checkbox>
-
-              <Checkbox
-                checked={quizMeta.showFeedback}
-                onChange={({ detail }) => handleMetaChange('showFeedback', detail.checked)}
-              >
-                {t('quiz_creator.meta.show_feedback')}
-              </Checkbox>
-            </SpaceBetween>
-          </SpaceBetween>
-        </Container>
-
-        {/* 질문 목록 */}
-        <Container
-          header={
-            <Header
-              variant="h2"
-              actions={
-                <SpaceBetween direction="horizontal" size="xs">
-                  <Button onClick={() => setShowImportModal(true)} iconName="upload">
-                    {t('quiz_creator.actions.import_questions')}
-                  </Button>
-                  <Button onClick={() => setShowAiGenerationModal(true)} iconName="file-open">
-                    {t('quiz_creator.actions.ai_generate')}
-                  </Button>
+                    return (
+                      <SpaceBetween direction="horizontal" size="xs">
+                        <Button iconName="edit" onClick={() => handleEditQuestion(index)}>
+                          {t('common.edit')}
+                        </Button>
+                        <Button iconName="remove" onClick={() => handleDeleteQuestion(index)}>
+                          {t('common.delete')}
+                        </Button>
+                      </SpaceBetween>
+                    );
+                  },
+                  width: 200
+                }
+              ]}
+              trackBy="id"
+              empty={
+                <Box textAlign="center" color="inherit">
+                  <b>{t('quiz_creator.empty_states.no_questions')}</b>
+                  <Box padding={{ bottom: "s" }}>
+                    {t('quiz_creator.empty_states.add_instructions')}
+                  </Box>
                   <Button onClick={handleAddQuestion} iconName="add-plus">
                     {t('quiz_creator.actions.add_question')}
                   </Button>
-                </SpaceBetween>
-              }
-            >
-              {t('quiz_creator.sections.questions_count', { count: questions.length })}
-            </Header>
-          }
-        >
-          {questions.length > 0 ? (
-            <>
-              <Table
-                items={questions}
-                columnDefinitions={[
-                  {
-                    id: "index",
-                    header: "#",
-                    cell: (item: Question) => {
-                      // items 배열에서 인덱스를 직접 계산
-                      const index = questions.findIndex(q => q.id === item.id);
-                      return index + 1;
-                    },
-                    width: 50
-                  },
-                  {
-                    id: "question",
-                    header: t('quiz_creator.labels.question'),
-                    cell: item => item.question
-                  },
-                  {
-                    id: "options",
-                    header: t('quiz_creator.labels.options'),
-                    cell: (item: Question) => (
-                      <ul>
-                        {item.options.map((opt: string, idx: number) => (
-                          <li key={idx}>
-                            {opt} {idx === item.correctAnswer || opt === item.correctAnswer ?
-                              `(\${t('quiz_creator.labels.correct')})` : ''}
-                          </li>
-                        ))}
-                      </ul>
-                    ),
-                    width: 300
-                  },
-                  {
-                    id: "actions",
-                    header: t('common.actions'),
-                    cell: (item: Question) => {
-                      const index = questions.findIndex(q => q.id === item.id); // Assuming you have an id field
-
-                      return (
-                        <SpaceBetween direction="horizontal" size="xs">
-                          <Button iconName="edit" onClick={() => handleEditQuestion(index)}>
-                            {t('common.edit')}
-                          </Button>
-                          <Button iconName="remove" onClick={() => handleDeleteQuestion(index)}>
-                            {t('common.delete')}
-                          </Button>
-                        </SpaceBetween>
-                      );
-                    },
-                    width: 200
-                  }
-                ]}
-                trackBy="id"
-                empty={
-                  <Box textAlign="center" color="inherit">
-                    <b>{t('quiz_creator.empty_states.no_questions')}</b>
-                    <Box padding={{ bottom: "s" }}>
-                      {t('quiz_creator.empty_states.add_instructions')}
-                    </Box>
-                    <Button onClick={handleAddQuestion} iconName="add-plus">
-                      {t('quiz_creator.actions.add_question')}
-                    </Button>
-                  </Box>
-                }
-                header={<Header>{t('quiz_creator.sections.question_list')}</Header>}
-                stickyHeader={true}
-              />
-            </>
-          ) : (
-            <Box textAlign="center" color="inherit">
-              <b>{t('quiz_creator.empty_states.no_questions')}</b>
-              <Box padding={{ bottom: "s" }}>
-                {t('quiz_creator.empty_states.add_instructions')}
-              </Box>
-              <Button onClick={handleAddQuestion} iconName="add-plus">
-                {t('quiz_creator.actions.add_question')}
-              </Button>
-            </Box>
-          )}
-        </Container>
-
-        {/* 하단 버튼 */}
-        <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-          <Button onClick={handleReturn} variant="link">
-            {t('quiz_creator.actions.cancel_return')}
-          </Button>
-          <Button
-            onClick={handleSaveQuiz}
-            variant="primary"
-            loading={saving}
-          >
-            {isEditMode ?
-              t('quiz_creator.actions.update_quiz') :
-              t('quiz_creator.actions.save_quiz')
-            }
-          </Button>
-        </SpaceBetween>
-
-        {/* 질문 편집 모달 */}
-        <Modal
-          visible={isEditingQuestion}
-          onDismiss={handleCancelEdit}
-          header={editingIndex >= 0 ?
-            t('quiz_creator.modal.edit_question') :
-            t('quiz_creator.modal.add_question')}
-          size="large"
-        >
-          {currentQuestion && (
-            <SpaceBetween size="l">
-              <FormField
-                label={t('quiz_creator.labels.question')}
-                constraintText={t('common.required')}
-              >
-                <Textarea
-                  value={currentQuestion.question}
-                  onChange={({ detail }) =>
-                    setCurrentQuestion({
-                      ...currentQuestion,
-                      question: detail.value
-                    })
-                  }
-                  placeholder={tString('quiz_creator.placeholders.question')}
-                />
-              </FormField>
-
-              <FormField label={t('quiz_creator.labels.explanation')}>
-                <Textarea
-                  value={currentQuestion.explanation || ''}
-                  onChange={({ detail }) =>
-                    setCurrentQuestion({
-                      ...currentQuestion,
-                      explanation: detail.value
-                    })
-                  }
-                  placeholder={tString('quiz_creator.placeholders.explanation')}
-                />
-              </FormField>
-
-              <FormField
-                label={t('quiz_creator.labels.options')}
-                constraintText={t('common.required')}
-              >
-                <SpaceBetween size="xs">
-                  {currentQuestion.options.map((option, index) => (
-                    <SpaceBetween direction="horizontal" size="xs" key={index}>
-                      <Input
-                        value={option}
-                        onChange={({ detail }) => handleOptionChange(index, detail.value)}
-                        placeholder={tString('quiz_creator.placeholders.option', { number: index + 1 })}
-                      />
-
-                      <RadioGroup
-                        items={[
-                          { value: index.toString(), label: t('quiz_creator.labels.correct') }
-                        ]}
-                        value={currentQuestion.correctAnswer === index ? index.toString() : ''}
-                        onChange={({ detail }) =>
-                          setCurrentQuestion({
-                            ...currentQuestion,
-                            correctAnswer: parseInt(detail.value)
-                          })
-                        }
-                      />
-
-                      <Button
-                        iconName="remove"
-                        variant="icon"
-                        disabled={currentQuestion.options.length <= 2}
-                        onClick={() => handleRemoveOption(index)}
-                      />
-                    </SpaceBetween>
-                  ))}
-
-                  <Button
-                    iconName="add-plus"
-                    onClick={handleAddOption}
-                    disabled={currentQuestion.options.length >= 6}
-                  >
-                    {t('quiz_creator.actions.add_option')}
-                  </Button>
-                </SpaceBetween>
-              </FormField>
-
-              <FormField label={t('quiz_creator.labels.difficulty')}>
-                <Select
-                  selectedOption={
-                    currentQuestion.difficulty ?
-                      { label: currentQuestion.difficulty, value: currentQuestion.difficulty } :
-                      null
-                  }
-                  onChange={({ detail }) => setCurrentQuestion({
-                    ...currentQuestion,
-                    difficulty: detail.selectedOption?.value
-                  })}
-                  options={[
-                    { label: tString('quiz_creator.difficulty.easy'), value: 'easy' },
-                    { label: tString('quiz_creator.difficulty.medium'), value: 'medium' },
-                    { label: tString('quiz_creator.difficulty.hard'), value: 'hard' }
-                  ]}
-                  placeholder={tString('quiz_creator.placeholders.select_difficulty')}
-                />
-              </FormField>
-
-              <FormField label={t('quiz_creator.labels.tags')}>
-                <Input
-                  value={(currentQuestion.tags || []).join(', ')}
-                  onChange={({ detail }) => setCurrentQuestion({
-                    ...currentQuestion,
-                    tags: detail.value.split(',').map(t => t.trim())
-                  })}
-                  placeholder={tString('quiz_creator.placeholders.tags')}
-                />
-                <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
-                  {t('quiz_creator.hints.tags')}
                 </Box>
-              </FormField>
+              }
+              header={<Header>{t('quiz_creator.sections.question_list')}</Header>}
+              stickyHeader={true}
+            />
+          </>
+        ) : (
+          <Box textAlign="center" color="inherit">
+            <b>{t('quiz_creator.empty_states.no_questions')}</b>
+            <Box padding={{ bottom: "s" }}>
+              {t('quiz_creator.empty_states.add_instructions')}
+            </Box>
+            <Button onClick={handleAddQuestion} iconName="add-plus">
+              {t('quiz_creator.actions.add_question')}
+            </Button>
+          </Box>
+        )}
+      </Container>
 
-              <SpaceBetween direction="horizontal" size="xs" alignItems="center">
-                <Button onClick={handleCancelEdit} variant="link">
-                  {t('quiz_creator.actions.cancel')}
-                </Button>
-                <Button onClick={handleSaveQuestion} variant="primary">
-                  {editingIndex >= 0 ?
-                    t('quiz_creator.actions.save_question') :
-                    t('quiz_creator.actions.add_question')}
+      {/* 하단 버튼 */}
+      <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+        <Button onClick={handleReturn} variant="link">
+          {t('quiz_creator.actions.cancel_return')}
+        </Button>
+        <Button
+          onClick={handleSaveQuiz}
+          variant="primary"
+          loading={saving}
+        >
+          {isEditMode ?
+            t('quiz_creator.actions.update_quiz') :
+            t('quiz_creator.actions.save_quiz')
+          }
+        </Button>
+      </SpaceBetween>
+
+      {/* 질문 편집 모달 */}
+      <Modal
+        visible={isEditingQuestion}
+        onDismiss={handleCancelEdit}
+        header={editingIndex >= 0 ?
+          t('quiz_creator.modal.edit_question') :
+          t('quiz_creator.modal.add_question')}
+        size="large"
+      >
+        {currentQuestion && (
+          <SpaceBetween size="l">
+            <FormField
+              label={t('quiz_creator.labels.question')}
+              constraintText={t('common.required')}
+            >
+              <Textarea
+                value={currentQuestion.question}
+                onChange={({ detail }) =>
+                  setCurrentQuestion({
+                    ...currentQuestion,
+                    question: detail.value
+                  })
+                }
+                placeholder={tString('quiz_creator.placeholders.question')}
+              />
+            </FormField>
+
+            <FormField label={t('quiz_creator.labels.explanation')}>
+              <Textarea
+                value={currentQuestion.explanation || ''}
+                onChange={({ detail }) =>
+                  setCurrentQuestion({
+                    ...currentQuestion,
+                    explanation: detail.value
+                  })
+                }
+                placeholder={tString('quiz_creator.placeholders.explanation')}
+              />
+            </FormField>
+
+            <FormField
+              label={t('quiz_creator.labels.options')}
+              constraintText={t('common.required')}
+            >
+              <SpaceBetween size="xs">
+                {currentQuestion.options.map((option, index) => (
+                  <SpaceBetween direction="horizontal" size="xs" key={index}>
+                    <Input
+                      value={option}
+                      onChange={({ detail }) => handleOptionChange(index, detail.value)}
+                      placeholder={tString('quiz_creator.placeholders.option', { number: index + 1 })}
+                    />
+
+                    <RadioGroup
+                      items={[
+                        { value: index.toString(), label: t('quiz_creator.labels.correct') }
+                      ]}
+                      value={currentQuestion.correctAnswer === index ? index.toString() : ''}
+                      onChange={({ detail }) =>
+                        setCurrentQuestion({
+                          ...currentQuestion,
+                          correctAnswer: parseInt(detail.value)
+                        })
+                      }
+                    />
+
+                    <Button
+                      iconName="remove"
+                      variant="icon"
+                      disabled={currentQuestion.options.length <= 2}
+                      onClick={() => handleRemoveOption(index)}
+                    />
+                  </SpaceBetween>
+                ))}
+
+                <Button
+                  iconName="add-plus"
+                  onClick={handleAddOption}
+                  disabled={currentQuestion.options.length >= 6}
+                >
+                  {t('quiz_creator.actions.add_option')}
                 </Button>
               </SpaceBetween>
+            </FormField>
+
+            <FormField label={t('quiz_creator.labels.difficulty')}>
+              <Select
+                selectedOption={
+                  currentQuestion.difficulty ?
+                    { label: currentQuestion.difficulty, value: currentQuestion.difficulty } :
+                    null
+                }
+                onChange={({ detail }) => setCurrentQuestion({
+                  ...currentQuestion,
+                  difficulty: detail.selectedOption?.value
+                })}
+                options={[
+                  { label: tString('quiz_creator.difficulty.easy'), value: 'easy' },
+                  { label: tString('quiz_creator.difficulty.medium'), value: 'medium' },
+                  { label: tString('quiz_creator.difficulty.hard'), value: 'hard' }
+                ]}
+                placeholder={tString('quiz_creator.placeholders.select_difficulty')}
+              />
+            </FormField>
+
+            <FormField label={t('quiz_creator.labels.tags')}>
+              <Input
+                value={(currentQuestion.tags || []).join(', ')}
+                onChange={({ detail }) => setCurrentQuestion({
+                  ...currentQuestion,
+                  tags: detail.value.split(',').map(t => t.trim())
+                })}
+                placeholder={tString('quiz_creator.placeholders.tags')}
+              />
+              <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
+                {t('quiz_creator.hints.tags')}
+              </Box>
+            </FormField>
+
+            <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+              <Button onClick={handleCancelEdit} variant="link">
+                {t('quiz_creator.actions.cancel')}
+              </Button>
+              <Button onClick={handleSaveQuestion} variant="primary">
+                {editingIndex >= 0 ?
+                  t('quiz_creator.actions.save_question') :
+                  t('quiz_creator.actions.add_question')}
+              </Button>
+            </SpaceBetween>
+          </SpaceBetween>
+        )}
+      </Modal>
+
+      {/* 저장 완료 모달 */}
+      <Modal
+        visible={showSaveModal}
+        onDismiss={() => {
+          setShowSaveModal(false);
+          handleReturn();
+        }}
+        header={t('quiz_creator.modal.save_success')}
+        footer={
+          <Box float="right">
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button onClick={handleReturn} variant="primary">
+                {t('quiz_creator.actions.return_to_management')}
+              </Button>
+            </SpaceBetween>
+          </Box>
+        }
+      >
+        <p>{isEditMode ?
+          t('quiz_creator.messages.update_success') :
+          t('quiz_creator.messages.save_success')}
+        </p>
+      </Modal>
+
+      {/* 파일 임포트 모달 */}
+      <Modal
+        visible={showImportModal}
+        onDismiss={() => setShowImportModal(false)}
+        header={t('quiz_creator.modal.import_questions')}
+        size="medium"
+      >
+        <SpaceBetween size="l">
+          <Box>
+            <p>{t('quiz_creator.import.description')}</p>
+            <ul>
+              <li>{t('quiz_creator.import.format_json')}</li>
+              <li>{t('quiz_creator.import.format_csv')}</li>
+              <li>{t('quiz_creator.import.format_txt')}</li>
+            </ul>
+          </Box>
+
+          {isFileImporting ? (
+            <Box textAlign="center">
+              <ProgressBar
+                value={fileImportProgress}
+                description={t('quiz_creator.import.processing')}
+                label={t('quiz_creator.import.loading')}
+              />
+            </Box>
+          ) : (
+            <SpaceBetween size="s">
+              <input
+                type="file"
+                accept=".json,.csv,.txt"
+                onChange={handleFileImport}
+                style={{ display: 'none' }}
+                id="file-upload-input"
+              />
+              <label htmlFor="file-upload-input">
+                <Button iconName="upload" fullWidth>
+                  {t('quiz_creator.import.select_file')}
+                </Button>
+              </label>
+              <Box color="text-status-info" fontSize="body-s" textAlign="center">
+                {t('quiz_creator.import.supported_formats')}
+              </Box>
             </SpaceBetween>
           )}
-        </Modal>
 
-        {/* 저장 완료 모달 */}
-        <Modal
-          visible={showSaveModal}
-          onDismiss={() => {
-            setShowSaveModal(false);
-            handleReturn();
-          }}
-          header={t('quiz_creator.modal.save_success')}
-          footer={
-            <Box float="right">
+          <Box float="right">
+            <Button onClick={() => setShowImportModal(false)}>
+              {t('common.cancel')}
+            </Button>
+          </Box>
+        </SpaceBetween>
+      </Modal>
+
+      {/* AI 문제 생성 모달 */}
+      <Modal
+        visible={showAiGenerationModal}
+        onDismiss={() => setShowAiGenerationModal(false)}
+        header={t('quiz_creator.modal.ai_generation')}
+        size="large"
+      >
+        {generatingQuestions ? (
+          <Box textAlign="center" padding="l">
+            <Spinner />
+            <p>{t('quiz_creator.ai.generating')}</p>
+          </Box>
+        ) : (
+          <SpaceBetween size="l">
+            {error && <Alert type="error">{error}</Alert>}
+
+            <FormField label={t('quiz_creator.ai.model_type')}>
               <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={handleReturn} variant="primary">
-                  {t('quiz_creator.actions.return_to_management')}
+                <Button
+                  variant={aiModelType === 'basic' ? 'primary' : 'normal'}
+                  onClick={() => setAiModelType('basic')}
+                >
+                  {t('quiz_creator.ai.model_basic')}
+                </Button>
+                <Button
+                  variant={aiModelType === 'advanced' ? 'primary' : 'normal'}
+                  onClick={() => setAiModelType('advanced')}
+                >
+                  {t('quiz_creator.ai.model_advanced')}
                 </Button>
               </SpaceBetween>
-            </Box>
-          }
-        >
-          <p>{isEditMode ?
-            t('quiz_creator.messages.update_success') :
-            t('quiz_creator.messages.save_success')}
-          </p>
-        </Modal>
-
-        {/* 파일 임포트 모달 */}
-        <Modal
-          visible={showImportModal}
-          onDismiss={() => setShowImportModal(false)}
-          header={t('quiz_creator.modal.import_questions')}
-          size="medium"
-        >
-          <SpaceBetween size="l">
-            <Box>
-              <p>{t('quiz_creator.import.description')}</p>
-              <ul>
-                <li>{t('quiz_creator.import.format_json')}</li>
-                <li>{t('quiz_creator.import.format_csv')}</li>
-                <li>{t('quiz_creator.import.format_txt')}</li>
-              </ul>
-            </Box>
-
-            {isFileImporting ? (
-              <Box textAlign="center">
-                <ProgressBar
-                  value={fileImportProgress}
-                  description={t('quiz_creator.import.processing')}
-                  label={t('quiz_creator.import.loading')}
-                />
+              <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
+                {aiModelType === 'advanced' ?
+                  t('quiz_creator.ai.model_advanced_description') :
+                  t('quiz_creator.ai.model_basic_description')}
               </Box>
-            ) : (
-              <SpaceBetween size="s">
-                <input
-                  type="file"
-                  accept=".json,.csv,.txt"
-                  onChange={handleFileImport}
-                  style={{ display: 'none' }}
-                  id="file-upload-input"
-                />
-                <label htmlFor="file-upload-input">
-                  <Button iconName="upload" fullWidth>
-                    {t('quiz_creator.import.select_file')}
-                  </Button>
-                </label>
-                <Box color="text-status-info" fontSize="body-s" textAlign="center">
-                  {t('quiz_creator.import.supported_formats')}
-                </Box>
-              </SpaceBetween>
-            )}
+            </FormField>
 
-            <Box float="right">
-              <Button onClick={() => setShowImportModal(false)}>
-                {t('common.cancel')}
-              </Button>
-            </Box>
-          </SpaceBetween>
-        </Modal>
+            <FormField label={t('quiz_creator.ai.question_count')}>
+              <Input
+                type="number"
+                value={aiQuestionCount.toString()}
+                onChange={({ detail }) => {
+                  const value = parseInt(detail.value) || 1;
+                  setAiQuestionCount(Math.min(Math.max(1, value), 20));
+                }}
+                step={1}
+              />
+              <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
+                {t('quiz_creator.ai.question_count_hint')}
+              </Box>
+            </FormField>
 
-        {/* AI 문제 생성 모달 */}
-        <Modal
-          visible={showAiGenerationModal}
-          onDismiss={() => setShowAiGenerationModal(false)}
-          header={t('quiz_creator.modal.ai_generation')}
-          size="large"
-        >
-          {generatingQuestions ? (
-            <Box textAlign="center" padding="l">
-              <Spinner />
-              <p>{t('quiz_creator.ai.generating')}</p>
-            </Box>
-          ) : (
-            <SpaceBetween size="l">
-              {error && <Alert type="error">{error}</Alert>}
+            <FormField
+              label={t('quiz_creator.ai.context')}
+              description={t('quiz_creator.ai.context_description')}
+            >
+              <Textarea
+                value={aiContextPrompt}
+                onChange={({ detail }) => setAiContextPrompt(detail.value)}
+                placeholder={tString('quiz_creator.ai.context_placeholder')}
+                rows={4}
+              />
+            </FormField>
 
-              <FormField label={t('quiz_creator.ai.model_type')}>
-                <SpaceBetween direction="horizontal" size="xs">
-                  <Button
-                    variant={aiModelType === 'basic' ? 'primary' : 'normal'}
-                    onClick={() => setAiModelType('basic')}
-                  >
-                    {t('quiz_creator.ai.model_basic')}
-                  </Button>
-                  <Button
-                    variant={aiModelType === 'advanced' ? 'primary' : 'normal'}
-                    onClick={() => setAiModelType('advanced')}
-                  >
-                    {t('quiz_creator.ai.model_advanced')}
-                  </Button>
-                </SpaceBetween>
-                <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
-                  {aiModelType === 'advanced' ?
-                    t('quiz_creator.ai.model_advanced_description') :
-                    t('quiz_creator.ai.model_basic_description')}
-                </Box>
-              </FormField>
+            {generatedQuestions.length > 0 ? (
+              <>
+                <Box>{t('quiz_creator.ai.generated_count', { count: generatedQuestions.length })}</Box>
 
-              <FormField label={t('quiz_creator.ai.question_count')}>
-                <Input
-                  type="number"
-                  value={aiQuestionCount.toString()}
-                  onChange={({ detail }) => {
-                    const value = parseInt(detail.value) || 1;
-                    setAiQuestionCount(Math.min(Math.max(1, value), 20));
-                  }}
-                  step={1}
-                />
-                <Box color="text-status-info" fontSize="body-s" padding={{ top: "xxxs" }}>
-                  {t('quiz_creator.ai.question_count_hint')}
-                </Box>
-              </FormField>
-
-              <FormField
-                label={t('quiz_creator.ai.context')}
-                description={t('quiz_creator.ai.context_description')}
-              >
-                <Textarea
-                  value={aiContextPrompt}
-                  onChange={({ detail }) => setAiContextPrompt(detail.value)}
-                  placeholder={tString('quiz_creator.ai.context_placeholder')}
-                  rows={4}
-                />
-              </FormField>
-
-              {generatedQuestions.length > 0 ? (
-                <>
-                  <Box>{t('quiz_creator.ai.generated_count', { count: generatedQuestions.length })}</Box>
-
-                  <Table
-                    items={generatedQuestions}
-                    columnDefinitions={[
-                      {
-                        id: "question",
-                        header: t('quiz_creator.labels.question'),
-                        cell: item => item.question
-                      },
-                      {
-                        id: "options",
-                        header: t('quiz_creator.labels.options'),
-                        cell: item => (
-                          <ul>
-                            {item.options.map((opt, idx) => (
-                              <li key={idx}>
-                                {opt} {idx === item.correctAnswer || opt === item.correctAnswer ?
-                                  `(\${t('quiz_creator.labels.correct')})` : ''}
-                              </li>
-                            ))}
-                          </ul>
-                        )
-                      },
-                      {
-                        id: "quality",
-                        header: t('quiz_creator.ai.quality'),
-                        cell: item => (
-                          <Box color={
-                            (item.quality ?? 0) >= 0.8 ? "text-status-success" :
-                              (item.quality ?? 0) >= 0.6 ? "text-status-info" :
-                                "text-status-warning"
-                          }>
-                            {(item.quality ?? 0) >= 0.8 ? t('quiz_creator.ai.quality_high') :
-                              (item.quality ?? 0) >= 0.6 ? t('quiz_creator.ai.quality_medium') :
-                                t('quiz_creator.ai.quality_low')}
-                          </Box>
-                        ),
-                        width: 100
-                      }
-                    ]}
-                    selectionType="multi"
-                    trackBy="id"
-                    empty={
-                      <Box textAlign="center">{t('quiz_creator.ai.no_questions')}</Box>
+                <Table
+                  items={generatedQuestions}
+                  columnDefinitions={[
+                    {
+                      id: "question",
+                      header: t('quiz_creator.labels.question'),
+                      cell: item => item.question
+                    },
+                    {
+                      id: "options",
+                      header: t('quiz_creator.labels.options'),
+                      cell: item => (
+                        <ul>
+                          {item.options.map((opt, idx) => (
+                            <li key={idx}>
+                              {opt} {idx === item.correctAnswer || opt === item.correctAnswer ?
+                                `(\${t('quiz_creator.labels.correct')})` : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      )
+                    },
+                    {
+                      id: "quality",
+                      header: t('quiz_creator.ai.quality'),
+                      cell: item => (
+                        <Box color={
+                          (item.quality ?? 0) >= 0.8 ? "text-status-success" :
+                            (item.quality ?? 0) >= 0.6 ? "text-status-info" :
+                              "text-status-warning"
+                        }>
+                          {(item.quality ?? 0) >= 0.8 ? t('quiz_creator.ai.quality_high') :
+                            (item.quality ?? 0) >= 0.6 ? t('quiz_creator.ai.quality_medium') :
+                              t('quiz_creator.ai.quality_low')}
+                        </Box>
+                      ),
+                      width: 100
                     }
-                  />
+                  ]}
+                  selectionType="multi"
+                  trackBy="id"
+                  empty={
+                    <Box textAlign="center">{t('quiz_creator.ai.no_questions')}</Box>
+                  }
+                />
 
-                  <SpaceBetween direction="horizontal" size="xs">
-                    <Button onClick={() => handleGenerateQuestions()}>
-                      {t('quiz_creator.ai.regenerate')}
-                    </Button>
-                    <Button onClick={() => setShowAiGenerationModal(false)}>
-                      {t('common.cancel')}
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={handleAddGeneratedQuestions}
-                      disabled={generatedQuestions.length === 0}
-                    >
-                      {t('quiz_creator.ai.add_questions')}
-                    </Button>
-                  </SpaceBetween>
-                </>
-              ) : (
                 <SpaceBetween direction="horizontal" size="xs">
+                  <Button onClick={() => handleGenerateQuestions()}>
+                    {t('quiz_creator.ai.regenerate')}
+                  </Button>
                   <Button onClick={() => setShowAiGenerationModal(false)}>
                     {t('common.cancel')}
                   </Button>
                   <Button
                     variant="primary"
-                    onClick={handleGenerateQuestions}
+                    onClick={handleAddGeneratedQuestions}
+                    disabled={generatedQuestions.length === 0}
                   >
-                    {t('quiz_creator.ai.generate_questions')}
+                    {t('quiz_creator.ai.add_questions')}
                   </Button>
                 </SpaceBetween>
-              )}
-            </SpaceBetween>
-          )}
-        </Modal>
-      </SpaceBetween>
+              </>
+            ) : (
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button onClick={() => setShowAiGenerationModal(false)}>
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleGenerateQuestions}
+                >
+                  {t('quiz_creator.ai.generate_questions')}
+                </Button>
+              </SpaceBetween>
+            )}
+          </SpaceBetween>
+        )}
+      </Modal>
+    </SpaceBetween>
   );
 }

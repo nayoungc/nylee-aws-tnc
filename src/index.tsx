@@ -41,3 +41,28 @@ initializeApp().then(() => {
 
 
 
+// import { Amplify } from 'aws-amplify';
+// import { fetchAuthSession } from 'aws-amplify/auth';
+// import awsExports from './aws-exports';
+
+// // Amplify 설정
+// Amplify.configure(awsExports);
+
+// // 인증 상태를 초기에 확인
+// window.addEventListener('load', async () => {
+//   try {
+//     const session = await fetchAuthSession();
+//     const useMock = !session.credentials || 
+//                     sessionStorage.getItem('useMockData') === 'true' || 
+//                     process.env.NODE_ENV === 'development';
+    
+//     if (useMock) {
+//       console.log('모의 데이터 모드가 활성화되었습니다.');
+//       sessionStorage.setItem('useMockData', 'true');
+//     }
+//   } catch (error) {
+//     console.warn('인증 세션 확인 중 오류:', error);
+//     sessionStorage.setItem('useMockData', 'true');
+//   }
+// });
+

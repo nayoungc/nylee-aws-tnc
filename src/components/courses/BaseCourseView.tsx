@@ -199,12 +199,10 @@ export const BaseCourseView: React.FC<BaseCourseViewProps> = ({
           setError(t('courses.errors.authentication'));
         }, navigate);
         
-        // API 호출
         const wrappedAPI = withAuthErrorHandling((authContext) => {
           return listCourseCatalogs(authContext); 
         }, authErrorHandler);
         
-        // 타임아웃과 API 호출 경쟁
         const result = await Promise.race<ApiResult | CourseCatalog[] | null>([
           wrappedAPI(auth),  // auth 객체 전달
           timeoutPromise

@@ -100,11 +100,11 @@ const CourseCreate: React.FC = () => {
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   // 데이터 가져오기
-  useEffect(() => {
-    fetchCourseTemplates();
-    fetchInstructors();
-    fetchCustomers();
-  }, []);
+  // useEffect(() => {
+  //   fetchCourseTemplates();
+  //   fetchInstructors();
+  //   fetchCustomers();
+  // }, []);
 
   // 템플릿 선택 시 과정명 자동 설정 및 평가 도구 로드
   useEffect(() => {
@@ -115,73 +115,73 @@ const CourseCreate: React.FC = () => {
   }, [selectedTemplate]);
 
   // 과정 템플릿(카탈로그) 가져오기
-  const fetchCourseTemplates = async () => {
-    try {
-      setLoadingTemplates(true);
-      // DynamoDB API 호출
-      const result = await listCourseCatalogs();
+  // const fetchCourseTemplates = async () => {
+  //   try {
+  //     setLoadingTemplates(true);
+  //     // DynamoDB API 호출
+  //     const result = await listCourseCatalogs();
 
-      if (result.data && Array.isArray(result.data)) {
-        // 명시적으로 각 필드를 매핑하여 타입 변환
-        const mappedData = result.data.map(item => ({
-          catalogId: item.catalogId || '',
-          title: item.title || '',
-          version: item.version || 'v1',
-          isPublished: item.isPublished !== undefined ? item.isPublished : true,
-          status: item.status || 'ACTIVE',
-          level: item.level,
-          description: item.description,
-          awsCode: item.awsCode,
-          // 기타 필요한 필드들...
-        } as CourseCatalog));
+  //     if (result.data && Array.isArray(result.data)) {
+  //       // 명시적으로 각 필드를 매핑하여 타입 변환
+  //       const mappedData = result.data.map(item => ({
+  //         catalogId: item.catalogId || '',
+  //         title: item.title || '',
+  //         version: item.version || 'v1',
+  //         isPublished: item.isPublished !== undefined ? item.isPublished : true,
+  //         status: item.status || 'ACTIVE',
+  //         level: item.level,
+  //         description: item.description,
+  //         awsCode: item.awsCode,
+  //         // 기타 필요한 필드들...
+  //       } as CourseCatalog));
         
-        setCourseTemplates(mappedData);
-      } else {
-        // 개발 환경 또는 에러 시 샘플 데이터
-        if (process.env.NODE_ENV === 'development') {
-          setCourseTemplates([
-            {
-              catalogId: 'template-1',
-              title: 'AWS Cloud Practitioner',
-              version: 'v1',
-              isPublished: true,
-              status: 'ACTIVE',
-              level: 'Foundational'
-            },
-            {
-              catalogId: 'template-2',
-              title: 'AWS Solutions Architect Associate',
-              version: 'v1',
-              isPublished: true,
-              status: 'ACTIVE',
-              level: 'Associate'
-            }
-          ] as CourseCatalog[]);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching course templates:', error);
-    } finally {
-      setLoadingTemplates(false);
-    }
-  };
+  //       setCourseTemplates(mappedData);
+  //     } else {
+  //       // 개발 환경 또는 에러 시 샘플 데이터
+  //       if (process.env.NODE_ENV === 'development') {
+  //         setCourseTemplates([
+  //           {
+  //             catalogId: 'template-1',
+  //             title: 'AWS Cloud Practitioner',
+  //             version: 'v1',
+  //             isPublished: true,
+  //             status: 'ACTIVE',
+  //             level: 'Foundational'
+  //           },
+  //           {
+  //             catalogId: 'template-2',
+  //             title: 'AWS Solutions Architect Associate',
+  //             version: 'v1',
+  //             isPublished: true,
+  //             status: 'ACTIVE',
+  //             level: 'Associate'
+  //           }
+  //         ] as CourseCatalog[]);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching course templates:', error);
+  //   } finally {
+  //     setLoadingTemplates(false);
+  //   }
+  // };
 
-  // 강사 목록 가져오기 (User Pool API 사용 예정)
-  const fetchInstructors = async () => {
-    try {
-      setLoadingInstructors(true);
-      // 향후 Cognito User Pool API 호출로 대체
-      // 현재는 샘플 데이터
-      setInstructors([
-        { id: 'inst-1', name: 'John Doe', email: 'john@example.com' },
-        { id: 'inst-2', name: 'Jane Smith', email: 'jane@example.com' }
-      ]);
-    } catch (error) {
-      console.error('Error fetching instructors:', error);
-    } finally {
-      setLoadingInstructors(false);
-    }
-  };
+  // // 강사 목록 가져오기 (User Pool API 사용 예정)
+  // const fetchInstructors = async () => {
+  //   try {
+  //     setLoadingInstructors(true);
+  //     // 향후 Cognito User Pool API 호출로 대체
+  //     // 현재는 샘플 데이터
+  //     setInstructors([
+  //       { id: 'inst-1', name: 'John Doe', email: 'john@example.com' },
+  //       { id: 'inst-2', name: 'Jane Smith', email: 'jane@example.com' }
+  //     ]);
+  //   } catch (error) {
+  //     console.error('Error fetching instructors:', error);
+  //   } finally {
+  //     setLoadingInstructors(false);
+  //   }
+  // };
 
   // 고객사 목록 가져오기
   const fetchCustomers = async () => {
