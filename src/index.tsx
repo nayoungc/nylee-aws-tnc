@@ -25,12 +25,14 @@ const MAX_TOKEN_REFRESH_ATTEMPTS = 3;
 let tokenRefreshLastAttempt = 0;
 const TOKEN_REFRESH_MIN_INTERVAL = 30000; // 30초 간격으로 제한
 
-// AWS 자격 증명 초기화 함수 (Gen 2 방식)
+// AWS 자격 증명 초기화 함수
 async function initializeCredentials(force = false): Promise<boolean> {
-  // 중복 호출 방지 - 10초 이내 재시도 방지
+  // 중복 호출 방지
   const now = Date.now();
+  const CACHE_TTL = 30000; // 30초
+  
   if (!force && credentialsInitialized && awsCredentials &&
-    (now - lastCredentialAttempt < 10000)) {
+    (now - lastCredentialAttempt < CACHE_TTL)) {
     return true;
   }
 
@@ -38,38 +40,38 @@ async function initializeCredentials(force = false): Promise<boolean> {
   console.log('자격 증명 초기화 시도 중...');
   
   try {
-    // 세션 가져오기
     const session = await fetchAuthSession();
     
-    // 토큰이 없으면 로그인되지 않은 상태
     if (!session.tokens) {
-      console.log('사용자가 로그인되어 있지 않습니다. 자격 증명 초기화를 건너뜁니다.');
+      console.log('토큰이 없음: 로그아웃 상태');
       credentialsInitialized = false;
       awsCredentials = null;
       return false;
     }
     
-    // 자격 증명이 있는 경우 설정
     if (session.credentials) {
+      // 자격 증명이 있는 경우 - 정상 처리
       awsCredentials = new AWS.Credentials({
         accessKeyId: session.credentials.accessKeyId,
         secretAccessKey: session.credentials.secretAccessKey,
         sessionToken: session.credentials.sessionToken
       });
 
-      // AWS SDK 글로벌 설정에도 적용
       AWS.config.credentials = awsCredentials;
-
       credentialsInitialized = true;
+      
       console.log('AWS SDK 자격 증명 설정 완료');
       tokenRefreshAttempts = 0; // 성공 시 시도 횟수 리셋
       return true;
     } else {
+      // 부분 인증 상태 - 명확한 로그 남김
       console.log('세션에 자격 증명이 없습니다 - 부분 인증 상태');
-      credentialsInitialized = false;
       
-      // 부분 인증 상태에서는 자격 증명 복구를 위한 제한적 시도만 수행
-      // AuthContext에서 더 포괄적인 처리를 하도록 함
+      // 즉시 새로운 시도를 하지 않고, 상태만 업데이트
+      credentialsInitialized = false;
+      awsCredentials = null;
+      
+      // 부분 인증 상태는 AuthContext에서 처리하도록 함
       return false;
     }
   } catch (err) {
@@ -103,12 +105,12 @@ async function initializeApp() {
 // Amplify Gen 2 방식의 Hub 리스너 설정
 Hub.listen('auth', ({ payload }) => {
   console.log('Auth 이벤트:', payload.event);
-
+  
   if (payload.event === 'signedIn') {
     console.log('사용자 로그인 완료 - 자격 증명 갱신');
     tokenRefreshAttempts = 0; // 로그인 시 시도 횟수 리셋
     
-    // 로그인 후 바로 자격 증명 초기화 (0.5초 지연)
+    // 로그인 후 자격 증명 초기화 (지연 적용)
     setTimeout(() => {
       initializeCredentials(true).catch(err => 
         console.error('로그인 후 자격 증명 초기화 실패:', err)
@@ -123,38 +125,26 @@ Hub.listen('auth', ({ payload }) => {
     tokenRefreshAttempts = 0; // 로그아웃 시 시도 횟수 리셋
   }
 
+  // 토큰 갱신 이벤트는 AuthContext에서만 처리하도록 여기서는 최소화
   if (payload.event === 'tokenRefresh') {
     const now = Date.now();
     
-    // 토큰 갱신 빈도 제한
-    if (tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS) {
-      console.log(`토큰 갱신 제한: 최대 시도 횟수 초과 (\${tokenRefreshAttempts}/\${MAX_TOKEN_REFRESH_ATTEMPTS})`);
-      
-      // 5분이 지났으면 카운터 초기화
-      if (now - tokenRefreshLastAttempt > 5 * 60 * 1000) {
-        console.log('토큰 갱신 카운터 초기화 (5분 경과)');
-        tokenRefreshAttempts = 0;
-      } else {
-        return;
-      }
-    }
-    
-    // 너무 빈번한 요청 방지
-    if (now - tokenRefreshLastAttempt < TOKEN_REFRESH_MIN_INTERVAL) {
-      console.log('토큰 갱신 제한: 너무 빈번한 요청');
+    // 토큰 갱신 빈도 관리 - 전역 변수로 제한
+    if (now - tokenRefreshLastAttempt < TOKEN_REFRESH_MIN_INTERVAL || 
+        tokenRefreshAttempts >= MAX_TOKEN_REFRESH_ATTEMPTS) {
+      console.log('토큰 갱신 제한: 너무 빈번한 요청 또는 시도 횟수 제한');
       return;
     }
     
-    console.log('토큰 갱신 - 자격 증명 업데이트');
-    tokenRefreshAttempts++;
     tokenRefreshLastAttempt = now;
+    tokenRefreshAttempts++;
     
-    // 비동기 실행으로 메인 스레드 차단 방지
+    // 실제 갱신은 지연 실행하여 충돌 방지
     setTimeout(() => {
-      initializeCredentials(true).catch(err => 
-        console.error('토큰 갱신 후 자격 증명 초기화 실패:', err)
-      );
-    }, 100);
+      initializeCredentials(false).catch(err => {
+        console.error('토큰 갱신 처리 중 오류:', err);
+      });
+    }, 1000);
   }
 });
 
