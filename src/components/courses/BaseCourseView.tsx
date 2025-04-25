@@ -92,6 +92,7 @@ interface BaseCourseViewProps {
   additionalActions?: React.ReactNode;
   courses?: ExtendedCourseCatalog[];
   onSelectCourse?: (course: ExtendedCourseCatalog) => void;
+  auth?: any; 
 }
 
 export { mapToCourseViewModel, type CourseCatalog, type ExtendedCourseCatalog };

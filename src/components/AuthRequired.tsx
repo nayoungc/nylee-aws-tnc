@@ -1,6 +1,5 @@
 // src/components/AuthRequired.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Box, Alert, SpaceBetween, Button } from '@cloudscape-design/components';
 import { useAuth } from '../contexts/AuthContext';
 import { useTypedTranslation } from '@utils/i18n-utils';
@@ -18,7 +17,6 @@ export const AuthRequired: React.FC<AuthRequiredProps> = ({
 }) => {
   const { isAuthenticated, userRole, loading, loginRedirect } = useAuth();
   const { t } = useTypedTranslation();
-  const navigate = useNavigate();
 
   // 로딩 중이면 아무것도 표시하지 않음
   if (loading) {

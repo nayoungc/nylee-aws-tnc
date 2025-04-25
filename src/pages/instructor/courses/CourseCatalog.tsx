@@ -386,6 +386,7 @@ const CourseCatalogPage: React.FC = () => {
               viewPath="/tnc/"
               additionalActions={additionalActions}
               onSelectCourse={handleCourseSelect}
+              auth={auth} // auth 객체 추가
             />
           )
         },
