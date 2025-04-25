@@ -288,7 +288,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    */
   const loginRedirect = useCallback((returnPath?: string) => {
     const returnUrl = returnPath || window.location.pathname;
-    window.location.href = `/login?returnTo=\${encodeURIComponent(returnUrl)}`;
+    //window.location.href = `/login?returnTo=\${encodeURIComponent(returnUrl)}`;
+    window.location.href = `/signin?returnTo=\${encodeURIComponent(returnUrl)}`;
   }, []);
 
   // 초기 로드 시 인증 확인 및 이벤트 리스너 설정
@@ -460,14 +461,15 @@ export const withAuthErrorHandling = <T extends (...args: any[]) => Promise<any>
  */
 export const createAuthErrorHandler = (
   errorCallback: (error: any) => void,
-  navigate?: (path: string) => void
+  navigate?: (path: string) => void,
+  loginPath: string = '/signin' // 기본값 설정하되 변경 가능하게
 ): AuthErrorHandlerContext => {
   return {
     handleAuthError: (error: any) => {
       console.error('인증 오류:', error);
       errorCallback(error);
       if (navigate) {
-        navigate('/signin');
+        navigate(loginPath);
       }
     }
   };

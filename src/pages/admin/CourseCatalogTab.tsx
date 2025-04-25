@@ -33,11 +33,11 @@ interface AssessmentStats {
   surveys: { total: number, completed: number };
 }
 
-const CourseCatalogPage: React.FC = () => {
+const CourseCatalogTab: React.FC = () => {
   const { t, tString } = useTypedTranslation();
   const navigate = useNavigate();
-  const auth = useAuth();
-  const { isAuthenticated, checkAuthStatus } = auth;
+  // 한 번의 구조 분해로 필요한 속성만 바로 추출
+  const { isAuthenticated, checkAuthStatus, handleAuthError } = useAuth();
   const [activeTabId, setActiveTabId] = useState('catalog');
   const [assessmentStats, setAssessmentStats] = useState<Record<string, AssessmentStats>>({});
   const [selectedCourse, setSelectedCourse] = useState<CourseCatalogType | null>(null);
@@ -80,7 +80,7 @@ const CourseCatalogPage: React.FC = () => {
         );
 
         // 1. 퀴즈 데이터 가져오기 - 인증 오류 자동 처리
-        const preQuizResult = await withAuthErrorHandling(listQuizzes, auth)({
+        const preQuizResult = await withAuthErrorHandling(listQuizzes, authErrorHandler)({
           filter: {
             expression: 'courseId = :courseId AND quizType = :quizType',
             expressionValues: {
@@ -90,7 +90,7 @@ const CourseCatalogPage: React.FC = () => {
           }
         });
 
-        const postQuizResult = await withAuthErrorHandling(listQuizzes, auth)({
+        const postQuizResult = await withAuthErrorHandling(listQuizzes, authErrorHandler)({
           filter: {
             expression: 'courseId = :courseId AND quizType = :quizType',
             expressionValues: {
@@ -101,7 +101,7 @@ const CourseCatalogPage: React.FC = () => {
         });
 
         // 2. 설문조사 데이터 가져오기
-        const surveysResult = await withAuthErrorHandling(listSurveys, auth)({
+        const surveysResult = await withAuthErrorHandling(listSurveys, authErrorHandler)({
           filter: {
             expression: 'courseId = :courseId',
             expressionValues: {
@@ -158,7 +158,7 @@ const CourseCatalogPage: React.FC = () => {
     if (selectedCourse?.catalogId && isAuthenticated) {
       fetchAssessmentStats();
     }
-  }, [selectedCourse, isAuthenticated, checkAuthStatus, auth]);
+  }, [selectedCourse, isAuthenticated, checkAuthStatus]);
 
   const handleCourseSelect = (course: CourseCatalogType) => {
     setSelectedCourse(course);
@@ -292,4 +292,4 @@ const CourseCatalogPage: React.FC = () => {
   );
 };
 
-export default CourseCatalogPage;
+export default CourseCatalogTab;

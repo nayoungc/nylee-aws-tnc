@@ -12,7 +12,7 @@ import {
   Table,
   TextFilter
 } from '@cloudscape-design/components';
-import { useAuth, withAuthErrorHandling } from '@contexts/AuthContext';
+import { useAuth, withAuthErrorHandling, createAuthErrorHandler } from '@contexts/AuthContext';
 
 import { useTypedTranslation } from '@utils/i18n-utils';
 import React, { useEffect, useState } from 'react';
@@ -55,6 +55,8 @@ const CustomerTab: React.FC = () => {
       // 인증 상태 확인 (retryAttempt가 있을 경우 강제 갱신)
       if (retryAttempt > 0) {
         console.log(`재시도 #\${retryAttempt}: 인증 상태 확인 중...`);
+        //navigate(`/login?returnTo=\${returnUrl}`);
+        //`\${t('admin.common.retrying')} (\${retryCount}/2)...`
         const isAuth = await checkAuthStatus(true);
         if (!isAuth) {
           throw new Error('인증이 필요합니다');
@@ -97,7 +99,8 @@ const CustomerTab: React.FC = () => {
         console.error('인증 오류가 계속됩니다. 로그인 페이지로 이동합니다.');
         setTimeout(() => {
           const returnUrl = encodeURIComponent(window.location.pathname);
-          navigate(`/login?returnTo=\${returnUrl}`);
+          navigate(`/signin?returnTo=\${returnUrl}`);
+
         }, 1500);
       }
     } finally {
@@ -125,7 +128,7 @@ const CustomerTab: React.FC = () => {
         }
       });
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, checkAuthStatus, t]);
   
   // 필터링된 아이템
   const filteredItems = customers.filter(customer => 
@@ -199,9 +202,15 @@ const CustomerTab: React.FC = () => {
         throw new Error(tString('admin.common.auth_required'));
       }
       
-      // withAuthErrorHandling 래퍼 적용
-      const wrappedUpdateCustomer = withAuthErrorHandling(updateCustomer, auth);
-      const wrappedCreateCustomer = withAuthErrorHandling(createCustomer, auth);
+      // 인증 오류 핸들러 생성
+      const authErrorHandler = createAuthErrorHandler(
+        (err) => setError(t('admin.customers.error_saving')),
+        navigate
+      );
+      
+      // withAuthErrorHandling 래퍼 적용 - 두 함수 모두 선언
+      const wrappedUpdateCustomer = withAuthErrorHandling(updateCustomer, authErrorHandler);
+      const wrappedCreateCustomer = withAuthErrorHandling(createCustomer, authErrorHandler);
       
       if (currentCustomer.customerId) {
         // 기존 고객사 수정
@@ -209,7 +218,7 @@ const CustomerTab: React.FC = () => {
           customerId: currentCustomer.customerId,
           customerName: currentCustomer.customerName,
         };
-
+  
         const response = await wrappedUpdateCustomer(customerInput);
         
         // 수정된 고객사로 상태 업데이트
@@ -224,7 +233,7 @@ const CustomerTab: React.FC = () => {
           customerId: uuidv4(),
           customerName: currentCustomer.customerName,
         };
-
+  
         const response = await wrappedCreateCustomer(customerInput);
         
         // 생성된 고객사 추가
