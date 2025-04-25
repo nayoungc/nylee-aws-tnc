@@ -41,6 +41,9 @@ const MAX_TOKEN_REFRESH_ATTEMPTS = 3;
 let tokenRefreshLastAttempt = 0;
 const TOKEN_REFRESH_MIN_INTERVAL = 30000; // 30초
 
+// 중복 인증 요청 방지를 위한 변수
+let authCheckInProgress = false;
+
 /**
  * 인증 상태를 전역으로 관리하는 Provider 컴포넌트
  */
@@ -56,25 +59,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 마지막 새로고침 시간 추적
   const [lastRefresh, setLastRefresh] = useState<number>(0);
+  
+  // 최초 앱 로딩 시 인증 확인 횟수 제한
+  const [initialAuthChecked, setInitialAuthChecked] = useState<boolean>(false);
 
   /**
-   * 인증 상태 확인 함수
+   * 인증 상태 확인 함수 - 개선된 버전
    * @param force 강제로 새로고침 여부
    */
   const checkAuthStatus = useCallback(async (force = false): Promise<boolean> => {
+    // 중복 실행 방지
+    if (authCheckInProgress && !force) {
+      console.log('이미 인증 확인 중입니다. 중복 요청 무시.');
+      return state.isAuthenticated;
+    }
+    
     // 캐시 수명 (3분)
     const CACHE_TTL = 3 * 60 * 1000;
   
     // 최근에 이미 확인한 경우 (캐시 유효)
     const now = Date.now();
     if (!force && now - lastRefresh < CACHE_TTL && state.isAuthenticated) {
-      console.log('최근에 이미 인증 확인 완료. 건너뜁니다.');
+      console.log('최근에 이미 인증 확인 완료. 캐시된 상태 반환.');
       return state.isAuthenticated;
     }
   
-    // 인증 확인 수행
-    setState(prev => ({ ...prev, loading: true }));
-    console.log('자격 증명 확인 중...');
+    // 로딩 플래그 설정
+    console.log('인증 상태 확인 시작');
+    authCheckInProgress = true;
+    
+    setState(prev => ({
+      ...prev,
+      loading: true
+    }));
   
     try {
       // 세션 가져오기 전에 catch 블록에서도 처리할 수 있도록 변수 선언
@@ -149,12 +166,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
     } finally {
-      // 로딩 상태가 유지되지 않도록 보장
-      if (state.loading) {
-        setState(prev => ({ ...prev, loading: false }));
+      // 로딩 플래그 해제
+      authCheckInProgress = false;
+      
+      // 로딩 상태 종료
+      setState(prev => ({ 
+        ...prev, 
+        loading: false 
+      }));
+      
+      // 첫 인증 확인 완료 표시
+      if (!initialAuthChecked) {
+        setInitialAuthChecked(true);
       }
     }
-  }, [lastRefresh, state.isAuthenticated, state.loading]);
+  }, [lastRefresh, state.isAuthenticated]);
 
   /**
    * 로그아웃 처리 함수
@@ -267,8 +293,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 초기 로드 시 인증 확인 및 이벤트 리스너 설정
   useEffect(() => {
-    // 앱 로드 시 인증 상태 확인
-    checkAuthStatus(true); // 강제 갱신으로 시작
+    // 앱 로드 시 한번만 인증 상태 확인
+    let authCheckAttempted = false;
+    
+    const initialAuthCheck = async () => {
+      if (!authCheckAttempted) {
+        authCheckAttempted = true;
+        await checkAuthStatus(true);
+      }
+    };
+    
+    initialAuthCheck();
 
     // Auth 이벤트 리스너 설정
     const listener = Hub.listen('auth', ({ payload }) => {
