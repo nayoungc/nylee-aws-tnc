@@ -108,7 +108,7 @@ export const listCourseCatalogs = async (authContext?: any): Promise<any> => {
 export const getCourseCatalog = async (
   catalogId: string,
   authContext?: any
-): Promise<CourseCatalog | null> {
+): Promise<CourseCatalog | null> => {
   // 모의 데이터 모드 확인 
   if (shouldUseMockData()) {
     // 로그 출력 제한
