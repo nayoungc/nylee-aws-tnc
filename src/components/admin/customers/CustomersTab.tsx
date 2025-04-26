@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import {
   ContentLayout,
   SpaceBetween,
-  Container,
-  Header,
   Box,
   Button,
   BreadcrumbGroup,

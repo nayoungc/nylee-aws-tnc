@@ -19,19 +19,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const { t, i18n } = useTranslation(['common', 'navigation']);
   const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
 
-  // 기본 메뉴 항목 (모든 사용자에게 표시)
+  // 기존 네비게이션 아이템 정의 (변경 없음)
   const publicItems = [
     { type: 'link' as const, text: t('navigation:tnc'), href: '/tnc' }
   ];
-
-  // 인증된 사용자를 위한 메뉴 항목
+  
+  // 인증된 사용자 메뉴 (변경 없음)
   const authenticatedItems = isAuthenticated ? [
     { type: 'link' as const, text: t('navigation:dashboard'), href: '/' },
     { type: 'link' as const, text: t('navigation:resources'), href: '/resources' },
     { type: 'link' as const, text: t('navigation:calendar'), href: '/calendar' }
   ] : [];
-
-  // 강사용 메뉴 항목
+  
+  // 강사용 메뉴 항목 (변경 없음)
   const instructorItems = isInstructor || isAdmin ? [
     { type: 'divider' as const },
     {
@@ -42,29 +42,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         {
           type: 'expandable-link-group' as const,
           text: t('navigation:instructor.courseManagementGroup'),
-          href: '/instructor/courses', // 기본 링크 추가
+          href: '/instructor/courses',
           items: [
             { type: 'link' as const, text: t('navigation:instructor.courseManagement'), href: '/instructor/courses' },
             { type: 'link' as const, text: t('navigation:instructor.catalog'), href: '/instructor/catalog' }
           ]
         },
-
+        
         // 평가 도구 관리 그룹
         {
           type: 'expandable-link-group' as const,
           text: t('navigation:instructor.assessmentToolsGroup'),
-          href: '/instructor/quizzes', // 기본 링크 추가
+          href: '/instructor/quizzes',
           items: [
             { type: 'link' as const, text: t('navigation:instructor.quizzes'), href: '/instructor/quizzes' },
             { type: 'link' as const, text: t('navigation:instructor.surveys'), href: '/instructor/surveys' }
           ]
         },
-
+        
         // 관리 도구 그룹
         {
           type: 'expandable-link-group' as const,
           text: t('navigation:instructor.managementToolsGroup'),
-          href: '/instructor/reports', // 기본 링크 추가
+          href: '/instructor/reports',
           items: [
             { type: 'link' as const, text: t('navigation:instructor.reports'), href: '/instructor/reports' },
             { type: 'link' as const, text: t('navigation:instructor.statistics'), href: '/instructor/statistics' }
@@ -73,8 +73,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       ]
     }
   ] : [];
-
-  // 관리자용 메뉴 항목
+  
+  // 관리자용 메뉴 항목 (변경 없음)
   const adminItems = isAdmin ? [
     { type: 'divider' as const },
     {
@@ -82,22 +82,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       text: t('navigation:admin.title'),
       items: [
         { type: 'link' as const, text: t('navigation:admin.dashboard'), href: '/admin/dashboard' },
-
-        // 수정된 부분: 교육 관리 메뉴 (과정 카탈로그, 고객사, 강사 관리)
-        {
-          type: 'link' as const,
-          text: t('navigation:admin.courseManagement'),
-          href: '/admin/course-management'
-        },
-
-        // 수정된 부분: 시스템 관리 메뉴 (캘린더, 공지사항)
-        {
-          type: 'link' as const,
-          text: t('navigation:admin.systemManagement'),
-          href: '/admin/system-management'
-        },
-
-        // 기존 설정 메뉴 유지
+        { type: 'link' as const, text: t('navigation:admin.courseManagement'), href: '/admin/course-management' },
+        { type: 'link' as const, text: t('navigation:admin.systemManagement'), href: '/admin/system-management' },
         { type: 'link' as const, text: t('navigation:admin.settings'), href: '/admin/settings' }
       ]
     }
@@ -108,6 +94,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
 
   return (
     <>
+      {/* 헤더를 외부에서 한 번만 렌더링 */}
       <div id="header" className="main-layout-header">
         <TopNavigationHeader />
       </div>
@@ -137,6 +124,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             </Box>
           ) : children
         }
+        // topNavigation prop 제거하고 headerSelector만 사용
         headerSelector="#header"
         toolsHide
         breadcrumbs={title ? (
@@ -144,6 +132,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             <h1>{title}</h1>
           </Box>
         ) : undefined}
+        // 명시적으로 사이드바 및 콘텐츠 설정 추가
+        navigationWidth={280}
+        contentType="default"
       />
     </>
   );

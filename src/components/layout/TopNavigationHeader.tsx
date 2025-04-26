@@ -1,3 +1,4 @@
+// src/components/layout/TopNavigationHeader.tsx 
 import React, { useEffect, useState } from 'react';
 import {
   TopNavigation,
@@ -9,13 +10,13 @@ import { useAuth } from '@hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const TopNavigationHeader: React.FC = () => {
-  const { t, i18n } = useTranslation(); // i18n 인스턴스 직접 추출
+  const { t, i18n } = useTranslation();
   const { theme, toggleTheme, language, changeLanguage } = useApp();
   const { isAuthenticated, logout, user, getUserRoles } = useAuth();
   const navigate = useNavigate();
   const [userRoles, setUserRoles] = useState<string[]>([]);
 
-  // 사용자 역할 가져오기
+  // 사용자 역할 가져오기 (변경 없음)
   useEffect(() => {
     if (isAuthenticated && user) {
       if (typeof getUserRoles === 'function') {
@@ -37,19 +38,17 @@ const TopNavigationHeader: React.FC = () => {
     }
   }, [isAuthenticated, user, getUserRoles]);
 
-  // 언어 변경 핸들러 (직접 i18n 인스턴스 사용)
+  // 언어 변경 핸들러 (변경 없음)
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang).then(() => {
-      // 앱 컨텍스트에도 언어 상태 업데이트
       if (changeLanguage) {
         changeLanguage(lang);
       }
-      // 디버깅용 로그
       console.log(`Language changed to: \${lang}`);
     });
   };
 
-  // 테마 메뉴 아이템
+  // 테마 메뉴 아이템 (변경 없음)
   const themeItems = [
     {
       id: 'light',
@@ -63,7 +62,7 @@ const TopNavigationHeader: React.FC = () => {
     }
   ];
 
-  // 언어 메뉴 아이템
+  // 언어 메뉴 아이템 (변경 없음)
   const languageItems = [
     {
       id: 'en',
@@ -77,7 +76,7 @@ const TopNavigationHeader: React.FC = () => {
     }
   ];
 
-  // 유틸리티 내비게이션 아이템
+  // 유틸리티 내비게이션 아이템 (변경 없음)
   const utilities: TopNavigationProps.Utility[] = [
     // 테마 전환 메뉴
     {
@@ -99,12 +98,12 @@ const TopNavigationHeader: React.FC = () => {
       title: t('header.language.label', 'Language'),
       items: languageItems,
       onItemClick: ({ detail }: { detail: { id: string } }) => {
-        handleLanguageChange(detail.id); // 수정된 언어 변경 함수 사용
+        handleLanguageChange(detail.id);
       }
     }
   ];
 
-  // 인증 상태에 따라 추가 메뉴
+  // 인증 상태에 따라 추가 메뉴 (템플릿 리터럴 수정)
   if (isAuthenticated && user) {
     // 사용자 이름 표시 로직 개선
     let displayName = t('header.user.account', 'Account');
@@ -115,91 +114,91 @@ const TopNavigationHeader: React.FC = () => {
     const isInstructor = userRoles.includes('instructor');
     const isStudent = userRoles.includes('student') || (!isAdmin && !isInstructor);
 
-    if (isAdmin) {
-      userRole = '관리자';
-    } else if (isInstructor) {
-      userRole = '강사';
-    } else {
-      userRole = '수강생';
-    }
+    // if (isAdmin) {
+    //   userRole = '관리자';
+    // } else if (isInstructor) {
+    //   userRole = '강사';
+    // } else {
+    //   userRole = '수강생';
+    // }
 
-    if (user.attributes?.name) {
-      displayName = user.attributes.name;
-    } else if (user.username) {
-      displayName = user.username;
-    } else if (user.email) {
-      displayName = user.email;
-    }
+    // if (user.attributes?.name) {
+    //   displayName = user.attributes.name;
+    // } else if (user.username) {
+    //   displayName = user.username;
+    // } else if (user.email) {
+    //   displayName = user.email;
+    // }
 
-    // 역할 기반 메뉴 아이템 구성
-    const userMenuItems = [
-      { id: 'profile', text: t('header.user.profile', '프로필') },
-      { id: 'settings', text: t('header.user.settings', '설정') },
-    ];
+    // // 역할 기반 메뉴 아이템 구성
+    // const userMenuItems = [
+    //   { id: 'profile', text: t('header.user.profile', '프로필') },
+    //   { id: 'settings', text: t('header.user.settings', '설정') },
+    // ];
 
-    // 관리자 메뉴
-    if (isAdmin) {
-      userMenuItems.push(
-        { id: 'admin-dashboard', text: t('header.admin.dashboard', '관리자 대시보드') },
-        { id: 'user-management', text: t('header.admin.userManagement', '사용자 관리') }
-      );
-    }
+    // // 관리자 메뉴
+    // if (isAdmin) {
+    //   userMenuItems.push(
+    //     { id: 'admin-dashboard', text: t('header.admin.dashboard', '관리자 대시보드') },
+    //     { id: 'user-management', text: t('header.admin.userManagement', '사용자 관리') }
+    //   );
+    // }
 
-    // 강사 메뉴
-    if (isInstructor || isAdmin) {
-      userMenuItems.push(
-        { id: 'course-catalog', text: t('header.instructor.catalog', '과정 카탈로그') },
-        { id: 'course-management', text: t('header.instructor.courseManagement', '과정 관리') }
-      );
-    }
+    // // 강사 메뉴
+    // if (isInstructor || isAdmin) {
+    //   userMenuItems.push(
+    //     { id: 'course-catalog', text: t('header.instructor.catalog', '과정 카탈로그') },
+    //     { id: 'course-management', text: t('header.instructor.courseManagement', '과정 관리') }
+    //   );
+    // }
 
-    // 구분선 및 로그아웃 추가
-    userMenuItems.push(
-      { id: 'divider', text: '-' },
-      { id: 'signout', text: t('header.user.signOut', '로그아웃') }
-    );
+    // // 구분선 및 로그아웃 추가
+    // userMenuItems.push(
+    //   { id: 'divider', text: '-' },
+    //   { id: 'signout', text: t('header.user.signOut', '로그아웃') }
+    // );
 
-    // 로그인한 경우 사용자 메뉴 추가 (템플릿 리터럴 구문 수정)
-    utilities.push({
-      type: 'menu-dropdown',
-      text: `\${displayName} (\${userRole})`,  // 이스케이프 문자 제거
-      description: userRole,
-      iconName: 'user-profile',
-      items: userMenuItems,
-      onItemClick: ({ detail }: { detail: { id: string } }) => {
-        switch (detail.id) {
-          case 'signout':
-            logout();
-            break;
-          case 'profile':
-            navigate('/profile');
-            break;
-          case 'settings':
-            navigate('/settings');
-            break;
-          case 'admin-dashboard':
-            navigate('/admin/dashboard');
-            break;
-          case 'user-management':
-            navigate('/admin/users');
-            break;
-          case 'course-catalog':
-            navigate('/instructor/catalog');
-            break;
-          case 'course-management':
-            navigate('/instructor/courses');
-            break;
-        }
-      }
-    });
-  } else {
-    // 로그인하지 않은 경우 로그인 버튼 추가
-    utilities.push({
-      type: 'button',
-      text: t('header.user.login', '로그인'),
-      href: '/login'
-    });
-  }
+    // 로그인한 경우 사용자 메뉴 추가 (템플릿 리터럴 수정)
+  //   utilities.push({
+  //     type: 'menu-dropdown',
+  //     text: `\${displayName} (\${userRole})`,  // 템플릿 리터럴 수정
+  //     description: userRole,
+  //     iconName: 'user-profile',
+  //     items: userMenuItems,
+  //     onItemClick: ({ detail }: { detail: { id: string } }) => {
+  //       switch (detail.id) {
+  //         case 'signout':
+  //           logout();
+  //           break;
+  //         case 'profile':
+  //           navigate('/profile');
+  //           break;
+  //         case 'settings':
+  //           navigate('/settings');
+  //           break;
+  //         case 'admin-dashboard':
+  //           navigate('/admin/dashboard');
+  //           break;
+  //         case 'user-management':
+  //           navigate('/admin/users');
+  //           break;
+  //         case 'course-catalog':
+  //           navigate('/instructor/catalog');
+  //           break;
+  //         case 'course-management':
+  //           navigate('/instructor/courses');
+  //           break;
+  //       }
+  //     }
+  //   });
+  // } else {
+  //   // 로그인하지 않은 경우 로그인 버튼 추가
+  //   utilities.push({
+  //     type: 'button',
+  //     text: t('header.user.login', '로그인'),
+  //     href: '/login'
+  //   });
+   }
 
   return (
     <TopNavigation
