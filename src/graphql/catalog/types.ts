@@ -2,7 +2,7 @@
 import { BaseRecord } from '../common/types';
 import { CatalogStatus, CourseCatalog } from '../../models/catalog';
 
-export interface ListCourseCatalogsResult {
+export interface ListCatalogsResult {
   listCourseCatalogs: {
     items: CourseCatalog[];
     nextToken?: string;

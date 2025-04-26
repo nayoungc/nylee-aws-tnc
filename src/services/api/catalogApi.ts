@@ -7,11 +7,11 @@ import i18n from '@/i18n';
 
 // 카탈로그 관련 쿼리와 뮤테이션
 import { 
-  listCourseCatalogs, // 'listCatalogs'를 'listCourseCatalogs'로 수정
+  listCatalogs, // 'listCourseCatalogs' 대신 백엔드 스키마에 맞는 이름 사용
   getCourseCatalog,
   searchCatalog,
   getCatalogByCategory 
-} from '@/graphql/catalog/queries'; // '/queries' 경로 추가 - 파일 구조에 맞게 수정
+} from '@/graphql/catalog/queries';
 
 import { 
   createCourseCatalog, 
@@ -20,7 +20,7 @@ import {
 } from '@/graphql/catalog/mutations'; // '/mutations' 경로 추가 - 파일 구조에 맞게 수정
 
 import {
-  ListCourseCatalogsResult,
+  ListCatalogsResult, 
   GetCourseCatalogResult,
   SearchCatalogResult,
   GetCatalogByCategoryResult,
@@ -30,7 +30,7 @@ import {
   CatalogFilterInput
 } from '@/graphql/catalog/types'; // '/types' 경로 추가 - 실제 파일 구조에 따라 수정
 
-// 모델과 모의 데이터
+// 필터 타입 수정
 import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/catalog'; 
 import { mockCatalogs } from '@/mocks/catalogData'; 
 
@@ -47,11 +47,11 @@ export const fetchAllCatalogs = async (): Promise<CourseCatalog[]> => {
     
   try {
     const response = await client.graphql({
-      query: listCourseCatalogs
+      query: listCatalogs
     });
     
     // 안전하게 데이터 추출
-    const data = safelyExtractData<ListCourseCatalogsResult>(response);
+    const data = safelyExtractData<ListCatalogsResult>(response);
     return data?.listCourseCatalogs?.items || [];
   } catch (error: unknown) {
     console.error('카탈로그 목록 조회 오류:', error);
