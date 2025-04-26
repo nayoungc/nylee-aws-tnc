@@ -12,6 +12,7 @@ import CourseManagementPage from '@pages/admin/CourseManagementPage'; // 새 페
 import SystemManagementPage from '@/pages/admin/SystemManagementPage'; // 새 페이지 임포트
 import { AuthProvider } from '@/hooks/useAuth';
 import '@/i18n';
+import LoginPage from './pages/auth/LoginPage';
 
 const App: React.FC = () => {
   return (
@@ -22,7 +23,7 @@ const App: React.FC = () => {
             <Routes>
               {/* 기존 라우트 */}
               <Route path="/" element={<Navigate to="/tnc" replace />} />
-              {/* <Route path="/login" element={<LoginPage />} /> */}
+              <Route path="/login" element={<LoginPage />} />
               {/* <Route path="/home" element={<HomePage />} /> */}
               <Route path="/tnc" element={<TncPage />} />
 
