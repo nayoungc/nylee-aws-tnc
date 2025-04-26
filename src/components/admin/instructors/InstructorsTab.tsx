@@ -1,10 +1,8 @@
-// app/components/admin/catalog/CourseCatalogTab.tsx
+// src/components/admin/instructors/InstructorsTab.tsx
 import React, { useState } from 'react';
 import {
   ContentLayout,
   SpaceBetween,
-  Container,
-  Header,
   Box,
   Button,
   BreadcrumbGroup,
@@ -14,115 +12,92 @@ import {
   FormField,
   Input,
   Textarea,
-  Select,
-  TagEditor,
   StatusIndicator,
-  SelectProps
+  TextFilter
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
-import { useCatalog } from '@/hooks/useCatalog';
-import { CourseCatalog, CourseCatalogInput } from '@/models/catalog';
+import { useInstructor } from '@/hooks/useInstructor';
+import { Instructor, InstructorInput } from '@/models/instructor';
 import EnhancedTable from '@/components/common/EnhancedTable';
 
 const InstructorsTab: React.FC = () => {
   const { t } = useTranslation(['admin', 'common']);
   const {
-    catalogs,
-    selectedCatalog,
+    instructors,
+    selectedInstructor,
     loading,
     error,
     refetch,
-    selectCatalog,
-    createNewCatalog,
-    updateSelectedCatalog,
-    deleteSelectedCatalog,
+    selectInstructor,
+    createInstructor,
+    updateSelectedInstructor,
+    changeSelectedInstructorStatus,
     isCreating,
     isUpdating,
-    isDeleting
-  } = useCatalog();
+    isChangingStatus
+  } = useInstructor();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [selectedCatalogs, setSelectedCatalogs] = useState<CourseCatalog[]>([]);
+  const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
+  const [selectedInstructors, setSelectedInstructors] = useState<Instructor[]>([]);
+  const [searchText, setSearchText] = useState('');
 
   // 폼 상태
-  const [formData, setFormData] = useState<CourseCatalogInput>({
-    title: '',
-    awsCode: '',
-    version: '1.0',
-    durations: 8,
-    level: 'beginner',
-    description: '',
-    category: '',
-    tags: [],
-    prerequisites: [],
-    objectives: [],
-    status: 'draft'
+  const [formData, setFormData] = useState<InstructorInput>({
+    username: '',
+    email: '',
+    name: '',
+    profile: ''
   });
 
-  // 카탈로그 생성 처리
+  // 강사 생성 처리
   const handleCreate = async () => {
     try {
-      await createNewCatalog(formData);
+      await createInstructor(formData);
       setShowCreateModal(false);
       resetForm();
     } catch (err) {
-      console.error('Failed to create catalog:', err);
+      console.error('Failed to create instructor:', err);
     }
   };
 
-  // 카탈로그 수정 처리
+  // 강사 수정 처리
   const handleEdit = async () => {
     try {
-      await updateSelectedCatalog(formData);
+      await updateSelectedInstructor(formData);
       setShowEditModal(false);
     } catch (err) {
-      console.error('Failed to update catalog:', err);
+      console.error('Failed to update instructor:', err);
     }
   };
 
-  // 카탈로그 삭제 처리
-  const handleDelete = async () => {
+  // 강사 상태 변경 처리
+  const handleStatusChange = async (newStatus: 'ACTIVE' | 'INACTIVE') => {
     try {
-      await deleteSelectedCatalog();
-      setShowDeleteConfirm(false);
-      setSelectedCatalogs([]);
+      await changeSelectedInstructorStatus(newStatus);
+      setShowStatusChangeModal(false);
+      setSelectedInstructors([]);
     } catch (err) {
-      console.error('Failed to delete catalog:', err);
+      console.error('Failed to change instructor status:', err);
     }
   };
 
-  // 단일 카탈로그 삭제 시작
-  const handleDeleteClick = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
-    setSelectedCatalogs([catalog]);
-    setShowDeleteConfirm(true);
-  };
-
-  // 배치 삭제 시작
-  const handleBatchDelete = () => {
-    if (selectedCatalogs.length === 1) {
-      selectCatalog(selectedCatalogs[0].id);
-    }
-    setShowDeleteConfirm(true);
+  // 상태 변경 모달 열기
+  const openStatusChangeModal = (instructor: Instructor, status: 'ACTIVE' | 'INACTIVE') => {
+    selectInstructor(instructor.id);
+    setSelectedInstructors([instructor]);
+    setShowStatusChangeModal(true);
   };
 
   // 편집 모달 열기
-  const openEditModal = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
+  const openEditModal = (instructor: Instructor) => {
+    selectInstructor(instructor.id);
     setFormData({
-      title: catalog.title,
-      awsCode: catalog.awsCode || '',
-      version: catalog.version || '1.0',
-      durations: catalog.durations || 8,
-      level: catalog.level || 'beginner',
-      description: catalog.description || '',
-      category: catalog.category || '',
-      tags: catalog.tags || [],
-      prerequisites: catalog.prerequisites || [],
-      objectives: catalog.objectives || [],
-      status: catalog.status || 'draft'
+      username: instructor.username,
+      email: instructor.email,
+      name: instructor.name,
+      profile: instructor.profile || ''
     });
     setShowEditModal(true);
   };
@@ -130,81 +105,84 @@ const InstructorsTab: React.FC = () => {
   // 폼 초기화
   const resetForm = () => {
     setFormData({
-      title: '',
-      awsCode: '',
-      version: '1.0',
-      durations: 8,
-      level: 'beginner',
-      description: '',
-      category: '',
-      tags: [],
-      prerequisites: [],
-      objectives: [],
-      status: 'draft'
+      username: '',
+      email: '',
+      name: '',
+      profile: ''
     });
   };
 
-  // Select 컴포넌트 타입 처리를 위한 핸들러
-  const handleLevelChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({ ...prev, level: event.detail.selectedOption.value }));
-  };
-
-  // Select 컴포넌트 타입 처리를 위한 핸들러
-  const handleStatusChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({
-      ...prev,
-      status: event.detail.selectedOption.value as 'active' | 'draft' | 'archived'
-    }));
-  };
+  // 강사 목록 필터링
+  const filteredInstructors = searchText.trim() ? 
+    instructors.filter(instructor => 
+      instructor.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      instructor.email.toLowerCase().includes(searchText.toLowerCase()) ||
+      instructor.username.toLowerCase().includes(searchText.toLowerCase()) ||
+      (instructor.profile && instructor.profile.toLowerCase().includes(searchText.toLowerCase()))
+    ) : 
+    instructors;
 
   // 테이블 칼럼 정의
   const columnDefinitions = [
     {
-      id: 'title',
-      header: t('admin:catalog.fields.title'),
-      cell: (item: CourseCatalog) => item.title,
-      sortingField: 'title',
+      id: 'name',
+      header: t('admin:instructors.fields.name'),
+      cell: (item: Instructor) => (
+        <div style={{ 
+          fontWeight: '500', 
+          color: '#0972d3', 
+          cursor: 'pointer' 
+        }} onClick={() => openEditModal(item)}>
+          {item.name}
+        </div>
+      ),
+      sortingField: 'name',
+      width: 150
     },
     {
-      id: 'awsCode',
-      header: t('admin:catalog.fields.awsCode'),
-      cell: (item: CourseCatalog) => item.awsCode || '-',
-      sortingField: 'awsCode',
+      id: 'email',
+      header: t('admin:instructors.fields.email'),
+      cell: (item: Instructor) => item.email,
+      sortingField: 'email',
+      width: 200
     },
     {
-      id: 'version',
-      header: t('admin:catalog.fields.version'),
-      cell: (item: CourseCatalog) => item.version || '1.0',
-      sortingField: 'version',
+      id: 'username',
+      header: t('admin:instructors.fields.username'),
+      cell: (item: Instructor) => item.username,
+      sortingField: 'username',
+      width: 150
     },
     {
-      id: 'level',
-      header: t('admin:catalog.fields.level'),
-      cell: (item: CourseCatalog) => t(`admin:catalog.levels.\${item.level}`) || item.level,
-      sortingField: 'level',
-    },
-    {
-      id: 'duration',
-      header: t('admin:catalog.fields.duration'),
-      cell: (item: CourseCatalog) => item.durations ? 
-        `\${item.durations} \${t('common:hours')}` : '-',
-      sortingField: 'durations',
+      id: 'profile',
+      header: t('admin:instructors.fields.profile'),
+      cell: (item: Instructor) => (
+        <div style={{ 
+          maxHeight: '80px', 
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical'
+        }}>
+          {item.profile || '-'}
+        </div>
+      ),
+      sortingField: 'profile',
+      minWidth: 250
     },
     {
       id: 'status',
-      header: t('admin:catalog.fields.status'),
-      cell: (item: CourseCatalog) => {
+      header: t('admin:instructors.fields.status'),
+      cell: (item: Instructor) => {
         const statusMap: Record<string, { type: string; text: string }> = {
-          active: { type: 'success', text: t('admin:catalog.status.active') },
-          draft: { type: 'pending', text: t('admin:catalog.status.draft') },
-          archived: { type: 'stopped', text: t('admin:catalog.status.archived') },
+          ACTIVE: { type: 'success', text: t('admin:instructors.status.active') },
+          INACTIVE: { type: 'stopped', text: t('admin:instructors.status.inactive') }
         };
         
-        // item.status가 undefined일 수 있으므로 안전한 접근 방법 사용
-        const statusKey = item.status || 'unknown';
-        const status = statusMap[statusKey] || { 
+        const status = statusMap[item.status] || { 
           type: 'info', 
-          text: statusKey === 'unknown' ? t('admin:catalog.status.unknown', '알 수 없음') : statusKey
+          text: item.status || t('admin:instructors.status.unknown')
         };
         
         return (
@@ -214,35 +192,65 @@ const InstructorsTab: React.FC = () => {
         );
       },
       sortingField: 'status',
+      width: 120
+    },
+    {
+      id: 'createdAt',
+      header: t('admin:instructors.fields.createdAt'),
+      cell: (item: Instructor) => (
+        <div style={{ whiteSpace: 'nowrap' }}>
+          {new Date(item.createdAt || '').toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit', 
+            day: '2-digit'
+          })}
+        </div>
+      ),
+      sortingField: 'createdAt',
+      width: 120
     },
     {
       id: 'actions',
       header: t('common:actions'),
-      cell: (item: CourseCatalog) => (
+      cell: (item: Instructor) => (
         <SpaceBetween direction="horizontal" size="xs">
           <Button 
             variant="link" 
             onClick={() => openEditModal(item)}
+            iconName="edit"
           >
             {t('common:edit')}
           </Button>
-          <Button 
-            variant="link" 
-            onClick={() => handleDeleteClick(item)}
-          >
-            {t('common:delete')}
-          </Button>
+          {item.status === 'ACTIVE' ? (
+            <Button 
+              variant="link" 
+              onClick={() => openStatusChangeModal(item, 'INACTIVE')}
+              iconName="remove"
+            >
+              {t('admin:instructors.actions.deactivate')}
+            </Button>
+          ) : (
+            <Button 
+              variant="link" 
+              onClick={() => openStatusChangeModal(item, 'ACTIVE')}
+              iconName="check"
+            >
+              {t('admin:instructors.actions.activate')}
+            </Button>
+          )}
         </SpaceBetween>
       ),
+      width: 180
     }
   ];
 
   // 필터링 속성
   const filteringProperties = [
-    { key: 'title', label: t('admin:catalog.fields.title') },
-    { key: 'awsCode', label: t('admin:catalog.fields.awsCode') },
-    { key: 'level', label: t('admin:catalog.fields.level') },
-    { key: 'status', label: t('admin:catalog.fields.status') },
+    { key: 'name', label: t('admin:instructors.fields.name') },
+    { key: 'email', label: t('admin:instructors.fields.email') },
+    { key: 'username', label: t('admin:instructors.fields.username') },
+    { key: 'profile', label: t('admin:instructors.fields.profile') },
+    { key: 'status', label: t('admin:instructors.fields.status') }
   ];
 
   return (
@@ -254,88 +262,94 @@ const InstructorsTab: React.FC = () => {
             items={[
               { text: t('common:home'), href: '/' },
               { text: t('admin:title'), href: '/admin' },
-              { text: t('admin:catalog.title'), href: '#' }
+              { text: t('admin:instructors.title'), href: '/admin/instructors' }
             ]}
             ariaLabel={t('common:breadcrumbs')}
           />
         </Box>
+
+        {/* 검색 필터 */}
+        <TextFilter
+          filteringText={searchText}
+          filteringPlaceholder={t('admin:instructors.searchPlaceholder', '강사 검색...')}
+          filteringAriaLabel="강사 검색"
+          onChange={({ detail }) => setSearchText(detail.filteringText)}
+        />
 
         {/* 오류 표시 */}
         {error && (
           <Alert
             type="error"
             header={t('common:error')}
-            action={<Button onClick={refetch}>{t('common:retry')}</Button>}
+            action={<Button onClick={() => refetch()}>{t('common:retry')}</Button>}
             dismissible
           >
-            {t('admin:catalog.errors.loadFailed')}
+            {t('admin:instructors.errors.loadFailed')}
           </Alert>
         )}
 
         {/* EnhancedTable 사용 */}
         <EnhancedTable
-          title={t('admin:catalog.title')}
-          description={t('admin:catalog.description')}
+          title={t('admin:instructors.title')}
+          description={searchText ? 
+            t('admin:instructors.searchResults', { count: filteredInstructors.length }) : 
+            t('admin:instructors.description')}
           columnDefinitions={columnDefinitions}
-          items={catalogs}
+          items={filteredInstructors}
           loading={loading}
-          selectionType="multi"
-          selectedItems={selectedCatalogs}
-          onSelectionChange={setSelectedCatalogs}
+          selectionType="single"
+          selectedItems={selectedInstructors}
+          onSelectionChange={setSelectedInstructors}
           onRefresh={refetch}
           actions={{
             primary: {
-              text: t('admin:catalog.actions.createCatalog'),
+              text: t('admin:instructors.actions.createInstructor'),
               onClick: () => setShowCreateModal(true)
             }
           }}
-          batchActions={[
-            {
-              text: t('common:actions.deleteSelected'),
-              onClick: handleBatchDelete,
-              disabled: selectedCatalogs.length === 0
-            }
-          ]}
-          filteringProperties={filteringProperties}
           stickyHeader={true}
           stripedRows={true}
-          defaultSortingColumn="title"
+          defaultSortingColumn="name"
           emptyText={{
-            title: t('admin:catalog.noCatalogs'),
-            subtitle: t('admin:catalog.createPrompt'),
-            action: {
-              text: t('admin:catalog.actions.createCatalog'),
+            title: searchText ? 
+              t('admin:instructors.noSearchResults') : 
+              t('admin:instructors.noInstructors'),
+            subtitle: searchText ? 
+              t('admin:instructors.tryOtherSearch') : 
+              t('admin:instructors.createPrompt'),
+            action: searchText ? undefined : {
+              text: t('admin:instructors.actions.createInstructor'),
               onClick: () => setShowCreateModal(true)
             }
           }}
           visibleContentOptions={[
             {
               id: 'main',
-              label: t('admin:catalog.columns.main'),
+              label: t('admin:instructors.columns.main'),
               options: [
-                { id: 'title', label: t('admin:catalog.fields.title') },
-                { id: 'awsCode', label: t('admin:catalog.fields.awsCode') },
-                { id: 'version', label: t('admin:catalog.fields.version') },
+                { id: 'name', label: t('admin:instructors.fields.name') },
+                { id: 'email', label: t('admin:instructors.fields.email') },
+                { id: 'username', label: t('admin:instructors.fields.username') },
               ]
             },
             {
               id: 'details',
-              label: t('admin:catalog.columns.details'),
+              label: t('admin:instructors.columns.details'),
               options: [
-                { id: 'level', label: t('admin:catalog.fields.level') },
-                { id: 'duration', label: t('admin:catalog.fields.duration') },
-                { id: 'status', label: t('admin:catalog.fields.status') },
+                { id: 'profile', label: t('admin:instructors.fields.profile') },
+                { id: 'status', label: t('admin:instructors.fields.status') },
+                { id: 'createdAt', label: t('admin:instructors.fields.createdAt') },
               ]
             }
           ]}
           preferences={true}
         />
 
-        {/* 카탈로그 생성 모달 */}
+        {/* 강사 생성 모달 */}
         <Modal
           visible={showCreateModal}
           onDismiss={() => setShowCreateModal(false)}
-          header={t('admin:catalog.modals.create.title')}
+          header={t('admin:instructors.modals.create.title')}
           size="large"
           footer={
             <Box float="right">
@@ -345,9 +359,9 @@ const InstructorsTab: React.FC = () => {
                   variant="primary"
                   onClick={handleCreate}
                   loading={isCreating}
-                  disabled={!formData.title}
+                  disabled={!formData.username || !formData.email || !formData.name}
                 >
-                  {t('admin:catalog.actions.create')}
+                  {t('admin:instructors.actions.create')}
                 </Button>
               </SpaceBetween>
             </Box>
@@ -358,119 +372,72 @@ const InstructorsTab: React.FC = () => {
               <FormField
                 label={
                   <span>
-                    {t('admin:catalog.fields.title')}
+                    {t('admin:instructors.fields.name')}
                     <span className="awsui-key-label-required"> *</span>
                   </span>
                 }
-                description={t('admin:catalog.fields.titleDescription')}
+                description={t('admin:instructors.fields.nameDescription')}
               >
                 <Input
-                  value={formData.title}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, title: detail.value }))}
+                  value={formData.name}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, name: detail.value }))}
+                  placeholder="홍길동"
                 />
               </FormField>
 
-              {/* 나머지 폼 필드들 */}
-              <FormField label={t('admin:catalog.fields.awsCode')}>
+              <FormField
+                label={
+                  <span>
+                    {t('admin:instructors.fields.email')}
+                    <span className="awsui-key-label-required"> *</span>
+                  </span>
+                }
+                description={t('admin:instructors.fields.emailDescription')}
+              >
                 <Input
-                  value={formData.awsCode || ''}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, awsCode: detail.value }))}
-                  placeholder="AWS-100"
+                  type="email"
+                  value={formData.email}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, email: detail.value }))}
+                  placeholder="example@example.com"
                 />
               </FormField>
 
-              <SpaceBetween direction="horizontal" size="xs">
-                <FormField label={t('admin:catalog.fields.version')}>
-                  <Input
-                    value={formData.version || ''}
-                    onChange={({ detail }) => setFormData(prev => ({ ...prev, version: detail.value }))}
-                    placeholder="1.0"
-                  />
-                </FormField>
+              <FormField
+                label={
+                  <span>
+                    {t('admin:instructors.fields.username')}
+                    <span className="awsui-key-label-required"> *</span>
+                  </span>
+                }
+                description={t('admin:instructors.fields.usernameDescription')}
+              >
+                <Input
+                  value={formData.username}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, username: detail.value }))}
+                  placeholder="username123"
+                />
+              </FormField>
 
-                <FormField label={t('admin:catalog.fields.duration')}>
-                  <Input
-                    type="number"
-                    value={formData.durations?.toString() || '0'}
-                    onChange={({ detail }) => setFormData(prev => ({ 
-                      ...prev, 
-                      durations: detail.value ? parseInt(detail.value) : 0 
-                    }))}
-                  />
-                </FormField>
-
-                <FormField label={t('admin:catalog.fields.level')}>
-                  <Select
-                    selectedOption={{
-                      value: formData.level || 'beginner',
-                      label: t(`admin:catalog.levels.\${formData.level || 'beginner'}`)
-                    }}
-                    onChange={handleLevelChange}
-                    options={[
-                      { value: 'beginner', label: t('admin:catalog.levels.beginner') },
-                      { value: 'intermediate', label: t('admin:catalog.levels.intermediate') },
-                      { value: 'advanced', label: t('admin:catalog.levels.advanced') }
-                    ]}
-                  />
-                </FormField>
-              </SpaceBetween>
-
-              <FormField label={t('admin:catalog.fields.description')}>
+              <FormField 
+                label={t('admin:instructors.fields.profile')}
+                description={t('admin:instructors.fields.profileDescription')}
+              >
                 <Textarea
-                  value={formData.description || ''}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, description: detail.value }))}
+                  value={formData.profile || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, profile: detail.value }))}
+                  placeholder="강사 소개 및 전문 분야"
                   rows={4}
-                />
-              </FormField>
-
-              <FormField label={t('admin:catalog.fields.tags')}>
-                <TagEditor
-                  tags={(formData.tags || []).map(tag => ({
-                    key: tag,
-                    value: tag,
-                    existing: true
-                  }))}
-                  onChange={({ detail }) => {
-                    const newTags = detail.tags
-                      .filter(tag => !tag.markedForRemoval)
-                      .map(tag => tag.value);
-                    setFormData(prev => ({ ...prev, tags: newTags }));
-                  }}
-                  i18nStrings={{
-                    // 간소화된 i18n 문자열
-                    keyHeader: t('common:tagEditor.keyHeader', '키'),
-                    valueHeader: t('common:tagEditor.valueHeader', '값'),
-                    addButton: t('common:tagEditor.addButton', '태그 추가'),
-                    removeButton: t('common:tagEditor.removeButton', '제거'),
-                    loading: t('common:loading'),
-                    // 기타 필요한 문자열...
-                  }}
-                />
-              </FormField>
-
-              <FormField label={t('admin:catalog.fields.status')}>
-                <Select
-                  selectedOption={{
-                    value: formData.status || 'draft',
-                    label: t(`admin:catalog.status.\${formData.status || 'draft'}`)
-                  }}
-                  onChange={handleStatusChange}
-                  options={[
-                    { value: 'draft', label: t('admin:catalog.status.draft') },
-                    { value: 'active', label: t('admin:catalog.status.active') },
-                    { value: 'archived', label: t('admin:catalog.status.archived') }
-                  ]}
                 />
               </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
 
-        {/* 카탈로그 편집 모달 */}
+        {/* 강사 편집 모달 */}
         <Modal
           visible={showEditModal}
           onDismiss={() => setShowEditModal(false)}
-          header={t('admin:catalog.modals.edit.title')}
+          header={t('admin:instructors.modals.edit.title')}
           size="large"
           footer={
             <Box float="right">
@@ -480,7 +447,7 @@ const InstructorsTab: React.FC = () => {
                   variant="primary"
                   onClick={handleEdit}
                   loading={isUpdating}
-                  disabled={!formData.title}
+                  disabled={!formData.name || !formData.email}
                 >
                   {t('common:save')}
                 </Button>
@@ -490,39 +457,87 @@ const InstructorsTab: React.FC = () => {
         >
           <Form>
             <SpaceBetween size="l">
-              {/* 동일한 폼 필드 반복 (생략) */}
-              {/* 필요시 편집 모달에 특화된 추가 필드 */}
+              <FormField
+                label={
+                  <span>
+                    {t('admin:instructors.fields.name')}
+                    <span className="awsui-key-label-required"> *</span>
+                  </span>
+                }
+                description={t('admin:instructors.fields.nameDescription')}
+              >
+                <Input
+                  value={formData.name}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, name: detail.value }))}
+                />
+              </FormField>
+
+              <FormField
+                label={
+                  <span>
+                    {t('admin:instructors.fields.email')}
+                    <span className="awsui-key-label-required"> *</span>
+                  </span>
+                }
+                description={t('admin:instructors.fields.emailDescription')}
+              >
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, email: detail.value }))}
+                />
+              </FormField>
+
+              <FormField 
+                label={t('admin:instructors.fields.profile')}
+                description={t('admin:instructors.fields.profileDescription')}
+              >
+                <Textarea
+                  value={formData.profile || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, profile: detail.value }))}
+                  rows={4}
+                />
+              </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
 
-        {/* 삭제 확인 모달 */}
+        {/* 상태 변경 확인 모달 */}
         <Modal
-          visible={showDeleteConfirm}
-          onDismiss={() => setShowDeleteConfirm(false)}
-          header={t('admin:catalog.modals.delete.title')}
+          visible={showStatusChangeModal}
+          onDismiss={() => setShowStatusChangeModal(false)}
+          header={
+            selectedInstructor?.status === 'ACTIVE' ? 
+              t('admin:instructors.modals.deactivate.title') : 
+              t('admin:instructors.modals.activate.title')
+          }
           footer={
             <Box float="right">
               <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => setShowDeleteConfirm(false)}>
+                <Button onClick={() => setShowStatusChangeModal(false)}>
                   {t('common:cancel')}
                 </Button>
                 <Button
                   variant="primary"
-                  onClick={handleDelete}
-                  loading={isDeleting}
-                  iconName="remove"
+                  onClick={() => handleStatusChange(
+                    selectedInstructor?.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+                  )}
+                  loading={isChangingStatus}
                 >
-                  {t('common:delete')}
+                  {selectedInstructor?.status === 'ACTIVE' ? 
+                    t('admin:instructors.actions.deactivate') : 
+                    t('admin:instructors.actions.activate')
+                  }
                 </Button>
               </SpaceBetween>
             </Box>
           }
         >
           <Box>
-            {selectedCatalogs.length === 1 ? 
-              t('admin:catalog.modals.delete.confirmation', { title: selectedCatalogs[0].title }) :
-              t('admin:catalog.modals.delete.confirmationBatch', { count: selectedCatalogs.length })}
+            {selectedInstructor?.status === 'ACTIVE' ? 
+              t('admin:instructors.modals.deactivate.confirmation', { name: selectedInstructor?.name }) :
+              t('admin:instructors.modals.activate.confirmation', { name: selectedInstructor?.name })
+            }
           </Box>
         </Modal>
       </SpaceBetween>
