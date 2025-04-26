@@ -9,7 +9,8 @@ import {
   CollectionPreferences,
   StatusIndicator
 } from '@cloudscape-design/components';
-import { CourseCatalog } from '@models/catalog';
+import { CourseCatalog } from '@/models/catalog';
+import { useTranslation } from 'react-i18next';
 
 interface CatalogTableProps {
   catalogs: CourseCatalog[];
@@ -22,15 +23,23 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   loading,
   onViewDetails
 }) => {
+  const { t } = useTranslation(['catalog']);
   const [filterText, setFilterText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [preferences, setPreferences] = useState<{
-    pageSize: number;
-    visibleColumns: string[];
-  }>({
+  
+  // 올바른 columnDisplay 형식 사용
+  const [preferences, setPreferences] = useState({
     pageSize: 10,
-    visibleColumns: ['title', 'awsCode', 'version', 'hours', 'level', 'updatedAt']
+    columnDisplay: [
+      { id: 'title', visible: true },
+      { id: 'awsCode', visible: true },
+      { id: 'version', visible: true },
+      { id: 'hours', visible: true },
+      { id: 'level', visible: true },
+      { id: 'updatedAt', visible: true },
+      { id: 'actions', visible: true }
+    ]
   });
 
   // 필터링된 데이터
@@ -52,20 +61,20 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   // 날짜 포맷팅 함수
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('ko-KR');
+    return new Date(dateString).toLocaleDateString();
   };
 
   // 레벨에 따른 상태 표시
   const getLevelIndicator = (level?: string) => {
-    if (!level) return <StatusIndicator type="info">미정</StatusIndicator>;
+    if (!level) return <StatusIndicator type="info">{t('catalog:table.level.undefined')}</StatusIndicator>;
 
     switch (level) {
       case '입문':
-        return <StatusIndicator type="success">입문</StatusIndicator>;
+        return <StatusIndicator type="success">{t('catalog:table.level.beginner')}</StatusIndicator>;
       case '중급':
-        return <StatusIndicator type="info">중급</StatusIndicator>;
+        return <StatusIndicator type="info">{t('catalog:table.level.intermediate')}</StatusIndicator>;
       case '고급':
-        return <StatusIndicator type="warning">고급</StatusIndicator>;
+        return <StatusIndicator type="warning">{t('catalog:table.level.advanced')}</StatusIndicator>;
       default:
         return <StatusIndicator type="info">{level}</StatusIndicator>;
     }
@@ -75,46 +84,48 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   const columnDefinitions = [
     {
       id: 'title',
-      header: '제목',
+      header: t('catalog:table.title'),
       cell: (item: CourseCatalog) => item.title,
       sortingField: 'title',
     },
     {
       id: 'awsCode',
-      header: 'AWS 코드',
+      header: t('catalog:table.awsCode'),
       cell: (item: CourseCatalog) => item.awsCode || '-',
       sortingField: 'awsCode',
     },
     {
       id: 'version',
-      header: '버전',
+      header: t('catalog:table.version'),
       cell: (item: CourseCatalog) => item.version,
       sortingField: 'version',
     },
     {
       id: 'hours',
-      header: '수강 시간',
-      cell: (item: CourseCatalog) => (item.hours ? `\${item.hours}시간` : '-'),
+      header: t('catalog:table.hours'),
+      cell: (item: CourseCatalog) => (
+        item.durations ? t('catalog:table.hoursFormat', { hours: item.durations }) : '-'
+      ),
       sortingField: 'hours',
     },
     {
       id: 'level',
-      header: '난이도',
+      header: t('catalog:table.level'),
       cell: (item: CourseCatalog) => getLevelIndicator(item.level),
       sortingField: 'level',
     },
     {
       id: 'updatedAt',
-      header: '최종 수정일',
+      header: t('catalog:table.updatedAt'),
       cell: (item: CourseCatalog) => formatDate(item.updatedAt),
       sortingField: 'updatedAt',
     },
     {
       id: 'actions',
-      header: '작업',
+      header: t('catalog:table.actions'),
       cell: (item: CourseCatalog) => (
         <Button onClick={() => onViewDetails(item)} variant="link">
-          상세 보기
+          {t('catalog:table.viewDetails')}
         </Button>
       ),
     },
@@ -123,46 +134,55 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   // 컬렉션 환경설정 옵션
   const visibleContentOptions = [
     {
-      label: '표시할 열',
+      label: t('catalog:preferences.columns.title'),
       options: [
-        { id: 'title', label: '제목' },
-        { id: 'awsCode', label: 'AWS 코드' },
-        { id: 'version', label: '버전' },
-        { id: 'hours', label: '수강 시간' },
-        { id: 'level', label: '난이도' },
-        { id: 'updatedAt', label: '최종 수정일' }
+        { id: 'title', label: t('catalog:table.title') },
+        { id: 'awsCode', label: t('catalog:table.awsCode') },
+        { id: 'version', label: t('catalog:table.version') },
+        { id: 'hours', label: t('catalog:table.hours') },
+        { id: 'level', label: t('catalog:table.level') },
+        { id: 'updatedAt', label: t('catalog:table.updatedAt') }
       ]
     }
   ];
+
+  // visibleColumns 대신에 columnDisplay 배열의 visible이 true인 ID만 필터링
+  const visibleColumnIds = preferences.columnDisplay
+    .filter(col => col.visible)
+    .map(col => col.id);
 
   return (
     <Table
       loading={loading}
       items={paginatedCatalogs}
       columnDefinitions={columnDefinitions}
-      visibleColumns={preferences.visibleColumns}
+      columnDisplay={preferences.columnDisplay}
       ariaLabels={{
-        tableLabel: '과정 카탈로그',
+        tableLabel: t('catalog:table.tableLabel'),
         allItemsSelectionLabel: ({ selectedItems }) =>
-          `\${selectedItems.length} 항목 선택됨`,
+          t('catalog:table.selectionLabel', { count: selectedItems.length }),
         itemSelectionLabel: ({ selectedItems }, item) =>
-          `\${item.title} \${selectedItems.includes(item) ? '선택됨' : '선택 안됨'}`
+          `\${item.title} \${
+            selectedItems.includes(item)
+              ? t('catalog:table.itemSelected')
+              : t('catalog:table.itemNotSelected')
+          }`
       }}
       selectionType="single"
       trackBy="catalogId"
       empty={
         <Box textAlign="center" color="inherit">
-          <b>데이터 없음</b>
+          <b>{t('catalog:table.emptyText')}</b>
           <Box padding={{ bottom: 's' }} variant="p" color="inherit">
-            검색 결과가 없거나 과정 카탈로그가 존재하지 않습니다.
+            {t('catalog:table.emptyDescription')}
           </Box>
         </Box>
       }
       filter={
         <TextFilter
           filteringText={filterText}
-          filteringPlaceholder="과정 카탈로그 검색..."
-          filteringAriaLabel="과정 카탈로그 검색"
+          filteringPlaceholder={t('catalog:table.searchPlaceholder')}
+          filteringAriaLabel={t('catalog:table.searchAriaLabel')}
           onChange={({ detail }) => setFilterText(detail.filteringText)}
         />
       }
@@ -175,30 +195,42 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
       }
       preferences={
         <CollectionPreferences
-          title="환경 설정"
-          confirmLabel="확인"
-          cancelLabel="취소"
+          title={t('catalog:preferences.title')}
+          confirmLabel={t('catalog:preferences.confirm')}
+          cancelLabel={t('catalog:preferences.cancel')}
           preferences={{
             pageSize: preferences.pageSize,
-            visibleContent: preferences.visibleColumns
+            contentDisplay: preferences.columnDisplay.map(col => ({
+              id: col.id,
+              visible: col.visible
+            }))
           }}
           pageSizePreference={{
-            title: "페이지 크기",
+            title: t('catalog:preferences.pageSize.title'),
             options: [
-              { value: 10, label: "10개 항목" },
-              { value: 20, label: "20개 항목" },
-              { value: 50, label: "50개 항목" }
+              { value: 10, label: t('catalog:preferences.pageSize.items_10') },
+              { value: 20, label: t('catalog:preferences.pageSize.items_20') },
+              { value: 50, label: t('catalog:preferences.pageSize.items_50') }
             ]
           }}
           visibleContentPreference={{
-            title: "표시할 열",
+            title: t('catalog:preferences.columns.title'),
             options: visibleContentOptions
           }}
           onConfirm={({ detail }) => {
-            setPreferences({
-              pageSize: detail.pageSize ?? preferences.pageSize, // 기본값 제공
-              visibleColumns: detail.visibleContent ? [...detail.visibleContent] : preferences.visibleColumns // 복사본 생성
-            });
+            // 새로운 preference 객체 생성
+            const newPreferences = {
+              pageSize: detail.pageSize ?? preferences.pageSize,
+              columnDisplay: preferences.columnDisplay.map(col => ({
+                id: col.id,
+                visible: detail.contentDisplay?.some(
+                  (item: { id: string; visible: boolean }) => 
+                    item.id === col.id && item.visible
+                ) ?? col.visible
+              }))
+            };
+            
+            setPreferences(newPreferences);
 
             // pageSize가 있을 때만 설정
             if (detail.pageSize !== undefined) {

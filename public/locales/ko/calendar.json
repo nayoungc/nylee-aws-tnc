@@ -1,0 +1,74 @@
+{
+    "title": "교육 일정 캘린더",
+    "description": "이벤트가 있는 날짜는 파란색으로 표시됩니다. 상세 일정을 보려면 날짜를 클릭하세요.",
+    "upcomingCourses": "다가오는 교육 과정",
+    "noCourses": "예정된 교육 과정이 없습니다",
+    "coursesWillAppear": "새로운 교육 과정이 생기면 여기에 표시됩니다.",
+    
+    "eventCount": "{{count}}개",
+    
+    "popover": {
+      "singleEvent": "1개 교육과정",
+      "multipleEvents": "{{count}}개 교육과정",
+      "showMore": "+{{count}}개 더 보기"
+    },
+    
+    "aria": {
+      "today": "오늘",
+      "nextMonth": "다음 달",
+      "prevMonth": "이전 달"
+    },
+    
+    "actions": {
+      "filter": "필터",
+      "addCourse": "과정 등록",
+      "viewAll": "모든 일정 보기",
+      "details": "상세 정보",
+      "register": "등록하기",
+      "closed": "마감됨"
+    },
+    
+    "courseInfo": {
+      "date": "날짜",
+      "time": "시간",
+      "location": "장소",
+      "instructor": "강사",
+      "type": "유형",
+      "status": "상태",
+      "typeStatus": "유형/상태",
+      "seats": "잔여석",
+      "availableSeats": "잔여석: {{available}}/{{total}}",
+      "description": "교육 과정 소개",
+      "prerequisites": "사전 지식/준비물"
+    },
+    
+    "status": {
+      "full": "마감됨",
+      "almostFull": "마감 임박",
+      "upcoming": "신청 가능"
+    },
+    
+    "type": {
+      "certification": "자격증 과정",
+      "workshop": "워크샵",
+      "technical": "기술 교육",
+      "business": "비즈니스"
+    },
+    
+    "table": {
+      "title": "과정명",
+      "time": "시간",
+      "location": "장소",
+      "type": "유형",
+      "status": "상태",
+      "seats": "잔여석"
+    },
+    
+    "modal": {
+      "dateTitle": "{{date}} 교육 일정",
+      "defaultTitle": "교육 일정 상세",
+      "courseList": "교육 과정 목록",
+      "noCoursesOnDate": "선택한 날짜에 예정된 교육이 없습니다.",
+      "courseDetails": "교육 과정 상세"
+    }
+  }

@@ -1,121 +1,119 @@
 // src/pages/catalog/CourseCatalogPage.tsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  AppLayout,
+  Button,
   Container,
+  ContentLayout,
   Header,
-  SpaceBetween,
-  BreadcrumbGroup,
-  ContentLayout
+  SpaceBetween
 } from '@cloudscape-design/components';
-import CatalogTable from '@components/catalog/CatalogTable';
-import CatalogDetailsModal from '@components/catalog/CatalogDetailsModal';
-import { CourseCatalog } from '@models/catalog';
-import { fetchCourseCatalogs } from '@services/CatalogService';
-import { useAuth } from '@hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import CatalogTable from '@/components/catalog/CatalogTable';
+import { CourseCatalog } from '@/models/catalog';
+import MainLayout from '@/components/layout/MainLayout';
+import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
+
+// 임시 데이터 - 실제로는 API에서 가져옴
+const MOCK_CATALOGS: CourseCatalog[] = [
+  {
+    catalogId: '1',
+    title: 'AWS 클라우드 기초',
+    awsCode: 'AWS-100',
+    version: '1.0',
+    durations: 8,
+    level: '입문',
+    description: 'AWS 클라우드 서비스의 기본 개념 학습',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    catalogId: '2',
+    title: 'Amazon S3 심화 과정',
+    awsCode: 'AWS-203',
+    version: '2.1',
+    durations: 16,
+    level: '중급',
+    description: 'S3 스토리지 서비스의 고급 기능 학습',
+    updatedAt: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    catalogId: '3', 
+    title: 'AWS Lambda와 서버리스 아키텍처',
+    awsCode: 'AWS-305',
+    version: '3.2',
+    durations: 24,
+    level: '고급',
+    description: '서버리스 애플리케이션 개발 및 배포',
+    updatedAt: new Date(Date.now() - 172800000).toISOString()
+  }
+];
 
 const CourseCatalogPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation(['catalog', 'common', 'navigation']);
   const [catalogs, setCatalogs] = useState<CourseCatalog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCatalog, setSelectedCatalog] = useState<CourseCatalog | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
-  // 사용자 권한 확인
-  const isAdmin = user?.attributes?.['custom:role'] === 'admin';
-  const isInstructor = user?.attributes?.['custom:role'] === 'instructor';
-  const hasAccess = isAdmin || isInstructor;
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // 인증 상태 확인 후 권한 검사
-    if (!authLoading) {
-      if (!hasAccess) {
-        // 권한 없으면 리다이렉트
-        navigate('/login', { state: { message: '이 페이지에 접근할 권한이 없습니다.' } });
-        return;
-      }
-      
-      // 카탈로그 데이터 로드
-      const loadCatalogs = async () => {
-        setLoading(true);
-        try {
-          const data = await fetchCourseCatalogs();
-          setCatalogs(data);
-        } catch (err) {
-          console.error('Failed to load catalogs:', err);
-        } finally {
+    // 실제로는 API 호출하여 데이터를 가져옴
+    const fetchCatalogs = async () => {
+      try {
+        // API 호출 시뮬레이션
+        setTimeout(() => {
+          setCatalogs(MOCK_CATALOGS);
           setLoading(false);
-        }
-      };
-      
-      loadCatalogs();
-    }
-  }, [authLoading, hasAccess, navigate]);
+        }, 1000);
+      } catch (error) {
+        console.error('카탈로그 데이터를 불러오는 데 실패했습니다:', error);
+        setLoading(false);
+      }
+    };
 
-  // 상세 정보 모달 열기
+    fetchCatalogs();
+  }, []);
+
   const handleViewDetails = (catalog: CourseCatalog) => {
-    setSelectedCatalog(catalog);
-    setIsModalVisible(true);
+    navigate(`/instructor/catalog/\${catalog.catalogId}`);
   };
 
-  // 상세 정보 모달 닫기
-  const handleDismissModal = () => {
-    setIsModalVisible(false);
+  const handleCreateCatalog = () => {
+    navigate('/instructor/catalog/create');
   };
-
-  // 인증 로딩 중이면 로딩 표시
-  if (authLoading) {
-    return <div>로딩 중...</div>;
-  }
 
   return (
-    <AppLayout
-      content={
-        <ContentLayout
-          header={
-            <Header variant="h1">과정 카탈로그 관리</Header>
-          }
-          breadcrumbs={
-            <BreadcrumbGroup
-              items={[
-                { text: '홈', href: '/' },
-                { text: '과정 관리', href: '/instructor/courses' },
-                { text: '과정 카탈로그', href: '/instructor/catalog' }
-              ]}
-            />
-          }
-        >
-          <SpaceBetween size="l">
-            <Container
-              header={
-                <Header
-                  variant="h2"
-                  description="AWS 교육 과정 카탈로그 목록을 확인합니다."
-                >
-                  과정 카탈로그 목록
-                </Header>
-              }
-            >
-              <CatalogTable
-                catalogs={catalogs}
-                loading={loading}
-                onViewDetails={handleViewDetails}
-              />
-            </Container>
-          </SpaceBetween>
-          
-          <CatalogDetailsModal
-            catalog={selectedCatalog}
-            visible={isModalVisible}
-            onDismiss={handleDismissModal}
+    <MainLayout>
+      <ContentLayout
+        header={
+          <Header
+            variant="h1"
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button onClick={handleCreateCatalog}>{t('catalog:actions.createCatalog')}</Button>
+              </SpaceBetween>
+            }
+          >
+            {t('catalog:title')}
+          </Header>
+        }
+        breadcrumbs={
+          <BreadcrumbGroup
+            items={[
+              { text: t('common:home'), href: '/' },
+              { text: t('navigation:instructor.title'), href: '/instructor' },
+              { text: t('navigation:instructor.catalog'), href: '/instructor/catalog' }
+            ]}
           />
-        </ContentLayout>
-      }
-      navigationHide
-      toolsHide
-    />
+        }
+      >
+        <Container>
+          <CatalogTable
+            catalogs={catalogs}
+            loading={loading}
+            onViewDetails={handleViewDetails}
+          />
+        </Container>
+      </ContentLayout>
+    </MainLayout>
   );
 };
 

@@ -4,7 +4,7 @@ export interface CourseCatalog {
   version: string;
   awsCode?: string;
   description?: string;
-  hours?: number;
+  durations?: number;
   level?: string;
   createdAt?: string;
   updatedAt?: string;

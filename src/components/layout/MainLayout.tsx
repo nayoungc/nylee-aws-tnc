@@ -55,7 +55,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
           href: '/instructor/catalog'
         },
         
-        // 퀴즈 관리
+        // 퀴즈
         { 
           type: 'link' as const, 
           text: t('navigation:instructor.quizzes'), 
