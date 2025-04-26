@@ -1,5 +1,4 @@
 // src/graphql/customer/mutations.ts
-
 // 고객 생성
 export const createCustomer = /* GraphQL */ `
   mutation CreateCustomer(\$input: CreateCustomerInput!) {
@@ -16,7 +15,7 @@ export const createCustomer = /* GraphQL */ `
   }
 `;
 
-// 고객 업데이트
+// 고객 수정
 export const updateCustomer = /* GraphQL */ `
   mutation UpdateCustomer(\$input: UpdateCustomerInput!) {
     updateCustomer(input: \$input) {

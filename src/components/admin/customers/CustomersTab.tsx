@@ -1,113 +1,148 @@
-// app/components/admin/catalog/CourseCatalogTab.tsx
+// src/components/admin/customers/CustomersTab.tsx
 import React, { useState } from 'react';
 import {
   ContentLayout,
   SpaceBetween,
   Box,
   Button,
-  BreadcrumbGroup,
   Alert,
   Modal,
   Form,
   FormField,
   Input,
   Textarea,
-  Select,
-  TagEditor,
-  StatusIndicator,
-  SelectProps
+  TextFilter,
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
-import { useCatalog } from '@/hooks/useCatalog';
-import { CourseCatalog, CourseCatalogInput } from '@/models/catalog';
+import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
+import { useCustomer, useSearchCustomers } from '@/hooks/useCustomer';
+import { Customer, CustomerInput, CustomerFilter } from '@/models/customers';
 import EnhancedTable from '@/components/common/EnhancedTable';
 
 const CustomersTab: React.FC = () => {
   const { t } = useTranslation(['admin', 'common']);
-  
+  const [searchFilter, setSearchFilter] = useState<CustomerFilter>({});
+  const [searchText, setSearchText] = useState('');
+
+  // 검색 상태가 변경되면 검색 필터 사용, 아니면 기본 고객 목록 사용
+  const isSearchActive = searchText.trim().length > 0;
+
+  // 기존 고객 목록 훅
+  const {
+    customers: allCustomers,
+    selectedCustomer,
+    loading: baseLoading,
+    error: baseError,
+    refetch: baseRefetch,
+    selectCustomer,
+    createCustomer,
+    updateSelectedCustomer,
+    deleteSelectedCustomer,
+    isCreating,
+    isUpdating,
+    isDeleting
+  } = useCustomer();
+
+  // 검색 훅 (검색어가 있을 때만 활성화)
+  const {
+    data: searchResults = [],
+    isLoading: searchLoading,
+    error: searchError,
+    refetch: searchRefetch
+  } = useSearchCustomers(
+    { text: searchText },
+    isSearchActive
+  );
+
+  // 표시할 고객 목록과 로딩/오류 상태 결정
+  const customers = isSearchActive ? searchResults : allCustomers;
+  const loading = isSearchActive ? searchLoading : baseLoading;
+  const error = isSearchActive ? searchError : baseError;
+
+  // 검색 또는 기본 목록 새로고침
+  const handleRefresh = () => {
+    if (isSearchActive) {
+      searchRefetch();
+    } else {
+      baseRefetch();
+    }
+  };
+
+  // 검색 필터 변경 처리
+  const handleSearchChange = (text: string) => {
+    setSearchText(text);
+  };
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [selectedCatalogs, setSelectedCatalogs] = useState<CourseCatalog[]>([]);
+  const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
 
   // 폼 상태
-  const [formData, setFormData] = useState<CourseCatalogInput>({
-    title: '',
-    awsCode: '',
-    version: '1.0',
-    durations: 8,
-    level: 'beginner',
-    description: '',
-    category: '',
-    tags: [],
-    prerequisites: [],
-    objectives: [],
-    status: 'draft'
+  const [formData, setFormData] = useState<CustomerInput>({
+    customerName: '',
+    notes: '',
+    email: '',
+    phone: '',
+    organization: ''
   });
 
-  // 카탈로그 생성 처리
+  // 고객 생성 처리
   const handleCreate = async () => {
     try {
-      await createNewCatalog(formData);
+      await createCustomer(formData);
       setShowCreateModal(false);
       resetForm();
     } catch (err) {
-      console.error('Failed to create catalog:', err);
+      console.error('Failed to create customer:', err);
     }
   };
 
-  // 카탈로그 수정 처리
+  // 고객 수정 처리
   const handleEdit = async () => {
     try {
-      await updateSelectedCatalog(formData);
+      await updateSelectedCustomer(formData);
       setShowEditModal(false);
     } catch (err) {
-      console.error('Failed to update catalog:', err);
+      console.error('Failed to update customer:', err);
     }
   };
 
-  // 카탈로그 삭제 처리
+  // 고객 삭제 처리
   const handleDelete = async () => {
     try {
-      await deleteSelectedCatalog();
+      await deleteSelectedCustomer();
       setShowDeleteConfirm(false);
-      setSelectedCatalogs([]);
+      setSelectedCustomers([]);
     } catch (err) {
-      console.error('Failed to delete catalog:', err);
+      console.error('Failed to delete customer:', err);
     }
   };
 
-  // 단일 카탈로그 삭제 시작
-  const handleDeleteClick = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
-    setSelectedCatalogs([catalog]);
+  // 단일 고객 삭제 시작
+  const handleDeleteClick = (customer: Customer) => {
+    selectCustomer(customer.customerId);
+    setSelectedCustomers([customer]);
     setShowDeleteConfirm(true);
   };
 
   // 배치 삭제 시작
   const handleBatchDelete = () => {
-    if (selectedCatalogs.length === 1) {
-      selectCatalog(selectedCatalogs[0].id);
+    if (selectedCustomers.length === 1) {
+      selectCustomer(selectedCustomers[0].customerId);
     }
     setShowDeleteConfirm(true);
   };
 
   // 편집 모달 열기
-  const openEditModal = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
+  const openEditModal = (customer: Customer) => {
+    selectCustomer(customer.customerId);
     setFormData({
-      title: catalog.title,
-      awsCode: catalog.awsCode || '',
-      version: catalog.version || '1.0',
-      durations: catalog.durations || 8,
-      level: catalog.level || 'beginner',
-      description: catalog.description || '',
-      category: catalog.category || '',
-      tags: catalog.tags || [],
-      prerequisites: catalog.prerequisites || [],
-      objectives: catalog.objectives || [],
-      status: catalog.status || 'draft'
+      customerName: customer.customerName || '',
+      notes: customer.notes || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      organization: customer.organization || ''
     });
     setShowEditModal(true);
   };
@@ -115,119 +150,147 @@ const CustomersTab: React.FC = () => {
   // 폼 초기화
   const resetForm = () => {
     setFormData({
-      title: '',
-      awsCode: '',
-      version: '1.0',
-      durations: 8,
-      level: 'beginner',
-      description: '',
-      category: '',
-      tags: [],
-      prerequisites: [],
-      objectives: [],
-      status: 'draft'
+      customerName: '',
+      notes: '',
+      email: '',
+      phone: '',
+      organization: ''
     });
-  };
-
-  // Select 컴포넌트 타입 처리를 위한 핸들러
-  const handleLevelChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({ ...prev, level: event.detail.selectedOption.value }));
-  };
-
-  // Select 컴포넌트 타입 처리를 위한 핸들러
-  const handleStatusChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({
-      ...prev,
-      status: event.detail.selectedOption.value as 'active' | 'draft' | 'archived'
-    }));
   };
 
   // 테이블 칼럼 정의
   const columnDefinitions = [
     {
-      id: 'title',
-      header: t('admin:catalog.fields.title'),
-      cell: (item: CourseCatalog) => item.title,
-      sortingField: 'title',
+      id: 'customerName',
+      header: t('admin:customers.fields.customerName'),
+      cell: (item: Customer) => (
+        <div style={{
+          fontWeight: '500',
+          color: '#0972d3',
+          cursor: 'pointer'
+        }} onClick={() => openEditModal(item)}>
+          {item.customerName}
+        </div>
+      ),
+      sortingField: 'customerName',
+      width: 180
     },
     {
-      id: 'awsCode',
-      header: t('admin:catalog.fields.awsCode'),
-      cell: (item: CourseCatalog) => item.awsCode || '-',
-      sortingField: 'awsCode',
+      id: 'organization',
+      header: t('admin:customers.fields.organization'),
+      cell: (item: Customer) => item.organization || '-',
+      sortingField: 'organization',
+      width: 160
     },
     {
-      id: 'version',
-      header: t('admin:catalog.fields.version'),
-      cell: (item: CourseCatalog) => item.version || '1.0',
-      sortingField: 'version',
+      id: 'email',
+      header: t('admin:customers.fields.email'),
+      cell: (item: Customer) => item.email || '-',
+      sortingField: 'email',
+      width: 220
     },
     {
-      id: 'level',
-      header: t('admin:catalog.fields.level'),
-      cell: (item: CourseCatalog) => t(`admin:catalog.levels.\${item.level}`) || item.level,
-      sortingField: 'level',
+      id: 'phone',
+      header: t('admin:customers.fields.phone'),
+      cell: (item: Customer) => item.phone || '-',
+      sortingField: 'phone',
+      width: 140
     },
     {
-      id: 'duration',
-      header: t('admin:catalog.fields.duration'),
-      cell: (item: CourseCatalog) => item.durations ? 
-        `\${item.durations} \${t('common:hours')}` : '-',
-      sortingField: 'durations',
+      id: 'notes',
+      header: t('admin:customers.fields.notes'),
+      cell: (item: Customer) => (
+        <div style={{
+          maxHeight: '80px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          display: '-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: 'vertical'
+        }}>
+          {item.notes || '-'}
+        </div>
+      ),
+      sortingField: 'notes',
+      minWidth: 200
     },
     {
-      id: 'status',
-      header: t('admin:catalog.fields.status'),
-      cell: (item: CourseCatalog) => {
-        const statusMap: Record<string, { type: string; text: string }> = {
-          active: { type: 'success', text: t('admin:catalog.status.active') },
-          draft: { type: 'pending', text: t('admin:catalog.status.draft') },
-          archived: { type: 'stopped', text: t('admin:catalog.status.archived') },
-        };
-        
-        // item.status가 undefined일 수 있으므로 안전한 접근 방법 사용
-        const statusKey = item.status || 'unknown';
-        const status = statusMap[statusKey] || { 
-          type: 'info', 
-          text: statusKey === 'unknown' ? t('admin:catalog.status.unknown', '알 수 없음') : statusKey
-        };
-        
-        return (
-          <StatusIndicator type={status.type as any}>
-            {status.text}
-          </StatusIndicator>
-        );
-      },
-      sortingField: 'status',
-    },
+      id: 'createdAt',
+      header: t('admin:customers.fields.createdAt'),
+      cell: (item: Customer) => (
+        <div style={{ whiteSpace: 'nowrap' }}>
+          {item.createdAt 
+            ? new Date(item.createdAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit', 
+                day: '2-digit'
+              })
+            : '-'
+          }
+        </div>
+      ),
+      sortingField: 'createdAt',
+      width: 120
+    },    
     {
       id: 'actions',
       header: t('common:actions'),
-      cell: (item: CourseCatalog) => (
+      cell: (item: Customer) => (
         <SpaceBetween direction="horizontal" size="xs">
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => openEditModal(item)}
+            iconName="edit"
           >
             {t('common:edit')}
           </Button>
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => handleDeleteClick(item)}
+            iconName="remove"
           >
             {t('common:delete')}
           </Button>
         </SpaceBetween>
       ),
+      width: 160
     }
   ];
 
   // 필터링 속성
   const filteringProperties = [
-    { key: 'title', label: t('admin:catalog.fields.title') },
-    { key: 'awsCode', label: t('admin:catalog.fields.awsCode') },
-    { key: 'level', label: t('admin:catalog.fields.level') },
-    { key: 'status', label: t('admin:catalog.fields.status') },
+    { key: 'customerName', label: t('admin:customers.fields.customerName') },
+    { key: 'organization', label: t('admin:customers.fields.organization') },
+    { key: 'email', label: t('admin:customers.fields.email') },
+    { key: 'notes', label: t('admin:customers.fields.notes') }
+  ];
+
+  // 테이블 가시성 옵션
+  const visibleContentOptions = [
+    {
+      id: 'main',
+      label: t('admin:customers.columns.main'),
+      options: [
+        { id: 'customerName', label: t('admin:customers.fields.customerName') },
+        { id: 'organization', label: t('admin:customers.fields.organization') },
+      ]
+    },
+    {
+      id: 'contact',
+      label: t('admin:customers.columns.contact'),
+      options: [
+        { id: 'email', label: t('admin:customers.fields.email') },
+        { id: 'phone', label: t('admin:customers.fields.phone') },
+      ]
+    },
+    {
+      id: 'details',
+      label: t('admin:customers.columns.details'),
+      options: [
+        { id: 'notes', label: t('admin:customers.fields.notes') },
+        { id: 'createdAt', label: t('admin:customers.fields.createdAt') },
+      ]
+    }
   ];
 
   return (
@@ -239,38 +302,49 @@ const CustomersTab: React.FC = () => {
             items={[
               { text: t('common:home'), href: '/' },
               { text: t('admin:title'), href: '/admin' },
-              { text: t('admin:catalog.title'), href: '#' }
+              { text: t('admin:customers.title'), href: '/admin/customers' }
             ]}
-            ariaLabel={t('common:breadcrumbs')}
           />
         </Box>
+
+        {/* 검색 상자 - 테이블 위에 추가 */}
+        <TextFilter
+          filteringText={searchText}
+          filteringPlaceholder={t('admin:customers.searchPlaceholder', '고객명, 이메일, 메모 검색...')}
+          filteringAriaLabel="고객 검색"
+          onChange={({ detail }) => handleSearchChange(detail.filteringText)}
+        />
 
         {/* 오류 표시 */}
         {error && (
           <Alert
             type="error"
             header={t('common:error')}
-            action={<Button onClick={refetch}>{t('common:retry')}</Button>}
+            action={<Button onClick={() => handleRefresh()}>
+              {t('common:retry')}
+            </Button>}
             dismissible
           >
-            {t('admin:catalog.errors.loadFailed')}
+            {t('admin:customers.errors.loadFailed')}
           </Alert>
         )}
 
-        {/* EnhancedTable 사용 */}
+        {/* EnhancedTable - 필터링 옵션을 사용하지 않도록 수정 */}
         <EnhancedTable
-          title={t('admin:catalog.title')}
-          description={t('admin:catalog.description')}
+          title={t('admin:customers.title')}
+          description={isSearchActive
+            ? t('admin:customers.searchResults', { count: customers.length })
+            : t('admin:customers.description')}
           columnDefinitions={columnDefinitions}
-          items={catalogs}
+          items={customers}
           loading={loading}
           selectionType="multi"
-          selectedItems={selectedCatalogs}
-          onSelectionChange={setSelectedCatalogs}
-          onRefresh={refetch}
+          selectedItems={selectedCustomers}
+          onSelectionChange={setSelectedCustomers}
+          onRefresh={handleRefresh}
           actions={{
             primary: {
-              text: t('admin:catalog.actions.createCatalog'),
+              text: t('admin:customers.actions.createCustomer'),
               onClick: () => setShowCreateModal(true)
             }
           }}
@@ -278,49 +352,65 @@ const CustomersTab: React.FC = () => {
             {
               text: t('common:actions.deleteSelected'),
               onClick: handleBatchDelete,
-              disabled: selectedCatalogs.length === 0
+              disabled: selectedCustomers.length === 0
             }
           ]}
-          filteringProperties={filteringProperties}
+          // 상단에 TextFilter가 있으므로 EnhancedTable 내부 필터링은 비활성화
+          usePropertyFilter={false}
+          filteringProperties={[]} // 빈 배열로 설정하여 테이블 내 필터링 비활성화
           stickyHeader={true}
           stripedRows={true}
-          defaultSortingColumn="title"
+          resizableColumns={true}
+          trackBy="customerId"
+          defaultSortingColumn="customerName"
           emptyText={{
-            title: t('admin:catalog.noCatalogs'),
-            subtitle: t('admin:catalog.createPrompt'),
-            action: {
-              text: t('admin:catalog.actions.createCatalog'),
-              onClick: () => setShowCreateModal(true)
-            }
+            title: isSearchActive
+              ? t('admin:customers.noSearchResults')
+              : t('admin:customers.noCustomers'),
+            subtitle: isSearchActive
+              ? t('admin:customers.tryOtherSearch')
+              : t('admin:customers.createPrompt'),
+            action: isSearchActive
+              ? undefined
+              : {
+                text: t('admin:customers.actions.createCustomer'),
+                onClick: () => setShowCreateModal(true)
+              }
           }}
           visibleContentOptions={[
             {
               id: 'main',
-              label: t('admin:catalog.columns.main'),
+              label: t('admin:customers.columns.main'),
               options: [
-                { id: 'title', label: t('admin:catalog.fields.title') },
-                { id: 'awsCode', label: t('admin:catalog.fields.awsCode') },
-                { id: 'version', label: t('admin:catalog.fields.version') },
+                { id: 'customerName', label: t('admin:customers.fields.customerName') },
+                { id: 'organization', label: t('admin:customers.fields.organization') },
+              ]
+            },
+            {
+              id: 'contact',
+              label: t('admin:customers.columns.contact'),
+              options: [
+                { id: 'email', label: t('admin:customers.fields.email') },
+                { id: 'phone', label: t('admin:customers.fields.phone') },
               ]
             },
             {
               id: 'details',
-              label: t('admin:catalog.columns.details'),
+              label: t('admin:customers.columns.details'),
               options: [
-                { id: 'level', label: t('admin:catalog.fields.level') },
-                { id: 'duration', label: t('admin:catalog.fields.duration') },
-                { id: 'status', label: t('admin:catalog.fields.status') },
+                { id: 'notes', label: t('admin:customers.fields.notes') },
+                { id: 'createdAt', label: t('admin:customers.fields.createdAt') },
               ]
             }
           ]}
           preferences={true}
         />
 
-        {/* 카탈로그 생성 모달 */}
+        {/* 고객 생성 모달 */}
         <Modal
           visible={showCreateModal}
           onDismiss={() => setShowCreateModal(false)}
-          header={t('admin:catalog.modals.create.title')}
+          header={t('admin:customers.modals.create.title')}
           size="large"
           footer={
             <Box float="right">
@@ -330,9 +420,9 @@ const CustomersTab: React.FC = () => {
                   variant="primary"
                   onClick={handleCreate}
                   loading={isCreating}
-                  disabled={!formData.title}
+                  disabled={!formData.customerName}
                 >
-                  {t('admin:catalog.actions.create')}
+                  {t('admin:customers.actions.create')}
                 </Button>
               </SpaceBetween>
             </Box>
@@ -343,119 +433,58 @@ const CustomersTab: React.FC = () => {
               <FormField
                 label={
                   <span>
-                    {t('admin:catalog.fields.title')}
+                    {t('admin:customers.fields.customerName')}
                     <span className="awsui-key-label-required"> *</span>
                   </span>
                 }
-                description={t('admin:catalog.fields.titleDescription')}
+                description={t('admin:customers.fields.customerNameDescription')}
               >
                 <Input
-                  value={formData.title}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, title: detail.value }))}
-                />
-              </FormField>
-
-              {/* 나머지 폼 필드들 */}
-              <FormField label={t('admin:catalog.fields.awsCode')}>
-                <Input
-                  value={formData.awsCode || ''}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, awsCode: detail.value }))}
-                  placeholder="AWS-100"
+                  value={formData.customerName}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, customerName: detail.value }))}
                 />
               </FormField>
 
               <SpaceBetween direction="horizontal" size="xs">
-                <FormField label={t('admin:catalog.fields.version')}>
+                <FormField label={t('admin:customers.fields.email')}>
                   <Input
-                    value={formData.version || ''}
-                    onChange={({ detail }) => setFormData(prev => ({ ...prev, version: detail.value }))}
-                    placeholder="1.0"
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={({ detail }) => setFormData(prev => ({ ...prev, email: detail.value }))}
                   />
                 </FormField>
 
-                <FormField label={t('admin:catalog.fields.duration')}>
+                <FormField label={t('admin:customers.fields.phone')}>
                   <Input
-                    type="number"
-                    value={formData.durations?.toString() || '0'}
-                    onChange={({ detail }) => setFormData(prev => ({ 
-                      ...prev, 
-                      durations: detail.value ? parseInt(detail.value) : 0 
-                    }))}
-                  />
-                </FormField>
-
-                <FormField label={t('admin:catalog.fields.level')}>
-                  <Select
-                    selectedOption={{
-                      value: formData.level || 'beginner',
-                      label: t(`admin:catalog.levels.\${formData.level || 'beginner'}`)
-                    }}
-                    onChange={handleLevelChange}
-                    options={[
-                      { value: 'beginner', label: t('admin:catalog.levels.beginner') },
-                      { value: 'intermediate', label: t('admin:catalog.levels.intermediate') },
-                      { value: 'advanced', label: t('admin:catalog.levels.advanced') }
-                    ]}
+                    value={formData.phone || ''}
+                    onChange={({ detail }) => setFormData(prev => ({ ...prev, phone: detail.value }))}
                   />
                 </FormField>
               </SpaceBetween>
 
-              <FormField label={t('admin:catalog.fields.description')}>
+              <FormField label={t('admin:customers.fields.organization')}>
+                <Input
+                  value={formData.organization || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, organization: detail.value }))}
+                />
+              </FormField>
+
+              <FormField label={t('admin:customers.fields.notes')}>
                 <Textarea
-                  value={formData.description || ''}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, description: detail.value }))}
+                  value={formData.notes || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, notes: detail.value }))}
                   rows={4}
-                />
-              </FormField>
-
-              <FormField label={t('admin:catalog.fields.tags')}>
-                <TagEditor
-                  tags={(formData.tags || []).map(tag => ({
-                    key: tag,
-                    value: tag,
-                    existing: true
-                  }))}
-                  onChange={({ detail }) => {
-                    const newTags = detail.tags
-                      .filter(tag => !tag.markedForRemoval)
-                      .map(tag => tag.value);
-                    setFormData(prev => ({ ...prev, tags: newTags }));
-                  }}
-                  i18nStrings={{
-                    // 간소화된 i18n 문자열
-                    keyHeader: t('common:tagEditor.keyHeader', '키'),
-                    valueHeader: t('common:tagEditor.valueHeader', '값'),
-                    addButton: t('common:tagEditor.addButton', '태그 추가'),
-                    removeButton: t('common:tagEditor.removeButton', '제거'),
-                    loading: t('common:loading'),
-                    // 기타 필요한 문자열...
-                  }}
-                />
-              </FormField>
-
-              <FormField label={t('admin:catalog.fields.status')}>
-                <Select
-                  selectedOption={{
-                    value: formData.status || 'draft',
-                    label: t(`admin:catalog.status.\${formData.status || 'draft'}`)
-                  }}
-                  onChange={handleStatusChange}
-                  options={[
-                    { value: 'draft', label: t('admin:catalog.status.draft') },
-                    { value: 'active', label: t('admin:catalog.status.active') },
-                    { value: 'archived', label: t('admin:catalog.status.archived') }
-                  ]}
                 />
               </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
 
-        {/* 카탈로그 편집 모달 */}
+        {/* 고객 편집 모달 */}
         <Modal
           visible={showEditModal}
           onDismiss={() => setShowEditModal(false)}
-          header={t('admin:catalog.modals.edit.title')}
+          header={t('admin:customers.modals.edit.title')}
           size="large"
           footer={
             <Box float="right">
@@ -465,7 +494,7 @@ const CustomersTab: React.FC = () => {
                   variant="primary"
                   onClick={handleEdit}
                   loading={isUpdating}
-                  disabled={!formData.title}
+                  disabled={!formData.customerName}
                 >
                   {t('common:save')}
                 </Button>
@@ -475,8 +504,53 @@ const CustomersTab: React.FC = () => {
         >
           <Form>
             <SpaceBetween size="l">
-              {/* 동일한 폼 필드 반복 (생략) */}
-              {/* 필요시 편집 모달에 특화된 추가 필드 */}
+              {/* 폼 필드 - 생성 모달과 동일한 구조 */}
+              <FormField
+                label={
+                  <span>
+                    {t('admin:customers.fields.customerName')}
+                    <span className="awsui-key-label-required"> *</span>
+                  </span>
+                }
+                description={t('admin:customers.fields.customerNameDescription')}
+              >
+                <Input
+                  value={formData.customerName}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, customerName: detail.value }))}
+                />
+              </FormField>
+
+              <SpaceBetween direction="horizontal" size="xs">
+                <FormField label={t('admin:customers.fields.email')}>
+                  <Input
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={({ detail }) => setFormData(prev => ({ ...prev, email: detail.value }))}
+                  />
+                </FormField>
+
+                <FormField label={t('admin:customers.fields.phone')}>
+                  <Input
+                    value={formData.phone || ''}
+                    onChange={({ detail }) => setFormData(prev => ({ ...prev, phone: detail.value }))}
+                  />
+                </FormField>
+              </SpaceBetween>
+
+              <FormField label={t('admin:customers.fields.organization')}>
+                <Input
+                  value={formData.organization || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, organization: detail.value }))}
+                />
+              </FormField>
+
+              <FormField label={t('admin:customers.fields.notes')}>
+                <Textarea
+                  value={formData.notes || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, notes: detail.value }))}
+                  rows={4}
+                />
+              </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
@@ -485,7 +559,7 @@ const CustomersTab: React.FC = () => {
         <Modal
           visible={showDeleteConfirm}
           onDismiss={() => setShowDeleteConfirm(false)}
-          header={t('admin:catalog.modals.delete.title')}
+          header={t('admin:customers.modals.delete.title')}
           footer={
             <Box float="right">
               <SpaceBetween direction="horizontal" size="xs">
@@ -505,9 +579,9 @@ const CustomersTab: React.FC = () => {
           }
         >
           <Box>
-            {selectedCatalogs.length === 1 ? 
-              t('admin:catalog.modals.delete.confirmation', { title: selectedCatalogs[0].title }) :
-              t('admin:catalog.modals.delete.confirmationBatch', { count: selectedCatalogs.length })}
+            {selectedCustomers.length === 1 ?
+              t('admin:customers.modals.delete.confirmation', { name: selectedCustomers[0].customerName }) :
+              t('admin:customers.modals.delete.confirmationBatch', { count: selectedCustomers.length })}
           </Box>
         </Modal>
       </SpaceBetween>

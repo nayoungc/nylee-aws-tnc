@@ -1,7 +1,7 @@
 // src/services/api/catalogApi.ts
 import { generateClient } from 'aws-amplify/api';
 import { v4 as uuidv4 } from 'uuid';
-import { safelyExtractData } from '@utils/graphql';  // 경로 별칭 대신 상대 경로 사용
+import { safelyExtractData } from '@/utils/graphql'; // 경로 별칭으로 수정
 
 // 카탈로그 관련 쿼리와 뮤테이션
 import { 
@@ -9,12 +9,12 @@ import {
   getCourseCatalog,
   searchCatalog,
   getCatalogByCategory 
-} from '@graphql/catalog';  // 경로 별칭 대신 상대 경로 사용
+} from '@/graphql/catalog'; // 경로 별칭으로 수정
 import { 
   createCourseCatalog, 
   updateCourseCatalog,
   deleteCourseCatalog 
-} from '@graphql/catalog';  // 경로 별칭 대신 상대 경로 사용
+} from '@/graphql/catalog'; // 경로 별칭으로 수정
 import {
   ListCourseCatalogsResult,
   GetCourseCatalogResult,
@@ -24,18 +24,18 @@ import {
   UpdateCourseCatalogResult,
   DeleteCourseCatalogResult,
   CatalogFilterInput
-} from '@graphql/catalog';  // 경로 별칭 대신 상대 경로 사용
+} from '@/graphql/catalog'; // 경로 별칭으로 수정
 
 // 모델과 모의 데이터
-import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@models/catalog';  // 경로 별칭 대신 상대 경로 사용
-import { mockCatalogs } from '../../mocks/catalogData';
-import { CalendarEvent } from '@models/calendar';  // 추가된 타입
+import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/catalog'; // 경로 별칭으로 수정
+import { mockCatalogs } from '@/mocks/catalogData'; // 경로 별칭으로 수정
+import { CalendarEvent } from '@/models/calendar'; // 경로 별칭으로 수정
 
-// Amplify API 클라이언트 생성
+// 나머지 코드는 변경 없음
 const client = generateClient();
 
 // 개발 모드 여부
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 /**
  * 모든 코스 카탈로그 가져오기

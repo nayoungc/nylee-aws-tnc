@@ -1,4 +1,5 @@
 // app/components/admin/catalog/CourseCatalogTab.tsx
+// src/components/admin/catalog/CourseCatalogTab.tsx
 import React, { useState } from 'react';
 import {
   ContentLayout,
@@ -7,7 +8,6 @@ import {
   Header,
   Box,
   Button,
-  BreadcrumbGroup,
   Alert,
   Modal,
   Form,
@@ -20,6 +20,7 @@ import {
   SelectProps
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
+import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup'; // 커스텀 컴포넌트 사용
 import { useCatalog } from '@/hooks/useCatalog';
 import { CourseCatalog, CourseCatalogInput } from '@/models/catalog';
 import EnhancedTable from '@/components/common/EnhancedTable';
@@ -58,7 +59,6 @@ const CourseCatalogTab: React.FC = () => {
     tags: [],
     prerequisites: [],
     objectives: [],
-    status: 'draft'
   });
 
   // 카탈로그 생성 처리
@@ -122,7 +122,6 @@ const CourseCatalogTab: React.FC = () => {
       tags: catalog.tags || [],
       prerequisites: catalog.prerequisites || [],
       objectives: catalog.objectives || [],
-      status: catalog.status || 'draft'
     });
     setShowEditModal(true);
   };
@@ -140,21 +139,12 @@ const CourseCatalogTab: React.FC = () => {
       tags: [],
       prerequisites: [],
       objectives: [],
-      status: 'draft'
     });
   };
 
   // Select 컴포넌트 타입 처리를 위한 핸들러
   const handleLevelChange = (event: { detail: SelectProps.ChangeDetail }) => {
     setFormData(prev => ({ ...prev, level: event.detail.selectedOption.value }));
-  };
-
-  // Select 컴포넌트 타입 처리를 위한 핸들러
-  const handleStatusChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({
-      ...prev,
-      status: event.detail.selectedOption.value as 'active' | 'draft' | 'archived'
-    }));
   };
 
   // 테이블 칼럼 정의
@@ -186,7 +176,7 @@ const CourseCatalogTab: React.FC = () => {
     {
       id: 'duration',
       header: t('admin:catalog.fields.duration'),
-      cell: (item: CourseCatalog) => item.durations ? 
+      cell: (item: CourseCatalog) => item.durations ?
         `\${item.durations} \${t('common:hours')}` : '-',
       sortingField: 'durations',
     },
@@ -199,14 +189,14 @@ const CourseCatalogTab: React.FC = () => {
           draft: { type: 'pending', text: t('admin:catalog.status.draft') },
           archived: { type: 'stopped', text: t('admin:catalog.status.archived') },
         };
-        
+
         // item.status가 undefined일 수 있으므로 안전한 접근 방법 사용
         const statusKey = item.status || 'unknown';
-        const status = statusMap[statusKey] || { 
-          type: 'info', 
+        const status = statusMap[statusKey] || {
+          type: 'info',
           text: statusKey === 'unknown' ? t('admin:catalog.status.unknown', '알 수 없음') : statusKey
         };
-        
+
         return (
           <StatusIndicator type={status.type as any}>
             {status.text}
@@ -220,14 +210,14 @@ const CourseCatalogTab: React.FC = () => {
       header: t('common:actions'),
       cell: (item: CourseCatalog) => (
         <SpaceBetween direction="horizontal" size="xs">
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => openEditModal(item)}
           >
             {t('common:edit')}
           </Button>
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => handleDeleteClick(item)}
           >
             {t('common:delete')}
@@ -254,9 +244,8 @@ const CourseCatalogTab: React.FC = () => {
             items={[
               { text: t('common:home'), href: '/' },
               { text: t('admin:title'), href: '/admin' },
-              { text: t('admin:catalog.title'), href: '#' }
+              { text: t('admin:catalog.title'), href: '/admin/catalog' } // href 추가
             ]}
-            ariaLabel={t('common:breadcrumbs')}
           />
         </Box>
 
@@ -265,7 +254,7 @@ const CourseCatalogTab: React.FC = () => {
           <Alert
             type="error"
             header={t('common:error')}
-            action={<Button onClick={refetch}>{t('common:retry')}</Button>}
+            action={<Button onClick={() => refetch()}>{t('common:retry')}</Button>}
             dismissible
           >
             {t('admin:catalog.errors.loadFailed')}
@@ -392,9 +381,9 @@ const CourseCatalogTab: React.FC = () => {
                   <Input
                     type="number"
                     value={formData.durations?.toString() || '0'}
-                    onChange={({ detail }) => setFormData(prev => ({ 
-                      ...prev, 
-                      durations: detail.value ? parseInt(detail.value) : 0 
+                    onChange={({ detail }) => setFormData(prev => ({
+                      ...prev,
+                      durations: detail.value ? parseInt(detail.value) : 0
                     }))}
                   />
                 </FormField>
@@ -448,20 +437,6 @@ const CourseCatalogTab: React.FC = () => {
                 />
               </FormField>
 
-              <FormField label={t('admin:catalog.fields.status')}>
-                <Select
-                  selectedOption={{
-                    value: formData.status || 'draft',
-                    label: t(`admin:catalog.status.\${formData.status || 'draft'}`)
-                  }}
-                  onChange={handleStatusChange}
-                  options={[
-                    { value: 'draft', label: t('admin:catalog.status.draft') },
-                    { value: 'active', label: t('admin:catalog.status.active') },
-                    { value: 'archived', label: t('admin:catalog.status.archived') }
-                  ]}
-                />
-              </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
@@ -520,7 +495,7 @@ const CourseCatalogTab: React.FC = () => {
           }
         >
           <Box>
-            {selectedCatalogs.length === 1 ? 
+            {selectedCatalogs.length === 1 ?
               t('admin:catalog.modals.delete.confirmation', { title: selectedCatalogs[0].title }) :
               t('admin:catalog.modals.delete.confirmationBatch', { count: selectedCatalogs.length })}
           </Box>

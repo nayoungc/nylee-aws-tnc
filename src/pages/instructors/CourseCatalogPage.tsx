@@ -1,5 +1,5 @@
 // src/pages/instructor/CatalogPage.tsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -7,40 +7,26 @@ import {
   SpaceBetween,
   Button,
   ContentLayout,
-  BreadcrumbGroup
+  Alert
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
 import MainLayout from '@/components/layout/MainLayout';
+import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup'; // 커스텀 컴포넌트 사용
 import CatalogTable from '@/components/catalog/CatalogTable';
-import { CourseCatalog } from '@/models/catalog';
-import { fetchAllCatalogs } from '@/services/api/catalogApi';
+import { useCatalogs } from '@/hooks/useCatalog';
 
-const CourseCatalogtPage: React.FC = () => {
+const CourseCatalogPage: React.FC = () => {
   const { t } = useTranslation(['catalog', 'common']);
   const navigate = useNavigate();
-  const [catalogs, setCatalogs] = useState<CourseCatalog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { 
+    data: catalogs = [], 
+    isLoading: loading, 
+    error,
+    refetch 
+  } = useCatalogs();
 
-  useEffect(() => {
-    const loadCatalogs = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchAllCatalogs();
-        setCatalogs(data);
-      } catch (err: any) {
-        console.error('Error loading catalogs:', err);
-        setError(err.message || t('common:errors.unknown'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCatalogs();
-  }, [t]);
-
-  const handleViewDetails = (catalog: CourseCatalog) => {
-    navigate(`/instructor/catalog/\${catalog.catalogId}`);
+  const handleViewDetails = (catalog: { id: string }) => {
+    navigate(`/instructor/catalog/\${catalog.id}`);
   };
 
   const handleCreateCatalog = () => {
@@ -59,9 +45,8 @@ const CourseCatalogtPage: React.FC = () => {
               items={[
                 { text: t('common:home'), href: '/' },
                 { text: t('common:instructor'), href: '/instructor' },
-                { text: t('common:home'), href: '/' }
+                { text: t('catalog:title'), href: '/instructor/catalog' } // href 추가
               ]}
-              ariaLabel={t('common:breadcrumbs')}
             />
             
             <Header
@@ -82,6 +67,17 @@ const CourseCatalogtPage: React.FC = () => {
           </SpaceBetween>
         }
       >
+        {error && (
+          <Alert 
+            type="error" 
+            dismissible 
+            header={t('common:errors.loadFailed')}
+            action={<Button onClick={() => refetch()}>{t('common:retry')}</Button>}
+          >
+            {error instanceof Error ? error.message : t('common:errors.unknown')}
+          </Alert>
+        )}
+        
         <Container>
           <CatalogTable
             catalogs={catalogs}
@@ -94,4 +90,4 @@ const CourseCatalogtPage: React.FC = () => {
   );
 };
 
-export default CourseCatalogtPage;
+export default CourseCatalogPage;

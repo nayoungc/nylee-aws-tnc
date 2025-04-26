@@ -1,18 +1,19 @@
 // src/services/api/customerApi.ts
 import { generateClient } from 'aws-amplify/api';
 import { v4 as uuidv4 } from 'uuid';
-import { safelyExtractData } from '@utils/graphql';
+import { safelyExtractData } from '@/utils/graphql';
 
 // 고객 관련 쿼리와 뮤테이션
 import { 
   listCustomers, 
   getCustomer,
-} from '@graphql/customer';
+  searchCustomers
+} from '@/graphql/customer';
 import { 
   createCustomer, 
   updateCustomer,
   deleteCustomer 
-} from '@graphql/customer';
+} from '@/graphql/customer';
 import {
   ListCustomersResult,
   GetCustomerResult,
@@ -21,11 +22,11 @@ import {
   UpdateCustomerResult,
   DeleteCustomerResult,
   CustomerFilterInput
-} from '@graphql/customer/types';
+} from '@/graphql/customer';
 
 // 모델과 모의 데이터
-import { Customer, CustomerInput, CustomerFilter } from '@models/customers';
-import { mockCustomers } from '../../mocks/customerData';
+import { Customer, CustomerInput, CustomerFilter } from '@/models/customers';
+import { mockCustomers } from '@/mocks/customerData';
 
 // Amplify API 클라이언트 생성
 const client = generateClient();
@@ -82,49 +83,6 @@ export const fetchCustomerById = async (customerId: string): Promise<Customer | 
     throw error;
   }
 };
-
-/**
- * 필터를 사용하여 고객 검색
- */
-// export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<Customer[]> => {
-//   // 개발 모드인 경우 모의 데이터 필터링
-//   if (DEV_MODE) {
-//     console.log(`[DEV_MODE] 필터로 모의 고객 검색: \${JSON.stringify(filter)}`);
-//     let filteredCustomers = [...mockCustomers];
-    
-//     // 조직으로 필터링
-//     if (filter.organization) {
-//       filteredCustomers = filteredCustomers.filter(c => c.organization === filter.organization);
-//     }
-    
-//     // 텍스트 검색
-//     if (filter.text) {
-//       const searchText = filter.text.toLowerCase();
-//       filteredCustomers = filteredCustomers.filter(c => 
-//         c.customerName.toLowerCase().includes(searchText) ||
-//         (c.notes && c.notes.toLowerCase().includes(searchText)) ||
-//         (c.email && c.email.toLowerCase().includes(searchText))
-//       );
-//     }
-    
-//     return Promise.resolve(filteredCustomers);
-//   }
-
-//   try {
-//     const variables = { filter: filter as CustomerFilterInput };
-//     const response = await client.graphql({
-//       query: searchCustomers,
-//       variables
-//     });
-    
-//     // 안전하게 데이터 추출
-//     const data = safelyExtractData<SearchCustomersResult>(response);
-//     return data?.searchCustomers || [];
-//   } catch (error: unknown) {
-//     console.error('고객 검색 오류:', error);
-//     throw error;
-//   }
-// };
 
 /**
  * 새 고객 생성
@@ -208,7 +166,7 @@ export const updateCustomerInfo = async (customerId: string, input: Partial<Cust
 /**
  * 고객 삭제
  */
-export const deleteCustomerById = async (customerId: string): Promise<boolean> => {
+export const deleteCustomerById = async (customerId: string): Promise<{ success: boolean }> => {
   // 개발 모드인 경우 모의 데이터에서 삭제
   if (DEV_MODE) {
     console.log(`[DEV_MODE] 고객 삭제 ID: \${customerId}`);
@@ -219,7 +177,7 @@ export const deleteCustomerById = async (customerId: string): Promise<boolean> =
     }
     
     mockCustomers.splice(index, 1);
-    return Promise.resolve(true);
+    return Promise.resolve({ success: true });
   }
 
   try {
@@ -230,9 +188,52 @@ export const deleteCustomerById = async (customerId: string): Promise<boolean> =
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<DeleteCustomerResult>(response);
-    return !!data?.deleteCustomer?.customerId;
+    return { success: !!data?.deleteCustomer?.customerId };
   } catch (error: unknown) {
     console.error(`고객 삭제 오류 (ID: \${customerId}):`, error);
+    throw error;
+  }
+};
+
+/**
+ * 필터를 사용하여 고객 검색
+ */
+export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<Customer[]> => {
+  // 개발 모드인 경우 모의 데이터 필터링
+  if (DEV_MODE) {
+    console.log(`[DEV_MODE] 필터로 모의 고객 검색: \${JSON.stringify(filter)}`);
+    let filteredCustomers = [...mockCustomers];
+    
+    // 조직으로 필터링
+    if (filter.organization) {
+      filteredCustomers = filteredCustomers.filter(c => c.organization === filter.organization);
+    }
+    
+    // 텍스트 검색
+    if (filter.text) {
+      const searchText = filter.text.toLowerCase();
+      filteredCustomers = filteredCustomers.filter(c => 
+        c.customerName.toLowerCase().includes(searchText) ||
+        (c.notes && c.notes.toLowerCase().includes(searchText)) ||
+        (c.email && c.email.toLowerCase().includes(searchText))
+      );
+    }
+    
+    return Promise.resolve(filteredCustomers);
+  }
+
+  try {
+    const variables = { filter: filter as CustomerFilterInput };
+    const response = await client.graphql({
+      query: searchCustomers,
+      variables
+    });
+    
+    // 안전하게 데이터 추출
+    const data = safelyExtractData<SearchCustomersResult>(response);
+    return data?.searchCustomers || [];
+  } catch (error: unknown) {
+    console.error('고객 검색 오류:', error);
     throw error;
   }
 };
