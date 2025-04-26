@@ -1,12 +1,12 @@
 // src/components/CourseDetail.tsx
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetCourse, useDeleteCourse } from '../hooks/useCourseHooks';
+import { useGetCourse, useDeleteCourse } from '@hooks/useCourse';
 import { 
   Container, Header, SpaceBetween, Button, 
   ColumnLayout, StatusIndicator, Box 
 } from '@cloudscape-design/components';
-import { i18n } from '../utils/i18n';
+import i18n  from '../../i18n';
 
 const CourseDetail: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -46,7 +46,7 @@ const CourseDetail: React.FC = () => {
               <Button onClick={() => navigate(`/courses/\${course.courseId}/edit`)}>
                 {i18n.t('edit')}
               </Button>
-              <Button variant="danger" loading={deleteLoading} onClick={handleDelete}>
+              <Button variant="primary" loading={deleteLoading} onClick={handleDelete}>
                 {i18n.t('delete')}
               </Button>
             </SpaceBetween>

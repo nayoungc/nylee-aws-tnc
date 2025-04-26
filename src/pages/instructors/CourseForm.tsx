@@ -1,13 +1,13 @@
 // src/components/CourseForm.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetCourse, useCreateCourse, useUpdateCourse } from '../hooks/useCourseHooks';
+import { useGetCourse, useCreateCourse, useUpdateCourse } from '@hooks/useCourse';
 import { 
   Form, Container, Header, SpaceBetween, Button, FormField,
   Input, Select, DatePicker 
 } from '@cloudscape-design/components';
-import { CourseInput } from '../models/course';
-import { i18n } from '../utils/i18n';
+import { CourseInput } from '@models/courses';
+import i18n from '../../i18n';
 
 interface CourseFormProps {
   isEdit?: boolean;
@@ -93,7 +93,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ isEdit = false }) => {
           }
         >
           <SpaceBetween direction="vertical" size="l">
-            <FormField label={i18n.t('startDate')} required>
+            <FormField label={i18n.t('startDate')}>
               <DatePicker
                 value={formData.startDate}
                 onChange={({ detail }) => handleChange('startDate', detail.value)}
@@ -101,28 +101,28 @@ const CourseForm: React.FC<CourseFormProps> = ({ isEdit = false }) => {
               />
             </FormField>
             
-            <FormField label={i18n.t('instructor')} required>
+            <FormField label={i18n.t('instructor')}>
               <Input
                 value={formData.instructor}
                 onChange={({ detail }) => handleChange('instructor', detail.value)}
               />
             </FormField>
             
-            <FormField label={i18n.t('catalogId')} required>
+            <FormField label={i18n.t('catalogId')}>
               <Input
                 value={formData.catalogId}
                 onChange={({ detail }) => handleChange('catalogId', detail.value)}
               />
             </FormField>
             
-            <FormField label={i18n.t('customerId')} required>
+            <FormField label={i18n.t('customerId')}>
               <Input
                 value={formData.customerId}
                 onChange={({ detail }) => handleChange('customerId', detail.value)}
               />
             </FormField>
             
-            <FormField label={i18n.t('shareCode')} required>
+            <FormField label={i18n.t('shareCode')}>
               <Input
                 value={formData.shareCode}
                 onChange={({ detail }) => handleChange('shareCode', detail.value)}

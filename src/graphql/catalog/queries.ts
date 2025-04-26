@@ -1,4 +1,28 @@
 // src/graphql/catalog/queries.ts
+export const listCatalogs = /* GraphQL */ `
+  query ListCatalogs(\$filter: CatalogFilterInput, \$limit: Int, \$nextToken: String) {
+    listCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        id
+        title
+        awsCode
+        version
+        durations
+        level
+        description
+        category
+        tags
+        prerequisites
+        objectives
+        createdAt
+        updatedAt
+        createdBy
+        status
+      }
+      nextToken
+    }
+  }
+`;
 
 // 모든 카탈로그 목록 조회
 export const listCourseCatalogs = /* GraphQL */ `
