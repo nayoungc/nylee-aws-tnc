@@ -113,13 +113,13 @@ const InstructorsTab: React.FC = () => {
   };
 
   // 강사 목록 필터링
-  const filteredInstructors = searchText.trim() ? 
-    instructors.filter(instructor => 
+  const filteredInstructors = searchText.trim() ?
+    instructors.filter(instructor =>
       instructor.name.toLowerCase().includes(searchText.toLowerCase()) ||
       instructor.email.toLowerCase().includes(searchText.toLowerCase()) ||
       instructor.username.toLowerCase().includes(searchText.toLowerCase()) ||
       (instructor.profile && instructor.profile.toLowerCase().includes(searchText.toLowerCase()))
-    ) : 
+    ) :
     instructors;
 
   // 테이블 칼럼 정의
@@ -128,10 +128,10 @@ const InstructorsTab: React.FC = () => {
       id: 'name',
       header: t('admin:instructors.fields.name'),
       cell: (item: Instructor) => (
-        <div style={{ 
-          fontWeight: '500', 
-          color: '#0972d3', 
-          cursor: 'pointer' 
+        <div style={{
+          fontWeight: '500',
+          color: '#0972d3',
+          cursor: 'pointer'
         }} onClick={() => openEditModal(item)}>
           {item.name}
         </div>
@@ -157,8 +157,8 @@ const InstructorsTab: React.FC = () => {
       id: 'profile',
       header: t('admin:instructors.fields.profile'),
       cell: (item: Instructor) => (
-        <div style={{ 
-          maxHeight: '80px', 
+        <div style={{
+          maxHeight: '80px',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           display: '-webkit-box',
@@ -179,12 +179,13 @@ const InstructorsTab: React.FC = () => {
           ACTIVE: { type: 'success', text: t('admin:instructors.status.active') },
           INACTIVE: { type: 'stopped', text: t('admin:instructors.status.inactive') }
         };
-        
-        const status = statusMap[item.status] || { 
-          type: 'info', 
-          text: item.status || t('admin:instructors.status.unknown')
+
+        const statusKey = item.status || 'unknown';
+        const status = statusMap[statusKey] || {
+          type: 'info',
+          text: statusKey === 'unknown' ? t('admin:instructors.status.unknown') : statusKey
         };
-        
+
         return (
           <StatusIndicator type={status.type as any}>
             {status.text}
@@ -199,11 +200,14 @@ const InstructorsTab: React.FC = () => {
       header: t('admin:instructors.fields.createdAt'),
       cell: (item: Instructor) => (
         <div style={{ whiteSpace: 'nowrap' }}>
-          {new Date(item.createdAt || '').toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit', 
-            day: '2-digit'
-          })}
+          {item.createdAt ? 
+            new Date(item.createdAt).toLocaleDateString('ko-KR', {
+              year: 'numeric',
+              month: '2-digit', 
+              day: '2-digit'
+            }) : 
+            '-'
+          }
         </div>
       ),
       sortingField: 'createdAt',
@@ -214,24 +218,24 @@ const InstructorsTab: React.FC = () => {
       header: t('common:actions'),
       cell: (item: Instructor) => (
         <SpaceBetween direction="horizontal" size="xs">
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => openEditModal(item)}
             iconName="edit"
           >
             {t('common:edit')}
           </Button>
           {item.status === 'ACTIVE' ? (
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               onClick={() => openStatusChangeModal(item, 'INACTIVE')}
               iconName="remove"
             >
               {t('admin:instructors.actions.deactivate')}
             </Button>
           ) : (
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               onClick={() => openStatusChangeModal(item, 'ACTIVE')}
               iconName="check"
             >
@@ -291,8 +295,8 @@ const InstructorsTab: React.FC = () => {
         {/* EnhancedTable 사용 */}
         <EnhancedTable
           title={t('admin:instructors.title')}
-          description={searchText ? 
-            t('admin:instructors.searchResults', { count: filteredInstructors.length }) : 
+          description={searchText ?
+            t('admin:instructors.searchResults', { count: filteredInstructors.length }) :
             t('admin:instructors.description')}
           columnDefinitions={columnDefinitions}
           items={filteredInstructors}
@@ -311,11 +315,11 @@ const InstructorsTab: React.FC = () => {
           stripedRows={true}
           defaultSortingColumn="name"
           emptyText={{
-            title: searchText ? 
-              t('admin:instructors.noSearchResults') : 
+            title: searchText ?
+              t('admin:instructors.noSearchResults') :
               t('admin:instructors.noInstructors'),
-            subtitle: searchText ? 
-              t('admin:instructors.tryOtherSearch') : 
+            subtitle: searchText ?
+              t('admin:instructors.tryOtherSearch') :
               t('admin:instructors.createPrompt'),
             action: searchText ? undefined : {
               text: t('admin:instructors.actions.createInstructor'),
@@ -418,7 +422,7 @@ const InstructorsTab: React.FC = () => {
                 />
               </FormField>
 
-              <FormField 
+              <FormField
                 label={t('admin:instructors.fields.profile')}
                 description={t('admin:instructors.fields.profileDescription')}
               >
@@ -488,7 +492,7 @@ const InstructorsTab: React.FC = () => {
                 />
               </FormField>
 
-              <FormField 
+              <FormField
                 label={t('admin:instructors.fields.profile')}
                 description={t('admin:instructors.fields.profileDescription')}
               >
@@ -507,8 +511,8 @@ const InstructorsTab: React.FC = () => {
           visible={showStatusChangeModal}
           onDismiss={() => setShowStatusChangeModal(false)}
           header={
-            selectedInstructor?.status === 'ACTIVE' ? 
-              t('admin:instructors.modals.deactivate.title') : 
+            selectedInstructor?.status === 'ACTIVE' ?
+              t('admin:instructors.modals.deactivate.title') :
               t('admin:instructors.modals.activate.title')
           }
           footer={
@@ -524,8 +528,8 @@ const InstructorsTab: React.FC = () => {
                   )}
                   loading={isChangingStatus}
                 >
-                  {selectedInstructor?.status === 'ACTIVE' ? 
-                    t('admin:instructors.actions.deactivate') : 
+                  {selectedInstructor?.status === 'ACTIVE' ?
+                    t('admin:instructors.actions.deactivate') :
                     t('admin:instructors.actions.activate')
                   }
                 </Button>
@@ -534,7 +538,7 @@ const InstructorsTab: React.FC = () => {
           }
         >
           <Box>
-            {selectedInstructor?.status === 'ACTIVE' ? 
+            {selectedInstructor?.status === 'ACTIVE' ?
               t('admin:instructors.modals.deactivate.confirmation', { name: selectedInstructor?.name }) :
               t('admin:instructors.modals.activate.confirmation', { name: selectedInstructor?.name })
             }

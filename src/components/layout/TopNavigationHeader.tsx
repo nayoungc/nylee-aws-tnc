@@ -178,18 +178,6 @@ const TopNavigationHeader: React.FC = () => {
           case 'settings':
             handleNavigation('/settings');
             break;
-          case 'admin-dashboard':
-            handleNavigation('/admin/dashboard');
-            break;
-          case 'user-management':
-            handleNavigation('/admin/users');
-            break;
-          case 'course-catalog':
-            handleNavigation('/instructor/catalog');
-            break;
-          case 'course-management':
-            handleNavigation('/instructor/courses');
-            break;
         }
       }
     });

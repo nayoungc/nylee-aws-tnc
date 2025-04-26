@@ -14,7 +14,8 @@ import SystemManagementPage from '@/pages/admin/SystemManagementPage';
 import { AuthProvider } from '@/hooks/useAuth';
 import '@/i18n';
 import LoginPage from './pages/auth/LoginPage';
-import NotFoundPage from './pages/errors/NotFoundPage'; // 404 페이지 추가 필요
+import NotFoundPage from './pages/errors/NotFoundPage'; 
+
 
 // QueryClient 생성
 const queryClient = new QueryClient({

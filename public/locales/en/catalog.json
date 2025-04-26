@@ -1,0 +1,69 @@
+{
+    "catalog": {
+      "title": "Course Catalog",
+      "search": "Search courses...",
+      "filter": "Filter",
+      "noResults": "No courses found",
+      "loadMore": "Load More",
+      "categories": {
+        "all": "All Categories",
+        "aws": "AWS",
+        "devops": "DevOps",
+        "security": "Security",
+        "machine_learning": "Machine Learning",
+        "data": "Data Analytics",
+        "cloud": "Cloud Architecture"
+      },
+      "levels": {
+        "all": "All Levels",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "expert": "Expert"
+      },
+      "fields": {
+        "id": "ID",
+        "title": "Title",
+        "description": "Description",
+        "category": "Category",
+        "level": "Level",
+        "duration": "Duration",
+        "awsCode": "AWS Code",
+        "language": "Language",
+        "price": "Price",
+        "tags": "Tags",
+        "prerequisites": "Prerequisites"
+      },
+      "actions": {
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "create": "Create New Catalog",
+        "save": "Save",
+        "cancel": "Cancel",
+        "apply": "Apply Filters",
+        "clearFilters": "Clear Filters"
+      },
+      "details": {
+        "title": "Catalog Details",
+        "editTitle": "Edit Catalog",
+        "createTitle": "Create New Catalog"
+      },
+      "confirmDelete": "Are you sure you want to delete this catalog item?",
+      "days": "days",
+      "hours": "hours"
+    },
+    "errors": {
+      "failedToListCatalogs": "Failed to list catalogs: {{error}}",
+      "failedToGetCatalog": "Failed to get catalog: {{error}}",
+      "failedToSearchCatalogs": "Failed to search catalogs: {{error}}",
+      "failedToGetCatalogsByCategory": "Failed to get catalogs by category \"{{category}}\": {{error}}",
+      "failedToCreateCatalog": "Failed to create catalog: {{error}}",
+      "failedToUpdateCatalog": "Failed to update catalog: {{error}}",
+      "failedToDeleteCatalog": "Failed to delete catalog: {{error}}",
+      "invalidCreateCatalogResponse": "Invalid create catalog response",
+      "invalidUpdateCatalogResponse": "Invalid update catalog response for ID: {{id}}",
+      "catalogNotFound": "Catalog not found with ID: {{id}}"
+    }
+  }
+  

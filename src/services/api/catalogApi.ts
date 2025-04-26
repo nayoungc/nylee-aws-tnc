@@ -1,7 +1,8 @@
 // src/services/api/catalogApi.ts
 import { generateClient } from 'aws-amplify/api';
 import { v4 as uuidv4 } from 'uuid';
-import { safelyExtractData } from '@/utils/graphql'; // 경로 별칭으로 수정
+import { safelyExtractData } from '@/utils/graphql'; 
+import i18n from '@/i18n'; 
 
 // 카탈로그 관련 쿼리와 뮤테이션
 import { 
@@ -9,12 +10,12 @@ import {
   getCourseCatalog,
   searchCatalog,
   getCatalogByCategory 
-} from '@/graphql/catalog'; // 경로 별칭으로 수정
+} from '@/graphql/catalog'; 
 import { 
   createCourseCatalog, 
   updateCourseCatalog,
   deleteCourseCatalog 
-} from '@/graphql/catalog'; // 경로 별칭으로 수정
+} from '@/graphql/catalog'; 
 import {
   ListCourseCatalogsResult,
   GetCourseCatalogResult,
@@ -24,14 +25,12 @@ import {
   UpdateCourseCatalogResult,
   DeleteCourseCatalogResult,
   CatalogFilterInput
-} from '@/graphql/catalog'; // 경로 별칭으로 수정
+} from '@/graphql/catalog'; 
 
 // 모델과 모의 데이터
-import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/catalog'; // 경로 별칭으로 수정
-import { mockCatalogs } from '@/mocks/catalogData'; // 경로 별칭으로 수정
-import { CalendarEvent } from '@/models/calendar'; // 경로 별칭으로 수정
+import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/catalog'; 
+import { mockCatalogs } from '@/mocks/catalogData'; 
 
-// 나머지 코드는 변경 없음
 const client = generateClient();
 
 // 개발 모드 여부
@@ -57,7 +56,7 @@ export const fetchAllCatalogs = async (): Promise<CourseCatalog[]> => {
     return data?.listCourseCatalogs?.items || [];
   } catch (error: unknown) {
     console.error('카탈로그 목록 조회 오류:', error);
-    throw error;
+    throw new Error(i18n.t('errors.failedToListCatalogs', { error: String(error), ns: 'catalog' }));
   }
 };
 
@@ -83,7 +82,7 @@ export const fetchCatalogById = async (id: string): Promise<CourseCatalog | null
     return data?.getCourseCatalog || null;
   } catch (error: unknown) {
     console.error(`카탈로그 조회 오류 (ID: \${id}):`, error);
-    throw error;
+    throw new Error(i18n.t('errors.failedToGetCatalog', { error: String(error), ns: 'catalog' }));
   }
 };
 
@@ -141,7 +140,7 @@ export const searchCatalogs = async (filter: CatalogFilter = {}): Promise<Course
     return data?.searchCatalog || [];
   } catch (error: unknown) {
     console.error('카탈로그 검색 오류:', error);
-    throw error;
+    throw new Error(i18n.t('errors.failedToSearchCatalogs', { error: String(error), ns: 'catalog' }));
   }
 };
 
@@ -167,7 +166,7 @@ export const fetchCatalogsByCategory = async (category: string): Promise<CourseC
     return data?.getCatalogByCategory || [];
   } catch (error: unknown) {
     console.error(`카테고리별 카탈로그 조회 오류 (\${category}):`, error);
-    throw error;
+    throw new Error(i18n.t('errors.failedToGetCatalogsByCategory', { category, error: String(error), ns: 'catalog' }));
   }
 };
 
@@ -198,13 +197,13 @@ export const createCatalog = async (input: CourseCatalogInput): Promise<CourseCa
     // 안전하게 데이터 추출
     const data = safelyExtractData<CreateCourseCatalogResult>(response);
     if (!data?.createCourseCatalog) {
-      throw new Error('카탈로그 생성 응답이 유효하지 않습니다');
+      throw new Error(i18n.t('errors.invalidCreateCatalogResponse', { ns: 'catalog' }));
     }
     
     return data.createCourseCatalog;
   } catch (error: unknown) {
     console.error('카탈로그 생성 오류:', error);
-    throw error;
+    throw new Error(i18n.t('errors.failedToCreateCatalog', { error: String(error), ns: 'catalog' }));
   }
 };
 
@@ -218,7 +217,7 @@ export const updateCatalog = async (id: string, input: Partial<CourseCatalogInpu
     const index = mockCatalogs.findIndex(c => c.id === id);
     
     if (index === -1) {
-      throw new Error(`ID가 \${id}인 카탈로그를 찾을 수 없습니다`);
+      throw new Error(i18n.t('errors.catalogNotFound', { id, ns: 'catalog' }));
     }
     
     const updatedCatalog = {
@@ -240,13 +239,13 @@ export const updateCatalog = async (id: string, input: Partial<CourseCatalogInpu
     // 안전하게 데이터 추출
     const data = safelyExtractData<UpdateCourseCatalogResult>(response);
     if (!data?.updateCourseCatalog) {
-      throw new Error(`ID가 \${id}인 카탈로그 수정 응답이 유효하지 않습니다`);
+      throw new Error(i18n.t('errors.invalidUpdateCatalogResponse', { id, ns: 'catalog' }));
     }
     
     return data.updateCourseCatalog;
   } catch (error: unknown) {
     console.error(`카탈로그 수정 오류 (ID: \${id}):`, error);
-    throw error;
+    throw new Error(i18n.t('errors.failedToUpdateCatalog', { error: String(error), ns: 'catalog' }));
   }
 };
 
@@ -260,7 +259,7 @@ export const deleteCatalog = async (id: string): Promise<{ success: boolean }> =
     const index = mockCatalogs.findIndex(c => c.id === id);
     
     if (index === -1) {
-      throw new Error(`ID가 \${id}인 카탈로그를 찾을 수 없습니다`);
+      throw new Error(i18n.t('errors.catalogNotFound', { id, ns: 'catalog' }));
     }
     
     mockCatalogs.splice(index, 1);
@@ -278,6 +277,6 @@ export const deleteCatalog = async (id: string): Promise<{ success: boolean }> =
     return { success: !!data?.deleteCourseCatalog?.id };
   } catch (error: unknown) {
     console.error(`카탈로그 삭제 오류 (ID: \${id}):`, error);
-    throw error;
+    throw new Error(i18n.t('errors.failedToDeleteCatalog', { error: String(error), ns: 'catalog' }));
   }
 };

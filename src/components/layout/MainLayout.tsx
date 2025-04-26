@@ -21,7 +21,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // activeHref가 명시적으로 제공되지 않으면 현재 위치 사용
   const currentHref = activeHref || location.pathname;
 
@@ -29,7 +29,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const handleFollow = (event: CustomEvent) => {
     // 이벤트의 기본 동작 방지
     event.preventDefault?.();
-    
+
     const href = event.detail.href;
     if (href && !href.startsWith('http')) {
       // 외부 링크가 아닌 경우에만 React Router로 처리
@@ -43,48 +43,47 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const publicItems = [
     { type: 'link' as const, text: t('navigation:tnc'), href: '/tnc' }
   ];
-  
+
   // 인증된 사용자 메뉴 (변경 없음)
   const authenticatedItems = isAuthenticated ? [
     { type: 'link' as const, text: t('navigation:dashboard'), href: '/' },
     { type: 'link' as const, text: t('navigation:resources'), href: '/resources' },
     { type: 'link' as const, text: t('navigation:calendar'), href: '/calendar' }
   ] : [];
-  
-  // 강사용 메뉴 항목 (변경 없음)
+
   const instructorItems = isInstructor || isAdmin ? [
     { type: 'divider' as const },
     {
       type: 'section' as const,
       text: t('navigation:instructor.title'),
       items: [
-        // 과정 관리 그룹
+        // 과정 관리 링크 그룹
         {
-          type: 'expandable-link-group' as const,
+          type: 'link-group' as const,
           text: t('navigation:instructor.courseManagementGroup'),
-          href: '/instructor/courses',
+          href: '/instructor/courses', // href 속성 필수
           items: [
             { type: 'link' as const, text: t('navigation:instructor.courseManagement'), href: '/instructor/courses' },
             { type: 'link' as const, text: t('navigation:instructor.catalog'), href: '/instructor/catalog' }
           ]
         },
-        
-        // 평가 도구 관리 그룹
+
+        // 평가 도구 관리 링크 그룹
         {
-          type: 'expandable-link-group' as const,
+          type: 'link-group' as const,
           text: t('navigation:instructor.assessmentToolsGroup'),
-          href: '/instructor/quizzes',
+          href: '/instructor/quizzes', // href 속성 필수
           items: [
             { type: 'link' as const, text: t('navigation:instructor.quizzes'), href: '/instructor/quizzes' },
             { type: 'link' as const, text: t('navigation:instructor.surveys'), href: '/instructor/surveys' }
           ]
         },
-        
-        // 관리 도구 그룹
+
+        // 관리 도구 링크 그룹
         {
-          type: 'expandable-link-group' as const,
+          type: 'link-group' as const,
           text: t('navigation:instructor.managementToolsGroup'),
-          href: '/instructor/reports',
+          href: '/instructor/reports', // href 속성 필수
           items: [
             { type: 'link' as const, text: t('navigation:instructor.reports'), href: '/instructor/reports' },
             { type: 'link' as const, text: t('navigation:instructor.statistics'), href: '/instructor/statistics' }
@@ -93,7 +92,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       ]
     }
   ] : [];
-  
+
   // 관리자용 메뉴 항목 (변경 없음)
   const adminItems = isAdmin ? [
     { type: 'divider' as const },
