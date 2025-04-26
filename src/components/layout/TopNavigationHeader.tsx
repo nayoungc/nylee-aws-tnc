@@ -10,8 +10,7 @@ import { useAuth } from '@hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const TopNavigationHeader: React.FC = () => {
-  // i18n 객체도 같이 가져오기, 필요한 모든 네임스페이스 포함
-  const { t, i18n } = useTranslation(['common', 'navigation', 'auth']);
+  const { t, i18n } = useTranslation(['common', 'navigation', 'auth', 'admin']);
   const { theme, toggleTheme, language, changeLanguage } = useApp();
   const { isAuthenticated, logout, user, getUserRoles } = useAuth();
   const navigate = useNavigate();
@@ -54,7 +53,7 @@ const TopNavigationHeader: React.FC = () => {
       if (changeLanguage) {
         changeLanguage(lang);
       }
-      console.log(`Language changed to: \${lang}`); // 템플릿 리터럴 구문 수정
+      console.log(`Language changed to: \${lang}`);
     });
   };
 
@@ -150,22 +149,6 @@ const TopNavigationHeader: React.FC = () => {
       { id: 'settings', text: t('menu:user.settings') }
     ];
     
-    // 관리자 메뉴
-    if (isAdmin) {
-      userItems.push(
-        { id: 'admin-dashboard', text: t('menu:admin.dashboard') },
-        { id: 'user-management', text: t('menu:admin.userManagement') }
-      );
-    }
-    
-    // 강사 메뉴
-    if (isInstructor || isAdmin) {
-      userItems.push(
-        { id: 'course-catalog', text: t('menu:instructor.catalog') },
-        { id: 'course-management', text: t('menu:instructor.courseManagement') }
-      );
-    }
-    
     // 구분선 및 로그아웃
     userItems.push(
       { id: 'divider', text: '-' },
@@ -190,18 +173,6 @@ const TopNavigationHeader: React.FC = () => {
             break;
           case 'settings':
             handleNavigation('/settings');
-            break;
-          case 'admin-dashboard':
-            handleNavigation('/admin');
-            break;
-          case 'user-management':
-            handleNavigation('/admin/users');
-            break;
-          case 'course-catalog':
-            handleNavigation('/instructor/catalog');
-            break;
-          case 'course-management':
-            handleNavigation('/instructor/courses');
             break;
         }
       }

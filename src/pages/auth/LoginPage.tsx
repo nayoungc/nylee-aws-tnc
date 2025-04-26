@@ -12,6 +12,7 @@ import Input from '@cloudscape-design/components/input';
 import Checkbox from '@cloudscape-design/components/checkbox';
 import Alert from '@cloudscape-design/components/alert';
 import Icon from '@cloudscape-design/components/icon';
+import Container from '@cloudscape-design/components/container';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -76,125 +77,154 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const currentYear = new Date().getFullYear();
+
   return (
     <AuthLayout>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
-        <SpaceBetween size="l">
-          {/* 로고 및 타이틀 */}
-          <Box textAlign="center" padding="l">
-            <img
-              src="/assets/aws-login-logo.png"
-              alt="AWS Logo"
-              style={{ 
-                width: '60px', 
-                marginBottom: '16px' 
-              }}
-            />
-            <Box variant="h1" padding={{ bottom: 'xs' }}>{t('auth:account_login')}</Box>
-            <Box variant="p" color="text-body-secondary">
-              {t('auth:sign_in_to_continue')}
+      <div style={{ width: '100%', maxWidth: '480px', padding: '20px' }}>
+        <Container
+          media={{
+            content: (
+              <div style={{ 
+                background: '#232F3E', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                padding: '40px 0' 
+              }}>
+                <img
+                  src="/assets/aws-login-logo.png"
+                  alt="AWS Logo"
+                  style={{ 
+                    width: '120px',
+                    height: 'auto'
+                  }}
+                />
+              </div>
+            ),
+            height: 140,
+            position: "top"
+          }}
+          footer={
+            <Box 
+              fontSize="body-s" 
+              color="text-body-secondary"
+              textAlign="center"
+              padding="s"
+            >
+              <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+                <Icon name="lock-private" size="small" />
+                <Box>{t('auth:secure_connection')}</Box>
+                <Box margin={{ left: 'm' }}>
+                  &copy; {currentYear} Amazon Web Services, Inc.
+                </Box>
+              </SpaceBetween>
             </Box>
-          </Box>
-
-          {/* 알림 메시지 */}
-          {successMessage && (
-            <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
-              {successMessage}
-            </Alert>
-          )}
-
-          {error && (
-            <Alert type="error" dismissible onDismiss={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
-
-          {/* 로그인 폼 */}
+          }
+          header={
+            <Box textAlign="center" padding={{ top: 's', bottom: 'xs' }}>
+              <Box variant="h1" padding={{ bottom: 'xxs' }}>
+                {t('auth:account_login')}
+              </Box>
+              <Box variant="p" color="text-body-secondary">
+                {t('auth:sign_in_to_continue')}
+              </Box>
+            </Box>
+          }
+        >
           <SpaceBetween size="l">
-            <FormField 
-              label={t('auth:username')}
-              constraintText={t('auth:username_constraint')}
-            >
-              <Input
-                value={username}
-                onChange={({ detail }) => setUsername(detail.value)}
-                onKeyDown={({ detail }) => {
-                  if (detail.key === 'Enter') {
-                    const passwordInput = document.querySelector('input[type="password"]');
-                    if (passwordInput) (passwordInput as HTMLElement).focus();
-                  }
-                }}
-                autoFocus
-                placeholder={t('auth:username_placeholder')}
-              />
-            </FormField>
+            {/* 알림 메시지 */}
+            {successMessage && (
+              <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
+                {successMessage}
+              </Alert>
+            )}
 
-            <FormField 
-              label={t('auth:password')}
-              info={
-                <Link href="/forgot-password">
-                  {t('auth:forgot_password')}
-                </Link>
-              }
-            >
-              <Input
-                type="password"
-                value={password}
-                onChange={({ detail }) => setPassword(detail.value)}
-                onKeyDown={({ detail }) => {
-                  if (detail.key === 'Enter') handleSignIn();
-                }}
-                placeholder={t('auth:password_placeholder')}
-              />
-            </FormField>
-            
-            <Checkbox
-              checked={rememberMe}
-              onChange={({ detail }) => setRememberMe(detail.checked)}
-            >
-              {t('auth:remember_me')}
-            </Checkbox>
+            {error && (
+              <Alert type="error" dismissible onDismiss={() => setError(null)}>
+                {error}
+              </Alert>
+            )}
 
-            {/* 로그인 버튼 */}
-            <Button
-              variant="primary"
-              loading={isLoading}
-              onClick={handleSignIn}
-              iconAlign="right" 
-              iconName="angle-right"
-              fullWidth
-            >
-              {t('auth:sign_in')}
-            </Button>
-            
-            {/* 계정 생성 링크 */}
-            <Box textAlign="center">
-              <span style={{ fontSize: '14px', color: 'var(--color-text-body-secondary)' }}>
-                {t('auth:no_account')}{' '}
-                <Link href="/register">
-                  {t('auth:create_account')}
-                </Link>
-              </span>
+            {/* 로그인 폼 */}
+            <SpaceBetween size="l">
+              <FormField 
+                label={t('auth:username')}
+                constraintText={t('auth:username_constraint')}
+              >
+                <Input
+                  value={username}
+                  onChange={({ detail }) => setUsername(detail.value)}
+                  onKeyDown={({ detail }) => {
+                    if (detail.key === 'Enter') {
+                      const passwordInput = document.querySelector('input[type="password"]');
+                      if (passwordInput) (passwordInput as HTMLElement).focus();
+                    }
+                  }}
+                  autoFocus
+                  placeholder={t('auth:username_placeholder')}
+                />
+              </FormField>
+
+              <FormField 
+                label={t('auth:password')}
+                info={
+                  <Link href="/forgot-password">
+                    {t('auth:forgot_password')}
+                  </Link>
+                }
+              >
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={({ detail }) => setPassword(detail.value)}
+                  onKeyDown={({ detail }) => {
+                    if (detail.key === 'Enter') handleSignIn();
+                  }}
+                  placeholder={t('auth:password_placeholder')}
+                />
+              </FormField>
+              
+              <Checkbox
+                checked={rememberMe}
+                onChange={({ detail }) => setRememberMe(detail.checked)}
+              >
+                {t('auth:remember_me')}
+              </Checkbox>
+
+              {/* 로그인 버튼 */}
+              <Button
+                variant="primary"
+                loading={isLoading}
+                onClick={handleSignIn}
+                iconAlign="right" 
+                iconName="angle-right"
+                fullWidth
+              >
+                {t('auth:sign_in')}
+              </Button>
+              
+              {/* 계정 생성 링크 */}
+              <Box textAlign="center">
+                <span style={{ fontSize: '14px', color: 'var(--color-text-body-secondary)' }}>
+                  {t('auth:no_account')}{' '}
+                  <Link href="/register">
+                    {t('auth:create_account')}
+                  </Link>
+                </span>
+              </Box>
+            </SpaceBetween>
+
+            {/* 언어 선택 */}
+            <Box textAlign="center" padding={{ top: 's', bottom: 's' }}>
+              <SpaceBetween direction="horizontal" size="xs">
+                <Link href="#en">English</Link>
+                <Link href="#ko">한국어</Link>
+                <Link href="#ja">日本語</Link>
+              </SpaceBetween>
             </Box>
           </SpaceBetween>
-
-          {/* 언어 선택 */}
-          <Box textAlign="center" padding={{ top: 'l', bottom: 's' }}>
-            <SpaceBetween direction="horizontal" size="xs">
-              <Link href="#en">English</Link>
-              <Link href="#ko">한국어</Link>
-              <Link href="#ja">日本語</Link>
-            </SpaceBetween>
-          </Box>
-
-          {/* 보안 연결 표시 */}
-          <Box textAlign="center" fontSize="body-s" color="text-body-secondary">
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Icon name="lock-private" size="small" />
-              <span>{t('auth:secure_connection')}</span>
-            </div>
-          </Box>
-        </SpaceBetween>
+        </Container>
       </div>
     </AuthLayout>
   );
