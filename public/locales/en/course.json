@@ -1,27 +1,57 @@
 {
+  "description": "Description",
+  "instructor": "Instructor",
+  "duration": "Duration",
+  "level": "Level",
+  "prerequisites": "Prerequisites",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "status": "Status",
+  "catalog": {
+    "title": "Course Catalog",
+    "list": "Catalog List",
+    "details": "Catalog Details",
+    "catalogId": "Catalog ID",
+    "version": "Version",
+    "awsCode": "AWS Code",
+    "hours": "Hours",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At"
+  },
+  "levels": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "title": {
+    "courseCatalogs": "Course Catalogs"
+  },
+  "fields": {
     "title": "Title",
-    "description": "Description",
-    "instructor": "Instructor",
-    "duration": "Duration",
+    "awsCode": "AWS Code",
     "level": "Level",
-    "prerequisites": "Prerequisites",
-    "startDate": "Start Date",
-    "endDate": "End Date",
+    "category": "Category",
     "status": "Status",
-    "catalog": {
-      "title": "Course Catalog",
-      "list": "Catalog List",
-      "details": "Catalog Details",
-      "catalogId": "Catalog ID",
-      "version": "Version",
-      "awsCode": "AWS Code",
-      "hours": "Hours",
-      "createdAt": "Created At",
-      "updatedAt": "Updated At"
-    },
-    "levels": {
-      "beginner": "Beginner",
-      "intermediate": "Intermediate",
-      "advanced": "Advanced"
-    }
+    "actions": "Actions"
+  },
+  "actions": {
+    "createCatalog": "Create catalog",
+    "createFirstCatalog": "Create your first catalog",
+    "view": "View",
+    "edit": "Edit"
+  },
+  "filters": {
+    "searchPlaceholder": "Search catalogs",
+    "searchAriaLabel": "Search catalogs"
+  },
+  "emptyState": {
+    "title": "No catalogs",
+    "message": "You don't have any course catalogs yet. Create your first one.",
+    "noMatchingResults": "No matching results",
+    "clearFilters": "Try clearing your filters and try again"
+  },
+  "errors": {
+    "failedToLoadCatalogs": "Failed to load catalogs",
+    "loadError": "Loading Error"
   }
+}

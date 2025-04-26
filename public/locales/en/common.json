@@ -37,5 +37,14 @@
   "itemsPerPage": "Items per page",
   "showing": "Showing",
   "of": "of",
-  "columns": "Columns to display"
+  "columns": "Columns to display",
+  "retry": "Retry",
+  "pagination": {
+    "next": "Next",
+    "previous": "Previous",
+    "pageLabel": "Page {pageNumber}"
+  },
+  "errors": {
+    "loadError": "Error Loading Data"
+  }
 }
