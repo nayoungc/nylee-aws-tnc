@@ -33,7 +33,7 @@ import { mockCourseCatalogs } from '../../mocks/catalogData';
 const client = generateClient();
 
 // 개발 모드 여부
-const DEV_MODE = true; // 개발 시에는 true로, 프로덕션에서는 false로 설정
+const DEV_MODE = false; // 개발 시에는 true로, 프로덕션에서는 false로 설정
 
 /**
  * 모든 코스 카탈로그 가져오기

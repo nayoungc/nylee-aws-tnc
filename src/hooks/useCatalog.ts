@@ -2,15 +2,15 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  fetchAllCatalogs, 
-  fetchCatalogById, 
-  searchCatalogs, 
-  fetchCatalogsByCategory,
-  createCatalog,
-  updateCatalog,
-  deleteCatalog
-} from '@/services/api/catalogApi';
-import { CourseCatalog, CourseCatalogInput, CatalogFilter } from '@/models/catalog';
+  fetchAllCourseCatalogs, 
+  fetchCourseCatalogById, 
+  searchCourseCatalogs, 
+  fetchCourseCatalogsByCategory, 
+  createCourseCatalog, 
+  updateCourseCatalog, 
+  deleteCourseCatalog 
+} from '@/services/api/catalogApi'; // 경로도 변경 (필요한 경우)
+import { CourseCatalog, CourseCatalogInput, CourseCatalogFilter } from '@/models/catalog'; // 필터 타입 이름도 확인
 
 /**
  * Admin CourseCatalogTab에서 사용할 통합된 카탈로그 훅
@@ -27,21 +27,21 @@ export const useCatalog = () => {
     refetch
   } = useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs'],
-    queryFn: fetchAllCatalogs,
+    queryFn: fetchAllCourseCatalogs, 
     staleTime: 1000 * 60 * 5 // 5분
   });
 
   // 선택된 카탈로그 정보
   const { data: selectedCatalog } = useQuery<CourseCatalog | null, Error>({
     queryKey: ['catalog', selectedId],
-    queryFn: () => selectedId ? fetchCatalogById(selectedId) : Promise.resolve(null),
+    queryFn: () => selectedId ? fetchCourseCatalogById(selectedId) : Promise.resolve(null), 
     enabled: !!selectedId,
     staleTime: 1000 * 60 * 5 // 5분
   });
 
   // 카탈로그 생성 뮤테이션
   const createMutation = useMutation<CourseCatalog, Error, CourseCatalogInput>({
-    mutationFn: createCatalog,
+    mutationFn: createCourseCatalog, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });
     }
@@ -49,7 +49,7 @@ export const useCatalog = () => {
 
   // 카탈로그 업데이트 뮤테이션
   const updateMutation = useMutation<CourseCatalog, Error, { id: string; input: Partial<CourseCatalogInput> }>({
-    mutationFn: ({ id, input }) => updateCatalog(id, input),
+    mutationFn: ({ id, input }) => updateCourseCatalog(id, input), 
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });
       queryClient.invalidateQueries({ queryKey: ['catalog', data.id] });
@@ -58,7 +58,7 @@ export const useCatalog = () => {
 
   // 카탈로그 삭제 뮤테이션
   const deleteMutation = useMutation<{ success: boolean }, Error, string>({
-    mutationFn: deleteCatalog,
+    mutationFn: deleteCourseCatalog, 
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });
       if (selectedId === id) {
@@ -111,7 +111,7 @@ export const useCatalog = () => {
 export const useCatalogs = (enabled = true) => {
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs'],
-    queryFn: fetchAllCatalogs,
+    queryFn: fetchAllCourseCatalogs, 
     enabled,
     staleTime: 1000 * 60 * 5 // 5분
   });
@@ -123,7 +123,7 @@ export const useCatalogs = (enabled = true) => {
 export const useCatalogById = (id: string | undefined, enabled = true) => {
   return useQuery<CourseCatalog | null, Error>({
     queryKey: ['catalog', id],
-    queryFn: () => (id ? fetchCatalogById(id) : Promise.resolve(null)),
+    queryFn: () => (id ? fetchCourseCatalogById(id) : Promise.resolve(null)), 
     enabled: !!id && enabled,
     staleTime: 1000 * 60 * 5 // 5분
   });
@@ -132,10 +132,10 @@ export const useCatalogById = (id: string | undefined, enabled = true) => {
 /**
  * 필터를 사용한 카탈로그 검색 훅
  */
-export const useSearchCatalogs = (filter: CatalogFilter = {}, enabled = true) => {
+export const useSearchCatalogs = (filter: CourseCatalogFilter = {}, enabled = true) => { // 필터 타입 이름도 변경
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs', 'search', filter],
-    queryFn: () => searchCatalogs(filter),
+    queryFn: () => searchCourseCatalogs(filter), 
     enabled,
     staleTime: 1000 * 60 * 5 // 5분
   });
@@ -147,7 +147,7 @@ export const useSearchCatalogs = (filter: CatalogFilter = {}, enabled = true) =>
 export const useCatalogsByCategory = (category: string | undefined, enabled = true) => {
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs', 'category', category],
-    queryFn: () => (category ? fetchCatalogsByCategory(category) : Promise.resolve([])),
+    queryFn: () => (category ? fetchCourseCatalogsByCategory(category) : Promise.resolve([])), 
     enabled: !!category && enabled,
     staleTime: 1000 * 60 * 5 // 5분
   });
@@ -158,7 +158,7 @@ export const useCreateCatalog = () => {
   const queryClient = useQueryClient();
   
   return useMutation<CourseCatalog, Error, CourseCatalogInput>({
-    mutationFn: (input: CourseCatalogInput) => createCatalog(input),
+    mutationFn: (input: CourseCatalogInput) => createCourseCatalog(input), 
     onSuccess: () => {
       // 카탈로그 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });
@@ -176,7 +176,7 @@ export const useUpdateCatalog = () => {
   }
   
   return useMutation<CourseCatalog, Error, UpdateCatalogVars>({
-    mutationFn: ({ id, input }: UpdateCatalogVars) => updateCatalog(id, input),
+    mutationFn: ({ id, input }: UpdateCatalogVars) => updateCourseCatalog(id, input), 
     onSuccess: (updatedCatalog) => {
       // 캐시 업데이트
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });
@@ -191,8 +191,8 @@ export const useUpdateCatalog = () => {
 export const useDeleteCatalog = () => {
   const queryClient = useQueryClient();
   
-  return useMutation<{ success: boolean }, Error, string>({  // boolean 대신 { success: boolean } 사용
-    mutationFn: (id: string) => deleteCatalog(id),
+  return useMutation<{ success: boolean }, Error, string>({
+    mutationFn: (id: string) => deleteCourseCatalog(id), 
     onSuccess: (_, deletedId) => {
       // 캐시 업데이트
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });
