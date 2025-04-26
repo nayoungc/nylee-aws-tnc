@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import MainLayout from '@/components/layout/MainLayout';
 import CatalogTable from '@/components/catalog/CatalogTable';
 import { CourseCatalog } from '@/models/catalog';
-import { listCatalogs } from '@/services/catalogService';
+import { fetchAllCatalogs } from '@/services/catalogService';
 
 const CourseCatalogtPage: React.FC = () => {
   const { t } = useTranslation(['catalog', 'common']);
@@ -26,7 +26,7 @@ const CourseCatalogtPage: React.FC = () => {
     const loadCatalogs = async () => {
       try {
         setLoading(true);
-        const data = await listCatalogs();
+        const data = await fetchAllCatalogs();
         setCatalogs(data);
       } catch (err: any) {
         console.error('Error loading catalogs:', err);
