@@ -62,7 +62,7 @@ const CatalogDetailsModal: React.FC<CatalogDetailsModalProps> = ({
           <SpaceBetween size="l">
             <div>
               <Box variant="awsui-key-label">카탈로그 ID</Box>
-              <div>{catalog.catalogId}</div>
+              <div>{catalog.id}</div>
             </div>
             <div>
               <Box variant="awsui-key-label">제목</Box>
@@ -81,7 +81,7 @@ const CatalogDetailsModal: React.FC<CatalogDetailsModalProps> = ({
           <SpaceBetween size="l">
             <div>
               <Box variant="awsui-key-label">수강 시간</Box>
-              <div>{catalog.hours ? `\${catalog.hours}시간` : '-'}</div>
+              <div>{catalog.durations ? `\${catalog.durations}시간` : '-'}</div>
             </div>
             <div>
               <Box variant="awsui-key-label">난이도</Box>

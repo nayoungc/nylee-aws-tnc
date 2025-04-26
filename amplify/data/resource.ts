@@ -1,11 +1,9 @@
 // amplify/data/resource.ts
-// amplify/data/resource.ts
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
 const schema = a.schema({
   CourseCatalog: a
     .model({
-      // id가 기본 키가 되며 a.id()를 사용
       id: a.id().required(),
       title: a.string().required(),
       awsCode: a.string(),
@@ -14,9 +12,10 @@ const schema = a.schema({
       level: a.string(),
       description: a.string(),
       category: a.string(),
-      tags: a.list(a.string()),        // a.array() → a.list() 로 변경
-      prerequisites: a.list(a.string()), // a.array() → a.list() 로 변경
-      objectives: a.list(a.string()),    // a.array() → a.list() 로 변경
+      // 1. 배열 필드 정의는 다음과 같이 합니다:
+      tags: a.string().array(),         // 올바른 문법: .array() 수정자 사용
+      prerequisites: a.string().array(), // 올바른 문법: .array() 수정자 사용
+      objectives: a.string().array(),    // 올바른 문법: .array() 수정자 사용
       status: a.enum(['active', 'draft', 'archived']),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),

@@ -3,33 +3,32 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import { AppProvider } from './contexts/AppContext';
+import { AppProvider } from '@contexts/AppContext';
 import { Amplify } from 'aws-amplify';
-import { AuthProvider } from './hooks/useAuth'; // AuthProvider 임포트 추가
-import './i18n';
+import { AuthProvider } from '@hooks/useAuth';
+import '@i18n';
 
-// Amplify 초기화 추가
-Amplify.configure({
-  Auth: {
-    Cognito: {
-      userPoolId: "us-east-1_AFeIVnWIU",
-      userPoolClientId: "6tdhvgmafd2uuhbc2naqg96g12"
-    }
-  },
-  Storage: {
-    S3: {
-      bucket: "nylee-aws-tnc",
-      region: "us-east-1"
-    }
-  }
-});
+// amplify_outputs.json 파일 임포트
+import amplifyConfig from '../amplify_outputs.json';
+
+// Amplify 초기화
+try {
+  console.log('Initializing Amplify with configuration');
+  Amplify.configure(amplifyConfig);
+  
+  // 디버깅 정보 출력
+  console.log('Auth config:', Amplify.getConfig().Auth);
+  console.log('API config:', Amplify.getConfig().API);
+} catch (error) {
+  console.error('Failed to initialize Amplify:', error);
+}
 
 // 앱 렌더링
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider> {/* AuthProvider 추가 */}
+      <AuthProvider>
         <AppProvider>
           <App />
         </AppProvider>
