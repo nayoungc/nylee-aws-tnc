@@ -1,615 +1,421 @@
 // src/pages/public/components/CourseCalendar.tsx
 import React, { useState } from 'react';
 import {
-  Box,
   Calendar,
+  Box,
+  SpaceBetween,
   Container,
   Header,
-  SpaceBetween,
-  Table,
-  Button,
-  Badge,
-  Modal,
-  ColumnLayout,
-  Link,
-  Cards,
   Grid,
+  Cards,
+  Badge,
+  Button,
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
+import BoardItem from "@cloudscape-design/board-components/board-item";
+import Board from "@cloudscape-design/board-components/board";
 
-// 이벤트 타입 정의
-interface CourseEvent {
+// 강의 타입 정의
+interface Course {
   id: string;
   title: string;
-  date: string;
-  endDate: string;
+  instructor: string;
   time: string;
   location: string;
-  instructor: string;
   type: string;
-  seats: {
-    total: number;
-    available: number;
-  };
+  level: string;
+  seats: number;
+  remainingSeats: number;
   description: string;
-  prerequisites: string[];
-  status: string;
 }
 
-// 목업 이벤트 데이터
-const courseEvents: CourseEvent[] = [
-  {
-    id: '1',
-    title: 'AWS Solutions Architect Associate 자격증 준비 과정',
-    date: '2023-11-15',
-    endDate: '2023-11-17',
-    time: '09:00-17:00',
-    location: '서울 교육 센터',
-    instructor: '김민수',
-    type: 'certification',
-    seats: { total: 20, available: 7 },
-    description: 'AWS Solutions Architect Associate 자격증을 위한 집중 교육 과정입니다. 3일간의 심층 교육으로 자격증 시험에 필요한 모든 핵심 영역을 다룹니다.',
-    prerequisites: ['기본적인 클라우드 개념 이해', 'AWS 콘솔 기본 사용 경험'],
-    status: 'upcoming'
-  },
-  {
-    id: '2',
-    title: 'AWS CloudFormation 마스터 워크숍',
-    date: '2023-11-19',
-    endDate: '2023-11-19',
-    time: '10:00-16:00',
-    location: '온라인 웨비나',
-    instructor: '박지영',
-    type: 'workshop',
-    seats: { total: 50, available: 23 },
-    description: 'AWS CloudFormation을 활용한 인프라 자동화 워크숍입니다. 실습 위주로 진행되며 CloudFormation 템플릿 작성 및 배포를 실습합니다.',
-    prerequisites: ['AWS 계정', 'AWS CLI 설치'],
-    status: 'upcoming'
-  },
-  {
-    id: '3',
-    title: 'AWS Lambda와 Serverless 아키텍처',
-    date: '2023-11-22',
-    endDate: '2023-11-23',
-    time: '09:30-17:30',
-    location: '부산 AWS 교육장',
-    instructor: '이서준',
-    type: 'technical',
-    seats: { total: 30, available: 0 },
-    description: 'AWS Lambda를 이용한 서버리스 애플리케이션 개발에 대해 알아봅니다. API Gateway, DynamoDB와 연계한 실제 애플리케이션 구현을 실습합니다.',
-    prerequisites: ['Node.js 기초 지식', 'AWS 계정'],
-    status: 'full'
-  },
-  {
-    id: '4',
-    title: 'AWS 비용 최적화 전략 세미나',
-    date: '2023-11-24',
-    endDate: '2023-11-24',
-    time: '14:00-17:00',
-    location: '온라인 웨비나',
-    instructor: '최준호',
-    type: 'business',
-    seats: { total: 100, available: 68 },
-    description: 'AWS 환경에서의 비용 최적화 전략과 모범 사례를 소개합니다. 실제 사례 연구와 비용 절감을 위한 구체적인 방법을 알아봅니다.',
-    prerequisites: ['기본적인 AWS 비용 구조 이해'],
-    status: 'upcoming'
-  },
-  {
-    id: '5',
-    title: 'AWS Security Specialty 시험 준비 부트캠프',
-    date: '2023-12-01',
-    endDate: '2023-12-03',
-    time: '09:00-18:00',
-    location: '서울 교육 센터',
-    instructor: '정현우',
-    type: 'certification',
-    seats: { total: 15, available: 3 },
-    description: '3일간의 집중 교육으로 AWS Security Specialty 자격증 시험을 준비합니다. AWS 보안 서비스와 모범 사례를 심층적으로 다룹니다.',
-    prerequisites: ['AWS 기본 지식', 'AWS Associate 수준의 이해도'],
-    status: 'almost-full'
-  },
-  {
-    id: '6',
-    title: 'AWS EKS와 Kubernetes 워크샵',
-    date: '2023-12-07',
-    endDate: '2023-12-08',
-    time: '09:30-17:30',
-    location: '대전 교육 센터',
-    instructor: '한지민',
-    type: 'workshop',
-    seats: { total: 25, available: 12 },
-    description: 'Amazon EKS에서의 Kubernetes 구성, 관리 및 배포 전략을 배웁니다. 실습 위주의 워크샵입니다.',
-    prerequisites: ['Docker 기본 지식', 'Kubernetes 기본 개념 이해'],
-    status: 'upcoming'
-  }
-];
+interface BoardItemData {
+  id: string;
+  rowSpan: number;
+  columnSpan: number;
+  data: Course;
+}
 
-// 이벤트 상태에 따른 뱃지 스타일
-const getStatusBadge = (status: string, t: any) => {
-  switch (status) {
-    case 'full':
-      return <Badge color="red">{t('calendar:status.full')}</Badge>;
-    case 'almost-full':
-      return <Badge color="grey">{t('calendar:status.almostFull')}</Badge>;
-    case 'upcoming':
-      return <Badge color="green">{t('calendar:status.upcoming')}</Badge>;
-    default:
-      return <Badge color="blue">{status}</Badge>;
-  }
+// 캘린더 데이터를 위한 Record 타입 정의
+type CoursesCalendarData = Record<string, Course[]>;
+
+// 샘플 교육 과정 데이터
+const sampleCourses: CoursesCalendarData = {
+  "2025-04-15": [
+    {
+      id: "course1",
+      title: "AWS 아키텍처 설계 기초",
+      instructor: "김철수",
+      time: "10:00 - 16:00",
+      location: "강남 교육센터",
+      type: "오프라인",
+      level: "초급",
+      seats: 15,
+      remainingSeats: 5,
+      description: "AWS의 기본 서비스를 활용한 아키텍처 설계 기초를 학습합니다. EC2, S3, RDS 등의 핵심 서비스 실습이 포함됩니다."
+    },
+    {
+      id: "course2",
+      title: "서버리스 애플리케이션 개발",
+      instructor: "이영희",
+      time: "13:00 - 17:00",
+      location: "온라인 화상 강의",
+      type: "온라인",
+      level: "중급",
+      seats: 30,
+      remainingSeats: 12,
+      description: "AWS Lambda와 API Gateway를 활용한 서버리스 애플리케이션 개발 방법론을 배웁니다."
+    }
+  ],
+  "2025-04-20": [
+    {
+      id: "course3",
+      title: "AWS 보안 최적화 워크샵",
+      instructor: "박보안",
+      time: "09:00 - 18:00",
+      location: "역삼 AWS 교육장",
+      type: "오프라인",
+      level: "고급",
+      seats: 20,
+      remainingSeats: 3,
+      description: "AWS 환경에서의 보안 위협에 대응하고 보안 서비스를 활용해 인프라를 보호하는 방법을 학습합니다."
+    }
+  ],
+  "2025-04-25": [
+    {
+      id: "course4",
+      title: "컨테이너 오케스트레이션 마스터",
+      instructor: "정도커",
+      time: "10:00 - 17:00",
+      location: "온라인 화상 강의",
+      type: "온라인",
+      level: "중급",
+      seats: 25,
+      remainingSeats: 8,
+      description: "ECS와 EKS를 활용한 컨테이너 오케스트레이션 방법을 배웁니다. 실제 운영 환경에서 활용 가능한 배포 전략을 다룹니다."
+    }
+  ]
 };
 
-// 이벤트 유형에 따른 뱃지 스타일
-const getTypeBadge = (type: string, t: any) => {
-  switch (type) {
-    case 'certification':
-      return <Badge color="blue">{t('calendar:type.certification')}</Badge>;
-    case 'workshop':
-      return <Badge color="green">{t('calendar:type.workshop')}</Badge>;
-    case 'technical':
-      return <Badge color="grey">{t('calendar:type.technical')}</Badge>;
-    case 'business':
-      return <Badge color="grey">{t('calendar:type.business')}</Badge>;
-    default:
-      return <Badge>{type}</Badge>;
-  }
-};
+// BoardItem을 위한 인터페이스 정의
+interface BoardItemData {
+  id: string;
+  rowSpan: number;
+  columnSpan: number;
+  data: Course;
+}
 
 const CourseCalendar: React.FC = () => {
-  // 다국어 설정 - 명시적으로 calendar 네임스페이스 추가
-  const { t, i18n } = useTranslation(['calendar', 'common']);
-  
+  const { t } = useTranslation(['common', 'tnc']);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<CourseEvent | null>(null);
-  const [calendarView, setCalendarView] = useState('side-by-side');
+  const [boardItems, setBoardItems] = useState<BoardItemData[]>([]);
+  const [filters, setFilters] = useState({
+    type: 'all',
+    level: 'all'
+  });
 
-  // 특정 날짜의 이벤트 목록 가져오기
-  const getEventsForDate = (date: string): CourseEvent[] => {
-    return courseEvents.filter(event => {
-      const startDate = new Date(event.date);
-      const endDate = new Date(event.endDate);
-      const checkDate = new Date(date);
+  // 날짜를 선택했을 때 실행되는 함수
+  // 날짜를 선택했을 때 실행되는 함수
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date);
 
-      return checkDate >= startDate && checkDate <= endDate;
-    });
-  };
-
-  // 날짜 선택 핸들러
-  const handleSelectDate = (value: string) => {
-    setSelectedDate(value);
-    const events = getEventsForDate(value);
-    if (events.length > 0) {
-      setSelectedCourse(null);
-      setShowDetailsModal(true);
+    // 선택한 날짜에 해당하는 교육 과정이 있을 경우 보드 아이템 생성
+    const coursesForDate = sampleCourses[date];
+    if (coursesForDate && coursesForDate.length > 0) {
+      const items: BoardItemData[] = coursesForDate.map(course => ({
+        id: course.id,
+        rowSpan: 2,
+        columnSpan: 4,
+        data: course
+      }));
+      setBoardItems(items);
+    } else {
+      setBoardItems([]);
     }
   };
 
-  // 코스 상세 보기 핸들러
-  const handleCourseSelect = (course: CourseEvent) => {
-    setSelectedCourse(course);
+  // 달력에 마커를 표시하기 위한 함수
+  const isDateWithEvent = (date: string): boolean => {
+    return !!sampleCourses[date];
   };
 
-  // 현재 월의 이벤트 가져오기
-  const getCurrentMonthEvents = (): CourseEvent[] => {
-    const currentMonth = selectedDate 
-      ? new Date(selectedDate).getMonth() 
-      : new Date().getMonth();
-    
-    return courseEvents.filter(event => 
-      new Date(event.date).getMonth() === currentMonth
-    );
-  };
-
-  // 간단한 캘린더 뷰
-  const renderSimpleCalendarView = () => (
-    <Box padding="s">
-      <Calendar
-        value={selectedDate || ''} 
-        onChange={({ detail }) => handleSelectDate(detail.value)}
-        startOfWeek={1}
-        i18nStrings={{
-          todayAriaLabel: t('calendar:aria.today'),
-          nextMonthAriaLabel: t('calendar:aria.nextMonth'),
-          previousMonthAriaLabel: t('calendar:aria.prevMonth')
-        }}
-      />
-      {/* 캘린더 아래에 이벤트 목록을 표시 */}
-      <Box padding={{ top: 'm' }}>
-        <Header variant="h3">{t('calendar:currentMonthEvents')}</Header>
-        <SpaceBetween size="s">
-          {getCurrentMonthEvents()
-            .slice(0, 5)
-            .map(event => (
-              <Box key={event.id} padding="s" variant="awsui-key-label">
-                <Link fontSize="body-m" onFollow={() => handleCourseSelect(event)}>
-                  <strong>{new Date(event.date).toLocaleDateString()}</strong> - {event.title}
-                </Link>
-                <Box fontSize="body-s" color="text-body-secondary">
-                  {event.time} · {event.location}
-                </Box>
-                <Box fontSize="body-s">
-                  {getTypeBadge(event.type, t)}{' '}
-                  {getStatusBadge(event.status, t)}
-                </Box>
-              </Box>
-            ))}
-          {getCurrentMonthEvents().length > 5 && (
-            <Link fontSize="body-s" variant="secondary">
-              {t('calendar:viewMoreEvents', { count: getCurrentMonthEvents().length - 5 })}
-            </Link>
-          )}
-          {getCurrentMonthEvents().length === 0 && (
-            <Box color="text-body-secondary" padding="s" textAlign="center">
-              {t('calendar:noEventsThisMonth')}
-            </Box>
-          )}
-        </SpaceBetween>
-      </Box>
-    </Box>
-  );
-
-  // 사이드 바이 사이드 캘린더 뷰 - 메인 레이아웃으로 설정
-  const renderSideBySideCalendarView = () => (
-    <ColumnLayout columns={2}>
-      {/* 왼쪽: 간소화된 캘린더 */}
-      <Box padding="s">
-        <Calendar
-          value={selectedDate || ''} 
-          onChange={({ detail }) => handleSelectDate(detail.value)}
-          startOfWeek={1}
-          i18nStrings={{
-            todayAriaLabel: t('calendar:aria.today'),
-            nextMonthAriaLabel: t('calendar:aria.nextMonth'),
-            previousMonthAriaLabel: t('calendar:aria.prevMonth')
-          }}
-        />
-      </Box>
-      
-      {/* 오른쪽: 이번 달 일정 목록 */}
-      <Box>
-        <Header variant="h3">{t('calendar:currentMonthEvents')}</Header>
-        <SpaceBetween size="s">
-          {getCurrentMonthEvents().length > 0 ? (
-            getCurrentMonthEvents().map(event => (
-              <Box key={event.id} padding="s" variant="awsui-key-label">
-                <Link fontSize="body-m" onFollow={() => handleCourseSelect(event)}>
-                  <strong>{new Date(event.date).toLocaleDateString()}</strong> - {event.title}
-                </Link>
-                <Box fontSize="body-s" color="text-body-secondary">
-                  {event.time} · {event.location}
-                </Box>
-                <Box fontSize="body-s">
-                  {getTypeBadge(event.type, t)}{' '}
-                  {getStatusBadge(event.status, t)}
-                </Box>
-              </Box>
-            ))
-          ) : (
-            <Box color="text-body-secondary" padding="s" textAlign="center">
-              {t('calendar:noEventsThisMonth')}
-            </Box>
-          )}
-        </SpaceBetween>
-      </Box>
-    </ColumnLayout>
-  );
-
-  const courseTableColumnDefinitions = [
-    {
-      id: 'title',
-      header: t('calendar:table.title'),
-      cell: (item: CourseEvent) => (
-        <Link onFollow={() => handleCourseSelect(item)}>
-          {item.title}
-        </Link>
-      ),
-      sortingField: 'title',
-      width: 300
-    },
-    {
-      id: 'time',
-      header: t('calendar:table.time'),
-      cell: (item: CourseEvent) => item.time,
-      sortingField: 'time',
-      width: 120
-    },
-    {
-      id: 'location',
-      header: t('calendar:table.location'),
-      cell: (item: CourseEvent) => item.location,
-      sortingField: 'location',
-      width: 150
-    },
-    {
-      id: 'type',
-      header: t('calendar:table.type'),
-      cell: (item: CourseEvent) => getTypeBadge(item.type, t),
-      sortingField: 'type',
-      width: 120
-    },
-    {
-      id: 'status',
-      header: t('calendar:table.status'),
-      cell: (item: CourseEvent) => getStatusBadge(item.status, t),
-      sortingField: 'status',
-      width: 100
-    },
-    {
-      id: 'seats',
-      header: t('calendar:table.seats'),
-      cell: (item: CourseEvent) => `\${item.seats.available}/\${item.seats.total}`,
-      sortingField: 'seats',
-      width: 80
+  // Board 컴포넌트 i18n 스트링 설정
+  const getBoardI18nStrings = () => {
+    function createAnnouncement(
+      operationAnnouncement: string,
+      conflicts: any[],
+      disturbed: any[]
+    ) {
+      const conflictsAnnouncement =
+        conflicts.length > 0
+          ? `\${t('tnc:calendar.conflicts_with', 'Conflicts with')} \${conflicts
+              .map(c => c.data.title)
+              .join(", ")}.`
+          : "";
+      const disturbedAnnouncement =
+        disturbed.length > 0
+          ? `\${t('tnc:calendar.disturbed', 'Disturbed')} \${disturbed.length} \${t('tnc:calendar.items', 'items')}.`
+          : "";
+      return [
+        operationAnnouncement,
+        conflictsAnnouncement,
+        disturbedAnnouncement
+      ]
+        .filter(Boolean)
+        .join(" ");
     }
-  ];
+
+    return {
+      liveAnnouncementDndStarted: (operationType: string) =>
+        operationType === "resize"
+          ? t('tnc:calendar.resizing', 'Resizing')
+          : t('tnc:calendar.dragging', 'Dragging'),
+      liveAnnouncementDndItemReordered: (operation: any) => {
+        const columns = `\${t('tnc:calendar.column', 'column')} \${operation.placement.x + 1}`;
+        const rows = `\${t('tnc:calendar.row', 'row')} \${operation.placement.y + 1}`;
+        return createAnnouncement(
+          `\${t('tnc:calendar.item_moved_to', 'Item moved to')} \${
+            operation.direction === "horizontal"
+              ? columns
+              : rows
+          }.`,
+          operation.conflicts,
+          operation.disturbed
+        );
+      },
+      liveAnnouncementDndItemResized: (operation: any) => {
+        const columnsConstraint = operation.isMinimalColumnsReached
+          ? ` (\${t('tnc:calendar.minimal', 'minimal')})`
+          : "";
+        const rowsConstraint = operation.isMinimalRowsReached
+          ? ` (\${t('tnc:calendar.minimal', 'minimal')})`
+          : "";
+        const sizeAnnouncement =
+          operation.direction === "horizontal"
+            ? `\${t('tnc:calendar.columns', 'columns')} \${operation.placement.width}\${columnsConstraint}`
+            : `\${t('tnc:calendar.rows', 'rows')} \${operation.placement.height}\${rowsConstraint}`;
+        return createAnnouncement(
+          `\${t('tnc:calendar.item_resized_to', 'Item resized to')} \${sizeAnnouncement}.`,
+          operation.conflicts,
+          operation.disturbed
+        );
+      },
+      liveAnnouncementDndItemInserted: (operation: any) => {
+        const columns = `\${t('tnc:calendar.column', 'column')} \${operation.placement.x + 1}`;
+        const rows = `\${t('tnc:calendar.row', 'row')} \${operation.placement.y + 1}`;
+        return createAnnouncement(
+          `\${t('tnc:calendar.item_inserted_to', 'Item inserted to')} \${columns}, \${rows}.`,
+          operation.conflicts,
+          operation.disturbed
+        );
+      },
+      liveAnnouncementDndCommitted: (operationType: string) =>
+        `\${operationType} \${t('tnc:calendar.committed', 'committed')}`,
+      liveAnnouncementDndDiscarded: (operationType: string) =>
+        `\${operationType} \${t('tnc:calendar.discarded', 'discarded')}`,
+      liveAnnouncementItemRemoved: (op: any) =>
+        createAnnouncement(
+          `\${t('tnc:calendar.removed_item', 'Removed item')} \${op.item.data.title}.`,
+          [],
+          op.disturbed
+        ),
+      navigationAriaLabel: t('tnc:calendar.board_navigation', 'Board navigation'),
+      navigationAriaDescription: t('tnc:calendar.board_navigation_desc', 'Click on non-empty item to move focus over'),
+      navigationItemAriaLabel: (item: any) =>
+        item ? item.data.title : t('tnc:calendar.empty', 'Empty')
+    };
+  };
+
+  // 과정 등록 버튼 핸들러
+  const handleEnrollment = (courseId: string) => {
+    console.log(`Enrolling in course: \${courseId}`);
+    // 실제 등록 로직 구현 필요
+  };
 
   return (
     <SpaceBetween size="l">
-      {/* 캘린더 컴포넌트 */}
-      <Container
-        header={
-          <Header
-            variant="h3"
-            description={t('calendar:description')}
-            actions={
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button 
-                  onClick={() => setCalendarView('simple')} 
-                  variant={calendarView === 'simple' ? 'primary' : 'normal'}
-                >
-                  {t('calendar:views.simple')}
-                </Button>
-                <Button 
-                  onClick={() => setCalendarView('side-by-side')} 
-                  variant={calendarView === 'side-by-side' ? 'primary' : 'normal'}
-                >
-                  {t('calendar:views.sideBySide')}
-                </Button>
-              </SpaceBetween>
-            }
-          >
-            {t('calendar:title')}
-          </Header>
-        }
-      >
-        {calendarView === 'simple' 
-          ? renderSimpleCalendarView() 
-          : renderSideBySideCalendarView()
-        }
-      </Container>
-
-      {/* 다가오는 이벤트 섹션 */}
-      <Container
-        header={
-          <Header
-            variant="h3"
-            actions={
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button iconName="filter">{t('calendar:actions.filter')}</Button>
-                <Button iconName="add-plus">{t('calendar:actions.addCourse')}</Button>
-                <Button variant="primary">{t('calendar:actions.viewAll')}</Button>
-              </SpaceBetween>
-            }
-          >
-            {t('calendar:upcomingCourses')}
-          </Header>
-        }
-      >
-        <Cards
-          cardDefinition={{
-            header: item => (
-              <Box padding={{ bottom: 'xs' }}>
-                <Link fontSize="heading-s" onFollow={() => handleCourseSelect(item)}>
-                  {item.title}
-                </Link>
-              </Box>
-            ),
-            sections: [
-              {
-                id: 'info',
-                content: item => (
-                  <SpaceBetween size="s">
-                    <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
-                      <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.date')}</Box>
-                        <Box variant="p">{new Date(item.date).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}</Box>
-                      </Box>
-                      <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.time')}</Box>
-                        <Box variant="p">{item.time}</Box>
-                      </Box>
-                    </Grid>
-                    <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
-                      <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.location')}</Box>
-                        <Box variant="p">{item.location}</Box>
-                      </Box>
-                      <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.instructor')}</Box>
-                        <Box variant="p">{item.instructor}</Box>
-                      </Box>
-                    </Grid>
-                    <Box>
-                      <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.typeStatus')}</Box>
-                      <SpaceBetween direction="horizontal" size="xs">
-                        {getTypeBadge(item.type, t)}
-                        {getStatusBadge(item.status, t)}
-                        <Box variant="small">
-                          {t('calendar:courseInfo.availableSeats', {
-                            available: item.seats.available,
-                            total: item.seats.total
-                          })}
-                        </Box>
-                      </SpaceBetween>
-                    </Box>
-                  </SpaceBetween>
-                )
-              },
-              {
-                id: 'actions',
-                content: item => (
-                  <Box float="right">
-                    <SpaceBetween direction="horizontal" size="xs">
-                      <Button
-                        iconName="folder-open"
-                        onClick={() => handleCourseSelect(item)}
-                      >
-                        {t('calendar:actions.details')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        disabled={item.status === 'full'}
-                      >
-                        {item.status === 'full' ? 
-                          t('calendar:actions.closed') : 
-                          t('calendar:actions.register')}
-                      </Button>
-                    </SpaceBetween>
-                  </Box>
-                )
-              }
-            ]
-          }}
-          cardsPerRow={[
-            { cards: 1 },
-            { minWidth: 500, cards: 1 },
-            { minWidth: 992, cards: 2 }
-          ]}
-          items={courseEvents.filter(event => new Date(event.date) >= new Date())}
-          loadingText={t('common:loading')}
-          empty={
-            <Box textAlign="center" color="text-body-secondary">
-              <Box
-                padding={{ bottom: 's' }}
-                variant="h4"
-              >
-                {t('calendar:noCourses')}
-              </Box>
-              <Box variant="p">
-                {t('calendar:coursesWillAppear')}
-              </Box>
-            </Box>
+      <Grid gridDefinition={[{ colspan: 4 }, { colspan: 8 }]}>
+        <Container
+          header={
+            <Header variant="h2">
+              {t('tnc:calendar.title', '교육 일정 캘린더')}
+            </Header>
           }
-        />
-      </Container>
-
-      {/* 날짜 선택 모달 */}
-      <Modal
-        visible={showDetailsModal && !selectedCourse}
-        onDismiss={() => setShowDetailsModal(false)}
-        size="large"
-        header={
-          selectedDate ? 
-            t('calendar:modal.dateTitle', { date: new Date(selectedDate).toLocaleDateString() }) :
-            t('calendar:modal.defaultTitle')
-        }
-      >
-        <SpaceBetween size="l">
-          {selectedDate && (
-            <Table
-              columnDefinitions={courseTableColumnDefinitions}
-              items={getEventsForDate(selectedDate)}
-              loadingText={t('common:loading')}
-              empty={
-                <Box textAlign="center" color="text-body-secondary">
-                  <Box padding="s">{t('calendar:modal.noCoursesOnDate')}</Box>
-                </Box>
-              }
-              header={
-                <Header
-                  counter={`(\${getEventsForDate(selectedDate).length})`}
-                >
-                  {t('calendar:modal.courseList')}
-                </Header>
-              }
+        >
+          <SpaceBetween size="m">
+            <Calendar
+              value={selectedDate || ""}
+              onChange={({ detail }) => handleDateSelect(detail.value)}
+              locale={t('common:locale', 'ko-KR')}
+              startOfWeek={0}
+              isDateEnabled={() => true}
+              i18nStrings={{
+                todayAriaLabel: t('tnc:calendar.today', '오늘'),
+                previousMonthAriaLabel: t('tnc:calendar.previous_month', '이전 달'),
+                nextMonthAriaLabel: t('tnc:calendar.next_month', '다음 달')
+              }}
+              ariaLabelledby="calendar-heading"
             />
-          )}
-          <Box float="right">
-            <Button variant="primary" onClick={() => setShowDetailsModal(false)}>
-              {t('common:close')}
-            </Button>
-          </Box>
-        </SpaceBetween>
-      </Modal>
+            <SpaceBetween size="m">
+              <Calendar
+                value={selectedDate || ""}
+                onChange={({ detail }) => handleDateSelect(detail.value)}
+                locale={t('common:locale', 'ko-KR')}
+                startOfWeek={0}
+                isDateEnabled={() => true}
+                i18nStrings={{
+                  todayAriaLabel: t('tnc:calendar.today', '오늘'),
+                  previousMonthAriaLabel: t('tnc:calendar.previous_month', '이전 달'),
+                  nextMonthAriaLabel: t('tnc:calendar.next_month', '다음 달')
+                }}
+                ariaLabelledby="calendar-heading"
+              />
 
-      {/* 코스 상세 모달 */}
-      <Modal
-        visible={!!selectedCourse}
-        onDismiss={() => setSelectedCourse(null)}
-        size="large"
-        header={selectedCourse?.title || t('calendar:modal.courseDetails')}
-      >
-        {selectedCourse && (
-          <SpaceBetween size="l">
-            <Container>
-              <ColumnLayout columns={2} variant="text-grid">
-                <SpaceBetween size="m">
-                  <div>
-                    <Box variant="h5">{t('calendar:courseInfo.date')}</Box>
-                    <Box>{new Date(selectedCourse.date).toLocaleDateString()} - {new Date(selectedCourse.endDate).toLocaleDateString()}</Box>
-                  </div>
-                  <div>
-                    <Box variant="h5">{t('calendar:courseInfo.time')}</Box>
-                    <Box>{selectedCourse.time}</Box>
-                  </div>
-                  <div>
-                    <Box variant="h5">{t('calendar:courseInfo.location')}</Box>
-                    <Box>{selectedCourse.location}</Box>
-                  </div>
+              {/* 교육 일정 가이드 */}
+              <Box padding={{ top: 's' }}>
+                <SpaceBetween size="xs">
+                  <Box color="text-body-secondary" fontSize="body-s">
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: '#0972d3',
+                        marginRight: '5px'
+                      }} />
+                      {t('tnc:calendar.dates_with_courses', '교육 과정이 있는 날짜')}
+                    </div>
+                  </Box>
+                  <Box color="text-body-secondary" fontSize="body-s">
+                    {selectedDate ?
+                      (sampleCourses[selectedDate] ?
+                        t('tnc:calendar.courses_found', '{{count}}개 과정 찾음', { count: sampleCourses[selectedDate].length }) :
+                        t('tnc:calendar.no_courses_found', '과정 없음')) :
+                      t('tnc:calendar.select_date_to_view', '날짜를 선택하여 과정 확인')
+                    }
+                  </Box>
                 </SpaceBetween>
-
-                <SpaceBetween size="m">
-                  <div>
-                    <Box variant="h5">{t('calendar:courseInfo.instructor')}</Box>
-                    <Box>{selectedCourse.instructor}</Box>
-                  </div>
-                  <div>
-                    <Box variant="h5">{t('calendar:courseInfo.type')}</Box>
-                    <Box>{getTypeBadge(selectedCourse.type, t)}</Box>
-                  </div>
-                  <div>
-                    <Box variant="h5">{t('calendar:courseInfo.seats')}</Box>
-                    <Box>
-                      {t('calendar:courseInfo.availableSeats', {
-                        available: selectedCourse.seats.available,
-                        total: selectedCourse.seats.total
-                      })} {getStatusBadge(selectedCourse.status, t)}
-                    </Box>
-                  </div>
-                </SpaceBetween>
-              </ColumnLayout>
-            </Container>
-
-            <Container header={<Header variant="h3">{t('calendar:courseInfo.description')}</Header>}>
-              <Box>{selectedCourse.description}</Box>
-            </Container>
-
-            <Container header={<Header variant="h3">{t('calendar:courseInfo.prerequisites')}</Header>}>
-              <Box>
-                <ul>
-                  {selectedCourse.prerequisites.map((prereq: string, index: number) => (
-                    <li key={index}>{prereq}</li>
-                  ))}
-                </ul>
               </Box>
-            </Container>
-
-            <Box float="right">
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => setSelectedCourse(null)}>{t('common:close')}</Button>
-                <Button
-                  variant="primary"
-                  disabled={selectedCourse.status === 'full'}
-                >
-                  {selectedCourse.status === 'full' ? 
-                    t('calendar:actions.closed') : 
-                    t('calendar:actions.register')}
-                </Button>
-              </SpaceBetween>
+            </SpaceBetween>
+            <Box padding={{ top: 's' }} color="text-body-secondary">
+              <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px' }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#0972d3',
+                  marginRight: '5px'
+                }} />
+                {t('tnc:calendar.event_indicator', '교육 일정 있음')}
+              </div>
             </Box>
           </SpaceBetween>
-        )}
-      </Modal>
+        </Container>
+
+        <Container
+          header={
+            <Header variant="h2">
+              {selectedDate
+                ? t('tnc:calendar.courses_for_date', '{{date}} 교육 과정', { date: selectedDate })
+                : t('tnc:calendar.select_date', '날짜를 선택하세요')}
+            </Header>
+          }
+        >
+          {selectedDate ? (
+            <SpaceBetween size="l">
+              {boardItems.length > 0 ? (
+                <Board
+                  items={boardItems}
+                  renderItem={(item) => {
+                    const course = item.data;
+                    return (
+                      <BoardItem
+                        i18nStrings={{
+                          dragHandleAriaLabel: t('tnc:calendar.drag_handle', '드래그 핸들'),
+                          dragHandleAriaDescription: t('tnc:calendar.drag_handle_desc', '스페이스바나 엔터 키를 눌러 드래그를 활성화하고, 화살표 키로 이동, 스페이스바나 엔터 키로 확인, 또는 Escape로 취소합니다.'),
+                          resizeHandleAriaLabel: t('tnc:calendar.resize_handle', '크기 조절 핸들'),
+                          resizeHandleAriaDescription: t('tnc:calendar.resize_handle_desc', '스페이스바나 엔터 키를 눌러 크기 조절을 활성화하고, 화살표 키로 이동, 스페이스바나 엔터 키로 확인, 또는 Escape로 취소합니다.')
+                        }}
+                        header={
+                          <Header
+                            actions={
+                              <Button
+                                variant="primary"
+                                onClick={() => handleEnrollment(course.id)}
+                              >
+                                {t('tnc:calendar.enroll', '등록하기')}
+                              </Button>
+                            }
+                          >
+                            {course.title}
+                          </Header>
+                        }
+                        footer={
+                          <Box>
+                            <SpaceBetween direction="horizontal" size="xs">
+                              <Badge color={course.type === '온라인' ? 'blue' : 'green'}>
+                                {course.type}
+                              </Badge>
+                              <Badge color={
+                                course.level === '초급' ? 'green' :
+                                  course.level === '중급' ? 'blue' :
+                                    'red'
+                              }>
+                                {course.level}
+                              </Badge>
+                              <Badge color={course.remainingSeats <= 5 ? 'red' : 'green'}>
+                                {t('tnc:calendar.seats_remaining', '남은 좌석: {{count}}', { count: course.remainingSeats })}
+                              </Badge>
+                            </SpaceBetween>
+                          </Box>
+                        }
+                      >
+                        <SpaceBetween size="m">
+                          <Box fontSize="body-m">
+                            {course.description}
+                          </Box>
+                          <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
+                            <div>
+                              <Box variant="awsui-key-label">{t('tnc:calendar.instructor', '강사')}</Box>
+                              <div>{course.instructor}</div>
+                            </div>
+                            <div>
+                              <Box variant="awsui-key-label">{t('tnc:calendar.time', '시간')}</Box>
+                              <div>{course.time}</div>
+                            </div>
+                          </Grid>
+                          <div>
+                            <Box variant="awsui-key-label">{t('tnc:calendar.location', '장소')}</Box>
+                            <div>{course.location}</div>
+                          </div>
+                        </SpaceBetween>
+                      </BoardItem>
+                    );
+                  }}
+                  i18nStrings={getBoardI18nStrings()}
+                  onItemsChange={() => { }}
+                  empty={
+                    <Box textAlign="center" color="text-body-secondary" padding="l">
+                      <h3>{t('tnc:calendar.no_courses_filtered', '필터 조건에 맞는 교육 과정이 없습니다')}</h3>
+                      <p>{t('tnc:calendar.try_different_filters', '다른 필터 조건을 시도해보세요')}</p>
+                    </Box>
+                  }
+                />
+              ) : (
+                <Box textAlign="center" color="text-body-secondary" padding="l">
+                  <h3>{t('tnc:calendar.no_courses', '해당 날짜에 예정된 교육 과정이 없습니다')}</h3>
+                  <p>{t('tnc:calendar.select_another_date', '다른 날짜를 선택해 보세요')}</p>
+                </Box>
+              )}
+            </SpaceBetween>
+          ) : (
+            <Box textAlign="center" color="text-body-secondary" padding="l">
+              <h3>{t('tnc:calendar.please_select_date', '왼쪽 캘린더에서 날짜를 선택하세요')}</h3>
+              <p>{t('tnc:calendar.courses_will_appear', '선택한 날짜의 교육 과정이 여기에 표시됩니다')}</p>
+            </Box>
+          )}
+        </Container>
+      </Grid>
     </SpaceBetween>
   );
 };

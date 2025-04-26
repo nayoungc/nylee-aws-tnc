@@ -16,7 +16,7 @@ const TopNavigationHeader: React.FC = () => {
   const navigate = useNavigate();
   const [userRoles, setUserRoles] = useState<string[]>([]);
 
-  // 사용자 역할 가져오기 (변경 없음)
+  // 사용자 역할 가져오기
   useEffect(() => {
     if (isAuthenticated && user) {
       if (typeof getUserRoles === 'function') {
@@ -38,7 +38,7 @@ const TopNavigationHeader: React.FC = () => {
     }
   }, [isAuthenticated, user, getUserRoles]);
 
-  // 언어 변경 핸들러 (변경 없음)
+  // 언어 변경 핸들러
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang).then(() => {
       if (changeLanguage) {
@@ -48,7 +48,16 @@ const TopNavigationHeader: React.FC = () => {
     });
   };
 
-  // 테마 메뉴 아이템 (변경 없음)
+  // SPA 네비게이션 핸들러
+  const handleNavigation = (href: string) => {
+    if (href && !href.startsWith('http')) {
+      navigate(href);
+    } else if (href) {
+      window.location.href = href;
+    }
+  };
+
+  // 테마 메뉴 아이템
   const themeItems = [
     {
       id: 'light',
@@ -62,7 +71,7 @@ const TopNavigationHeader: React.FC = () => {
     }
   ];
 
-  // 언어 메뉴 아이템 (변경 없음)
+  // 언어 메뉴 아이템
   const languageItems = [
     {
       id: 'en',
@@ -76,7 +85,7 @@ const TopNavigationHeader: React.FC = () => {
     }
   ];
 
-  // 유틸리티 내비게이션 아이템 (변경 없음)
+  // 기본 유틸리티 내비게이션 아이템
   const utilities: TopNavigationProps.Utility[] = [
     // 테마 전환 메뉴
     {
@@ -103,121 +112,118 @@ const TopNavigationHeader: React.FC = () => {
     }
   ];
 
-  // 인증 상태에 따라 추가 메뉴 (템플릿 리터럴 수정)
+  // 인증 상태에 따른 메뉴 추가
   if (isAuthenticated && user) {
-    // 사용자 이름 표시 로직 개선
-    let displayName = t('header.user.account', 'Account');
-    let userRole = 'user';
-
+    // 사용자 정보 표시
+    let displayName = user.attributes?.name || user.username || user.email || t('header.user.account', 'Account');
+    
     // 사용자 역할 확인
     const isAdmin = userRoles.includes('admin');
     const isInstructor = userRoles.includes('instructor');
-    const isStudent = userRoles.includes('student') || (!isAdmin && !isInstructor);
-
-    // if (isAdmin) {
-    //   userRole = '관리자';
-    // } else if (isInstructor) {
-    //   userRole = '강사';
-    // } else {
-    //   userRole = '수강생';
-    // }
-
-    // if (user.attributes?.name) {
-    //   displayName = user.attributes.name;
-    // } else if (user.username) {
-    //   displayName = user.username;
-    // } else if (user.email) {
-    //   displayName = user.email;
-    // }
-
-    // // 역할 기반 메뉴 아이템 구성
-    // const userMenuItems = [
-    //   { id: 'profile', text: t('header.user.profile', '프로필') },
-    //   { id: 'settings', text: t('header.user.settings', '설정') },
-    // ];
-
-    // // 관리자 메뉴
-    // if (isAdmin) {
-    //   userMenuItems.push(
-    //     { id: 'admin-dashboard', text: t('header.admin.dashboard', '관리자 대시보드') },
-    //     { id: 'user-management', text: t('header.admin.userManagement', '사용자 관리') }
-    //   );
-    // }
-
-    // // 강사 메뉴
-    // if (isInstructor || isAdmin) {
-    //   userMenuItems.push(
-    //     { id: 'course-catalog', text: t('header.instructor.catalog', '과정 카탈로그') },
-    //     { id: 'course-management', text: t('header.instructor.courseManagement', '과정 관리') }
-    //   );
-    // }
-
-    // // 구분선 및 로그아웃 추가
-    // userMenuItems.push(
-    //   { id: 'divider', text: '-' },
-    //   { id: 'signout', text: t('header.user.signOut', '로그아웃') }
-    // );
-
-    // 로그인한 경우 사용자 메뉴 추가 (템플릿 리터럴 수정)
-  //   utilities.push({
-  //     type: 'menu-dropdown',
-  //     text: `\${displayName} (\${userRole})`,  // 템플릿 리터럴 수정
-  //     description: userRole,
-  //     iconName: 'user-profile',
-  //     items: userMenuItems,
-  //     onItemClick: ({ detail }: { detail: { id: string } }) => {
-  //       switch (detail.id) {
-  //         case 'signout':
-  //           logout();
-  //           break;
-  //         case 'profile':
-  //           navigate('/profile');
-  //           break;
-  //         case 'settings':
-  //           navigate('/settings');
-  //           break;
-  //         case 'admin-dashboard':
-  //           navigate('/admin/dashboard');
-  //           break;
-  //         case 'user-management':
-  //           navigate('/admin/users');
-  //           break;
-  //         case 'course-catalog':
-  //           navigate('/instructor/catalog');
-  //           break;
-  //         case 'course-management':
-  //           navigate('/instructor/courses');
-  //           break;
-  //       }
-  //     }
-  //   });
-  // } else {
-  //   // 로그인하지 않은 경우 로그인 버튼 추가
-  //   utilities.push({
-  //     type: 'button',
-  //     text: t('header.user.login', '로그인'),
-  //     href: '/login'
-  //   });
-   }
+    
+    // 역할에 따른 표시 텍스트
+    let roleText = '';
+    if (isAdmin) {
+      roleText = t('header.role.admin', 'Admin');
+    } else if (isInstructor) {
+      roleText = t('header.role.instructor', 'Instructor');
+    } else {
+      roleText = t('header.role.student', 'Student');
+    }
+    
+    // 사용자 메뉴 아이템
+    const userItems = [
+      { id: 'profile', text: t('header.user.profile', 'Profile') },
+      { id: 'settings', text: t('header.user.settings', 'Settings') }
+    ];
+    
+    // 관리자 메뉴
+    if (isAdmin) {
+      userItems.push(
+        { id: 'admin-dashboard', text: t('header.admin.dashboard', 'Admin Dashboard') },
+        { id: 'user-management', text: t('header.admin.userManagement', 'User Management') }
+      );
+    }
+    
+    // 강사 메뉴
+    if (isInstructor || isAdmin) {
+      userItems.push(
+        { id: 'course-catalog', text: t('header.instructor.catalog', 'Course Catalog') },
+        { id: 'course-management', text: t('header.instructor.courseManagement', 'Course Management') }
+      );
+    }
+    
+    // 구분선 및 로그아웃
+    userItems.push(
+      { id: 'divider', text: '-' },
+      { id: 'signout', text: t('header.user.signOut', 'Sign Out') }
+    );
+    
+    // 사용자 메뉴 추가
+    utilities.push({
+      type: 'menu-dropdown',
+      iconName: 'user-profile',
+      title: t('header.user.account', 'Account'),
+      text: displayName,
+      description: roleText,
+      items: userItems,
+      onItemClick: ({ detail }: { detail: { id: string } }) => {
+        switch (detail.id) {
+          case 'signout':
+            logout();
+            break;
+          case 'profile':
+            handleNavigation('/profile');
+            break;
+          case 'settings':
+            handleNavigation('/settings');
+            break;
+          case 'admin-dashboard':
+            handleNavigation('/admin/dashboard');
+            break;
+          case 'user-management':
+            handleNavigation('/admin/users');
+            break;
+          case 'course-catalog':
+            handleNavigation('/instructor/catalog');
+            break;
+          case 'course-management':
+            handleNavigation('/instructor/courses');
+            break;
+        }
+      }
+    });
+  } else {
+    // 로그인하지 않은 경우 로그인 버튼 추가
+    utilities.push({
+      type: 'button',
+      text: t('header.user.login', 'Login'),
+      onClick: () => handleNavigation('/login')
+    });
+  }
 
   return (
     <TopNavigation
       identity={{
-        href: '/',
-        title: t('header.title', 'AWS T&C 교육 포털'),
+        href: '#',
+        title: t('header.title', 'AWS T&C Education Portal'),
         logo: {
           src: '/assets/aws.png',
-          alt: t('header.logo.alt', 'AWS 로고')
+          alt: t('header.logo.alt', 'AWS Logo')
+        },
+        onFollow: () => {
+          handleNavigation('/');
+          return false;
         }
       }}
       utilities={utilities}
       i18nStrings={{
-        searchIconAriaLabel: t('header.search.ariaLabel', '검색'),
-        searchDismissIconAriaLabel: t('header.search.dismissAriaLabel', '검색 닫기'),
-        overflowMenuTriggerText: t('header.overflow.triggerText', '더 보기'),
-        overflowMenuTitleText: t('header.overflow.titleText', '메뉴'),
-        overflowMenuBackIconAriaLabel: t('header.overflow.backAriaLabel', '뒤로'),
-        overflowMenuDismissIconAriaLabel: t('header.overflow.dismissAriaLabel', '닫기')
+        searchIconAriaLabel: t('header.search.ariaLabel', 'Search'),
+        searchDismissIconAriaLabel: t('header.search.dismissAriaLabel', 'Close search'),
+        overflowMenuTriggerText: t('header.overflow.triggerText', 'More'),
+        overflowMenuTitleText: t('header.overflow.titleText', 'Menu'),
+        overflowMenuBackIconAriaLabel: t('header.overflow.backAriaLabel', 'Back'),
+        overflowMenuDismissIconAriaLabel: t('header.overflow.dismissAriaLabel', 'Close')
       }}
     />
   );

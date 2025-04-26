@@ -4,7 +4,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from '@/contexts/AppContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import LoginPage from '@/pages/auth/LoginPage';
 import HomePage from '@/pages/public/HomePage';
 import TncPage from '@/pages/public/TncPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -23,8 +22,8 @@ const App: React.FC = () => {
             <Routes>
               {/* 기존 라우트 */}
               <Route path="/" element={<Navigate to="/tnc" replace />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/home" element={<HomePage />} />
+              {/* <Route path="/login" element={<LoginPage />} /> */}
+              {/* <Route path="/home" element={<HomePage />} /> */}
               <Route path="/tnc" element={<TncPage />} />
 
               {/* 과정 카탈로그 - 강사와 관리자만 접근 가능 */}

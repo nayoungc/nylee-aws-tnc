@@ -2,6 +2,7 @@
 import React from 'react';
 import { AppLayout, SideNavigation, Box, Spinner } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 import TopNavigationHeader from './TopNavigationHeader';
 import { useAuth } from '@hooks/useAuth';
 
@@ -13,11 +14,30 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({
   children,
-  activeHref = '/',
+  activeHref,
   title
 }) => {
-  const { t, i18n } = useTranslation(['common', 'navigation']);
+  const { t } = useTranslation(['common', 'navigation']);
   const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // activeHref가 명시적으로 제공되지 않으면 현재 위치 사용
+  const currentHref = activeHref || location.pathname;
+
+  // 네비게이션 핸들러 - 클릭 이벤트를 가로채서 React Router로 처리
+  const handleFollow = (event: CustomEvent) => {
+    // 이벤트의 기본 동작 방지
+    event.preventDefault?.();
+    
+    const href = event.detail.href;
+    if (href && !href.startsWith('http')) {
+      // 외부 링크가 아닌 경우에만 React Router로 처리
+      navigate(href);
+      return false; // 기본 동작 실행 방지
+    }
+    return true; // 외부 링크는 기본 동작 허용
+  };
 
   // 기존 네비게이션 아이템 정의 (변경 없음)
   const publicItems = [
@@ -103,7 +123,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         navigation={
           <SideNavigation
             items={navItems}
-            activeHref={activeHref}
+            activeHref={currentHref}
             header={{
               text: t('navigation:header'),
               href: '/',
@@ -112,6 +132,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                 alt: t('common:app.logo_alt')
               }
             }}
+            onFollow={handleFollow} // 클릭 이벤트 핸들러 추가
           />
         }
         content={
@@ -124,7 +145,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             </Box>
           ) : children
         }
-        // topNavigation prop 제거하고 headerSelector만 사용
         headerSelector="#header"
         toolsHide
         breadcrumbs={title ? (
@@ -132,7 +152,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             <h1>{title}</h1>
           </Box>
         ) : undefined}
-        // 명시적으로 사이드바 및 콘텐츠 설정 추가
         navigationWidth={280}
         contentType="default"
       />
