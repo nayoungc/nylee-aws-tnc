@@ -6,7 +6,7 @@ import App from './App';
 import { AppProvider } from '@contexts/AppContext';
 import { Amplify } from 'aws-amplify';
 import { AuthProvider } from '@hooks/useAuth';
-import '@i18n';
+import './i18n';
 
 // amplify_outputs.json 파일 임포트
 import amplifyConfig from '../amplify_outputs.json';
