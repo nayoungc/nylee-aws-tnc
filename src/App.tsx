@@ -9,6 +9,8 @@ import HomePage from '@/pages/public/HomePage';
 import TncPage from '@/pages/public/TncPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import InstructorCatalogPage from '@/pages/catalog/CourseCatalogPage';
+import CourseManagementPage from '@/pages/admin/CourseManagementPage'; // 새 페이지 임포트
+import SystemManagementPage from '@/pages/admin/SystemManagementPage'; // 새 페이지 임포트
 import { AuthProvider } from '@/hooks/useAuth';
 import '@/i18n';
 
@@ -19,7 +21,7 @@ const App: React.FC = () => {
         <AuthProvider>
           <NotificationProvider>
             <Routes>
-              {/* 루트 경로를 TncPage로 리디렉션 */}
+              {/* 기존 라우트 */}
               <Route path="/" element={<Navigate to="/tnc" replace />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/home" element={<HomePage />} />
@@ -32,7 +34,18 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               } />
 
-              {/* 추가 라우트 */}
+              {/* 새로운 관리자 라우트 */}
+              <Route path="/admin/course-management" element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <CourseManagementPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/admin/system-management" element={
+                <ProtectedRoute requiredRoles={['admin']}>
+                  <SystemManagementPage />
+                </ProtectedRoute>
+              } />
             </Routes>
           </NotificationProvider>
         </AuthProvider>

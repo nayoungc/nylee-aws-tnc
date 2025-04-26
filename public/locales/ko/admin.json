@@ -1,5 +1,19 @@
 {
   "title": "관리자 대시보드",
+  "admin": {
+    "title": "관리자",
+    "dashboard": "대시보드",
+    "courseManagement": "교육 관리",
+    "systemManagement": "시스템 관리",
+    "settings": "설정",
+    "tabs": {
+      "courseCatalog": "과정 카탈로그",
+      "clients": "고객사 관리",
+      "instructors": "강사 관리",
+      "calendar": "캘린더 관리",
+      "announcements": "공지사항 관리"
+    }
+  },
   "catalog": {
     "title": "교육 과정 카탈로그 관리",
     "description": "AWS 교육 과정 카탈로그를 관리할 수 있습니다.",

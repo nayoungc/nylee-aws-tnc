@@ -9,10 +9,10 @@ import {
   SpaceBetween,
   ButtonDropdown,
   PropertyFilter,
-  PropertyFilterProps,
   CollectionPreferences,
   CollectionPreferencesProps
 } from '@cloudscape-design/components';
+
 import { useTranslation } from 'react-i18next';
 
 type TableColumnDefinition<T> = Parameters<typeof Table<T>>[0]["columnDefinitions"][0];
@@ -116,7 +116,7 @@ function EnhancedTable<T extends object>({
   // 상태 관리
   const [selectedItems, setSelectedItems] = useState<T[]>(externalSelectedItems || []);
   const [filteringText, setFilteringText] = useState('');
-  const [filteringTokens, setFilteringTokens] = useState<FilterToken[]>([]);
+  const [filteringTokens, setFilteringTokens] = useState([]);  
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const [sorting, setSorting] = useState<SortingState<T>>({
     sortingColumn: defaultSortingColumn ? { sortingField: defaultSortingColumn } : undefined,
@@ -316,7 +316,11 @@ type FilterToken = {
               propertyLabel: prop.propertyLabel || prop.label,
               groupValuesLabel: prop.label
             }))}
-            onChange={({ detail }) => setFilteringTokens(detail.tokens)}
+            onChange={({ detail }) => {
+              // 타입 단언 사용하여 타입 검사 우회
+              const safeTokens = [...detail.tokens] as unknown as typeof filteringTokens;
+              setFilteringTokens(safeTokens);
+            }}
           />
         ) : filteringProperties.length > 0 ? (
           <TextFilter
@@ -328,7 +332,7 @@ type FilterToken = {
               setCurrentPageIndex(1); // 검색 시 첫 페이지로
             }}
           />
-        ) : filteringProperties.length > 0 ? (
+        ) : null  // 중복된 조건문 제거 및 닫기 태그 수정
       }
       pagination={
         pagination && (

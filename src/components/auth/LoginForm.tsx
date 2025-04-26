@@ -1,4 +1,4 @@
-// LoginForm.tsx
+// src/components/auth/LoginForm.tsx
 import React, { useState } from 'react';
 import {
   Button,
