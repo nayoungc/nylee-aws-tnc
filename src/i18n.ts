@@ -10,14 +10,24 @@ const resources = {
     common: {
       loading: 'Loading...',
       error: 'Error',
-      appName: 'AWS Training Portal'
+      appName: 'AWS Training Portal',
+      home: 'Home',
+      instructor: 'Instructor'
+    },
+    catalog: {
+      title: 'Course Catalog'
     }
   },
   ko: {
     common: {
       loading: '로딩 중...',
       error: '오류',
-      appName: 'AWS 교육 포털'
+      appName: 'AWS 교육 포털',
+      home: '홈',
+      instructor: '강사'
+    },
+    catalog: {
+      title: '강의 카탈로그'
     }
   }
 };
@@ -25,22 +35,24 @@ const resources = {
 i18n
   .use(Backend)
   .use(LanguageDetector)
-  .use(initReactI18next) // i18next를 react-i18next와 연결
+  .use(initReactI18next)
   .init({
     fallbackLng: 'ko',
-    debug: false, // 개발 환경에서만 true로 설정
+    debug: process.env.NODE_ENV === 'development', // 개발 환경에서 디버그 활성화
     
     resources, // 기본 번역 리소스 추가
     
     backend: {
+      // 실제 파일 위치가 맞는지 확인
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
     
     defaultNS: 'common',
-    ns: ['common'],
+    // 사용하는 모든 네임스페이스 추가
+    ns: ['common', 'catalog', 'menu', 'navigation', 'auth', 'admin'],
     
     interpolation: {
-      escapeValue: false, // React에서는 이미 XSS 방어가 되어있음
+      escapeValue: false,
     },
     
     react: {

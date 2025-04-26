@@ -2,7 +2,7 @@
 import { CourseCatalog } from '@/models/catalog'; // 경로 별칭으로 수정
 
 // 모의 카탈로그 데이터
-export const mockCatalogs: CourseCatalog[] = [
+export const mockCourseCatalogs: CourseCatalog[] = [
   // 기존 데이터 유지
   {
     id: '1',

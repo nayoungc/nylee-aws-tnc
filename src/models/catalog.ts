@@ -1,5 +1,5 @@
-// src/models/catalog.ts
-export type CatalogStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
+// src/models/courseCatalog.ts
+export type CourseCatalogStatus = 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
 
 export interface CourseCatalog {
   id: string;               
@@ -16,7 +16,7 @@ export interface CourseCatalog {
   createdAt?: string;       
   updatedAt?: string;       
   createdBy?: string;       
-  status?: CatalogStatus;   
+  status?: CourseCatalogStatus;   
 }
 
 // 카탈로그 생성 및 수정에 사용되는 입력 타입
@@ -31,11 +31,11 @@ export interface CourseCatalogInput {
   tags?: string[];
   prerequisites?: string[];
   objectives?: string[];
-  status?: CatalogStatus;
+  status?: CourseCatalogStatus;
 }
 
 // 과정 카탈로그 필터링을 위한 인터페이스
-export interface CatalogFilter {
+export interface CourseCatalogFilter {
   text?: string;
   level?: string;
   category?: string;

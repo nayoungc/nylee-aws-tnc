@@ -1,8 +1,8 @@
 // src/graphql/catalog/types.ts
 import { BaseRecord } from '../common/types';
-import { CatalogStatus, CourseCatalog } from '../../models/catalog';
+import { CourseCatalogStatus, CourseCatalog } from '@models/catalog';
 
-export interface ListCatalogsResult {
+export interface ListCourseCatalogsResult {
   listCourseCatalogs: {
     items: CourseCatalog[];
     nextToken?: string;
@@ -13,23 +13,23 @@ export interface GetCourseCatalogResult {
   getCourseCatalog: CourseCatalog | null;
 }
 
-export interface SearchCatalogResult {
+export interface SearchCourseCatalogResult {
   searchCatalog: CourseCatalog[];
 }
 
-export interface GetCatalogByCategoryResult {
+export interface GetCourseCatalogByCategoryResult{
   getCatalogByCategory: CourseCatalog[];
 }
 
-export interface GetCatalogByLevelResult {
+export interface GetCourseCatalogByLevelResult {
   getCatalogByLevel: CourseCatalog[];
 }
 
-export interface GetCatalogsByTagResult {
+export interface GetCourseCatalogsByTagResult {
   getCatalogsByTag: CourseCatalog[];
 }
 
-export interface GetRecentlyUpdatedCatalogsResult {
+export interface GetRecentlyUpdatedCourseCatalogsResult {
   getRecentlyUpdatedCatalogs: CourseCatalog[];
 }
 
@@ -47,16 +47,16 @@ export interface DeleteCourseCatalogResult {
   };
 }
 
-export interface UpdateCatalogStatusResult {
+export interface UpdateCourseCatalogStatusResult {
   updateCatalogStatus: {
     id: string;
     title: string;
-    status: CatalogStatus;
+    status: CourseCatalogStatus;
     updatedAt: string;
   };
 }
 
-export interface AddTagToCatalogResult {
+export interface AddTagToCourseCatalogResult {
   addTagToCatalog: {
     id: string;
     title: string;
@@ -65,7 +65,7 @@ export interface AddTagToCatalogResult {
   };
 }
 
-export interface RemoveTagFromCatalogResult {
+export interface RemoveTagFromCourseCatalogResult {
   removeTagFromCatalog: {
     id: string;
     title: string;
@@ -74,7 +74,7 @@ export interface RemoveTagFromCatalogResult {
   };
 }
 
-export interface BulkUpdateCatalogsResult {
+export interface BulkUpdateCourseCatalogsResult {
   bulkUpdateCatalogs: {
     successCount: number;
     failedItems: Array<{
@@ -84,7 +84,7 @@ export interface BulkUpdateCatalogsResult {
   };
 }
 
-export interface CatalogFilterInput {
+export interface CourseCatalogFilterInput {
   text?: string;
   level?: string;
   category?: string;

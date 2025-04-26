@@ -1,73 +1,69 @@
-// src/services/api/catalogApi.ts
-// src/services/api/catalogApi.ts
+// src/services/api/courseCatalogApi.ts
 import { generateClient } from 'aws-amplify/api';
 import { v4 as uuidv4 } from 'uuid';
 import { safelyExtractData } from '@/utils/graphql'; 
 import i18n from '@/i18n'; 
 
-// 카탈로그 관련 쿼리와 뮤테이션
+// 코스 카탈로그 관련 쿼리와 뮤테이션
 import { 
-  listCatalogs, // 'listCourseCatalogs' 대신 백엔드 스키마에 맞는 이름 사용
+  listCourseCatalogs,
   getCourseCatalog,
-  searchCatalog,
-  getCatalogByCategory 
-} from '@/graphql/catalog/queries';
-
-import { 
-  createCourseCatalog, 
-  updateCourseCatalog,
-  deleteCourseCatalog 
-} from '@/graphql/catalog/mutations'; // '/mutations' 경로 추가 - 파일 구조에 맞게 수정
+  searchCourseCatalog,
+  getCourseCatalogByCategory,
+  createCourseCatalog as createCourseCatalogMutation, 
+  updateCourseCatalog as updateCourseCatalogMutation,
+  deleteCourseCatalog as deleteCourseCatalogMutation
+} from '@graphql/catalog';
 
 import {
-  ListCatalogsResult, 
+  ListCourseCatalogsResult, 
   GetCourseCatalogResult,
-  SearchCatalogResult,
-  GetCatalogByCategoryResult,
+  SearchCourseCatalogResult,
+  GetCourseCatalogByCategoryResult,
   CreateCourseCatalogResult,
   UpdateCourseCatalogResult,
   DeleteCourseCatalogResult,
-  CatalogFilterInput
-} from '@/graphql/catalog/types'; // '/types' 경로 추가 - 실제 파일 구조에 따라 수정
+  CourseCatalogFilterInput
+} from '@/graphql/catalog';
 
 // 필터 타입 수정
-import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/catalog'; 
-import { mockCatalogs } from '@/mocks/catalogData'; 
+import { CourseCatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/catalog'; 
+import { mockCourseCatalogs } from '../../mocks/catalogData'; 
 
 const client = generateClient();
 
-// 개발 모드 여부 - 오류 수정 중 DEV_MODE가 없어서 추가
+// 개발 모드 여부
 const DEV_MODE = true; // 개발 시에는 true로, 프로덕션에서는 false로 설정
 
 /**
  * 모든 코스 카탈로그 가져오기
  */
-export const fetchAllCatalogs = async (): Promise<CourseCatalog[]> => {
-  console.log("카탈로그 데이터 가져오기 시도");
+export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
+  console.log("코스 카탈로그 데이터 가져오기 시도");
     
   try {
     const response = await client.graphql({
-      query: listCatalogs
+      query: listCourseCatalogs
     });
     
     // 안전하게 데이터 추출
-    const data = safelyExtractData<ListCatalogsResult>(response);
+    const data = safelyExtractData<ListCourseCatalogsResult>(response);
     return data?.listCourseCatalogs?.items || [];
   } catch (error: unknown) {
-    console.error('카탈로그 목록 조회 오류:', error);
-    throw new Error(i18n.t('errors.failedToListCatalogs', { error: String(error), ns: 'catalog' }));
+    console.error('코스 카탈로그 목록 조회 오류:', error);
+    throw new Error(i18n.t('errors.failedToListCourseCatalogs', { error: String(error), ns: 'courseCatalog' }));
   }
 };
 
 /**
- * ID로 특정 카탈로그 가져오기
+ * ID로 특정 코스 카탈로그 가져오기
  */
-export const fetchCatalogById = async (id: string): Promise<CourseCatalog | null> => {
+export const fetchCourseCatalogById = async (id: string): Promise<CourseCatalog | null> => {
   // 개발 모드인 경우 모의 데이터 사용
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] ID \${id}로 모의 카탈로그 조회`);
-    const catalog = mockCatalogs.find(c => c.id === id);
-    return Promise.resolve(catalog || null);
+    console.log(`[DEV_MODE] ID \${id}로 모의 코스 카탈로그 조회`);
+    const courseCatalog = mockCourseCatalogs.find(c => c.id === id);
+    return Promise.resolve(courseCatalog || null);
   }
 
   try {
@@ -80,34 +76,34 @@ export const fetchCatalogById = async (id: string): Promise<CourseCatalog | null
     const data = safelyExtractData<GetCourseCatalogResult>(response);
     return data?.getCourseCatalog || null;
   } catch (error: unknown) {
-    console.error(`카탈로그 조회 오류 (ID: \${id}):`, error);
-    throw new Error(i18n.t('errors.failedToGetCatalog', { error: String(error), ns: 'catalog' }));
+    console.error(`코스 카탈로그 조회 오류 (ID: \${id}):`, error);
+    throw new Error(i18n.t('errors.failedToGetCourseCatalog', { error: String(error), ns: 'courseCatalog' }));
   }
 };
 
 /**
- * 필터를 사용하여 카탈로그 검색
+ * 필터를 사용하여 코스 카탈로그 검색
  */
-export const searchCatalogs = async (filter: CatalogFilter = {}): Promise<CourseCatalog[]> => {
+export const searchCourseCatalogs = async (filter: CourseCatalogFilter = {}): Promise<CourseCatalog[]> => {
   // 개발 모드인 경우 모의 데이터 필터링
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 필터로 모의 카탈로그 검색: \${JSON.stringify(filter)}`);
-    let filteredCatalogs = [...mockCatalogs];
+    console.log(`[DEV_MODE] 필터로 모의 코스 카탈로그 검색: \${JSON.stringify(filter)}`);
+    let filteredCourseCatalogs = [...mockCourseCatalogs];
     
     // 레벨 필터링
     if (filter.level) {
-      filteredCatalogs = filteredCatalogs.filter(c => c.level === filter.level);
+      filteredCourseCatalogs = filteredCourseCatalogs.filter(c => c.level === filter.level);
     }
     
     // 카테고리 필터링
     if (filter.category) {
-      filteredCatalogs = filteredCatalogs.filter(c => c.category === filter.category);
+      filteredCourseCatalogs = filteredCourseCatalogs.filter(c => c.category === filter.category);
     }
     
     // 텍스트 검색
     if (filter.text) {
       const searchText = filter.text.toLowerCase();
-      filteredCatalogs = filteredCatalogs.filter(c => 
+      filteredCourseCatalogs = filteredCourseCatalogs.filter(c => 
         c.title.toLowerCase().includes(searchText) ||
         (c.description && c.description.toLowerCase().includes(searchText)) ||
         (c.awsCode && c.awsCode.toLowerCase().includes(searchText)) ||
@@ -117,157 +113,157 @@ export const searchCatalogs = async (filter: CatalogFilter = {}): Promise<Course
     
     // 태그 필터링
     if (filter.tags && filter.tags.length > 0) {
-      filteredCatalogs = filteredCatalogs.filter(c => 
+      filteredCourseCatalogs = filteredCourseCatalogs.filter(c => 
         c.tags && c.tags.some(tag => 
           filter.tags!.includes(tag)
         )
       );
     }
     
-    return Promise.resolve(filteredCatalogs);
+    return Promise.resolve(filteredCourseCatalogs);
   }
 
   try {
-    const variables = { filter: filter as CatalogFilterInput };
+    const variables = { filter: filter as CourseCatalogFilterInput };
     const response = await client.graphql({
-      query: searchCatalog,
+      query: searchCourseCatalog,
       variables
     });
     
     // 안전하게 데이터 추출
-    const data = safelyExtractData<SearchCatalogResult>(response);
-    return data?.searchCatalog || [];
+    const data = safelyExtractData<SearchCourseCatalogResult>(response);
+return data?.searchCatalog || []; // searchCourseCatalog -> searchCatalog
   } catch (error: unknown) {
-    console.error('카탈로그 검색 오류:', error);
-    throw new Error(i18n.t('errors.failedToSearchCatalogs', { error: String(error), ns: 'catalog' }));
+    console.error('코스 카탈로그 검색 오류:', error);
+    throw new Error(i18n.t('errors.failedToSearchCourseCatalogs', { error: String(error), ns: 'courseCatalog' }));
   }
 };
 
 /**
- * 카테고리별 카탈로그 조회
+ * 카테고리별 코스 카탈로그 조회
  */
-export const fetchCatalogsByCategory = async (category: string): Promise<CourseCatalog[]> => {
+export const fetchCourseCatalogsByCategory = async (category: string): Promise<CourseCatalog[]> => {
   // 개발 모드인 경우 모의 데이터 필터링
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 카테고리 "\${category}"로 모의 카탈로그 조회`);
-    const filteredCatalogs = mockCatalogs.filter(c => c.category === category);
-    return Promise.resolve(filteredCatalogs);
+    console.log(`[DEV_MODE] 카테고리 "\${category}"로 모의 코스 카탈로그 조회`);
+    const filteredCourseCatalogs = mockCourseCatalogs.filter(c => c.category === category);
+    return Promise.resolve(filteredCourseCatalogs);
   }
 
   try {
     const response = await client.graphql({
-      query: getCatalogByCategory,
+      query: getCourseCatalogByCategory,
       variables: { category }
     });
     
     // 안전하게 데이터 추출
-    const data = safelyExtractData<GetCatalogByCategoryResult>(response);
-    return data?.getCatalogByCategory || [];
+    const data = safelyExtractData<GetCourseCatalogByCategoryResult>(response);
+return data?.getCatalogByCategory || []; // getCourseCatalogByCategory -> getCatalogByCategory
   } catch (error: unknown) {
-    console.error(`카테고리별 카탈로그 조회 오류 (\${category}):`, error);
-    throw new Error(i18n.t('errors.failedToGetCatalogsByCategory', { category, error: String(error), ns: 'catalog' }));
+    console.error(`카테고리별 코스 카탈로그 조회 오류 (\${category}):`, error);
+    throw new Error(i18n.t('errors.failedToGetCourseCatalogsByCategory', { category, error: String(error), ns: 'courseCatalog' }));
   }
 };
 
 /**
- * 새 카탈로그 생성
+ * 새 코스 카탈로그 생성
  */
-export const createCatalog = async (input: CourseCatalogInput): Promise<CourseCatalog> => {
+export const createCourseCatalog = async (input: CourseCatalogInput): Promise<CourseCatalog> => {
   // 개발 모드인 경우 모의 데이터에 추가
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 새 카탈로그 생성: \${input.title}`);
-    const newCatalog: CourseCatalog = {
+    console.log(`[DEV_MODE] 새 코스 카탈로그 생성: \${input.title}`);
+    const newCourseCatalog: CourseCatalog = {
       id: uuidv4(),
       ...input,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
     
-    mockCatalogs.push(newCatalog);
-    return Promise.resolve({...newCatalog});
+    mockCourseCatalogs.push(newCourseCatalog);
+    return Promise.resolve({...newCourseCatalog});
   }
 
   try {
     const response = await client.graphql({
-      query: createCourseCatalog,
+      query: createCourseCatalogMutation,
       variables: { input }
     });
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<CreateCourseCatalogResult>(response);
     if (!data?.createCourseCatalog) {
-      throw new Error(i18n.t('errors.invalidCreateCatalogResponse', { ns: 'catalog' }));
+      throw new Error(i18n.t('errors.invalidCreateCourseCatalogResponse', { ns: 'courseCatalog' }));
     }
     
     return data.createCourseCatalog;
   } catch (error: unknown) {
-    console.error('카탈로그 생성 오류:', error);
-    throw new Error(i18n.t('errors.failedToCreateCatalog', { error: String(error), ns: 'catalog' }));
+    console.error('코스 카탈로그 생성 오류:', error);
+    throw new Error(i18n.t('errors.failedToCreateCourseCatalog', { error: String(error), ns: 'courseCatalog' }));
   }
 };
 
 /**
- * 카탈로그 수정
+ * 코스 카탈로그 수정
  */
-export const updateCatalog = async (id: string, input: Partial<CourseCatalogInput>): Promise<CourseCatalog> => {
+export const updateCourseCatalog = async (id: string, input: Partial<CourseCatalogInput>): Promise<CourseCatalog> => {
   // 개발 모드인 경우 모의 데이터 수정
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 카탈로그 수정 ID: \${id}`);
-    const index = mockCatalogs.findIndex(c => c.id === id);
+    console.log(`[DEV_MODE] 코스 카탈로그 수정 ID: \${id}`);
+    const index = mockCourseCatalogs.findIndex(c => c.id === id);
     
     if (index === -1) {
-      throw new Error(i18n.t('errors.catalogNotFound', { id, ns: 'catalog' }));
+      throw new Error(i18n.t('errors.courseCatalogNotFound', { id, ns: 'courseCatalog' }));
     }
     
-    const updatedCatalog = {
-      ...mockCatalogs[index],
+    const updatedCourseCatalog = {
+      ...mockCourseCatalogs[index],
       ...input,
       updatedAt: new Date().toISOString()
     };
     
-    mockCatalogs[index] = updatedCatalog;
-    return Promise.resolve({...updatedCatalog});
+    mockCourseCatalogs[index] = updatedCourseCatalog;
+    return Promise.resolve({...updatedCourseCatalog});
   }
 
   try {
     const response = await client.graphql({
-      query: updateCourseCatalog,
+      query: updateCourseCatalogMutation,
       variables: { input: { id, ...input } }
     });
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<UpdateCourseCatalogResult>(response);
     if (!data?.updateCourseCatalog) {
-      throw new Error(i18n.t('errors.invalidUpdateCatalogResponse', { id, ns: 'catalog' }));
+      throw new Error(i18n.t('errors.invalidUpdateCourseCatalogResponse', { id, ns: 'courseCatalog' }));
     }
     
     return data.updateCourseCatalog;
   } catch (error: unknown) {
-    console.error(`카탈로그 수정 오류 (ID: \${id}):`, error);
-    throw new Error(i18n.t('errors.failedToUpdateCatalog', { error: String(error), ns: 'catalog' }));
+    console.error(`코스 카탈로그 수정 오류 (ID: \${id}):`, error);
+    throw new Error(i18n.t('errors.failedToUpdateCourseCatalog', { error: String(error), ns: 'courseCatalog' }));
   }
 };
 
 /**
- * 카탈로그 삭제
+ * 코스 카탈로그 삭제
  */
-export const deleteCatalog = async (id: string): Promise<{ success: boolean }> => {
+export const deleteCourseCatalog = async (id: string): Promise<{ success: boolean }> => {
   // 개발 모드인 경우 모의 데이터에서 삭제
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 카탈로그 삭제 ID: \${id}`);
-    const index = mockCatalogs.findIndex(c => c.id === id);
+    console.log(`[DEV_MODE] 코스 카탈로그 삭제 ID: \${id}`);
+    const index = mockCourseCatalogs.findIndex(c => c.id === id);
     
     if (index === -1) {
-      throw new Error(i18n.t('errors.catalogNotFound', { id, ns: 'catalog' }));
+      throw new Error(i18n.t('errors.courseCatalogNotFound', { id, ns: 'courseCatalog' }));
     }
     
-    mockCatalogs.splice(index, 1);
+    mockCourseCatalogs.splice(index, 1);
     return Promise.resolve({ success: true });
   }
 
   try {
     const response = await client.graphql({
-      query: deleteCourseCatalog,
+      query: deleteCourseCatalogMutation,
       variables: { input: { id } }
     });
     
@@ -275,7 +271,7 @@ export const deleteCatalog = async (id: string): Promise<{ success: boolean }> =
     const data = safelyExtractData<DeleteCourseCatalogResult>(response);
     return { success: !!data?.deleteCourseCatalog?.id };
   } catch (error: unknown) {
-    console.error(`카탈로그 삭제 오류 (ID: \${id}):`, error);
-    throw new Error(i18n.t('errors.failedToDeleteCatalog', { error: String(error), ns: 'catalog' }));
+    console.error(`코스 카탈로그 삭제 오류 (ID: \${id}):`, error);
+    throw new Error(i18n.t('errors.failedToDeleteCourseCatalog', { error: String(error), ns: 'courseCatalog' }));
   }
 };

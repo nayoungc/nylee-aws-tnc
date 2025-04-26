@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import HomePage from '@/pages/public/HomePage';
 import TncPage from '@/pages/public/TncPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import InstructorCatalogPage from '@pages/instructors/CourseCatalogPage';
+import InstructorCatalogPage from '@pages/catalog/CourseCatalogPage';
 import CourseManagementPage from '@pages/admin/CourseManagementPage';
 import SystemManagementPage from '@/pages/admin/SystemManagementPage';
 import { AuthProvider } from '@/hooks/useAuth';
