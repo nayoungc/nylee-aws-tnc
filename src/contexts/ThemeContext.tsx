@@ -21,22 +21,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const savedTheme = localStorage.getItem('theme');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       
-      // 명시적으로 Mode 타입으로 처리하여 타입 오류 해결
-      if (savedTheme === 'light') return 'light';
-      if (savedTheme === 'dark') return 'dark';
+      // 타입 단언 사용하여 오류 해결
+      if (savedTheme === 'light') return 'light' as Mode;
+      if (savedTheme === 'dark') return 'dark' as Mode;
       
       // 시스템 설정 기반 기본값
-      return prefersDark ? 'dark' : 'light';
+      return prefersDark ? ('dark' as Mode) : ('light' as Mode);
     }
     // 기본값
-    return 'light';
+    return 'light' as Mode;
   });
 
   const isDarkMode = theme === 'dark';
 
   // 테마 토글 함수
   const toggleTheme = () => {
-    const newTheme: Mode = theme === 'light' ? 'dark' : 'light';
+    const newTheme: Mode = theme === 'light' ? ('dark' as Mode) : ('light' as Mode);
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
   };

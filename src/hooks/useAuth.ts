@@ -18,6 +18,7 @@ interface AuthContextType {
   checkAuth: () => Promise<any>;
   isAdmin: boolean;
   isInstructor: boolean;
+  getUserRoles: () => string[]; // 추가된 함수 타입
 }
 
 // 기본값으로 사용할 빈 컨텍스트 객체 생성
@@ -29,7 +30,8 @@ const defaultContext: AuthContextType = {
   logout: async () => ({ success: false, error: 'Not implemented' }),
   checkAuth: async () => null,
   isAdmin: false,
-  isInstructor: false
+  isInstructor: false,
+  getUserRoles: () => [] // 기본값 추가
 };
 
 // Auth 컨텍스트 생성
@@ -61,6 +63,26 @@ export const AuthProvider = (props: AuthProviderProps) => {
       isInstructor: profile === 'instructor'
     };
   }, []);
+  
+  // 추가: 사용자 역할을 배열로 반환하는 함수
+  const getUserRoles = useCallback((): string[] => {
+    if (!user || !user.attributes) return [];
+    
+    const roles: string[] = [];
+    const profile = user.attributes.profile || '';
+    
+    // profile 기반 역할 추가
+    if (profile === 'admin') {
+      roles.push('admin');
+    } else if (profile === 'instructor') {
+      roles.push('instructor');
+    } else {
+      roles.push('student'); // 기본 역할
+    }
+    
+    console.log('User roles from getUserRoles:', roles);
+    return roles;
+  }, [user]);
   
   const checkAuth = useCallback(async () => {
     try {
@@ -130,7 +152,8 @@ export const AuthProvider = (props: AuthProviderProps) => {
     logout,
     checkAuth,
     isAdmin,
-    isInstructor
+    isInstructor,
+    getUserRoles // 추가된 함수
   };
   
   return React.createElement(

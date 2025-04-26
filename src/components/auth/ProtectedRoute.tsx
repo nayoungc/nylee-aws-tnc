@@ -1,7 +1,7 @@
 // src/components/auth/ProtectedRoute.tsx
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth'; // 경로를 실제 환경에 맞게 수정
+import { useAuth } from '@hooks/useAuth'; // 경로를 실제 환경에 맞게 수정
 
 // props 타입에 requiredRoles 추가
 interface ProtectedRouteProps {

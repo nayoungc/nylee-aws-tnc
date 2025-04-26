@@ -4,7 +4,6 @@ import { AppLayout, SideNavigation, Box, Spinner } from '@cloudscape-design/comp
 import { useTranslation } from 'react-i18next';
 import TopNavigationHeader from './TopNavigationHeader';
 import { useAuth } from '@hooks/useAuth';
-import './MainLayout.css';
 
 interface MainLayoutProps {
   children: React.ReactNode;

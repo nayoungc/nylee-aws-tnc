@@ -7,7 +7,7 @@ import {
   ColumnLayout,
   StatusIndicator
 } from '@cloudscape-design/components';
-import { CourseCatalog } from '../../models/catalog';
+import { CourseCatalog } from '@models/catalog';
 
 interface CatalogDetailsModalProps {
   catalog: CourseCatalog | null;
