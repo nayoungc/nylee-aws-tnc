@@ -13,8 +13,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   requiredRoles = [] // 기본값 빈 배열
 }) => {
-  const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
+  const { isAuthenticated, loading, isAdmin, isInstructor,  } = useAuth();
   const location = useLocation();
+
+  console.log('Protected route check:', {
+    path: location.pathname,
+    isAuthenticated,
+    isInstructor,
+    requiredRoles,
+    loading
+  });
 
   if (loading) {
     return <div>로딩 중...</div>;

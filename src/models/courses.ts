@@ -5,9 +5,8 @@ export interface Course {
   shareCode: string;
   instructor: string;
   customerId: string;
-  endDate?: string;
+  durations?: number;
   location?: string;
-  maxStudents?: number;
-  currentStudents?: number;
+  attendance?: number;
   status?: string;
 }
