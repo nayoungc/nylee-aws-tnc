@@ -15,7 +15,7 @@ import CatalogTable from '@/components/catalog/CatalogTable';
 import { CourseCatalog } from '@/models/catalog';
 import { listCatalogs } from '@/services/catalogService';
 
-const CatalogPage: React.FC = () => {
+const CourseCatalogtPage: React.FC = () => {
   const { t } = useTranslation(['catalog', 'common']);
   const navigate = useNavigate();
   const [catalogs, setCatalogs] = useState<CourseCatalog[]>([]);
@@ -94,4 +94,4 @@ const CatalogPage: React.FC = () => {
   );
 };
 
-export default CatalogPage;
+export default CourseCatalogtPage;

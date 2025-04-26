@@ -8,8 +8,8 @@ import LoginPage from '@/pages/auth/LoginPage';
 import HomePage from '@/pages/public/HomePage';
 import TncPage from '@/pages/public/TncPage';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import InstructorCatalogPage from '@/pages/catalog/CourseCatalogPage';
-import CourseManagementPage from '@/pages/admin/CourseManagementPage'; // 새 페이지 임포트
+import InstructorCatalogPage from '@pages/instructors/CourseCatalogPage';
+import CourseManagementPage from '@pages/admin/CourseManagementPage'; // 새 페이지 임포트
 import SystemManagementPage from '@/pages/admin/SystemManagementPage'; // 새 페이지 임포트
 import { AuthProvider } from '@/hooks/useAuth';
 import '@/i18n';
