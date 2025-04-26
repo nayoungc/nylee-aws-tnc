@@ -32,7 +32,7 @@ import { mockCustomers } from '@/mocks/customerData';
 const client = generateClient();
 
 // 개발 모드 여부
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 /**
  * 모든 고객 가져오기

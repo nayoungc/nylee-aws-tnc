@@ -31,7 +31,7 @@ import { Instructor, InstructorInput, InstructorFilter } from '@/models/instruct
 const client = generateClient();
 
 // 개발 모드 여부
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 // 개발용 모의 강사 데이터
 const mockInstructors: Instructor[] = [
