@@ -1,23 +1,56 @@
 {
-    "header": "탐색",
-    "site": {
-      "title": "AWS T&C 교육 정보 시스템"
-    },
-    "home": "홈",
-    "account": "계정",
-    "user": {
-      "profile": "프로필",
-      "signOut": "로그아웃",
-      "login": "로그인",
-      "role": "일반 사용자"
-    },
-    "courses": {
-      "public": "공개 과정",
-      "title": "교육 과정",
-      "catalog": "과정 카탈로그",
-      "myLearning": "내 학습"
-    },
-    "quizzes": "퀴즈",
-    "surveys": "설문조사"
-  }
+  "tnc": "교육 및 자격증",
+  "dashboard": "대시보드",
+  "resources": "학습 자료",
+  "calendar": "교육 일정",
   
+  "instructor": {
+    "title": "강사 포털",
+    "courseManagement": "과정 관리",
+    "catalog": "강의 목록",
+    "quizzes": "퀴즈 관리",
+    "surveys": "설문조사 관리",
+    "reports": "보고서",
+    "statistics": "통계 분석"
+  },
+  
+  "admin": {
+    "title": "관리자 포털",
+    "dashboard": "관리자 대시보드",
+    "users": "사용자 관리",
+    "settings": "시스템 설정"
+  },
+  
+  "sideNav": {
+    "home": "홈",
+    "courses": "교육 과정",
+    "myLearning": "내 학습",
+    "certificates": "자격증",
+    "community": "커뮤니티",
+    "support": "지원",
+    "faqs": "자주 묻는 질문",
+    "contactUs": "문의하기",
+    "upcoming": "예정된 수업",
+    "yourProgress": "학습 진행 상황",
+    "announcements": "공지사항",
+    "recentCourses": "최근 수강 과정"
+  },
+  
+  "breadcrumbs": {
+    "home": "홈",
+    "courses": "과정",
+    "details": "상세 정보",
+    "instructor": "강사 포털",
+    "admin": "관리자"
+  },
+  
+  "tabs": {
+    "overview": "개요",
+    "calendar": "일정",
+    "resources": "자료",
+    "discussions": "토론",
+    "assignments": "과제",
+    "quizzes": "퀴즈",
+    "grades": "성적"
+  }
+}

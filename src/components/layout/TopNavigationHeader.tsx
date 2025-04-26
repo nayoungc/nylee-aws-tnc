@@ -1,4 +1,3 @@
-// src/components/layout/TopNavigationHeader.tsx 수정
 import React, { useEffect, useState } from 'react';
 import {
   TopNavigation,
@@ -10,39 +9,45 @@ import { useAuth } from '@hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const TopNavigationHeader: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // i18n 인스턴스 직접 추출
   const { theme, toggleTheme, language, changeLanguage } = useApp();
-  const { isAuthenticated, logout, user, getUserRoles } = useAuth(); // getUserRoles 추가
+  const { isAuthenticated, logout, user, getUserRoles } = useAuth();
   const navigate = useNavigate();
   const [userRoles, setUserRoles] = useState<string[]>([]);
 
   // 사용자 역할 가져오기
   useEffect(() => {
     if (isAuthenticated && user) {
-      // getUserRoles가 존재한다면 사용, 없으면 대체 로직 사용
       if (typeof getUserRoles === 'function') {
         const roles = getUserRoles();
         setUserRoles(roles);
-        console.log('User roles:', roles); // 디버깅용
       } else {
-        // 대체 로직: Cognito 그룹이나 커스텀 속성에서 역할 추출
         const roles: string[] = [];
 
-        // 사용자 풀의 그룹에서 역할 추출
         if (user.signInUserSession?.accessToken?.payload['cognito:groups']) {
           roles.push(...user.signInUserSession.accessToken.payload['cognito:groups']);
         }
 
-        // 커스텀 속성에서 역할 추출
         if (user.attributes?.['custom:role']) {
           roles.push(user.attributes['custom:role']);
         }
 
         setUserRoles(roles);
-        console.log('Extracted roles:', roles); // 디버깅용
       }
     }
   }, [isAuthenticated, user, getUserRoles]);
+
+  // 언어 변경 핸들러 (직접 i18n 인스턴스 사용)
+  const handleLanguageChange = (lang: string) => {
+    i18n.changeLanguage(lang).then(() => {
+      // 앱 컨텍스트에도 언어 상태 업데이트
+      if (changeLanguage) {
+        changeLanguage(lang);
+      }
+      // 디버깅용 로그
+      console.log(`Language changed to: \${lang}`);
+    });
+  };
 
   // 테마 메뉴 아이템
   const themeItems = [
@@ -94,7 +99,7 @@ const TopNavigationHeader: React.FC = () => {
       title: t('header.language.label', 'Language'),
       items: languageItems,
       onItemClick: ({ detail }: { detail: { id: string } }) => {
-        changeLanguage(detail.id);
+        handleLanguageChange(detail.id); // 수정된 언어 변경 함수 사용
       }
     }
   ];
@@ -126,8 +131,6 @@ const TopNavigationHeader: React.FC = () => {
       displayName = user.email;
     }
 
-    console.log('User info:', { displayName, userRole, roles: userRoles }); // 디버깅용
-
     // 역할 기반 메뉴 아이템 구성
     const userMenuItems = [
       { id: 'profile', text: t('header.user.profile', '프로필') },
@@ -156,10 +159,10 @@ const TopNavigationHeader: React.FC = () => {
       { id: 'signout', text: t('header.user.signOut', '로그아웃') }
     );
 
-    // 로그인한 경우 사용자 메뉴 추가
+    // 로그인한 경우 사용자 메뉴 추가 (템플릿 리터럴 구문 수정)
     utilities.push({
       type: 'menu-dropdown',
-      text: `\${displayName} (\${userRole})`,
+      text: `\${displayName} (\${userRole})`,  // 이스케이프 문자 제거
       description: userRole,
       iconName: 'user-profile',
       items: userMenuItems,
