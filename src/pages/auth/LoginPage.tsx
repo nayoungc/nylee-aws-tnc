@@ -1,173 +1,202 @@
+// LoginPage.tsx
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Box,
-  ContentLayout,
-  Grid,
-  Link
+  SpaceBetween,
+  Button,
+  FormField,
+  Input,
+  Alert,
+  Form
 } from '@cloudscape-design/components';
-import LoginForm from '@/components/auth/LoginForm';
-import TopNavigationHeader from '@/components/layout/TopNavigationHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import AuthLayout from '@components/layout/AuthLayout'; // 이 컴포넌트는 별도로 만들어야 함
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation(['auth', 'common']);
   const navigate = useNavigate();
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, login } = useAuth();
 
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+
+  // 로그인된 경우 리다이렉트
   useEffect(() => {
     if (isAuthenticated && !loading) {
-      navigate('/');
+      navigate('/tnc');
     }
   }, [isAuthenticated, loading, navigate]);
 
-  const handleLoginSuccess = () => {
-    navigate('/');
+  const handleSignIn = async () => {
+    if (!username || !password) {
+      setError(t('auth:fields_required'));
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await login(username, password);
+      setSuccessMessage(t('auth:login_success_redirecting'));
+      
+      setTimeout(() => {
+        navigate('/tnc');
+      }, 800);
+    } catch (err: any) {
+      setError(err.message || t('auth:login_error_generic'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return (
-    <div>
-      {/* 헤더 영역 */}
-      <div style={{ 
-        paddingBottom: 'var(--space-l)',
-        borderBottom: '1px solid var(--color-border-divider)',
-        backgroundColor: '#232f3e',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.15)'
-      }}>
-        <TopNavigationHeader />
-      </div>
-      
-      {/* 메인 콘텐츠 */}
+  // AuthLayout 컴포넌트가 없다면 이 div로 대체하세요
+  const AuthLayoutWrapper: React.FC<{children: React.ReactNode}> = ({ children }) => (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      padding: '20px',
+      backgroundColor: '#f2f3f3'
+    }}>
       <div style={{
-        position: 'relative',
-        minHeight: 'calc(100vh - 70px)',
-        overflow: 'hidden'
+        maxWidth: '400px',
+        width: '100%',
+        backgroundColor: '#ffffff',
+        borderRadius: '8px',
+        boxShadow: '0 1px 4px 0 rgba(0, 0, 0, 0.1)',
+        padding: '30px',
+        marginBottom: '20px'
       }}>
-        {/* 배경 효과 */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(135deg, #f7f9fc 0%, #e3edf7 40%, #d7e9f7 100%)',
-          zIndex: -2
-        }} />
-        
-        {/* 추가 배경 장식 */}
-        <div style={{
-          position: 'absolute',
-          top: '5%',
-          right: '5%',
-          width: '400px',
-          height: '400px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,127,215,0.05) 0%, rgba(0,127,215,0) 70%)',
-          zIndex: -1
-        }} />
-        
-        <div style={{
-          position: 'absolute',
-          bottom: '5%',
-          left: '10%',
-          width: '300px',
-          height: '300px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,153,0,0.05) 0%, rgba(255,153,0,0) 70%)',
-          zIndex: -1
-        }} />
-        
-        {/* 컨텐츠 영역 */}
-        <div style={{
-          padding: 'var(--space-xxxl) var(--space-l)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 'inherit'
-        }}>
-          <ContentLayout disableOverlap>
-            <Grid
-              gridDefinition={[{ 
-                colspan: { default: 12, xs: 10, s: 8, m: 6, l: 4 }, 
-                offset: { default: 0, xs: 1, s: 2, m: 3, l: 4 } 
-              }]}
-            >
-              {/* 메인 카드 */}
-              <div style={{
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.08), 0 1px 5px rgba(0,0,0,0.06)',
-                overflow: 'hidden'
-              }}>
-                {/* 로고 헤더 */}
-                <div style={{
-                  backgroundColor: '#fff',
-                  padding: 'var(--space-l)',
-                  textAlign: 'center',
-                  borderBottom: '1px solid var(--color-border-divider-subtle)'
-                }}>
-                  <img
-                    src="/assets/aws-logo.svg"
-                    alt="AWS Logo"
-                    style={{ 
-                      maxWidth: '160px',
-                      height: 'auto'
-                    }}
-                  />
-                </div>
-                
-                {/* 로그인 폼 */}
-                <div style={{
-                  padding: 'var(--space-l)',
-                }}>
-                  <LoginForm onLoginSuccess={handleLoginSuccess} />
-                </div>
-              </div>
-              
-              {/* 하단 링크 */}
-              <div style={{
-                marginTop: 'var(--space-l)',
-                padding: 'var(--space-m)',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(255,255,255,0.5)',
-                backdropFilter: 'blur(8px)',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.03)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '12px'
-              }}>
-                <a href="/quiz/start" style={{
-                  color: 'var(--color-text-link-default)',
-                  fontSize: '14px',
-                  textDecoration: 'none',
-                  fontWeight: 500
-                }}>
-                  {t('auth:quiz_participation')}
-                </a>
-                <span style={{ color: 'var(--color-text-body-secondary)' }}>|</span>
-                <a href="/survey/start" style={{
-                  color: 'var(--color-text-link-default)',
-                  fontSize: '14px',
-                  textDecoration: 'none',
-                  fontWeight: 500
-                }}>
-                  {t('auth:survey_participation')}
-                </a>
-              </div>
-              
-              {/* 푸터 */}
-              <Box textAlign="center" padding={{ top: 'l' }}>
-                <Box fontSize="body-s" color="text-body-secondary">
-                  {t('common:footer.copyright', { year: new Date().getFullYear() })}
-                </Box>
-              </Box>
-            </Grid>
-          </ContentLayout>
-        </div>
+        {children}
       </div>
     </div>
+  );
+  
+  const LayoutComponent = AuthLayout || AuthLayoutWrapper;
+
+  return (
+    <LayoutComponent>
+      <SpaceBetween direction="vertical" size="l">
+        {/* 로고 및 제목 */}
+        <Box textAlign="center" padding={{ bottom: 'l' }}>
+          <img
+            src="/images/aws.png" 
+            alt="AWS Logo"
+            style={{ 
+              maxWidth: '180px', 
+              marginBottom: '20px' 
+            }}
+          />
+          <Box
+            fontSize="heading-xl"
+            fontWeight="bold"
+            color="text-label"
+            padding={{ top: 'm' }}
+          >
+            {t('auth:account_login')}
+          </Box>
+        </Box>
+
+        {/* 알림 메시지 */}
+        {successMessage && (
+          <Alert type="success" dismissible onDismiss={() => setSuccessMessage(null)}>
+            {successMessage}
+          </Alert>
+        )}
+
+        {error && (
+          <Alert type="error" dismissible onDismiss={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        {/* 로그인 폼 */}
+        <Form
+          actions={
+            <SpaceBetween direction="vertical" size="xs">
+              <Button
+                variant="primary"
+                loading={isLoading}
+                onClick={handleSignIn}
+                fullWidth
+              >
+                {t('auth:sign_in')}
+              </Button>
+              
+              <Box textAlign="right" padding={{ top: 'm' }}>
+                <Link 
+                  to="/forgot-password" 
+                  style={{
+                    textDecoration: 'none',
+                    color: '#0972d3',
+                    fontSize: '14px'
+                  }}
+                >
+                  {t('auth:forgot_password')}
+                </Link>
+              </Box>
+            </SpaceBetween>
+          }
+        >
+          <SpaceBetween size="l">
+            <FormField label={t('auth:username')}>
+              <Input
+                type="text"
+                value={username}
+                onChange={({ detail }) => setUsername(detail.value)}
+                onKeyDown={({ detail }) => {
+                  if (detail.key === 'Enter') {
+                    const passwordInput = document.querySelector('input[type="password"]');
+                    if (passwordInput) (passwordInput as HTMLElement).focus();
+                  }
+                }}
+                autoFocus
+              />
+            </FormField>
+
+            <FormField label={t('auth:password')}>
+              <Input
+                type="password"
+                value={password}
+                onChange={({ detail }) => setPassword(detail.value)}
+                onKeyDown={({ detail }) => {
+                  if (detail.key === 'Enter') handleSignIn();
+                }}
+              />
+            </FormField>
+          </SpaceBetween>
+        </Form>
+
+        {/* 계정 생성 링크 */}
+        <Box textAlign="center">
+          <Box fontSize="body-s" color="text-body-secondary">
+            {t('auth:no_account')}{' '}
+            <Link
+              to="/register"
+              style={{
+                textDecoration: 'none',
+                color: '#0972d3'
+              }}
+            >
+              {t('auth:create_account')}
+            </Link>
+          </Box>
+        </Box>
+
+        {/* 하단 저작권 */}
+        <Box textAlign="center" color="text-body-secondary" fontSize="body-s">
+          &copy; {new Date().getFullYear()} Amazon Web Services, Inc. 또는 계열사
+        </Box>
+      </SpaceBetween>
+    </LayoutComponent>
   );
 };
 

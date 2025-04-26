@@ -121,7 +121,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
               text: t('navigation:header'), 
               href: '/',
               logo: {
-                src: '/assets/aws-logo.svg',
+                src: '/assets/aws.png',
                 alt: t('common:app.logo_alt')
               }
             }}

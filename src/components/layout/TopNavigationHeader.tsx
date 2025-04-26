@@ -1,8 +1,8 @@
 // src/components/layout/TopNavigationHeader.tsx 수정
 import React, { useEffect, useState } from 'react';
-import { 
-  TopNavigation, 
-  TopNavigationProps 
+import {
+  TopNavigation,
+  TopNavigationProps
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '@contexts/AppContext';
@@ -15,7 +15,7 @@ const TopNavigationHeader: React.FC = () => {
   const { isAuthenticated, logout, user, getUserRoles } = useAuth(); // getUserRoles 추가
   const navigate = useNavigate();
   const [userRoles, setUserRoles] = useState<string[]>([]);
-  
+
   // 사용자 역할 가져오기
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -27,17 +27,17 @@ const TopNavigationHeader: React.FC = () => {
       } else {
         // 대체 로직: Cognito 그룹이나 커스텀 속성에서 역할 추출
         const roles: string[] = [];
-        
+
         // 사용자 풀의 그룹에서 역할 추출
         if (user.signInUserSession?.accessToken?.payload['cognito:groups']) {
           roles.push(...user.signInUserSession.accessToken.payload['cognito:groups']);
         }
-        
+
         // 커스텀 속성에서 역할 추출
         if (user.attributes?.['custom:role']) {
           roles.push(user.attributes['custom:role']);
         }
-        
+
         setUserRoles(roles);
         console.log('Extracted roles:', roles); // 디버깅용
       }
@@ -46,29 +46,29 @@ const TopNavigationHeader: React.FC = () => {
 
   // 테마 메뉴 아이템
   const themeItems = [
-    { 
-      id: 'light', 
+    {
+      id: 'light',
       text: t('header.theme.light', 'Light'),
-      description: theme === 'light' ? '✓' : undefined 
+      description: theme === 'light' ? '✓' : undefined
     },
-    { 
-      id: 'dark', 
+    {
+      id: 'dark',
       text: t('header.theme.dark', 'Dark'),
-      description: theme === 'dark' ? '✓' : undefined 
+      description: theme === 'dark' ? '✓' : undefined
     }
   ];
 
   // 언어 메뉴 아이템
   const languageItems = [
-    { 
-      id: 'en', 
-      text: 'English', 
-      description: language === 'en' ? '✓' : undefined 
+    {
+      id: 'en',
+      text: 'English',
+      description: language === 'en' ? '✓' : undefined
     },
-    { 
-      id: 'ko', 
-      text: '한국어', 
-      description: language === 'ko' ? '✓' : undefined 
+    {
+      id: 'ko',
+      text: '한국어',
+      description: language === 'ko' ? '✓' : undefined
     }
   ];
 
@@ -104,12 +104,12 @@ const TopNavigationHeader: React.FC = () => {
     // 사용자 이름 표시 로직 개선
     let displayName = t('header.user.account', 'Account');
     let userRole = 'user';
-    
+
     // 사용자 역할 확인
     const isAdmin = userRoles.includes('admin');
     const isInstructor = userRoles.includes('instructor');
     const isStudent = userRoles.includes('student') || (!isAdmin && !isInstructor);
-    
+
     if (isAdmin) {
       userRole = '관리자';
     } else if (isInstructor) {
@@ -117,7 +117,7 @@ const TopNavigationHeader: React.FC = () => {
     } else {
       userRole = '수강생';
     }
-    
+
     if (user.attributes?.name) {
       displayName = user.attributes.name;
     } else if (user.username) {
@@ -125,15 +125,15 @@ const TopNavigationHeader: React.FC = () => {
     } else if (user.email) {
       displayName = user.email;
     }
-    
+
     console.log('User info:', { displayName, userRole, roles: userRoles }); // 디버깅용
-    
+
     // 역할 기반 메뉴 아이템 구성
     const userMenuItems = [
       { id: 'profile', text: t('header.user.profile', '프로필') },
       { id: 'settings', text: t('header.user.settings', '설정') },
     ];
-    
+
     // 관리자 메뉴
     if (isAdmin) {
       userMenuItems.push(
@@ -141,7 +141,7 @@ const TopNavigationHeader: React.FC = () => {
         { id: 'user-management', text: t('header.admin.userManagement', '사용자 관리') }
       );
     }
-    
+
     // 강사 메뉴
     if (isInstructor || isAdmin) {
       userMenuItems.push(
@@ -149,13 +149,13 @@ const TopNavigationHeader: React.FC = () => {
         { id: 'course-management', text: t('header.instructor.courseManagement', '과정 관리') }
       );
     }
-    
+
     // 구분선 및 로그아웃 추가
     userMenuItems.push(
       { id: 'divider', text: '-' },
       { id: 'signout', text: t('header.user.signOut', '로그아웃') }
     );
-    
+
     // 로그인한 경우 사용자 메뉴 추가
     utilities.push({
       type: 'menu-dropdown',
@@ -204,7 +204,7 @@ const TopNavigationHeader: React.FC = () => {
         href: '/',
         title: t('header.title', 'AWS T&C 교육 포털'),
         logo: {
-          src: '/assets/aws.png', 
+          src: '/assets/aws.png',
           alt: t('header.logo.alt', 'AWS 로고')
         }
       }}
