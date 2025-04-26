@@ -1,74 +1,65 @@
 {
-    "title": "Course Calendar",
-    "description": "Dates with events are highlighted in blue. Click on a date to view detailed schedules.",
-    "upcomingCourses": "Upcoming Courses",
-    "noCourses": "No scheduled courses",
-    "coursesWillAppear": "New courses will appear here when available.",
-    
-    "eventCount": "{{count}}",
-    
-    "popover": {
-      "singleEvent": "1 Course",
-      "multipleEvents": "{{count}} Courses",
-      "showMore": "Show {{count}} more"
-    },
-    
-    "aria": {
-      "today": "Today",
-      "nextMonth": "Next month",
-      "prevMonth": "Previous month"
-    },
-    
-    "actions": {
-      "filter": "Filter",
-      "addCourse": "Add Course",
-      "viewAll": "View All",
-      "details": "Details",
-      "register": "Register",
-      "closed": "Closed"
-    },
-    
-    "courseInfo": {
-      "date": "Date",
-      "time": "Time",
-      "location": "Location",
-      "instructor": "Instructor",
-      "type": "Type",
-      "status": "Status",
-      "typeStatus": "Type/Status",
-      "seats": "Available seats",
-      "availableSeats": "Available: {{available}}/{{total}}",
-      "description": "Course Description",
-      "prerequisites": "Prerequisites"
-    },
-    
-    "status": {
-      "full": "Full",
-      "almostFull": "Almost Full",
-      "upcoming": "Available"
-    },
-    
-    "type": {
-      "certification": "Certification",
-      "workshop": "Workshop",
-      "technical": "Technical",
-      "business": "Business"
-    },
-    
-    "table": {
-      "title": "Course Title",
-      "time": "Time",
-      "location": "Location",
-      "type": "Type",
-      "status": "Status",
-      "seats": "Seats"
-    },
-    
-    "modal": {
-      "dateTitle": "Courses for {{date}}",
-      "defaultTitle": "Course Details",
-      "courseList": "Course List",
-      "noCoursesOnDate": "No courses scheduled for the selected date.",
-      "courseDetails": "Course Details"
-    }
+  "title": "Course Calendar",
+  "description": "View upcoming courses and training events",
+  "currentMonthEvents": "Events This Month",
+  "views": {
+    "simple": "Simple View",
+    "sideBySide": "Extended View"
+  },
+  "aria": {
+    "today": "Today",
+    "nextMonth": "Next Month",
+    "prevMonth": "Previous Month"
+  },
+  "noEventsThisMonth": "No events scheduled for this month",
+  "viewMoreEvents": "View more ({{count}})",
+  "upcomingCourses": "Upcoming Courses",
+  "actions": {
+    "filter": "Filter",
+    "addCourse": "Add Course",
+    "viewAll": "View All",
+    "details": "Details",
+    "register": "Register",
+    "closed": "Registration Closed"
+  },
+  "noCourses": "No courses available",
+  "coursesWillAppear": "Courses will appear here when scheduled",
+  "modal": {
+    "dateTitle": "Events on {{date}}",
+    "defaultTitle": "Course Schedule",
+    "courseList": "Course List",
+    "noCoursesOnDate": "No courses scheduled for this date",
+    "courseDetails": "Course Details"
+  },
+  "table": {
+    "title": "Title",
+    "time": "Time",
+    "location": "Location",
+    "type": "Type",
+    "status": "Status",
+    "seats": "Seats"
+  },
+  "courseInfo": {
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "instructor": "Instructor",
+    "type": "Type",
+    "typeStatus": "Type & Status",
+    "seats": "Seats",
+    "availableSeats": "{{available}}/{{total}} seats available",
+    "description": "Description",
+    "prerequisites": "Prerequisites"
+  },
+  "status": {
+    "full": "Full",
+    "almostFull": "Almost Full",
+    "upcoming": "Registration Open"
+  },
+  "type": {
+    "certification": "Certification",
+    "workshop": "Workshop",
+    "technical": "Technical Training",
+    "business": "Business"
   }
+}

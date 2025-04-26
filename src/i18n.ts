@@ -27,7 +27,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next) // i18next를 react-i18next와 연결
   .init({
-    fallbackLng: 'en',
+    fallbackLng: 'ko',
     debug: false, // 개발 환경에서만 true로 설정
     
     resources, // 기본 번역 리소스 추가

@@ -8,11 +8,11 @@ import {
   FormField,
   Input,
   Alert,
-  Form
+  Form,
 } from '@cloudscape-design/components';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
-import AuthLayout from '@components/layout/AuthLayout'; // 이 컴포넌트는 별도로 만들어야 함
+import AuthLayout from '@components/layout/AuthLayout';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation(['auth', 'common']);
@@ -55,35 +55,8 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // AuthLayout 컴포넌트가 없다면 이 div로 대체하세요
-  const AuthLayoutWrapper: React.FC<{children: React.ReactNode}> = ({ children }) => (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      padding: '20px',
-      backgroundColor: '#f2f3f3'
-    }}>
-      <div style={{
-        maxWidth: '400px',
-        width: '100%',
-        backgroundColor: '#ffffff',
-        borderRadius: '8px',
-        boxShadow: '0 1px 4px 0 rgba(0, 0, 0, 0.1)',
-        padding: '30px',
-        marginBottom: '20px'
-      }}>
-        {children}
-      </div>
-    </div>
-  );
-  
-  const LayoutComponent = AuthLayout || AuthLayoutWrapper;
-
   return (
-    <LayoutComponent>
+    <AuthLayout>
       <SpaceBetween direction="vertical" size="l">
         {/* 로고 및 제목 */}
         <Box textAlign="center" padding={{ bottom: 'l' }}>
@@ -91,17 +64,23 @@ const LoginPage: React.FC = () => {
             src="/images/aws.png" 
             alt="AWS Logo"
             style={{ 
-              maxWidth: '180px', 
-              marginBottom: '20px' 
+              maxWidth: '150px', 
+              marginBottom: '16px' 
             }}
           />
           <Box
             fontSize="heading-xl"
-            fontWeight="bold"
+            fontWeight="heavy"
             color="text-label"
-            padding={{ top: 'm' }}
           >
             {t('auth:account_login')}
+          </Box>
+          <Box
+            fontSize="body-m"
+            color="text-body-secondary"
+            padding={{ top: 's' }}
+          >
+            {t('auth:sign_in_to_continue')}
           </Box>
         </Box>
 
@@ -127,27 +106,22 @@ const LoginPage: React.FC = () => {
                 loading={isLoading}
                 onClick={handleSignIn}
                 fullWidth
+                // style={{ 
+                //   height: '38px', 
+                //   fontSize: '14px',
+                //   boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                // }}
               >
                 {t('auth:sign_in')}
               </Button>
-              
-              <Box textAlign="right" padding={{ top: 'm' }}>
-                <Link 
-                  to="/forgot-password" 
-                  style={{
-                    textDecoration: 'none',
-                    color: '#0972d3',
-                    fontSize: '14px'
-                  }}
-                >
-                  {t('auth:forgot_password')}
-                </Link>
-              </Box>
             </SpaceBetween>
           }
         >
           <SpaceBetween size="l">
-            <FormField label={t('auth:username')}>
+            <FormField 
+              label={t('auth:username')}
+              constraintText="Email address or username"
+            >
               <Input
                 type="text"
                 value={username}
@@ -159,10 +133,25 @@ const LoginPage: React.FC = () => {
                   }
                 }}
                 autoFocus
+                placeholder="Enter your username"
               />
             </FormField>
 
-            <FormField label={t('auth:password')}>
+            <FormField 
+              label={t('auth:password')}
+              info={
+                <Link 
+                  to="/forgot-password" 
+                  style={{
+                    textDecoration: 'none',
+                    color: '#0972d3',
+                    fontSize: '13px'
+                  }}
+                >
+                  {t('auth:forgot_password')}
+                </Link>
+              }
+            >
               <Input
                 type="password"
                 value={password}
@@ -170,33 +159,38 @@ const LoginPage: React.FC = () => {
                 onKeyDown={({ detail }) => {
                   if (detail.key === 'Enter') handleSignIn();
                 }}
+                placeholder="Enter your password"
               />
             </FormField>
           </SpaceBetween>
         </Form>
 
+        <Box padding={{ top: 's', bottom: 's' }}>
+  <hr style={{
+    border: 'none',
+    borderTop: '1px solid #e9ebed',
+    margin: '0'
+  }} />
+</Box>
+
         {/* 계정 생성 링크 */}
-        <Box textAlign="center">
-          <Box fontSize="body-s" color="text-body-secondary">
+        {/* <Box textAlign="center">
+          <Box fontSize="body-m" color="text-body-secondary">
             {t('auth:no_account')}{' '}
             <Link
               to="/register"
               style={{
                 textDecoration: 'none',
-                color: '#0972d3'
+                color: '#0972d3',
+                fontWeight: '500'
               }}
             >
               {t('auth:create_account')}
             </Link>
           </Box>
-        </Box>
-
-        {/* 하단 저작권 */}
-        <Box textAlign="center" color="text-body-secondary" fontSize="body-s">
-          &copy; {new Date().getFullYear()} Amazon Web Services, Inc. 또는 계열사
-        </Box>
+        </Box> */}
       </SpaceBetween>
-    </LayoutComponent>
+    </AuthLayout>
   );
 };
 

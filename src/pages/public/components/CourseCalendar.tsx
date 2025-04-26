@@ -12,16 +12,32 @@ import {
   Modal,
   ColumnLayout,
   Link,
-  Popover,
-  StatusIndicator,
   Cards,
   Grid,
-  Tabs
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
 
+// 이벤트 타입 정의
+interface CourseEvent {
+  id: string;
+  title: string;
+  date: string;
+  endDate: string;
+  time: string;
+  location: string;
+  instructor: string;
+  type: string;
+  seats: {
+    total: number;
+    available: number;
+  };
+  description: string;
+  prerequisites: string[];
+  status: string;
+}
+
 // 목업 이벤트 데이터
-const courseEvents = [
+const courseEvents: CourseEvent[] = [
   {
     id: '1',
     title: 'AWS Solutions Architect Associate 자격증 준비 과정',
@@ -112,11 +128,11 @@ const courseEvents = [
 const getStatusBadge = (status: string, t: any) => {
   switch (status) {
     case 'full':
-      return <Badge color="red">{t('calendar.status.full')}</Badge>;
+      return <Badge color="red">{t('calendar:status.full')}</Badge>;
     case 'almost-full':
-      return <Badge color="grey">{t('calendar.status.almostFull')}</Badge>;
+      return <Badge color="grey">{t('calendar:status.almostFull')}</Badge>;
     case 'upcoming':
-      return <Badge color="green">{t('calendar.status.upcoming')}</Badge>;
+      return <Badge color="green">{t('calendar:status.upcoming')}</Badge>;
     default:
       return <Badge color="blue">{status}</Badge>;
   }
@@ -126,39 +142,29 @@ const getStatusBadge = (status: string, t: any) => {
 const getTypeBadge = (type: string, t: any) => {
   switch (type) {
     case 'certification':
-      return <Badge color="blue">{t('calendar.type.certification')}</Badge>;
+      return <Badge color="blue">{t('calendar:type.certification')}</Badge>;
     case 'workshop':
-      return <Badge color="green">{t('calendar.type.workshop')}</Badge>;
+      return <Badge color="green">{t('calendar:type.workshop')}</Badge>;
     case 'technical':
-      return <Badge color="grey">{t('calendar.type.technical')}</Badge>;
+      return <Badge color="grey">{t('calendar:type.technical')}</Badge>;
     case 'business':
-      return <Badge color="grey">{t('calendar.type.business')}</Badge>;
+      return <Badge color="grey">{t('calendar:type.business')}</Badge>;
     default:
       return <Badge>{type}</Badge>;
   }
 };
 
 const CourseCalendar: React.FC = () => {
-  const { t } = useTranslation(['calendar', 'common']);
+  // 다국어 설정 - 명시적으로 calendar 네임스페이스 추가
+  const { t, i18n } = useTranslation(['calendar', 'common']);
+  
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
-  const [calendarView, setCalendarView] = useState('simple'); // simple 또는 side-by-side
-
-  // 캘린더 날짜에 이벤트 표시를 위한 함수
-  const isDateWithEvent = (date: string) => {
-    return courseEvents.some(event => {
-      // 시작일과 종료일 사이의 모든 날짜를 확인
-      const startDate = new Date(event.date);
-      const endDate = new Date(event.endDate);
-      const checkDate = new Date(date);
-
-      return checkDate >= startDate && checkDate <= endDate;
-    });
-  };
+  const [selectedCourse, setSelectedCourse] = useState<CourseEvent | null>(null);
+  const [calendarView, setCalendarView] = useState('side-by-side');
 
   // 특정 날짜의 이벤트 목록 가져오기
-  const getEventsForDate = (date: string) => {
+  const getEventsForDate = (date: string): CourseEvent[] => {
     return courseEvents.filter(event => {
       const startDate = new Date(event.date);
       const endDate = new Date(event.endDate);
@@ -173,68 +179,18 @@ const CourseCalendar: React.FC = () => {
     setSelectedDate(value);
     const events = getEventsForDate(value);
     if (events.length > 0) {
-      // 날짜를 선택하면 해당 날짜의 이벤트 목록을 표시
-      setSelectedCourse(null); // 단일 코스 선택 초기화
+      setSelectedCourse(null);
       setShowDetailsModal(true);
     }
   };
 
   // 코스 상세 보기 핸들러
-  const handleCourseSelect = (course: any) => {
+  const handleCourseSelect = (course: CourseEvent) => {
     setSelectedCourse(course);
   };
 
-  const courseTableColumnDefinitions = [
-    {
-      id: 'title',
-      header: t('calendar.table.title'),
-      cell: (item: any) => (
-        <Link onFollow={() => handleCourseSelect(item)}>
-          {item.title}
-        </Link>
-      ),
-      sortingField: 'title',
-      width: 300
-    },
-    {
-      id: 'time',
-      header: t('calendar.table.time'),
-      cell: (item: any) => item.time,
-      sortingField: 'time',
-      width: 120
-    },
-    {
-      id: 'location',
-      header: t('calendar.table.location'),
-      cell: (item: any) => item.location,
-      sortingField: 'location',
-      width: 150
-    },
-    {
-      id: 'type',
-      header: t('calendar.table.type'),
-      cell: (item: any) => getTypeBadge(item.type, t),
-      sortingField: 'type',
-      width: 120
-    },
-    {
-      id: 'status',
-      header: t('calendar.table.status'),
-      cell: (item: any) => getStatusBadge(item.status, t),
-      sortingField: 'status',
-      width: 100
-    },
-    {
-      id: 'seats',
-      header: t('calendar.table.seats'),
-      cell: (item: any) => `\${item.seats.available}/\${item.seats.total}`,
-      sortingField: 'seats',
-      width: 80
-    }
-  ];
-
   // 현재 월의 이벤트 가져오기
-  const getCurrentMonthEvents = () => {
+  const getCurrentMonthEvents = (): CourseEvent[] => {
     const currentMonth = selectedDate 
       ? new Date(selectedDate).getMonth() 
       : new Date().getMonth();
@@ -252,14 +208,14 @@ const CourseCalendar: React.FC = () => {
         onChange={({ detail }) => handleSelectDate(detail.value)}
         startOfWeek={1}
         i18nStrings={{
-          todayAriaLabel: t('calendar.aria.today'),
-          nextMonthAriaLabel: t('calendar.aria.nextMonth'),
-          previousMonthAriaLabel: t('calendar.aria.prevMonth')
+          todayAriaLabel: t('calendar:aria.today'),
+          nextMonthAriaLabel: t('calendar:aria.nextMonth'),
+          previousMonthAriaLabel: t('calendar:aria.prevMonth')
         }}
       />
       {/* 캘린더 아래에 이벤트 목록을 표시 */}
       <Box padding={{ top: 'm' }}>
-        <Header variant="h3">{t('calendar.currentMonthEvents')}</Header>
+        <Header variant="h3">{t('calendar:currentMonthEvents')}</Header>
         <SpaceBetween size="s">
           {getCurrentMonthEvents()
             .slice(0, 5)
@@ -279,12 +235,12 @@ const CourseCalendar: React.FC = () => {
             ))}
           {getCurrentMonthEvents().length > 5 && (
             <Link fontSize="body-s" variant="secondary">
-              {t('calendar.viewMoreEvents', { count: getCurrentMonthEvents().length - 5 })}
+              {t('calendar:viewMoreEvents', { count: getCurrentMonthEvents().length - 5 })}
             </Link>
           )}
           {getCurrentMonthEvents().length === 0 && (
             <Box color="text-body-secondary" padding="s" textAlign="center">
-              {t('calendar.noEventsThisMonth')}
+              {t('calendar:noEventsThisMonth')}
             </Box>
           )}
         </SpaceBetween>
@@ -292,7 +248,7 @@ const CourseCalendar: React.FC = () => {
     </Box>
   );
 
-  // 사이드 바이 사이드 캘린더 뷰
+  // 사이드 바이 사이드 캘린더 뷰 - 메인 레이아웃으로 설정
   const renderSideBySideCalendarView = () => (
     <ColumnLayout columns={2}>
       {/* 왼쪽: 간소화된 캘린더 */}
@@ -302,16 +258,16 @@ const CourseCalendar: React.FC = () => {
           onChange={({ detail }) => handleSelectDate(detail.value)}
           startOfWeek={1}
           i18nStrings={{
-            todayAriaLabel: t('calendar.aria.today'),
-            nextMonthAriaLabel: t('calendar.aria.nextMonth'),
-            previousMonthAriaLabel: t('calendar.aria.prevMonth')
+            todayAriaLabel: t('calendar:aria.today'),
+            nextMonthAriaLabel: t('calendar:aria.nextMonth'),
+            previousMonthAriaLabel: t('calendar:aria.prevMonth')
           }}
         />
       </Box>
       
       {/* 오른쪽: 이번 달 일정 목록 */}
       <Box>
-        <Header variant="h3">{t('calendar.currentMonthEvents')}</Header>
+        <Header variant="h3">{t('calendar:currentMonthEvents')}</Header>
         <SpaceBetween size="s">
           {getCurrentMonthEvents().length > 0 ? (
             getCurrentMonthEvents().map(event => (
@@ -330,13 +286,62 @@ const CourseCalendar: React.FC = () => {
             ))
           ) : (
             <Box color="text-body-secondary" padding="s" textAlign="center">
-              {t('calendar.noEventsThisMonth')}
+              {t('calendar:noEventsThisMonth')}
             </Box>
           )}
         </SpaceBetween>
       </Box>
     </ColumnLayout>
   );
+
+  const courseTableColumnDefinitions = [
+    {
+      id: 'title',
+      header: t('calendar:table.title'),
+      cell: (item: CourseEvent) => (
+        <Link onFollow={() => handleCourseSelect(item)}>
+          {item.title}
+        </Link>
+      ),
+      sortingField: 'title',
+      width: 300
+    },
+    {
+      id: 'time',
+      header: t('calendar:table.time'),
+      cell: (item: CourseEvent) => item.time,
+      sortingField: 'time',
+      width: 120
+    },
+    {
+      id: 'location',
+      header: t('calendar:table.location'),
+      cell: (item: CourseEvent) => item.location,
+      sortingField: 'location',
+      width: 150
+    },
+    {
+      id: 'type',
+      header: t('calendar:table.type'),
+      cell: (item: CourseEvent) => getTypeBadge(item.type, t),
+      sortingField: 'type',
+      width: 120
+    },
+    {
+      id: 'status',
+      header: t('calendar:table.status'),
+      cell: (item: CourseEvent) => getStatusBadge(item.status, t),
+      sortingField: 'status',
+      width: 100
+    },
+    {
+      id: 'seats',
+      header: t('calendar:table.seats'),
+      cell: (item: CourseEvent) => `\${item.seats.available}/\${item.seats.total}`,
+      sortingField: 'seats',
+      width: 80
+    }
+  ];
 
   return (
     <SpaceBetween size="l">
@@ -345,25 +350,25 @@ const CourseCalendar: React.FC = () => {
         header={
           <Header
             variant="h3"
-            description={t('calendar.description')}
+            description={t('calendar:description')}
             actions={
               <SpaceBetween direction="horizontal" size="xs">
                 <Button 
                   onClick={() => setCalendarView('simple')} 
                   variant={calendarView === 'simple' ? 'primary' : 'normal'}
                 >
-                  {t('calendar.views.simple')}
+                  {t('calendar:views.simple')}
                 </Button>
                 <Button 
                   onClick={() => setCalendarView('side-by-side')} 
                   variant={calendarView === 'side-by-side' ? 'primary' : 'normal'}
                 >
-                  {t('calendar.views.sideBySide')}
+                  {t('calendar:views.sideBySide')}
                 </Button>
               </SpaceBetween>
             }
           >
-            {t('calendar.title')}
+            {t('calendar:title')}
           </Header>
         }
       >
@@ -380,13 +385,13 @@ const CourseCalendar: React.FC = () => {
             variant="h3"
             actions={
               <SpaceBetween direction="horizontal" size="xs">
-                <Button iconName="filter">{t('calendar.actions.filter')}</Button>
-                <Button iconName="add-plus">{t('calendar.actions.addCourse')}</Button>
-                <Button variant="primary">{t('calendar.actions.viewAll')}</Button>
+                <Button iconName="filter">{t('calendar:actions.filter')}</Button>
+                <Button iconName="add-plus">{t('calendar:actions.addCourse')}</Button>
+                <Button variant="primary">{t('calendar:actions.viewAll')}</Button>
               </SpaceBetween>
             }
           >
-            {t('calendar.upcomingCourses')}
+            {t('calendar:upcomingCourses')}
           </Header>
         }
       >
@@ -406,31 +411,31 @@ const CourseCalendar: React.FC = () => {
                   <SpaceBetween size="s">
                     <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
                       <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar.courseInfo.date')}</Box>
+                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.date')}</Box>
                         <Box variant="p">{new Date(item.date).toLocaleDateString()} - {new Date(item.endDate).toLocaleDateString()}</Box>
                       </Box>
                       <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar.courseInfo.time')}</Box>
+                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.time')}</Box>
                         <Box variant="p">{item.time}</Box>
                       </Box>
                     </Grid>
                     <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
                       <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar.courseInfo.location')}</Box>
+                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.location')}</Box>
                         <Box variant="p">{item.location}</Box>
                       </Box>
                       <Box>
-                        <Box variant="small" color="text-body-secondary">{t('calendar.courseInfo.instructor')}</Box>
+                        <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.instructor')}</Box>
                         <Box variant="p">{item.instructor}</Box>
                       </Box>
                     </Grid>
                     <Box>
-                      <Box variant="small" color="text-body-secondary">{t('calendar.courseInfo.typeStatus')}</Box>
+                      <Box variant="small" color="text-body-secondary">{t('calendar:courseInfo.typeStatus')}</Box>
                       <SpaceBetween direction="horizontal" size="xs">
                         {getTypeBadge(item.type, t)}
                         {getStatusBadge(item.status, t)}
                         <Box variant="small">
-                          {t('calendar.courseInfo.availableSeats', {
+                          {t('calendar:courseInfo.availableSeats', {
                             available: item.seats.available,
                             total: item.seats.total
                           })}
@@ -449,15 +454,15 @@ const CourseCalendar: React.FC = () => {
                         iconName="folder-open"
                         onClick={() => handleCourseSelect(item)}
                       >
-                        {t('calendar.actions.details')}
+                        {t('calendar:actions.details')}
                       </Button>
                       <Button
                         variant="primary"
                         disabled={item.status === 'full'}
                       >
                         {item.status === 'full' ? 
-                          t('calendar.actions.closed') : 
-                          t('calendar.actions.register')}
+                          t('calendar:actions.closed') : 
+                          t('calendar:actions.register')}
                       </Button>
                     </SpaceBetween>
                   </Box>
@@ -478,10 +483,10 @@ const CourseCalendar: React.FC = () => {
                 padding={{ bottom: 's' }}
                 variant="h4"
               >
-                {t('calendar.noCourses')}
+                {t('calendar:noCourses')}
               </Box>
               <Box variant="p">
-                {t('calendar.coursesWillAppear')}
+                {t('calendar:coursesWillAppear')}
               </Box>
             </Box>
           }
@@ -495,8 +500,8 @@ const CourseCalendar: React.FC = () => {
         size="large"
         header={
           selectedDate ? 
-            t('calendar.modal.dateTitle', { date: new Date(selectedDate).toLocaleDateString() }) :
-            t('calendar.modal.defaultTitle')
+            t('calendar:modal.dateTitle', { date: new Date(selectedDate).toLocaleDateString() }) :
+            t('calendar:modal.defaultTitle')
         }
       >
         <SpaceBetween size="l">
@@ -507,14 +512,14 @@ const CourseCalendar: React.FC = () => {
               loadingText={t('common:loading')}
               empty={
                 <Box textAlign="center" color="text-body-secondary">
-                  <Box padding="s">{t('calendar.modal.noCoursesOnDate')}</Box>
+                  <Box padding="s">{t('calendar:modal.noCoursesOnDate')}</Box>
                 </Box>
               }
               header={
                 <Header
                   counter={`(\${getEventsForDate(selectedDate).length})`}
                 >
-                  {t('calendar.modal.courseList')}
+                  {t('calendar:modal.courseList')}
                 </Header>
               }
             />
@@ -532,7 +537,7 @@ const CourseCalendar: React.FC = () => {
         visible={!!selectedCourse}
         onDismiss={() => setSelectedCourse(null)}
         size="large"
-        header={selectedCourse?.title || t('calendar.modal.courseDetails')}
+        header={selectedCourse?.title || t('calendar:modal.courseDetails')}
       >
         {selectedCourse && (
           <SpaceBetween size="l">
@@ -540,32 +545,32 @@ const CourseCalendar: React.FC = () => {
               <ColumnLayout columns={2} variant="text-grid">
                 <SpaceBetween size="m">
                   <div>
-                    <Box variant="h5">{t('calendar.courseInfo.date')}</Box>
+                    <Box variant="h5">{t('calendar:courseInfo.date')}</Box>
                     <Box>{new Date(selectedCourse.date).toLocaleDateString()} - {new Date(selectedCourse.endDate).toLocaleDateString()}</Box>
                   </div>
                   <div>
-                    <Box variant="h5">{t('calendar.courseInfo.time')}</Box>
+                    <Box variant="h5">{t('calendar:courseInfo.time')}</Box>
                     <Box>{selectedCourse.time}</Box>
                   </div>
                   <div>
-                    <Box variant="h5">{t('calendar.courseInfo.location')}</Box>
+                    <Box variant="h5">{t('calendar:courseInfo.location')}</Box>
                     <Box>{selectedCourse.location}</Box>
                   </div>
                 </SpaceBetween>
 
                 <SpaceBetween size="m">
                   <div>
-                    <Box variant="h5">{t('calendar.courseInfo.instructor')}</Box>
+                    <Box variant="h5">{t('calendar:courseInfo.instructor')}</Box>
                     <Box>{selectedCourse.instructor}</Box>
                   </div>
                   <div>
-                    <Box variant="h5">{t('calendar.courseInfo.type')}</Box>
+                    <Box variant="h5">{t('calendar:courseInfo.type')}</Box>
                     <Box>{getTypeBadge(selectedCourse.type, t)}</Box>
                   </div>
                   <div>
-                    <Box variant="h5">{t('calendar.courseInfo.seats')}</Box>
+                    <Box variant="h5">{t('calendar:courseInfo.seats')}</Box>
                     <Box>
-                      {t('calendar.courseInfo.availableSeats', {
+                      {t('calendar:courseInfo.availableSeats', {
                         available: selectedCourse.seats.available,
                         total: selectedCourse.seats.total
                       })} {getStatusBadge(selectedCourse.status, t)}
@@ -575,11 +580,11 @@ const CourseCalendar: React.FC = () => {
               </ColumnLayout>
             </Container>
 
-            <Container header={<Header variant="h3">{t('calendar.courseInfo.description')}</Header>}>
+            <Container header={<Header variant="h3">{t('calendar:courseInfo.description')}</Header>}>
               <Box>{selectedCourse.description}</Box>
             </Container>
 
-            <Container header={<Header variant="h3">{t('calendar.courseInfo.prerequisites')}</Header>}>
+            <Container header={<Header variant="h3">{t('calendar:courseInfo.prerequisites')}</Header>}>
               <Box>
                 <ul>
                   {selectedCourse.prerequisites.map((prereq: string, index: number) => (
@@ -597,8 +602,8 @@ const CourseCalendar: React.FC = () => {
                   disabled={selectedCourse.status === 'full'}
                 >
                   {selectedCourse.status === 'full' ? 
-                    t('calendar.actions.closed') : 
-                    t('calendar.actions.register')}
+                    t('calendar:actions.closed') : 
+                    t('calendar:actions.register')}
                 </Button>
               </SpaceBetween>
             </Box>
@@ -609,5 +614,4 @@ const CourseCalendar: React.FC = () => {
   );
 };
 
-// 명시적인 default export 추가 (빌드 에러 해결을 위함)
 export default CourseCalendar;
