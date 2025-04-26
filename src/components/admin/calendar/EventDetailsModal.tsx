@@ -5,7 +5,7 @@ import {
   Input, Textarea, Select, DatePicker, TimeInput
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
-import { schema } from '../../../amplify/data/resource';
+import { schema } from 'amplify/data/resource';
 
 type Course = typeof schema.CourseEvent;
 type Instructor = typeof schema.Instructor;
@@ -42,44 +42,44 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
   });
 
   // 이벤트 데이터로 폼 초기화
-  useEffect(() => {
-    if (event) {
-      setFormData({
-        id: event.id,
-        title: event.title,
-        description: event.description || '',
-        startDate: event.startDate,
-        endDate: event.endDate,
-        instructorId: event.instructorId,
-        locationId: event.locationId,
-        type: event.type,
-        level: event.level,
-        maxSeats: event.maxSeats,
-        status: event.status
-      });
-    } else {
-      // 새 이벤트 기본값 설정
-      const startDate = new Date();
-      startDate.setHours(9, 0, 0, 0);
-      
-      const endDate = new Date();
-      endDate.setHours(17, 0, 0, 0);
-      
-      setFormData({
-        id: '',
-        title: '',
-        description: '',
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        instructorId: '',
-        locationId: '',
-        type: 'offline',
-        level: 'beginner',
-        maxSeats: 20,
-        status: 'scheduled'
-      });
-    }
-  }, [event]);
+useEffect(() => {
+  if (event) {
+    setFormData({
+      id: event.id,
+      title: event.title,
+      description: event.description || '',
+      startDate: event.startDate,
+      endDate: event.endDate,
+      instructorId: event.instructorId,
+      locationId: event.locationId,
+      type: event.type,
+      level: event.level,
+      maxSeats: event.maxSeats,
+      status: event.status
+    });
+  } else {
+    // 새 이벤트 기본값 설정
+    const startDate = new Date();
+    startDate.setHours(9, 0, 0, 0);
+    
+    const endDate = new Date();
+    endDate.setHours(17, 0, 0, 0);
+    
+    setFormData({
+      id: '',
+      title: '',
+      description: '',
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      instructorId: '',
+      locationId: '',
+      type: 'offline',
+      level: 'beginner',
+      maxSeats: 20,
+      status: 'scheduled'
+    });
+  }
+}, [event]); 
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));

@@ -1,37 +1,46 @@
 // amplify/data/resource.ts
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { type ClientSchema } from '@aws-amplify/backend';
 
-const schema = a.schema({
-  CourseCatalog: a
-    .model({
-      id: a.id().required(),
-      title: a.string().required(),
-      awsCode: a.string(),
-      version: a.string(),
-      durations: a.integer(),
-      level: a.string(),
-      description: a.string(),
-      category: a.string(),
-      // 1. 배열 필드 정의는 다음과 같이 합니다:
-      tags: a.string().array(),         // 올바른 문법: .array() 수정자 사용
-      prerequisites: a.string().array(), // 올바른 문법: .array() 수정자 사용
-      objectives: a.string().array(),    // 올바른 문법: .array() 수정자 사용
-      status: a.enum(['active', 'draft', 'archived']),
-      createdAt: a.datetime(),
-      updatedAt: a.datetime(),
-      createdBy: a.string()
-    })
-    .authorization(allow => [allow.publicApiKey()])
-});
-
-export type Schema = ClientSchema<typeof schema>;
-
-export const data = defineData({
-  schema,
-  authorizationModes: {
-    defaultAuthorizationMode: 'apiKey',
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30
+export const schema = {
+  CourseEvent: {
+    primaryIndex: { partitionKey: 'id' },
+    fields: {
+      id: { type: 'ID', isRequired: true },
+      title: { type: 'String', isRequired: true },
+      description: { type: 'String' },
+      startDate: { type: 'AWSDateTime', isRequired: true },
+      endDate: { type: 'AWSDateTime', isRequired: true },
+      time: { type: 'String', isRequired: true },
+      instructorId: { type: 'ID', isRequired: true },
+      locationId: { type: 'ID', isRequired: true },
+      type: { type: 'String', isRequired: true }, // 'online' | 'offline'
+      level: { type: 'String', isRequired: true }, // 'beginner' | 'intermediate' | 'advanced'
+      maxSeats: { type: 'Int', isRequired: true },
+      remainingSeats: { type: 'Int', isRequired: true },
+      enrolledStudents: { type: 'String', isList: true },
+      waitlistStudents: { type: 'String', isList: true },
+      status: { type: 'String', isRequired: true } // 'scheduled' | 'canceled' | 'completed'
+    }
+  },
+  Instructor: {
+    primaryIndex: { partitionKey: 'id' },
+    fields: {
+      id: { type: 'ID', isRequired: true },
+      name: { type: 'String', isRequired: true },
+      email: { type: 'AWSEmail', isRequired: true },
+      bio: { type: 'String' },
+      specialties: { type: 'String', isList: true }
+    }
+  },
+  Location: {
+    primaryIndex: { partitionKey: 'id' },
+    fields: {
+      id: { type: 'ID', isRequired: true },
+      name: { type: 'String', isRequired: true },
+      address: { type: 'String', isRequired: true },
+      capacity: { type: 'Int', isRequired: true },
+      isVirtual: { type: 'Boolean', isRequired: true },
+      facilities: { type: 'String', isList: true }
     }
   }
-});
+} ;

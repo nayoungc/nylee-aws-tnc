@@ -22,6 +22,7 @@
       "@contexts/*": ["src/contexts/*"],
       "@hooks/*": ["src/hooks/*"],
       "@models/*": ["src/models/*"],
+      "@graphql/*": ["src/graphql/*"],
       "@utils/*": ["src/utils/*"],
       "@pages/*": ["src/pages/*"],
       "@layouts/*": ["src/components/layout/*"],
