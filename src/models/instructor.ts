@@ -13,9 +13,10 @@ export const InstructorSchema = z.object({
   updatedAt: z.string().optional()
 });
 
-// 강사 입력 스키마 (신규 강사 추가용)
+// 강사 입력 스키마 수정 - email과 name 필드 포함
 export const InstructorInputSchema = InstructorSchema.omit({
   id: true,
+  username: true, // 백엔드에 없는 필드이므로 제외
   createdAt: true, 
   updatedAt: true
 });

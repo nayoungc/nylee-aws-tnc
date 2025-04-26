@@ -17,6 +17,7 @@
       "@/*": ["src/*"],
       "@app/*": ["app/*"],
       "@amplify/*": ["src/amplify/*"],
+      "@common/*": ["src/common/*"],
       "@services/*": ["src/services/*"],
       "@components/*": ["src/components/*"],
       "@contexts/*": ["src/contexts/*"],

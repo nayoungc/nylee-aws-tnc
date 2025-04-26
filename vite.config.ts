@@ -13,6 +13,7 @@ export default defineConfig({
       '@app': path.resolve(__dirname, './app'),
       '@amplify': path.resolve(__dirname, './src/amplify'),
       '@services': path.resolve(__dirname, './src/services'),
+      '@common': path.resolve(__dirname, './src/common'),
       '@components': path.resolve(__dirname, './src/components'),
       '@contexts': path.resolve(__dirname, './src/contexts'),
       '@hooks': path.resolve(__dirname, './src/hooks'),

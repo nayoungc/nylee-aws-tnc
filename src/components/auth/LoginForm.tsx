@@ -1,4 +1,4 @@
-// src/components/auth/LoginForm.tsx
+// /src/components/auth/LoginForm.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Button,
@@ -338,17 +338,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
               }}
             >
               한국어
-            </CloudscapeLink>
-            <CloudscapeLink
-              variant="primary"
-              fontSize="body-s"
-              href="#ja"
-              onFollow={() => {
-                // i18n 언어 변경 로직
-                // 예: i18n.changeLanguage('ja')
-              }}
-            >
-              日本語
             </CloudscapeLink>
           </div>
         </SpaceBetween>

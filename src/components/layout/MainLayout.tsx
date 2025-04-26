@@ -57,9 +57,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const publicItems = [
     {
       type: 'link' as const,
-      text: t('navigation:navigation.tnc'),
+      text: t('navigation:navigation_tnc'),
       href: '/tnc',
-      info: <Badge color="blue">{t('navigation:badge.new')}</Badge>
+      info: <Badge color="blue">{t('navigation:badge_new')}</Badge>
     },
     { type: 'divider' as const }
   ];
@@ -69,30 +69,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     // 과정 관리 그룹
     {
       type: 'section-group' as const,
-      title: t('navigation:instructor.title'),
+      title: t('navigation:instructor_title'),
       items: [
-        { type: 'link' as const, text: t('navigation:instructor.courseManagement'), href: '/instructor/courses' },
-        { type: 'link' as const, text: t('navigation:instructor.catalog'), href: '/instructor/catalog' }
+        { type: 'link' as const, text: t('navigation:instructor_course_management'), href: '/instructor/courses' },
+        { type: 'link' as const, text: t('navigation:instructor_catalog'), href: '/instructor/catalog' }
       ]
     },
     
     // 평가 도구 그룹
     {
       type: 'section-group' as const,
-      title: t('navigation:instructor.assessmentToolsGroup'),
+      title: t('navigation:instructor_assessment_tools_group'),
       items: [
-        { type: 'link' as const, text: t('navigation:instructor.quizzes'), href: '/instructor/quizzes' },
-        { type: 'link' as const, text: t('navigation:instructor.surveys'), href: '/instructor/surveys' }
+        { type: 'link' as const, text: t('navigation:instructor_quizzes'), href: '/instructor/quizzes' },
+        { type: 'link' as const, text: t('navigation:instructor_surveys'), href: '/instructor/surveys' }
       ]
     },
 
     // 관리 도구 그룹
     {
       type: 'section-group' as const,
-      title: t('navigation:instructor.managementToolsGroup'),
+      title: t('navigation:instructor_management_tools_group'),
       items: [
-        { type: 'link' as const, text: t('navigation:instructor.reports'), href: '/instructor/reports' },
-        { type: 'link' as const, text: t('navigation:instructor.statistics'), href: '/instructor/statistics' }
+        { type: 'link' as const, text: t('navigation:instructor_reports'), href: '/instructor/reports' },
+        { type: 'link' as const, text: t('navigation:instructor_statistics'), href: '/instructor/statistics' }
       ]
     }
   ] : [];
@@ -102,29 +102,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     { type: 'divider' as const },
     {
       type: 'section-group' as const,
-      title: t('navigation:admin.title'),
+      title: t('navigation:admin_title'),
       items: [
-        { type: 'link' as const, text: t('navigation:admin.dashboard'), href: '/admin/dashboard' },
+        { type: 'link' as const, text: t('navigation:admin_dashboard'), href: '/admin/dashboard' },
         {
           type: 'section' as const,
-          text: t('navigation:admin.courseSection'),
+          text: t('navigation:admin_course_section'),
           items: [
-            { type: 'link' as const, text: t('navigation:admin.courseManagement'), href: '/admin/course-management' },
-            { type: 'link' as const, text: t('navigation:admin.catalogManagement'), href: '/admin/catalog-management' }
+            { type: 'link' as const, text: t('navigation:admin_course_management'), href: '/admin/course-management' },
+            { type: 'link' as const, text: t('navigation:admin_catalog_management'), href: '/admin/catalog-management' }
           ]
         },
         {
           type: 'section' as const,
-          text: t('navigation:admin.userSection'),
+          text: t('navigation:admin_user_section'),
           items: [
-            { type: 'link' as const, text: t('navigation:admin.userManagement'), href: '/admin/user-management' },
-            { type: 'link' as const, text: t('navigation:admin.roleManagement'), href: '/admin/role-management' }
+            { type: 'link' as const, text: t('navigation:admin_user_management'), href: '/admin/user-management' },
+            { type: 'link' as const, text: t('navigation:admin_role_management'), href: '/admin/role-management' }
           ]
         },
-        { type: 'link' as const, text: t('navigation:admin.settings'), href: '/admin/settings' },
+        { type: 'link' as const, text: t('navigation:admin_settings'), href: '/admin/settings' },
         {
           type: 'link' as const,
-          text: t('navigation:admin.notifications'),
+          text: t('navigation:admin_notifications'),
           href: '/admin/notifications',
           info: <Badge color="red">3</Badge>
         }
@@ -137,16 +137,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     { type: 'divider' as const },
     {
       type: 'section-group' as const,
-      title: t('navigation:navigation.supportSection'),
+      title: t('navigation:navigation_support_section'),
       items: [
-        { type: 'link' as const, text: t('navigation:navigation.help'), href: '/help' },
-        { type: 'link' as const, text: t('navigation:navigation.feedback'), href: '/feedback' },
+        { type: 'link' as const, text: t('navigation:navigation_help'), href: '/help' },
+        { type: 'link' as const, text: t('navigation:navigation_feedback'), href: '/feedback' },
         {
           type: 'link' as const,
-          text: t('navigation:navigation.aws'),
+          text: t('navigation:navigation_aws'),
           href: 'https://aws.amazon.com',
           external: true,
-          externalIconAriaLabel: t('navigation:navigation.externalLinkAriaLabel')
+          externalIconAriaLabel: t('navigation:navigation_external_link_aria_label')
         }
       ]
     }
@@ -168,11 +168,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             items={navItems}
             activeHref={currentHref}
             header={{
-              text: t('navigation:header.title'),
+              text: t('navigation:header_title'),
               href: '/',
               logo: {
                 src: '/assets/aws.png',
-                alt: t('navigation:header.logo.alt')
+                alt: t('navigation:header_logo_alt')
               }
             }}
             onFollow={handleFollow} // 클릭 이벤트 핸들러

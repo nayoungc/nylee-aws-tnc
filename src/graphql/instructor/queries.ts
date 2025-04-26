@@ -1,12 +1,14 @@
 // src/graphql/instructor/queries.ts
 
-// 모든 강사 목록 조회
+/**
+ * 모든 강사 목록 조회 쿼리
+ * username 필드 제거 (백엔드 스키마에 없음)
+ */
 export const listInstructors = /* GraphQL */ `
-  query ListInstructors(\$filter: InstructorFilterInput, \$limit: Int, \$nextToken: String) {
+  query ListInstructors(\$filter: ModelInstructorFilterInput, \$limit: Int, \$nextToken: String) {
     listInstructors(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         id
-        username
         email
         name
         profile
@@ -19,12 +21,14 @@ export const listInstructors = /* GraphQL */ `
   }
 `;
 
-// 특정 강사 조회
+/**
+ * 특정 강사 조회 쿼리
+ * username 필드 제거 (백엔드 스키마에 없음)
+ */
 export const getInstructor = /* GraphQL */ `
   query GetInstructor(\$id: ID!) {
     getInstructor(id: \$id) {
       id
-      username
       email
       name
       profile
@@ -35,13 +39,15 @@ export const getInstructor = /* GraphQL */ `
   }
 `;
 
-// 강사 검색
+/**
+ * 강사 검색 쿼리
+ * username 필드 제거 (백엔드 스키마에 없음)
+ */
 export const searchInstructors = /* GraphQL */ `
   query SearchInstructors(\$filter: InstructorSearchFilterInput, \$limit: Int, \$nextToken: String) {
     searchInstructors(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         id
-        username
         email
         name
         profile

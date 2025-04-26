@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@contexts/AppContext';
 import { useAuth } from '@hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
+// LanguageSwitcher를 직접 사용하지 않음 (TopNavigation에 직접 컴포넌트를 넣을 수 없음)
 
 const TopNavigationHeader: React.FC = () => {
   const { t, i18n } = useTranslation(['common', 'navigation', 'auth', 'admin']);
@@ -73,27 +74,27 @@ const TopNavigationHeader: React.FC = () => {
   const themeItems = [
     {
       id: 'light',
-      text: t('menu:theme.light'),
+      text: t('navigation:theme_light'),
       description: theme === 'light' ? '✓' : undefined
     },
     {
       id: 'dark',
-      text: t('menu:theme.dark'),
+      text: t('navigation:theme_dark'),
       description: theme === 'dark' ? '✓' : undefined
     }
   ];
 
-  // 언어 메뉴 아이템
+  // 언어 메뉴 아이템 
   const languageItems = [
     {
       id: 'en',
-      text: t('menu:language.english', 'English'),
-      description: language === 'en' ? '✓' : undefined
+      text: t('navigation:language_english'),
+      description: i18n.language === 'en' ? '✓' : undefined
     },
     {
       id: 'ko',
-      text: t('menu:language.korean', '한국어'),
-      description: language === 'ko' ? '✓' : undefined
+      text: t('navigation:language_korean'),
+      description: i18n.language === 'ko' ? '✓' : undefined
     }
   ];
 
@@ -102,9 +103,9 @@ const TopNavigationHeader: React.FC = () => {
     // 테마 전환 메뉴
     {
       type: 'menu-dropdown',
-      text: t('menu:theme.title'),
+      text: t('navigation:theme_title'),
       iconName: 'star',
-      title: t('menu:theme.title'),
+      title: t('navigation:theme_title'),
       items: themeItems,
       onItemClick: ({ detail }: { detail: { id: string } }) => {
         if (detail.id === 'light' || detail.id === 'dark') {
@@ -112,11 +113,11 @@ const TopNavigationHeader: React.FC = () => {
         }
       }
     },
-    // 언어 선택 메뉴
+    // 언어 선택 메뉴 (LanguageSwitcher 컴포넌트 대신 메뉴 드롭다운 사용)
     {
       type: 'menu-dropdown',
-      text: language === 'en' ? t('menu:language.english', 'English') : t('menu:language.korean', '한국어'),
-      title: t('menu:language.label'),
+      text: i18n.language === 'ko' ? t('navigation:language_korean') : t('navigation:language_english'),
+      title: t('navigation:language_label'),
       items: languageItems,
       onItemClick: ({ detail }: { detail: { id: string } }) => {
         handleLanguageChange(detail.id);
@@ -127,7 +128,7 @@ const TopNavigationHeader: React.FC = () => {
   // 인증 상태에 따른 메뉴 추가
   if (isAuthenticated && user) {
     // 사용자 정보 표시
-    let displayName = user.attributes?.name || user.username || user.email || t('menu:user.account');
+    let displayName = user.attributes?.name || user.username || user.email || t('navigation:user_account');
     
     // 사용자 역할 확인
     const isAdmin = userRoles.includes('admin');
@@ -136,30 +137,30 @@ const TopNavigationHeader: React.FC = () => {
     // 역할에 따른 표시 텍스트
     let roleText = '';
     if (isAdmin) {
-      roleText = t('menu:role.admin');
+      roleText = t('navigation:role_admin');
     } else if (isInstructor) {
-      roleText = t('menu:role.instructor');
+      roleText = t('navigation:role_instructor');
     } else {
-      roleText = t('menu:role.student');
+      roleText = t('navigation:role_student');
     }
     
-    // 사용자 메뉴 아이템 - 다국어 파일에서 가져오기
+    // 사용자 메뉴 아이템
     const userItems = [
-      { id: 'profile', text: t('menu:user.profile') },
-      { id: 'settings', text: t('menu:user.settings') }
+      { id: 'profile', text: t('navigation:user_profile') },
+      { id: 'settings', text: t('navigation:user_settings') }
     ];
     
     // 구분선 및 로그아웃
     userItems.push(
       { id: 'divider', text: '-' },
-      { id: 'signout', text: t('menu:user.signOut') }
+      { id: 'signout', text: t('navigation:user_sign_out') }
     );
     
     // 사용자 메뉴 추가
     utilities.push({
       type: 'menu-dropdown',
       iconName: 'user-profile',
-      title: t('menu:user.account'),
+      title: t('navigation:user_account'),
       text: displayName,
       description: roleText,
       items: userItems,
@@ -181,7 +182,7 @@ const TopNavigationHeader: React.FC = () => {
     // 로그인하지 않은 경우 로그인 버튼 추가
     utilities.push({
       type: 'button',
-      text: t('menu:user.login'),
+      text: t('navigation:user_login'),
       onClick: () => handleNavigation('/login')
     });
   }
@@ -190,10 +191,10 @@ const TopNavigationHeader: React.FC = () => {
     <TopNavigation
       identity={{
         href: '/',
-        title: t('menu:header.title'),
+        title: t('navigation:header_title'),
         logo: {
           src: '/assets/aws.png',
-          alt: t('menu:header.logo.alt')
+          alt: t('navigation:header_logo_alt')
         },
         onFollow: (event) => {
           event.preventDefault();
@@ -203,12 +204,12 @@ const TopNavigationHeader: React.FC = () => {
       }}
       utilities={utilities}
       i18nStrings={{
-        searchIconAriaLabel: t('menu:search.ariaLabel'),
-        searchDismissIconAriaLabel: t('menu:search.dismissAriaLabel'),
-        overflowMenuTriggerText: t('menu:overflow.triggerText'),
-        overflowMenuTitleText: t('menu:overflow.titleText'),
-        overflowMenuBackIconAriaLabel: t('menu:overflow.backAriaLabel'),
-        overflowMenuDismissIconAriaLabel: t('menu:overflow.dismissAriaLabel')
+        searchIconAriaLabel: t('navigation:search_aria_label'),
+        searchDismissIconAriaLabel: t('navigation:search_dismiss_aria_label'),
+        overflowMenuTriggerText: t('navigation:overflow_trigger_text'),
+        overflowMenuTitleText: t('navigation:overflow_title_text'),
+        overflowMenuBackIconAriaLabel: t('navigation:overflow_back_aria_label'),
+        overflowMenuDismissIconAriaLabel: t('navigation:overflow_dismiss_aria_label')
       }}
     />
   );

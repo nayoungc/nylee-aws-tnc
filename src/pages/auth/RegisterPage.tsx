@@ -1,3 +1,4 @@
+// /src/pages/auth/RegisterPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -7,12 +8,15 @@ import {
   FormField, 
   Input, 
   Button, 
-  Header 
+  Header,
+  Alert
 } from '@cloudscape-design/components';
+import { useTranslation } from 'react-i18next';
 //import { useAuth } from '@auth/auth-context';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation(['auth', 'common']);
   //const { register } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -22,6 +26,7 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [confirmation, setConfirmation] = useState(false);
   const [code, setCode] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -29,16 +34,17 @@ const RegisterPage: React.FC = () => {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+      setError(t('auth:register.password_mismatch'));
       setLoading(false);
       return;
     }
 
     try {
       //await register(username, password, email);
+      setSuccessMessage(t('auth:register.registration_success'));
       setConfirmation(true);
     } catch (err: any) {
-      setError(err.message || '등록 중 오류가 발생했습니다.');
+      setError(err.message || t('auth:register.registration_error'));
     } finally {
       setLoading(false);
     }
@@ -49,48 +55,55 @@ const RegisterPage: React.FC = () => {
       {!confirmation ? (
         <form onSubmit={handleRegister}>
           <Form
-            header={<Header variant="h1">계정 생성</Header>}
+            header={<Header variant="h1">{t('auth:register.title')}</Header>}
             actions={
               <SpaceBetween direction="horizontal" size="xs">
                 <Button
                   variant="link"
                   onClick={() => navigate('/login')}
                 >
-                  로그인 화면으로 돌아가기
+                  {t('auth:register.back_to_login')}
                 </Button>
                 <Button
                   variant="primary"
                   loading={loading}
+                  formAction="submit"
                 >
-                  등록
+                  {t('auth:register.register')}
                 </Button>
               </SpaceBetween>
             }
             errorText={error}
           >
             <SpaceBetween direction="vertical" size="l">
-              <FormField label="사용자 이름">
+              {successMessage && (
+                <Alert type="success" dismissible onDismiss={() => setSuccessMessage('')}>
+                  {successMessage}
+                </Alert>
+              )}
+              
+              <FormField label={t('auth:register.username')}>
                 <Input
                   type="text"
                   value={username}
                   onChange={({ detail }) => setUsername(detail.value)}
                 />
               </FormField>
-              <FormField label="이메일">
+              <FormField label={t('auth:register.email')}>
                 <Input
                   type="email"
                   value={email}
                   onChange={({ detail }) => setEmail(detail.value)}
                 />
               </FormField>
-              <FormField label="비밀번호">
+              <FormField label={t('auth:register.password')}>
                 <Input
                   type="password"
                   value={password}
                   onChange={({ detail }) => setPassword(detail.value)}
                 />
               </FormField>
-              <FormField label="비밀번호 확인">
+              <FormField label={t('auth:register.confirm_password')}>
                 <Input
                   type="password"
                   value={confirmPassword}
@@ -102,18 +115,24 @@ const RegisterPage: React.FC = () => {
         </form>
       ) : (
         <Form
-          header={<Header variant="h1">계정 확인</Header>}
+          header={<Header variant="h1">{t('auth:register.confirm_account')}</Header>}
           actions={
             <Button
               variant="primary"
               onClick={() => navigate('/login')}
             >
-              확인 완료
+              {t('auth:register.complete_confirmation')}
             </Button>
           }
         >
           <SpaceBetween direction="vertical" size="l">
-            <FormField label="인증 코드">
+            {error && (
+              <Alert type="error" dismissible onDismiss={() => setError('')}>
+                {error}
+              </Alert>
+            )}
+            
+            <FormField label={t('auth:register.verification_code')}>
               <Input
                 type="text"
                 value={code}
@@ -125,13 +144,16 @@ const RegisterPage: React.FC = () => {
                 try {
                   // 인증 로직 구현
                   // await confirmRegistration(username, code);
-                  navigate('/login');
+                  setSuccessMessage(t('auth:register.verification_success'));
+                  setTimeout(() => {
+                    navigate('/login');
+                  }, 1500);
                 } catch (err: any) {
-                  setError(err.message || '인증 중 오류가 발생했습니다.');
+                  setError(err.message || t('auth:register.verification_error'));
                 }
               }}
             >
-              코드 확인
+              {t('auth:register.verify_code')}
             </Button>
           </SpaceBetween>
         </Form>

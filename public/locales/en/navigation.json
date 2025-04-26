@@ -1,48 +1,65 @@
 {
-  "navigation": {
-    "tnc": "Training & Certification",
-    "dashboard": "Dashboard",
-    "myCourses": "My Courses",
-    "resources": "Resources",
-    "calendar": "Calendar",
-    "supportSection": "Support & Resources",
-    "help": "Help Center",
-    "feedback": "Provide Feedback",
-    "aws": "AWS Website",
-    "externalLinkAriaLabel": "Opens in a new tab",
-    "userSection": "Learning"
-  },
-  "badge": {
-    "new": "NEW"
-  },
-  "header": {
-    "title": "AWS Training & Certification",
-    "logo": {
-      "alt": "AWS Logo"
-    }
-  },
-  "instructor": {
-    "title": "Instructor Tools",
-    "courseManagementGroup": "Course Management",
-    "courseManagement": "Manage Courses",
-    "catalog": "Course Catalog",
-    "assessmentToolsGroup": "Assessment Tools",
-    "quizzes": "Quizzes & Tests",
-    "surveys": "Surveys & Feedback",
-    "managementToolsGroup": "Management Tools",
-    "reports": "Reports",
-    "statistics": "Statistics & Analytics"
-  },
-  "admin": {
-    "title": "Administration",
-    "dashboard": "Admin Dashboard",
-    "courseSection": "Course Administration",
-    "courseManagement": "Course Management",
-    "catalogManagement": "Catalog Management",
-    "userSection": "User Administration",
-    "userManagement": "User Management",
-    "roleManagement": "Role Management",
-    "settings": "System Settings",
-    "notifications": "System Notifications"
-  }
+  "navigation_tnc": "Training & Certification",
+  "navigation_dashboard": "Dashboard",
+  "navigation_my_courses": "My Courses",
+  "navigation_resources": "Resources",
+  "navigation_calendar": "Calendar",
+  "navigation_support_section": "Support & Resources",
+  "navigation_help": "Help Center",
+  "navigation_feedback": "Provide Feedback",
+  "navigation_aws": "AWS Website",
+  "navigation_external_link_aria_label": "Opens in a new tab",
+  "navigation_user_section": "Learning",
+  
+  "badge_new": "NEW",
+  
+  "header_title": "AWS Training & Certification",
+  "header_logo_alt": "AWS Logo",
+  
+  "instructor_title": "Instructor Tools",
+  "instructor_course_management_group": "Course Management",
+  "instructor_course_management": "Manage Courses",
+  "instructor_catalog": "Course Catalog",
+  "instructor_assessment_tools_group": "Assessment Tools",
+  "instructor_quizzes": "Quizzes & Tests",
+  "instructor_surveys": "Surveys & Feedback",
+  "instructor_management_tools_group": "Management Tools",
+  "instructor_reports": "Reports",
+  "instructor_statistics": "Statistics & Analytics",
+  
+  "admin_title": "Administration",
+  "admin_dashboard": "Admin Dashboard",
+  "admin_course_section": "Course Administration",
+  "admin_course_management": "Course Management",
+  "admin_catalog_management": "Catalog Management",
+  "admin_user_section": "User Administration",
+  "admin_user_management": "User Management",
+  "admin_role_management": "Role Management",
+  "admin_settings": "System Settings",
+  "admin_notifications": "System Notifications",
+
+  "theme_title": "Theme",
+  "theme_light": "Light Mode",
+  "theme_dark": "Dark Mode",
+  
+  "language_label": "Language",
+  "language_english": "English",
+  "language_korean": "Korean",
+  
+  "user_account": "My Account",
+  "user_profile": "Profile",
+  "user_settings": "Settings",
+  "user_sign_out": "Sign Out",
+  "user_login": "Sign In",
+  
+  "role_admin": "Administrator",
+  "role_instructor": "Instructor",
+  "role_student": "Student",
+  
+  "search_aria_label": "Search",
+  "search_dismiss_aria_label": "Dismiss search",
+  "overflow_trigger_text": "More",
+  "overflow_title_text": "More",
+  "overflow_back_aria_label": "Back",
+  "overflow_dismiss_aria_label": "Dismiss menu"
 }
