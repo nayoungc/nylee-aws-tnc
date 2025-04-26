@@ -3,27 +3,39 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import { AppProvider } from '@contexts/AppContext';
+import { AppProvider } from './contexts/AppContext';
 import { Amplify } from 'aws-amplify';
-import { AuthProvider } from '@hooks/useAuth';
+import { AuthProvider } from './hooks/useAuth';
 import './i18n';
 
-// amplify_outputs.json 파일 임포트
-import amplifyConfig from '../amplify_outputs.json';
+// Amplify v6 형식에 맞게 구성
+Amplify.configure({
+  // v6에서는 Auth 구성이 변경됨
+  Auth: {
+    Cognito: {
+      userPoolId: "us-east-1_AFeIVnWIU",
+      userPoolClientId: "6tdhvgmafd2uuhbc2naqg96g12",
+      // identityPoolId는 사용하지 않으므로 생략
+    }
+  },
+  Storage: {
+    S3: {
+      bucket: "nylee-aws-tnc",
+      region: "us-east-1"
+    }
+  },
+  API: {
+    GraphQL: {
+      endpoint: "https://34jyk55wjngtlbwbbzdjfraooe.appsync-api.us-east-1.amazonaws.com/graphql",
+      region: "us-east-1",
+      defaultAuthMode: "userPool"
+    }
+  }
+});
 
-// Amplify 초기화
-try {
-  console.log('Initializing Amplify with configuration');
-  Amplify.configure(amplifyConfig);
-  
-  // 디버깅 정보 출력
-  console.log('Auth config:', Amplify.getConfig().Auth);
-  console.log('API config:', Amplify.getConfig().API);
-} catch (error) {
-  console.error('Failed to initialize Amplify:', error);
-}
+// 디버깅을 위한 로그 출력
+console.log('Amplify 구성 완료');
 
-// 앱 렌더링
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>

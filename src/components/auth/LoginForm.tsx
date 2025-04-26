@@ -1,5 +1,5 @@
 // src/components/auth/LoginForm.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Button,
   FormField,
@@ -7,17 +7,26 @@ import {
   SpaceBetween,
   Box,
   Alert,
-  Checkbox
+  Checkbox,
+  Container,
+  Grid,
+  Icon,
+  Link as CloudscapeLink
 } from '@cloudscape-design/components';
 import { useAuth } from '@/hooks/useAuth';
 import { validateLoginForm, getLoginErrorMessage } from '@/utils/authUtils';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 interface LoginFormProps {
   onLoginSuccess?: () => void;
+  logoSrc?: string;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ 
+  onLoginSuccess,
+  logoSrc = '/images/aws.png' 
+}) => {
   const { t } = useTranslation(['auth', 'common']);
   const { login } = useAuth();
   const [username, setUsername] = useState('');
@@ -31,28 +40,47 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     password?: string;
   }>({});
 
+  // 아이디 기억하기 기능
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    if (savedUsername) {
+      setUsername(savedUsername);
+      setRememberMe(true);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await attemptLogin();
   };
 
   const attemptLogin = async () => {
-    if (!username || !password) {
+    // 폼 유효성 검증
+    const { isValid, errors } = validateLoginForm(username, password);
+    setFormErrors(errors);
+    
+    if (!isValid) {
       setError(t('auth:fields_required'));
       return;
     }
 
-    setError(null);
-    const { isValid, errors } = validateLoginForm(username, password);
-    setFormErrors(errors);
-    if (!isValid) return;
-
+    // 로그인 시도
     setIsLoading(true);
+    setError(null);
+    
     try {
       await login(username, password);
-      setError(null);
+      
+      // 아이디 기억하기 처리
+      if (rememberMe) {
+        localStorage.setItem('rememberedUsername', username);
+      } else {
+        localStorage.removeItem('rememberedUsername');
+      }
+      
       setSuccessMessage(t('auth:login_success_redirecting'));
 
+      // 로그인 성공 후 콜백
       setTimeout(() => {
         if (onLoginSuccess) {
           onLoginSuccess();
@@ -65,175 +93,267 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     }
   };
 
+  // 인라인 스타일 정의
+  const styles = {
+    container: {
+      width: '100%',
+      maxWidth: '480px',
+      margin: '0 auto',
+    },
+    logo: {
+      maxWidth: '180px',
+      height: 'auto',
+      marginBottom: '24px'
+    },
+    formFieldContainer: {
+      marginBottom: '16px'
+    },
+    rememberForgotContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap' as const
+    },
+    forgotPasswordLink: {
+      fontSize: '14px',
+      color: 'var(--color-text-link-default)',
+      textDecoration: 'none',
+      fontWeight: '500'
+    },
+    loginButtonWrapper: {
+      borderRadius: '8px',
+      overflow: 'hidden',
+      background: 'linear-gradient(to right, #0073bb, #0972d3)',
+      boxShadow: '0 4px 12px rgba(9, 114, 211, 0.2)',
+      transition: 'all 0.2s ease',
+      marginTop: '8px'
+    },
+    createAccountSection: {
+      textAlign: 'center' as const,
+      borderTop: '1px solid var(--color-border-divider-default)',
+      paddingTop: '20px',
+      marginTop: '10px',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '16px'
+    },
+    createAccountLink: {
+      color: 'var(--color-text-link-default)',
+      textDecoration: 'none',
+      fontWeight: '500'
+    },
+    secureConnectionBadge: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      fontSize: 'var(--font-size-body-s)',
+      color: 'var(--color-text-body-secondary)',
+      padding: '8px',
+      borderRadius: '4px',
+      background: 'var(--color-background-container-content)',
+      boxShadow: 'var(--shadow-container-s)',
+      width: 'fit-content',
+      margin: '0 auto'
+    },
+    languageSelector: {
+      textAlign: 'center' as const,
+      marginTop: '16px',
+      display: 'flex',
+      justifyContent: 'center',
+      gap: '16px'
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <SpaceBetween direction="vertical" size="l">
-        {error && (
-          <Alert
-            type="error"
-            dismissible
-            onDismiss={() => setError(null)}
-            header={t('auth:login_error_header')}
+    <Container
+      header={
+        <Box textAlign="center" padding={{ top: "l", bottom: "l" }}>
+          <img
+            src={logoSrc}
+            alt="Company Logo"
+            style={styles.logo}
+          />
+          <Box
+            fontSize="heading-xl"
+            fontWeight="heavy"
+            color="text-label"
           >
-            {error}
-          </Alert>
-        )}
-
-        {successMessage && (
-          <Alert
-            type="success"
-            dismissible
-            onDismiss={() => setSuccessMessage(null)}
-            header={t('auth:login_success_header')}
+            {t('auth:account_login')}
+          </Box>
+          <Box
+            fontSize="body-m"
+            color="text-body-secondary"
+            padding={{ top: 's' }}
           >
-            {successMessage}
-          </Alert>
-        )}
-
-        {/* 제목 */}
-        <Box
-          fontSize="heading-l"
-          fontWeight="heavy"
-          textAlign="center"
-          padding={{ bottom: 'm' }}
-        >
-          {t('auth:account_login')}
+            {t('auth:sign_in_to_continue')}
+          </Box>
         </Box>
-
-        <SpaceBetween size="l">
-          {/* 사용자명 필드 */}
-          <div>
-            <Box fontWeight="bold" padding={{ bottom: 'xs' }}>
-              {t('auth:username')}
-            </Box>
-            <FormField
-              errorText={formErrors.username}
-              stretch
+      }
+    >
+      <form onSubmit={handleSubmit}>
+        <SpaceBetween direction="vertical" size="l">
+          {/* 알림 메시지 */}
+          {error && (
+            <Alert
+              type="error"
+              dismissible
+              onDismiss={() => setError(null)}
             >
-              <Input
-                value={username}
-                onChange={({ detail }) => setUsername(detail.value)}
-                placeholder={t('auth:username_placeholder')}
-                disabled={isLoading}
-                autoFocus
-                onKeyDown={({ detail }) => {
-                  if (detail.key === 'Enter') {
-                    const passwordInput = document.querySelector('input[type="password"]');
-                    if (passwordInput) (passwordInput as HTMLElement).focus();
-                  }
-                }}
-              />
-            </FormField>
-          </div>
+              {error}
+            </Alert>
+          )}
 
-          {/* 비밀번호 필드 */}
-          <div>
-            <Box fontWeight="bold" padding={{ bottom: 'xs' }}>
-              {t('auth:password')}
-            </Box>
-            <FormField
-              errorText={formErrors.password}
-              stretch
+          {successMessage && (
+            <Alert
+              type="success"
+              dismissible
+              onDismiss={() => setSuccessMessage(null)}
             >
-              <Input
-                value={password}
-                onChange={({ detail }) => setPassword(detail.value)}
-                type="password"
-                placeholder={t('auth:password_placeholder')}
-                disabled={isLoading}
-                onKeyDown={({ detail }) => {
-                  if (detail.key === 'Enter') attemptLogin();
-                }}
-              />
-            </FormField>
-          </div>
+              {successMessage}
+            </Alert>
+          )}
 
-          {/* 체크박스와 비밀번호 찾기 */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <Checkbox
-              checked={rememberMe}
-              onChange={({ detail }) => setRememberMe(detail.checked)}
-            >
-              <Box fontSize="body-s">{t('auth:remember_me')}</Box>
-            </Checkbox>
+          <Grid
+            gridDefinition={[{ colspan: { default: 12 } }]}
+          >
+            <SpaceBetween size="l">
+              {/* 사용자명 필드 */}
+              <FormField
+                label={t('auth:username')}
+                errorText={formErrors.username}
+                stretch
+              >
+                <Input
+                  value={username}
+                  onChange={({ detail }) => setUsername(detail.value)}
+                  placeholder={t('auth:username_placeholder')}
+                  disabled={isLoading}
+                  autoFocus
+                  onKeyDown={({ detail }) => {
+                    if (detail.key === 'Enter') {
+                      const passwordInput = document.querySelector('input[type="password"]');
+                      if (passwordInput) (passwordInput as HTMLElement).focus();
+                    }
+                  }}
+                />
+              </FormField>
 
-            <a
-              href="/forgot-password"
-              style={{
-                fontSize: '13px',
-                color: 'var(--color-text-link-default)',
-                textDecoration: 'none'
-              }}
-            >
-              {t('auth:forgot_password')}
-            </a>
-          </div>
-        </SpaceBetween>
+              {/* 비밀번호 필드 */}
+              <FormField
+                label={t('auth:password')}
+                errorText={formErrors.password}
+                stretch
+              >
+                <Input
+                  value={password}
+                  onChange={({ detail }) => setPassword(detail.value)}
+                  type="password"
+                  placeholder={t('auth:password_placeholder')}
+                  disabled={isLoading}
+                  onKeyDown={({ detail }) => {
+                    if (detail.key === 'Enter') attemptLogin();
+                  }}
+                />
+              </FormField>
 
-        {/* 로그인 버튼 - 감싸는 div를 사용하여 스타일링 */}
-        <div style={{ marginTop: '8px' }}>
-          <div style={{
-            borderRadius: '4px',
-            overflow: 'hidden',
-            background: 'linear-gradient(to right, #0073bb, #0972d3)',
-            boxShadow: '0 2px 5px rgba(0,115,187,0.3)',
-          }}>
-            <Button
-              variant="primary"
-              loading={isLoading}
-              onClick={() => attemptLogin()}
-              formAction="submit"
-              fullWidth
-              iconName="angle-right-double"
-            >
-              {t('auth:sign_in')}
-            </Button>
-          </div>
-        </div>
+              {/* 체크박스와 비밀번호 찾기 */}
+              <div style={styles.rememberForgotContainer}>
+                <Checkbox
+                  checked={rememberMe}
+                  onChange={({ detail }) => setRememberMe(detail.checked)}
+                >
+                  <Box fontSize="body-s">{t('auth:remember_me')}</Box>
+                </Checkbox>
 
-        {/* 계정 생성 링크 */}
-        <div style={{
-          textAlign: 'center',
-          borderTop: '1px solid var(--color-border-divider-default)',
-          paddingTop: '16px',
-          marginTop: '8px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px'
-        }}>
-          <Box fontSize="body-s" color="text-body-secondary">
-            {t('auth:no_account')}{' '}
-            <a href="/register" style={{ color: 'var(--color-text-link-default)', textDecoration: 'none', fontWeight: '500' }}>
-              {t('auth:create_account')}
-            </a>
+                <Link
+                  to="/forgot-password"
+                  style={styles.forgotPasswordLink}
+                >
+                  {t('auth:forgot_password')}
+                </Link>
+              </div>
+            </SpaceBetween>
+          </Grid>
+
+          {/* 로그인 버튼 */}
+          <Box margin={{ top: 'm' }}>
+            <div style={styles.loginButtonWrapper}>
+              <Button
+                variant="primary"
+                loading={isLoading}
+                onClick={attemptLogin}
+                formAction="submit"
+                fullWidth
+                iconAlign="right"
+                iconName="angle-right"
+              >
+                {t('auth:sign_in')}
+              </Button>
+            </div>
           </Box>
 
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 'var(--font-size-body-s)',
-              color: 'var(--color-text-body-secondary)'
-            }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" focusable="false" role="img" aria-hidden="true" style={{ marginRight: '4px' }}>
-                <path d="M19 10h-1V7c0-3.309-2.691-6-6-6S6 3.691 6 7v3H5c-1.654 0-3 1.346-3 3v7c0 1.654 1.346 3 3 3h14c1.654 0 3-1.346 3-3v-7c0-1.654-1.346-3-3-3zm-7 9c-1.103 0-2-.897-2-2s.897-2 2-2 2 .897 2 2-.897 2-2 2zm3.5-9h-7V7c0-1.93 1.57-3.5 3.5-3.5S15.5 5.07 15.5 7v3z" fill="currentColor"></path>
-              </svg>
-              {t('auth:secure_connection')}
+          {/* 계정 생성 링크 */}
+          <div style={styles.createAccountSection}>
+            <Box fontSize="body-m" color="text-body-secondary">
+              {t('auth:no_account')}{' '}
+              <Link 
+                to="/register" 
+                style={styles.createAccountLink}
+              >
+                {t('auth:create_account')}
+              </Link>
+            </Box>
+
+            <div style={styles.secureConnectionBadge}>
+              <Icon
+                name="lock-private"
+                size="small"
+                variant="subtle"
+              /> 
+              <span style={{ marginLeft: '4px' }}>{t('auth:secure_connection')}</span>
             </div>
           </div>
-        </div>
-      </SpaceBetween>
-    </form>
+
+          {/* 언어 선택 */}
+          <div style={styles.languageSelector}>
+            <CloudscapeLink
+              variant="primary"
+              fontSize="body-s"
+              href="#en"
+              onFollow={() => {
+                // i18n 언어 변경 로직
+                // 예: i18n.changeLanguage('en')
+              }}
+            >
+              English
+            </CloudscapeLink>
+            <CloudscapeLink
+              variant="primary"
+              fontSize="body-s"
+              href="#ko"
+              onFollow={() => {
+                // i18n 언어 변경 로직
+                // 예: i18n.changeLanguage('ko')
+              }}
+            >
+              한국어
+            </CloudscapeLink>
+            <CloudscapeLink
+              variant="primary"
+              fontSize="body-s"
+              href="#ja"
+              onFollow={() => {
+                // i18n 언어 변경 로직
+                // 예: i18n.changeLanguage('ja')
+              }}
+            >
+              日本語
+            </CloudscapeLink>
+          </div>
+        </SpaceBetween>
+      </form>
+    </Container>
   );
 };
 
