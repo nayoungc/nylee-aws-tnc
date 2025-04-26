@@ -1,0 +1,31 @@
+{
+  "header": "Navigation",
+  "tnc": "Terms & Conditions",
+  "dashboard": "Dashboard",
+  "resources": "Resources",
+  "calendar": "Calendar",
+  
+  "instructor": {
+    "title": "Instructor",
+    "courseManagementGroup": "Course Management",
+    "courseManagement": "Manage Courses",
+    "catalog": "Course Catalog",
+    
+    "assessmentToolsGroup": "Assessment Tools",
+    "quizzes": "Quizzes",
+    "surveys": "Surveys",
+    
+    "managementToolsGroup": "Management Tools",
+    "reports": "Reports",
+    "statistics": "Statistics"
+  },
+  
+  "admin": {
+    "title": "Administration",
+    "dashboard": "Admin Dashboard",
+    "users": "User Management",
+    "calendar": "Calendar Management",
+    "announcements": "Announcement Management",
+    "settings": "System Settings"
+  }
+}

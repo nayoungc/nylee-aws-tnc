@@ -1,4 +1,4 @@
-// app/components/admin/course-catalog/CourseForm.tsx
+// app/components/admin/catalog/CourseForm.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Form,

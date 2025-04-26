@@ -23,7 +23,7 @@ const announcementItems = [
   {
     id: "1",
     title: "AWS 클라우드 실습 워크샵 안내",
-    date: "2023-11-15",
+    date: "2025-04-15",
     category: "워크샵",
     isImportant: true,
     preview: "11월 30일에 진행되는 AWS 클라우드 실습 워크샵에 여러분을 초대합니다.",
@@ -33,7 +33,7 @@ const announcementItems = [
   {
     id: "2",
     title: "AWS 자격증 시험 준비 가이드 업데이트",
-    date: "2023-11-10",
+    date: "2025-04-10",
     category: "자격증",
     isImportant: false,
     preview: "AWS Solutions Architect Associate 자격증 시험 준비 가이드가 업데이트 되었습니다.",
@@ -43,7 +43,7 @@ const announcementItems = [
   {
     id: "3",
     title: "AWS re:Invent 2023 주요 발표 요약",
-    date: "2023-11-05",
+    date: "2025-04-05",
     category: "뉴스",
     isImportant: true,
     preview: "지난 달 진행된 AWS re:Invent 2023 컨퍼런스의 주요 발표 내용을 요약했습니다.",

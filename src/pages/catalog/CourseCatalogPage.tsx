@@ -5,7 +5,9 @@ import {
   Container,
   ContentLayout,
   Header,
-  SpaceBetween
+  SpaceBetween,
+  Alert,
+  Box
 } from '@cloudscape-design/components';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -13,11 +15,12 @@ import CatalogTable from '@/components/catalog/CatalogTable';
 import { CourseCatalog } from '@/models/catalog';
 import MainLayout from '@/components/layout/MainLayout';
 import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
+import { listCatalogs } from '@/services/catalogService'; // API 호출 함수 가져오기
 
-// 임시 데이터 - 실제로는 API에서 가져옴
+// 임시 데이터 - API 연결이 실패할 경우 대체 데이터로 사용
 const MOCK_CATALOGS: CourseCatalog[] = [
   {
-    catalogId: '1',
+    id: '1',
     title: 'AWS 클라우드 기초',
     awsCode: 'AWS-100',
     version: '1.0',
@@ -27,7 +30,7 @@ const MOCK_CATALOGS: CourseCatalog[] = [
     updatedAt: new Date().toISOString()
   },
   {
-    catalogId: '2',
+    id: '2',
     title: 'Amazon S3 심화 과정',
     awsCode: 'AWS-203',
     version: '2.1',
@@ -37,7 +40,7 @@ const MOCK_CATALOGS: CourseCatalog[] = [
     updatedAt: new Date(Date.now() - 86400000).toISOString()
   },
   {
-    catalogId: '3', 
+    id: '3', 
     title: 'AWS Lambda와 서버리스 아키텍처',
     awsCode: 'AWS-305',
     version: '3.2',
@@ -52,28 +55,54 @@ const CourseCatalogPage: React.FC = () => {
   const { t } = useTranslation(['catalog', 'common', 'navigation']);
   const [catalogs, setCatalogs] = useState<CourseCatalog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [useMockData, setUseMockData] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // 실제로는 API 호출하여 데이터를 가져옴
-    const fetchCatalogs = async () => {
-      try {
-        // API 호출 시뮬레이션
-        setTimeout(() => {
-          setCatalogs(MOCK_CATALOGS);
-          setLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error('카탈로그 데이터를 불러오는 데 실패했습니다:', error);
-        setLoading(false);
-      }
-    };
+  const loadCatalogs = async (useFallback = false) => {
+    setLoading(true);
+    setError(null);
 
-    fetchCatalogs();
+    try {
+      if (useFallback) {
+        // 목업 데이터 사용
+        setCatalogs(MOCK_CATALOGS);
+        setUseMockData(true);
+      } else {
+        // 실제 API 호출
+        const data = await listCatalogs();
+        setCatalogs(data);
+        setUseMockData(false);
+      }
+    } catch (err: any) {
+      console.error('카탈로그 데이터를 불러오는 데 실패했습니다:', err);
+      setError(t('catalog:errors.fetchFailed'));
+      
+      // API 호출 실패 시 자동으로 목업 데이터 사용
+      if (!useFallback) {
+        console.log('목업 데이터로 대체합니다.');
+        setCatalogs(MOCK_CATALOGS);
+        setUseMockData(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCatalogs();
   }, []);
 
+  const handleRetry = () => {
+    loadCatalogs();
+  };
+
+  const handleFallback = () => {
+    loadCatalogs(true);
+  };
+
   const handleViewDetails = (catalog: CourseCatalog) => {
-    navigate(`/instructor/catalog/\${catalog.catalogId}`);
+    navigate(`/instructor/catalog/\${catalog.id}`); // 수정된 템플릿 리터럴
   };
 
   const handleCreateCatalog = () => {
@@ -105,12 +134,48 @@ const CourseCatalogPage: React.FC = () => {
           />
         }
       >
+        {error && (
+          <Alert
+            type="error"
+            header={t('common:error')}
+            action={
+              <SpaceBetween direction="horizontal" size="xs">
+                <Button onClick={handleRetry}>{t('common:retry')}</Button>
+                {!useMockData && (
+                  <Button onClick={handleFallback}>{t('catalog:actions.useMockData')}</Button>
+                )}
+              </SpaceBetween>
+            }
+            dismissible
+            onDismiss={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {useMockData && !error && (
+          <Alert
+            type="info"
+            header={t('catalog:mockData.title')}
+            action={<Button onClick={handleRetry}>{t('catalog:actions.tryRealData')}</Button>}
+            dismissible
+          >
+            {t('catalog:mockData.description')}
+          </Alert>
+        )}
+
         <Container>
           <CatalogTable
             catalogs={catalogs}
             loading={loading}
             onViewDetails={handleViewDetails}
           />
+          
+          {!loading && catalogs.length === 0 && !error && (
+            <Box textAlign="center" padding="l">
+              {t('catalog:noCatalogs')}
+            </Box>
+          )}
         </Container>
       </ContentLayout>
     </MainLayout>

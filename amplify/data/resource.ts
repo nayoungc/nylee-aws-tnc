@@ -1,61 +1,38 @@
-// import { type ClientSchema, a, defineData } from '@aws-amplify/backend/data';
+// amplify/data/resource.ts
+// amplify/data/resource.ts
+import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-// // 스키마 정의
-// const schema = a.schema({
-//   Course: a
-//     .model({
-//       code: a.string().required(),
-//       title: a.string().required(),
-//       description: a.string(),
-//       category: a.string().required(),
-//       duration: a.integer().required(),
-//       level: a.enum(['beginner', 'intermediate', 'advanced']),
-//       prerequisites: a.string().array(),
-//       createdAt: a.timestamp(),
-//       updatedAt: a.timestamp(),
-//     })
-//     .authorization(allow => [
-//       allow.public().to(['read']),
-//       allow.authenticated().to(['create', 'update', 'delete']),
-//     ]),
+const schema = a.schema({
+  CourseCatalog: a
+    .model({
+      // id가 기본 키가 되며 a.id()를 사용
+      id: a.id().required(),
+      title: a.string().required(),
+      awsCode: a.string(),
+      version: a.string(),
+      durations: a.integer(),
+      level: a.string(),
+      description: a.string(),
+      category: a.string(),
+      tags: a.list(a.string()),        // a.array() → a.list() 로 변경
+      prerequisites: a.list(a.string()), // a.array() → a.list() 로 변경
+      objectives: a.list(a.string()),    // a.array() → a.list() 로 변경
+      status: a.enum(['active', 'draft', 'archived']),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+      createdBy: a.string()
+    })
+    .authorization(allow => [allow.publicApiKey()])
+});
 
-//   Customer: a
-//     .model({
-//       name: a.string().required(),
-//       contactName: a.string().required(),
-//       contactEmail: a.string().required(),
-//       contactPhone: a.string().required(),
-//       address: a.string(),
-//       active: a.boolean().required(),
-//       createdAt: a.timestamp(),
-//       updatedAt: a.timestamp(),
-//     })
-//     .authorization(allow => [
-//       allow.authenticated().to(['read', 'create', 'update', 'delete']),
-//     ]),
+export type Schema = ClientSchema<typeof schema>;
 
-//   Instructor: a
-//     .model({
-//       name: a.string().required(),
-//       email: a.string().required(),
-//       phone: a.string(),
-//       bio: a.string(),
-//       specialties: a.string().array().required(),
-//       active: a.boolean(),
-//       createdAt: a.timestamp(),
-//       updatedAt: a.timestamp(),
-//     })
-//     .authorization(allow => [
-//       allow.authenticated().to(['read', 'create', 'update', 'delete']),
-//     ]),
-// });
-
-// export type Schema = ClientSchema<typeof schema>;
-
-// // 데이터 리소스 정의
-// export const data = defineData({
-//   schema,
-//   authorizationModes: {
-//     defaultAuthorizationMode: 'userPool',
-//   },
-// });
+export const data = defineData({
+  schema,
+  authorizationModes: {
+    defaultAuthorizationMode: 'apiKey',
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30
+    }
+  }
+});

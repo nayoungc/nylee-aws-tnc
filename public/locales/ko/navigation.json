@@ -1,0 +1,31 @@
+{
+  "header": "내비게이션",
+  "tnc": "이용약관",
+  "dashboard": "대시보드",
+  "resources": "학습자료",
+  "calendar": "일정",
+  
+  "instructor": {
+    "title": "강사 메뉴",
+    "courseManagementGroup": "과정 관리",
+    "courseManagement": "과정 관리",
+    "catalog": "과정 카탈로그",
+    
+    "assessmentToolsGroup": "평가 도구 관리",
+    "quizzes": "퀴즈",
+    "surveys": "설문조사",
+    
+    "managementToolsGroup": "관리 도구",
+    "reports": "보고서",
+    "statistics": "통계"
+  },
+  
+  "admin": {
+    "title": "관리자",
+    "dashboard": "관리자 대시보드",
+    "users": "사용자 관리",
+    "calendar": "일정 관리",
+    "announcements": "공지사항 관리",
+    "settings": "시스템 설정"
+  }
+}

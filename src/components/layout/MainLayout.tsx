@@ -31,73 +31,60 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     { type: 'link' as const, text: t('navigation:calendar'), href: '/calendar' }
   ] : [];
   
-  // 강사용 메뉴 항목 - 수정된 부분: 올바른 구조로 변경
-  const instructorItems = isInstructor || isAdmin ? [
-    // 구분선
-    { type: 'divider' as const },
-    
-    // 강사용 섹션
-    { 
-      type: 'section' as const, 
-      text: t('navigation:instructor.title'),
-      items: [
-        // 과정 관리
-        { 
-          type: 'link' as const, 
-          text: t('navigation:instructor.courseManagement'), 
-          href: '/instructor/courses'
-        },
-        
-        // 과정 카탈로그
-        { 
-          type: 'link' as const, 
-          text: t('navigation:instructor.catalog'), 
-          href: '/instructor/catalog'
-        },
-        
-        // 퀴즈
-        { 
-          type: 'link' as const, 
-          text: t('navigation:instructor.quizzes'), 
-          href: '/instructor/quizzes'
-        },
-        
-        // 설문조사
-        { 
-          type: 'link' as const, 
-          text: t('navigation:instructor.surveys'), 
-          href: '/instructor/surveys'
-        },
-        
-        // 보고서
-        { 
-          type: 'link' as const, 
-          text: t('navigation:instructor.reports'), 
-          href: '/instructor/reports'
-        },
-        
-        // 통계
-        { 
-          type: 'link' as const, 
-          text: t('navigation:instructor.statistics'), 
-          href: '/instructor/statistics'
-        }
-      ]
-    } 
-  ] : [];
+  // 강사용 메뉴 항목
+const instructorItems = isInstructor || isAdmin ? [
+  { type: 'divider' as const },
+  { 
+    type: 'section' as const, 
+    text: t('navigation:instructor.title'),
+    items: [
+      // 과정 관리 그룹
+      {
+        type: 'expandable-link-group' as const,
+        text: t('navigation:instructor.courseManagementGroup'),
+        href: '/instructor/courses', // 기본 링크 추가
+        items: [
+          { type: 'link' as const, text: t('navigation:instructor.courseManagement'), href: '/instructor/courses' },
+          { type: 'link' as const, text: t('navigation:instructor.catalog'), href: '/instructor/catalog' }
+        ]
+      },
+      
+      // 평가 도구 관리 그룹
+      {
+        type: 'expandable-link-group' as const,
+        text: t('navigation:instructor.assessmentToolsGroup'),
+        href: '/instructor/quizzes', // 기본 링크 추가
+        items: [
+          { type: 'link' as const, text: t('navigation:instructor.quizzes'), href: '/instructor/quizzes' },
+          { type: 'link' as const, text: t('navigation:instructor.surveys'), href: '/instructor/surveys' }
+        ]
+      },
+      
+      // 관리 도구 그룹
+      {
+        type: 'expandable-link-group' as const,
+        text: t('navigation:instructor.managementToolsGroup'),
+        href: '/instructor/reports', // 기본 링크 추가
+        items: [
+          { type: 'link' as const, text: t('navigation:instructor.reports'), href: '/instructor/reports' },
+          { type: 'link' as const, text: t('navigation:instructor.statistics'), href: '/instructor/statistics' }
+        ]
+      }
+    ]
+  } 
+] : [];
   
   // 관리자용 메뉴 항목
   const adminItems = isAdmin ? [
-    // 구분선
     { type: 'divider' as const },
-    
-    // 관리자 섹션
     {
       type: 'section' as const,
       text: t('navigation:admin.title'),
       items: [
         { type: 'link' as const, text: t('navigation:admin.dashboard'), href: '/admin/dashboard' },
         { type: 'link' as const, text: t('navigation:admin.users'), href: '/admin/users' },
+        { type: 'link' as const, text: t('navigation:admin.calendar'), href: '/admin/calendar' },
+        { type: 'link' as const, text: t('navigation:admin.announcements'), href: '/admin/announcements' },
         { type: 'link' as const, text: t('navigation:admin.settings'), href: '/admin/settings' }
       ]
     }

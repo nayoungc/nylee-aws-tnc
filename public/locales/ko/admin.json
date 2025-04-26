@@ -1,7 +1,54 @@
 {
-    "title": "관리자 설정",
-    "role": "관리자",
-    "dashboard": "관리자 대시보드",
-    "users": "사용자 관리",
-    "settings": "시스템 설정"
+  "title": "관리자 대시보드",
+  "catalog": {
+    "title": "교육 과정 카탈로그 관리",
+    "description": "AWS 교육 과정 카탈로그를 관리할 수 있습니다.",
+    "courseList": "카탈로그 목록",
+    "noCatalogs": "등록된 카탈로그가 없습니다",
+    "createPrompt": "새 교육 과정 카탈로그를 등록해보세요",
+    "noDescription": "설명이 없습니다",
+    "fields": {
+      "title": "제목",
+      "awsCode": "AWS 코드",
+      "version": "버전",
+      "duration": "기간(시간)",
+      "level": "난이도",
+      "description": "설명",
+      "tags": "태그",
+      "status": "상태",
+      "prerequisites": "선수 과목",
+      "objectives": "학습 목표",
+      "category": "카테고리"
+    },
+    "levels": {
+      "beginner": "입문",
+      "intermediate": "중급",
+      "advanced": "고급"
+    },
+    "status": {
+      "draft": "초안",
+      "active": "활성",
+      "archived": "보관됨"
+    },
+    "actions": {
+      "createCatalog": "카탈로그 생성",
+      "createFirstCatalog": "첫 카탈로그 만들기",
+      "create": "생성하기"
+    },
+    "errors": {
+      "loadFailed": "카탈로그 데이터를 불러오는데 실패했습니다"
+    },
+    "modals": {
+      "create": {
+        "title": "새 교육 과정 카탈로그 생성"
+      },
+      "edit": {
+        "title": "교육 과정 카탈로그 편집"
+      },
+      "delete": {
+        "title": "카탈로그 삭제",
+        "confirmation": "정말로 '{{title}}' 카탈로그를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      }
+    }
   }
+}

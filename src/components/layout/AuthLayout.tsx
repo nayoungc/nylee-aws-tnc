@@ -1,6 +1,5 @@
 // src/components/layout/AuthLayout.tsx
 import React from 'react';
-import { Box, Container, Header } from '@cloudscape-design/components';
 import { Link } from 'react-router-dom';
 
 interface AuthLayoutProps {
@@ -9,122 +8,97 @@ interface AuthLayoutProps {
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   return (
-    <div className="auth-layout-root" style={{
+    <div style={{
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
       backgroundColor: '#f2f3f3',
       backgroundImage: 'linear-gradient(to bottom, #f8f8f8, #e9f0f8)'
     }}>
-      {/* 헤더 영역 */}
-      <div className="auth-header" style={{
-        backgroundColor: '#232f3e',
-        padding: '16px 0',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+      {/* 헤더 부분 - 확실한 배경색과 높이 지정 */}
+      <header style={{
+        width: '100%',
+        backgroundColor: '#232f3e', // AWS 네이비 블루 컬러
+        color: '#ffffff',
+        padding: '12px 20px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+        position: 'relative',
+        zIndex: 100,
+        minHeight: '60px',
+        display: 'flex',
+        alignItems: 'center'
       }}>
-        <Container>
-          <div style={{ 
+        <div style={{ 
+          maxWidth: '1200px',
+          width: '100%',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <Link to="/" style={{ 
             display: 'flex', 
-            alignItems: 'center',
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '0 20px'
+            alignItems: 'center', 
+            textDecoration: 'none', 
+            color: '#ffffff'
           }}>
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-              <img
-                src="/images/aws-white.png"
-                alt="AWS Logo"
-                style={{ height: '30px', marginRight: '12px' }}
-              />
-              <span style={{ 
-                color: 'white', 
-                fontSize: '18px', 
-                fontWeight: 500 
-              }}>
-                AWS Management Console
-              </span>
-            </Link>
-          </div>
-        </Container>
-      </div>
+            <img
+              src="/images/aws-white.png" // 흰색 AWS 로고 (없으면 표준 로고를 사용하고 필터링)
+              alt="AWS Logo"
+              style={{ 
+                height: '30px', 
+                filter: 'brightness(0) invert(1)' // 이미지가 흰색이 아닐 경우 흰색으로 변환
+              }}
+            />
+            <span style={{ 
+              marginLeft: '12px', 
+              fontSize: '18px', 
+              fontWeight: 'bold' 
+            }}>
+              AWS Management Console
+            </span>
+          </Link>
+        </div>
+      </header>
 
       {/* 메인 콘텐츠 영역 */}
-      <div className="auth-content" style={{
+      <div style={{
         flex: 1,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         padding: '40px 20px'
       }}>
-        <div className="auth-card" style={{
+        <div style={{
           maxWidth: '420px',
           width: '100%',
           backgroundColor: '#ffffff',
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1)',
           padding: '32px',
-          transition: 'transform 0.2s ease-in-out',
-          animation: 'fadeIn 0.5s ease-out'
         }}>
           {children}
         </div>
       </div>
-
+      
       {/* 푸터 영역 */}
-      <div className="auth-footer" style={{
+      <footer style={{
+        width: '100%',
         borderTop: '1px solid #e9ebed',
-        padding: '24px 0',
-        backgroundColor: '#fff'
+        padding: '16px 0',
+        backgroundColor: '#f8f8f8',
+        textAlign: 'center',
+        color: '#687078',
+        fontSize: '12px'
       }}>
-        <Container>
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            alignItems: 'center',
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '0 20px',
-            fontSize: '12px',
-            color: '#687078'
-          }}>
-            <div style={{ marginBottom: '8px' }}>
-              <a href="https://aws.amazon.com/privacy/" style={{ color: '#0073bb', marginRight: '16px', textDecoration: 'none' }}>Privacy Policy</a>
-              <a href="https://aws.amazon.com/terms/" style={{ color: '#0073bb', marginRight: '16px', textDecoration: 'none' }}>Terms of Use</a>
-              <a href="https://aws.amazon.com/contact-us/" style={{ color: '#0073bb', textDecoration: 'none' }}>Contact Us</a>
-            </div>
-            <div>
-              © {new Date().getFullYear()}, Amazon Web Services, Inc. or its affiliates. All rights reserved.
-            </div>
-          </div>
-        </Container>
-      </div>
-
-      {/* CSS 애니메이션 */}
-      <style>
-        {`
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          
-          .auth-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.12);
-          }
-          
-          @media (max-width: 480px) {
-            .auth-card {
-              padding: 24px;
-            }
-          }
-        `}
-      </style>
+        <div style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto',
+          padding: '0 20px' 
+        }}>
+          © {new Date().getFullYear()} Amazon Web Services, Inc. or its affiliates. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 };
