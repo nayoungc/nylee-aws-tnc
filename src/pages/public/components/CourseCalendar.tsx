@@ -1,26 +1,19 @@
 // src/pages/public/components/CourseCalendar.tsx
-import React, { useState } from 'react';
-import {
-  Calendar,
-  Box,
-  SpaceBetween,
-  Container,
-  Header,
-  Grid,
-  Cards,
-  Badge,
-  Button,
-  ColumnLayout,
-  Select,
-} from '@cloudscape-design/components';
-import { useTranslation } from 'react-i18next';
-import BoardItem from "@cloudscape-design/board-components/board-item";
 import Board from "@cloudscape-design/board-components/board";
-
-interface CalendarDateInfo {
-  day: number;
-  date: Date;
-}
+import BoardItem from "@cloudscape-design/board-components/board-item";
+import {
+  Badge,
+  Box,
+  Button,
+  Calendar,
+  Container,
+  Grid,
+  Header,
+  SpaceBetween,
+  Tabs
+} from '@cloudscape-design/components';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // 강의 타입 정의
 interface Course {
@@ -45,6 +38,53 @@ interface BoardItemData {
 
 // 캘린더 데이터를 위한 Record 타입 정의
 type CoursesCalendarData = Record<string, Course[]>;
+
+// 이벤트 날짜 목록 컴포넌트
+interface EventDateListProps {
+  month: number; // 0-11 사이의 월 (0: 1월, 11: 12월)
+  courses: CoursesCalendarData;
+  selectedDate: string | null;
+  onSelectDate: (date: string) => void;
+}
+
+const EventDateList: React.FC<EventDateListProps> = ({ month, courses, selectedDate, onSelectDate }) => {
+  const { t } = useTranslation(['tnc']);
+  
+  // 해당 월에 이벤트가 있는 날짜 필터링
+  const eventsInMonth = Object.keys(courses).filter(date => {
+    const eventDate = new Date(date);
+    return eventDate.getMonth() === month;
+  });
+  
+  return (
+    <Box padding={{ top: 's' }}>
+      <Header variant="h3">{t('tnc:calendar.events_this_month', '교육 일정')}</Header>
+      {eventsInMonth.length > 0 ? (
+        <Box padding={{ left: 's' }}>
+          <SpaceBetween size="xs">
+            {eventsInMonth.map(date => {
+              const eventDate = new Date(date);
+              return (
+                <Button
+                  key={date}
+                  variant={selectedDate === date ? "primary" : "link"}
+                  onClick={() => onSelectDate(date)}
+                  iconName="calendar"
+                >
+                  {eventDate.getDate()}일 - {courses[date].length}개 과정
+                </Button>
+              );
+            })}
+          </SpaceBetween>
+        </Box>
+      ) : (
+        <Box color="text-body-secondary" padding={{ top: 's', left: 's' }}>
+          {t('tnc:calendar.no_events_this_month', '이 달에 예정된 교육이 없습니다')}
+        </Box>
+      )}
+    </Box>
+  );
+};
 
 // 샘플 교육 과정 데이터
 const sampleCourses: CoursesCalendarData = {
@@ -112,11 +152,7 @@ const CourseCalendar: React.FC = () => {
     type: 'all',
     level: 'all'
   });
-
-  // 현재 월과 다음 월을 보여주기 위한 상태
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const nextMonth = new Date(currentMonth);
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  const [activeTabId, setActiveTabId] = useState<string>("current-month");
 
   // 날짜를 선택했을 때 실행되는 함수
   const handleDateSelect = (date: string) => {
@@ -165,11 +201,6 @@ const CourseCalendar: React.FC = () => {
   const handleEnrollment = (courseId: string) => {
     console.log(`Enrolling in course: \${courseId}`);
     // 실제 등록 로직 구현 필요
-  };
-
-  // 월 변경 핸들러
-  const handleMonthChange = (date: Date) => {
-    setCurrentMonth(date);
   };
 
   // Board 컴포넌트 i18n 스트링 설정
@@ -248,128 +279,96 @@ const CourseCalendar: React.FC = () => {
           }
         >
           <SpaceBetween size="m">
-            {/* 필터링 옵션 */}
-            <ColumnLayout columns={2}>
-              <Select
-                selectedOption={{
-                  value: filters.type, label: filters.type === 'all' ?
-                    t('tnc:calendar.all_types', '모든 유형') :
-                    t(`tnc:calendar.type_\${filters.type}`, filters.type)
-                }}
-                onChange={({ detail }) => handleFilterChange('type', detail.selectedOption.value)}
-                options={[
-                  { value: 'all', label: t('tnc:calendar.all_types', '모든 유형') },
-                  { value: '온라인', label: t('tnc:calendar.type_online', '온라인') },
-                  { value: '오프라인', label: t('tnc:calendar.type_offline', '오프라인') }
-                ]}
-              />
-              <Select
-                selectedOption={{
-                  value: filters.level, label: filters.level === 'all' ?
-                    t('tnc:calendar.all_levels', '모든 수준') :
-                    t(`tnc:calendar.level_\${filters.level}`, filters.level)
-                }}
-                onChange={({ detail }) => handleFilterChange('level', detail.selectedOption.value)}
-                options={[
-                  { value: 'all', label: t('tnc:calendar.all_levels', '모든 수준') },
-                  { value: '초급', label: t('tnc:calendar.level_beginner', '초급') },
-                  { value: '중급', label: t('tnc:calendar.level_intermediate', '중급') },
-                  { value: '고급', label: t('tnc:calendar.level_advanced', '고급') }
-                ]}
-              />
-            </ColumnLayout>
+            {/* 탭 UI로 월 전환 */}
+            <Tabs
+              activeTabId={activeTabId}
+              onChange={({detail}) => setActiveTabId(detail.activeTabId)}
+              tabs={[
+                {
+                  label: t('tnc:calendar.current_month', '이번 달'),
+                  id: "current-month",
+                  content: (
+                    <Box>
+                      <Calendar
+                        value={selectedDate || ""}
+                        onChange={({ detail }) => handleDateSelect(detail.value)}
+                        locale={t('common:locale', 'ko-KR')}
+                        startOfWeek={0}
+                        isDateEnabled={() => true}
+                        i18nStrings={{
+                          todayAriaLabel: t('tnc:calendar.today', '오늘'),
+                          previousMonthAriaLabel: t('tnc:calendar.previous_month', '이전 달'),
+                          nextMonthAriaLabel: t('tnc:calendar.next_month', '다음 달')
+                        }}
+                        ariaLabelledby="calendar-heading"
+                      />
+                      
+                      {/* 이번 달 교육 일정 목록 */}
+                      <EventDateList
+                        month={new Date().getMonth()}
+                        courses={sampleCourses}
+                        selectedDate={selectedDate}
+                        onSelectDate={handleDateSelect}
+                      />
+                    </Box>
+                  )
+                },
+                {
+                  label: t('tnc:calendar.next_month', '다음 달'),
+                  id: "next-month",
+                  content: (
+                    <Box>
+                      <Calendar
+                        value={selectedDate || ""}
+                        onChange={({ detail }) => handleDateSelect(detail.value)}
+                        locale={t('common:locale', 'ko-KR')}
+                        startOfWeek={0}
+                        isDateEnabled={() => true}
+                        i18nStrings={{
+                          todayAriaLabel: t('tnc:calendar.today', '오늘'),
+                          previousMonthAriaLabel: t('tnc:calendar.previous_month', '이전 달'),
+                          nextMonthAriaLabel: t('tnc:calendar.next_month', '다음 달')
+                        }}
+                        ariaLabelledby="next-calendar-heading"
+                      />
+                      
+                      {/* 다음 달 교육 일정 목록 */}
+                      <EventDateList
+                        month={(new Date().getMonth() + 1) % 12}
+                        courses={sampleCourses}
+                        selectedDate={selectedDate}
+                        onSelectDate={handleDateSelect}
+                      />
+                    </Box>
+                  )
+                }
+              ]}
+            />
 
-            {/* 현재 월 캘린더 */}
-            <Box>
-              <Header variant="h3">{t('tnc:calendar.current_month', '이번 달')}</Header>
-              <Calendar
-                value={selectedDate || ""}
-                onChange={({ detail }) => handleDateSelect(detail.value)}
-                locale={t('common:locale', 'ko-KR')}
-                startOfWeek={0}
-                isDateEnabled={() => true}
-                i18nStrings={{
-                  todayAriaLabel: t('tnc:calendar.today', '오늘'),
-                  previousMonthAriaLabel: t('tnc:calendar.previous_month', '이전 달'),
-                  nextMonthAriaLabel: t('tnc:calendar.next_month', '다음 달')
-                }}
-                ariaLabelledby="calendar-heading"
-                // 강의가 있는 날짜 시각적으로 표시
-                renderDayContents={(day: number, date: Date) => {
-                  // YYYY-MM-DD 형식으로 날짜 변환
-                  const formattedDate = date.toISOString().split('T')[0];
-                  const hasEvent = isDateWithEvent(formattedDate);
-
-                  return (
-                    <div>
-                      <span>{day}</span>
-                      {hasEvent && (
-                        <div style={{
-                          width: '6px',
-                          height: '6px',
-                          borderRadius: '50%',
-                          backgroundColor: '#0972d3',
-                          margin: '2px auto 0'
-                        }} />
-                      )}
-                    </div>
-                  );
-                }}
-              />
-            </Box>
-
-            {/* 다음 월 캘린더 */}
-            <Box>
-              <Header variant="h3">{t('tnc:calendar.next_month', '다음 달')}</Header>
-              <Calendar
-                value={selectedDate || ""}
-                onChange={({ detail }) => handleDateSelect(detail.value)}
-                locale={t('common:locale', 'ko-KR')}
-                startOfWeek={0}
-                isDateEnabled={() => true}
-                date={nextMonth}
-                i18nStrings={{
-                  todayAriaLabel: t('tnc:calendar.today', '오늘'),
-                  previousMonthAriaLabel: t('tnc:calendar.previous_month', '이전 달'),
-                  nextMonthAriaLabel: t('tnc:calendar.next_month', '다음 달')
-                }}
-                ariaLabelledby="next-calendar-heading"
-                // 강의가 있는 날짜 시각적으로 표시
-                renderDayContents={(day, date) => {
-                  // YYYY-MM-DD 형식으로 날짜 변환
-                  const formattedDate = date.toISOString().split('T')[0];
-                  const hasEvent = isDateWithEvent(formattedDate);
-
-                  return (
-                    <div>
-                      <span>{day}</span>
-                      {hasEvent && (
-                        <div style={{
-                          width: '6px',
-                          height: '6px',
-                          borderRadius: '50%',
-                          backgroundColor: '#0972d3',
-                          margin: '2px auto 0'
-                        }} />
-                      )}
-                    </div>
-                  );
-                }}
-              />
-            </Box>
-
-            {/* 범례 */}
-            <Box padding={{ top: 's' }} color="text-body-secondary">
-              <div style={{ display: 'flex', alignItems: 'center', fontSize: '14px' }}>
-                <div style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: '#0972d3',
-                  marginRight: '5px'
-                }} />
-                {t('tnc:calendar.event_indicator', '교육 일정 있음')}
-              </div>
+            {/* 교육 일정 가이드 */}
+            <Box padding={{ top: 's' }}>
+              <SpaceBetween size="xs">
+                <Box color="text-body-secondary" fontSize="body-s">
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: '#0972d3',
+                      marginRight: '5px'
+                    }} />
+                    {t('tnc:calendar.dates_with_courses', '교육 과정이 있는 날짜')}
+                  </div>
+                </Box>
+                <Box color="text-body-secondary" fontSize="body-s">
+                  {selectedDate ?
+                    (sampleCourses[selectedDate] ?
+                      t('tnc:calendar.courses_found', '{{count}}개 과정 찾음', { count: sampleCourses[selectedDate].length }) :
+                      t('tnc:calendar.no_courses_found', '과정 없음')) :
+                    t('tnc:calendar.select_date_to_view', '날짜를 선택하여 과정 확인')
+                  }
+                </Box>
+              </SpaceBetween>
             </Box>
           </SpaceBetween>
         </Container>

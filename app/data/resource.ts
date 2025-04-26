@@ -41,4 +41,4 @@ export const schema = {
       facilities: { type: 'String', isList: true }
     }
   }
-} satisfies ClientSchema;
+};

@@ -1,31 +1,84 @@
 // src/models/events.ts
-export interface CalendarEvent {
-  id: string;
-  title: string;
-  date: string;
-  type: 'lecture' | 'session';
-  description: string;
-  location: string;
-  instructor?: string;
+import { z } from 'zod';
+
+// 이벤트 타입 enum
+export enum EventType {
+  LECTURE = 'LECTURE',
+  SESSION = 'SESSION',
+  WORKSHOP = 'WORKSHOP',
+  CERTIFICATION = 'CERTIFICATION'
 }
-  
- // 목업 이벤트 데이터 (2개만 포함)
-export const calendarEvents: CalendarEvent[] = [
-  {
-    id: '1',
-    title: 'AWS 클라우드 아키텍처 기초',
-    date: '2023-12-15T10:00:00',
-    type: 'lecture',
-    description: 'AWS 클라우드 서비스 기초 및 아키텍처 설계 원칙',
-    location: '온라인 강의실 A',
-    instructor: '김철수 교수'
-  },
-  {
-    id: '2',
-    title: 'Amplify 배포 실습',
-    date: '2023-12-18T14:30:00',
-    type: 'session',
-    description: 'AWS Amplify를 활용한 웹 애플리케이션 배포 실습',
-    location: '온라인 실습실 B'
-  }
-];
+
+// 등록 상태 enum
+export enum RegistrationStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED'
+}
+
+// 이벤트 스키마 정의
+export const CalendarEventSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  date: z.string(),  // ISO 형식의 날짜 문자열
+  startTime: z.string(),
+  endTime: z.string().optional(),
+  type: z.nativeEnum(EventType),
+  description: z.string(),
+  location: z.string(),
+  instructor: z.string().optional(),
+  maxAttendees: z.number().optional(),
+  currentAttendees: z.number().optional(),
+  isRegistrationOpen: z.boolean(),
+  tags: z.array(z.string()).optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional()
+});
+
+// 등록 스키마 정의
+export const EventRegistrationSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  event: CalendarEventSchema.optional(),
+  userId: z.string(),
+  userName: z.string(),
+  userEmail: z.string().email(),
+  status: z.nativeEnum(RegistrationStatus),
+  createdAt: z.string().optional()
+});
+
+// 타입 추출
+export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+export type EventRegistration = z.infer<typeof EventRegistrationSchema>;
+
+// 날짜 유틸리티 함수
+export const extractDateOnly = (isoDate: string): string => {
+  return isoDate.split('T')[0];
+};
+
+export const getDisplayTime = (event: CalendarEvent): string => {
+  return event.endTime 
+    ? `\${event.startTime} - \${event.endTime}`
+    : event.startTime;
+};
+
+// 타입 매핑 함수 (GraphQL 응답을 모델 객체로 변환)
+export const mapGraphQLEventToModel = (graphqlEvent: any): CalendarEvent => {
+  return {
+    id: graphqlEvent.id,
+    title: graphqlEvent.title,
+    date: graphqlEvent.date,
+    startTime: graphqlEvent.startTime,
+    endTime: graphqlEvent.endTime || undefined,
+    type: graphqlEvent.type,
+    description: graphqlEvent.description,
+    location: graphqlEvent.location,
+    instructor: graphqlEvent.instructor || undefined,
+    maxAttendees: graphqlEvent.maxAttendees || undefined,
+    currentAttendees: graphqlEvent.currentAttendees || undefined,
+    isRegistrationOpen: graphqlEvent.isRegistrationOpen || true,
+    tags: graphqlEvent.tags || undefined,
+    createdAt: graphqlEvent.createdAt,
+    updatedAt: graphqlEvent.updatedAt
+  };
+};
