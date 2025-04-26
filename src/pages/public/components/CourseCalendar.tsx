@@ -49,13 +49,13 @@ interface EventDateListProps {
 
 const EventDateList: React.FC<EventDateListProps> = ({ month, courses, selectedDate, onSelectDate }) => {
   const { t } = useTranslation(['tnc']);
-  
+
   // 해당 월에 이벤트가 있는 날짜 필터링
   const eventsInMonth = Object.keys(courses).filter(date => {
     const eventDate = new Date(date);
     return eventDate.getMonth() === month;
   });
-  
+
   return (
     <Box padding={{ top: 's' }}>
       <Header variant="h3">{t('tnc:calendar.events_this_month', '교육 일정')}</Header>
@@ -282,7 +282,7 @@ const CourseCalendar: React.FC = () => {
             {/* 탭 UI로 월 전환 */}
             <Tabs
               activeTabId={activeTabId}
-              onChange={({detail}) => setActiveTabId(detail.activeTabId)}
+              onChange={({ detail }) => setActiveTabId(detail.activeTabId)}
               tabs={[
                 {
                   label: t('tnc:calendar.current_month', '이번 달'),
@@ -302,7 +302,7 @@ const CourseCalendar: React.FC = () => {
                         }}
                         ariaLabelledby="calendar-heading"
                       />
-                      
+
                       {/* 이번 달 교육 일정 목록 */}
                       <EventDateList
                         month={new Date().getMonth()}
@@ -331,7 +331,7 @@ const CourseCalendar: React.FC = () => {
                         }}
                         ariaLabelledby="next-calendar-heading"
                       />
-                      
+
                       {/* 다음 달 교육 일정 목록 */}
                       <EventDateList
                         month={(new Date().getMonth() + 1) % 12}
@@ -398,18 +398,15 @@ const CourseCalendar: React.FC = () => {
                           resizeHandleAriaDescription: t('tnc:calendar.resize_handle_desc', '스페이스바나 엔터 키를 눌러 크기 조절을 활성화하고, 화살표 키로 이동, 스페이스바나 엔터 키로 확인, 또는 Escape로 취소합니다.')
                         }}
                         header={
-                          <Header
-                            actions={
-                              <Button
-                                variant="primary"
-                                onClick={() => handleEnrollment(course.id)}
-                              >
-                                {t('tnc:calendar.enroll', '등록하기')}
-                              </Button>
-                            }
-                          >
-                            {course.title}
-                          </Header>
+                          <SpaceBetween size="m">
+                            <Box textAlign="center" fontSize="heading-m" fontWeight="bold">
+                              {course.title}
+                            </Box>
+                            <Box textAlign="right">
+                            <Badge color="red">EVENT</Badge>
+                            <Badge color="severity-medium">CLASS</Badge>;
+                            </Box>
+                          </SpaceBetween>
                         }
                         footer={
                           <Box>
@@ -424,9 +421,7 @@ const CourseCalendar: React.FC = () => {
                               }>
                                 {course.level}
                               </Badge>
-                              <Badge color={course.remainingSeats <= 5 ? 'red' : 'green'}>
-                                {t('tnc:calendar.seats_remaining', '남은 좌석: {{count}}', { count: course.remainingSeats })}
-                              </Badge>
+                              <Badge color='red'>Amazon Bedrock</Badge>
                             </SpaceBetween>
                           </Box>
                         }
@@ -445,10 +440,6 @@ const CourseCalendar: React.FC = () => {
                               <div>{course.time}</div>
                             </div>
                           </Grid>
-                          <div>
-                            <Box variant="awsui-key-label">{t('tnc:calendar.location', '장소')}</Box>
-                            <div>{course.location}</div>
-                          </div>
                         </SpaceBetween>
                       </BoardItem>
                     );

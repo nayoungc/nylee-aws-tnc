@@ -1,4 +1,4 @@
-// src/pages/instructor/CatalogPage.tsx
+// src/pages/instructor/CatalogList.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

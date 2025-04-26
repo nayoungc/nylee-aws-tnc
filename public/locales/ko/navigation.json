@@ -1,31 +1,98 @@
 {
-  "header": "내비게이션",
-  "tnc": "이용약관",
-  "dashboard": "대시보드",
-  "resources": "학습자료",
-  "calendar": "일정",
-  
+  "header": {
+    "title": "AWS T&C 교육 포털",
+    "logo": {
+      "alt": "AWS 로고"
+    }
+  },
+  "theme": {
+    "title": "테마",
+    "light": "밝은 테마",
+    "dark": "어두운 테마"
+  },
+  "language": {
+    "label": "언어"
+  },
+  "user": {
+    "account": "계정",
+    "profile": "프로필",
+    "settings": "설정",
+    "signOut": "로그아웃",
+    "login": "로그인"
+  },
+  "role": {
+    "admin": "관리자",
+    "instructor": "강사",
+    "student": "학생"
+  },
+  "admin": {
+    "title": "관리자 도구",
+    "dashboard": "관리자 대시보드",
+    "userManagement": "사용자 관리",
+    "users": "사용자 관리",
+    "roleManagement": "역할 관리",
+    "courseManagement": "강의 관리",
+    "catalogManagement": "카탈로그 관리",
+    "systemManagement": "시스템 관리",
+    "calendar": "일정 관리",
+    "announcements": "공지사항 관리",
+    "settings": "시스템 설정",
+    "reports": "보고서",
+    "courseSection": "강의",
+    "userSection": "사용자",
+    "notifications": "알림"
+  },
   "instructor": {
-    "title": "강사 메뉴",
-    "courseManagementGroup": "과정 관리",
-    "courseManagement": "과정 관리",
-    "catalog": "과정 카탈로그",
-    
-    "assessmentToolsGroup": "평가 도구 관리",
+    "title": "강사 도구",
+    "catalog": "강의 카탈로그",
+    "courseManagement": "강의 관리",
+    "courseManagementGroup": "강의 관리",
+    "assessmentToolsGroup": "평가 도구",
     "quizzes": "퀴즈",
     "surveys": "설문조사",
-    
     "managementToolsGroup": "관리 도구",
     "reports": "보고서",
     "statistics": "통계"
   },
-  
-  "admin": {
-    "title": "관리자",
-    "dashboard": "관리자 대시보드",
-    "users": "사용자 관리",
-    "calendar": "일정 관리",
-    "announcements": "공지사항 관리",
-    "settings": "시스템 설정"
+  "student": {
+    "dashboard": "대시보드",
+    "myCourses": "내 강의",
+    "catalog": "강의 카탈로그",
+    "certifications": "내 자격증"
+  },
+  "navigation": {
+    "header": "내비게이션",
+    "home": "홈",
+    "tnc": "AWS T&C 포털",
+    "courses": "강의",
+    "myCourses": "내 강의",
+    "resources": "자료",
+    "documents": "문서",
+    "videos": "동영상",
+    "labs": "실습",
+    "calendar": "일정",
+    "support": "지원",
+    "about": "소개",
+    "dashboard": "대시보드",
+    "userSection": "내 계정",
+    "supportSection": "지원 및 자료",
+    "help": "도움말",
+    "feedback": "피드백 보내기",
+    "aws": "AWS 방문",
+    "externalLinkAriaLabel": "새 탭에서 열림"
+  },
+  "search": {
+    "ariaLabel": "검색",
+    "dismissAriaLabel": "검색 닫기",
+    "placeholder": "검색어 입력"
+  },
+  "overflow": {
+    "triggerText": "더 보기",
+    "titleText": "메뉴",
+    "backAriaLabel": "뒤로",
+    "dismissAriaLabel": "닫기"
+  },
+  "badge": {
+    "new": "신규"
   }
 }
