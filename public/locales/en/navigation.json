@@ -1,98 +1,48 @@
 {
+  "navigation": {
+    "tnc": "Training & Certification",
+    "dashboard": "Dashboard",
+    "myCourses": "My Courses",
+    "resources": "Resources",
+    "calendar": "Calendar",
+    "supportSection": "Support & Resources",
+    "help": "Help Center",
+    "feedback": "Provide Feedback",
+    "aws": "AWS Website",
+    "externalLinkAriaLabel": "Opens in a new tab",
+    "userSection": "Learning"
+  },
+  "badge": {
+    "new": "NEW"
+  },
   "header": {
-    "title": "AWS T&C Education Portal",
+    "title": "AWS Training & Certification",
     "logo": {
       "alt": "AWS Logo"
     }
   },
-  "theme": {
-    "title": "Theme",
-    "light": "Light",
-    "dark": "Dark"
-  },
-  "language": {
-    "label": "Language"
-  },
-  "user": {
-    "account": "Account",
-    "profile": "Profile",
-    "settings": "Settings",
-    "signOut": "Sign Out",
-    "login": "Login"
-  },
-  "role": {
-    "admin": "Admin",
-    "instructor": "Instructor",
-    "student": "Student"
+  "instructor": {
+    "title": "Instructor Tools",
+    "courseManagementGroup": "Course Management",
+    "courseManagement": "Manage Courses",
+    "catalog": "Course Catalog",
+    "assessmentToolsGroup": "Assessment Tools",
+    "quizzes": "Quizzes & Tests",
+    "surveys": "Surveys & Feedback",
+    "managementToolsGroup": "Management Tools",
+    "reports": "Reports",
+    "statistics": "Statistics & Analytics"
   },
   "admin": {
     "title": "Administration",
     "dashboard": "Admin Dashboard",
-    "userManagement": "User Management",
-    "users": "User Management",
-    "roleManagement": "Role Management",
+    "courseSection": "Course Administration",
     "courseManagement": "Course Management",
     "catalogManagement": "Catalog Management",
-    "systemManagement": "System Management",
-    "calendar": "Calendar Management",
-    "announcements": "Announcement Management",
+    "userSection": "User Administration",
+    "userManagement": "User Management",
+    "roleManagement": "Role Management",
     "settings": "System Settings",
-    "reports": "Reports",
-    "courseSection": "Courses",
-    "userSection": "Users",
-    "notifications": "Notifications"
-  },
-  "instructor": {
-    "title": "Instructor Tools",
-    "catalog": "Course Catalog",
-    "courseManagement": "Course Management",
-    "courseManagementGroup": "Course Management",
-    "assessmentToolsGroup": "Assessment Tools",
-    "quizzes": "Quizzes",
-    "surveys": "Surveys",
-    "managementToolsGroup": "Management Tools",
-    "reports": "Reports",
-    "statistics": "Statistics"
-  },
-  "student": {
-    "dashboard": "Dashboard",
-    "myCourses": "My Courses",
-    "catalog": "Course Catalog",
-    "certifications": "My Certifications"
-  },
-  "navigation": {
-    "header": "Navigation",
-    "home": "Home",
-    "tnc": "AWS T&C Portal",
-    "courses": "Courses",
-    "myCourses": "My Courses",
-    "resources": "Resources",
-    "documents": "Documents",
-    "videos": "Videos",
-    "labs": "Labs",
-    "calendar": "Calendar",
-    "support": "Support",
-    "about": "About Us",
-    "dashboard": "Dashboard",
-    "userSection": "My Account",
-    "supportSection": "Support & Resources",
-    "help": "Help Center",
-    "feedback": "Send Feedback",
-    "aws": "Visit AWS",
-    "externalLinkAriaLabel": "Opens in a new tab"
-  },
-  "search": {
-    "ariaLabel": "Search",
-    "dismissAriaLabel": "Close search",
-    "placeholder": "Search"
-  },
-  "overflow": {
-    "triggerText": "More",
-    "titleText": "Menu",
-    "backAriaLabel": "Back",
-    "dismissAriaLabel": "Close"
-  },
-  "badge": {
-    "new": "New"
+    "notifications": "System Notifications"
   }
 }

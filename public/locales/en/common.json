@@ -1,50 +1,13 @@
 {
-  "app": {
-    "title": "AWS T&C Education Portal",
-    "logo_alt": "AWS Logo",
-    "copyright": "© {{year}} Amazon Web Services, Inc. or its affiliates"
-  },
-  "nav": {
-    "dashboard": "Dashboard",
-    "courses": "Courses",
-    "instructors": "Instructors",
-    "customers": "Customers",
-    "settings": "Settings"
-  },
-  "actions": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "create": "Create"
-  },
   "loading": "Loading...",
-  "error": "An error occurred",
-  "unauthorized": "You don't have permission to access this page",
-  "save": "Save",
+  "error": "Error",
+  "success": "Success",
   "cancel": "Cancel",
+  "save": "Save",
   "delete": "Delete",
   "edit": "Edit",
-  "add": "Add",
-  "search": "Search",
-  "filter": "Filter",
-  "sort": "Sort",
-  "welcome": "Welcome",
-  "footer": {
-    "copyright": "© {year} Amazon Web Services, Inc. or its affiliates"
-  },
-  "pageSize": "Page Size",
-  "itemsPerPage": "Items per page",
-  "showing": "Showing",
-  "of": "of",
-  "columns": "Columns to display",
-  "retry": "Retry",
-  "pagination": {
-    "next": "Next",
-    "previous": "Previous",
-    "pageLabel": "Page {pageNumber}"
-  },
-  "errors": {
-    "loadError": "Error Loading Data"
-  }
+  "close": "Close",
+  "confirm": "Confirm",
+  "yes": "Yes",
+  "no": "No"
 }

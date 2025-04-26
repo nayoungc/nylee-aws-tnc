@@ -1,60 +1,36 @@
 {
-  "title": "Admin Dashboard",
-  "tabs": {
-    "courses": "Course Catalog",
-    "customers": "Customers",
-    "instructors": "Instructors"
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "systemStatus": "System Status",
+    "userMetrics": "User Metrics",
+    "courseMetrics": "Course Metrics"
   },
-  "courses": {
-    "title": "Course Catalog",
-    "add_course": "Add Course",
-    "edit_course": "Edit Course",
-    "delete_course": "Delete Course",
-    "code": "Code",
-    "title": "Title",
-    "description": "Description",
-    "category": "Category",
-    "duration": "Duration",
-    "level": "Level",
-    "prerequisites": "Prerequisites",
-    "search_placeholder": "Search by course name or code",
-    "no_courses": "No courses found",
-    "course_added": "Course has been added successfully",
-    "course_updated": "Course has been updated successfully",
-    "course_deleted": "Course has been deleted successfully"
+  "userManagement": {
+    "title": "User Management",
+    "createUser": "Create User",
+    "editUser": "Edit User",
+    "deleteUser": "Delete User",
+    "importUsers": "Import Users",
+    "exportUsers": "Export Users",
+    "searchPlaceholder": "Search users"
   },
-  "customers": {
-    "title": "Customer Management",
-    "add_customer": "Add Customer",
-    "edit_customer": "Edit Customer",
-    "delete_customer": "Delete Customer",
-    "name": "Company Name",
-    "contact_name": "Contact Person",
-    "contact_email": "Email",
-    "contact_phone": "Phone",
-    "address": "Address",
-    "status": "Status",
-    "search_placeholder": "Search by name or email",
-    "no_customers": "No customers found",
-    "customer_added": "Customer has been added successfully",
-    "customer_updated": "Customer has been updated successfully",
-    "customer_deleted": "Customer has been deleted successfully"
+  "roleManagement": {
+    "title": "Role Management",
+    "createRole": "Create Role",
+    "editRole": "Edit Role",
+    "deleteRole": "Delete Role",
+    "roles": {
+      "admin": "Administrator",
+      "instructor": "Instructor",
+      "student": "Student"
+    }
   },
-  "instructors": {
-    "title": "Instructor Management",
-    "add_instructor": "Add Instructor",
-    "edit_instructor": "Edit Instructor",
-    "delete_instructor": "Delete Instructor",
-    "name": "Name",
-    "email": "Email",
-    "phone": "Phone",
-    "bio": "Biography",
-    "specialties": "Specialties",
-    "status": "Status",
-    "search_placeholder": "Search by name, email or specialty",
-    "no_instructors": "No instructors found",
-    "instructor_added": "Instructor has been added successfully",
-    "instructor_updated": "Instructor has been updated successfully",
-    "instructor_deleted": "Instructor has been deleted successfully"
+  "settings": {
+    "title": "System Settings",
+    "general": "General Settings",
+    "security": "Security Settings",
+    "notifications": "Notification Settings",
+    "appearance": "Appearance Settings",
+    "saveSuccess": "Settings saved successfully"
   }
 }

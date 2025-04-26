@@ -21,10 +21,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const { isAuthenticated, loading, isAdmin, isInstructor } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // activeHref가 명시적으로 제공되지 않으면 현재 위치 사용
   const [currentHref, setCurrentHref] = useState<string>(activeHref || location.pathname);
-  
+
   // 위치가 변경되면 currentHref 업데이트
   useEffect(() => {
     setCurrentHref(activeHref || location.pathname);
@@ -34,89 +34,65 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const handleFollow = (event: CustomEvent) => {
     // 이벤트의 기본 동작 방지
     event.preventDefault();
-    
+
     const href = event.detail.href;
-    
+
     // 외부 링크 확인
     if (event.detail.external) {
       window.open(href, '_blank');
       return false;
     }
-    
+
     if (href) {
       // 내부 링크 React Router로 처리
       navigate(href);
       setCurrentHref(href);
       return false; // 기본 동작 실행 방지
     }
-    
+
     return true; // 다른 경우 기본 동작 허용
   };
 
   // 기본 네비게이션 아이템
   const publicItems = [
-    { 
-      type: 'link' as const, 
-      text: t('navigation:navigation.tnc'), 
+    {
+      type: 'link' as const,
+      text: t('navigation:navigation.tnc'),
       href: '/tnc',
       info: <Badge color="blue">{t('navigation:badge.new')}</Badge>
-    }
+    },
+    { type: 'divider' as const }
   ];
 
-  // 모든 사용자 메뉴 구성 (인증 여부에 따라 다름)
-  const userItems = isAuthenticated ? [
-    // 인증된 사용자용 메뉴 그룹
-    {
-      type: 'section-group' as const,
-      title: t('navigation:navigation.userSection'),
-      items: [
-        { type: 'link' as const, text: t('navigation:navigation.dashboard'), href: '/' },
-        { type: 'link' as const, text: t('navigation:navigation.myCourses'), href: '/my-courses' },
-        { type: 'link' as const, text: t('navigation:navigation.resources'), href: '/resources' },
-        { type: 'link' as const, text: t('navigation:navigation.calendar'), href: '/calendar' }
-      ]
-    },
-  ] : [];
-
-  // 강사용 메뉴 아이템 - 오류 수정
+  // 강사용 메뉴 아이템 수정
   const instructorItems = isInstructor || isAdmin ? [
-    { type: 'divider' as const },
+    // 과정 관리 그룹
     {
       type: 'section-group' as const,
       title: t('navigation:instructor.title'),
       items: [
-        // 과정 관리 그룹 (expandable-link-group 사용)
-        {
-          type: 'expandable-link-group' as const,
-          text: t('navigation:instructor.courseManagementGroup'),
-          href: '/instructor/courses',
-          items: [
-            { type: 'link' as const, text: t('navigation:instructor.courseManagement'), href: '/instructor/courses' },
-            { type: 'link' as const, text: t('navigation:instructor.catalog'), href: '/instructor/catalog' }
-          ]
-        },
-        
-        // 평가 도구 그룹
-        {
-          type: 'expandable-link-group' as const,
-          text: t('navigation:instructor.assessmentToolsGroup'),
-          href: '/instructor/quizzes',
-          items: [
-            { type: 'link' as const, text: t('navigation:instructor.quizzes'), href: '/instructor/quizzes' },
-            { type: 'link' as const, text: t('navigation:instructor.surveys'), href: '/instructor/surveys' }
-          ]
-        },
-        
-        // 관리 도구 그룹
-        {
-          type: 'expandable-link-group' as const,
-          text: t('navigation:instructor.managementToolsGroup'),
-          href: '/instructor/reports',
-          items: [
-            { type: 'link' as const, text: t('navigation:instructor.reports'), href: '/instructor/reports' },
-            { type: 'link' as const, text: t('navigation:instructor.statistics'), href: '/instructor/statistics' }
-          ]
-        }
+        { type: 'link' as const, text: t('navigation:instructor.courseManagement'), href: '/instructor/courses' },
+        { type: 'link' as const, text: t('navigation:instructor.catalog'), href: '/instructor/catalog' }
+      ]
+    },
+    
+    // 평가 도구 그룹
+    {
+      type: 'section-group' as const,
+      title: t('navigation:instructor.assessmentToolsGroup'),
+      items: [
+        { type: 'link' as const, text: t('navigation:instructor.quizzes'), href: '/instructor/quizzes' },
+        { type: 'link' as const, text: t('navigation:instructor.surveys'), href: '/instructor/surveys' }
+      ]
+    },
+
+    // 관리 도구 그룹
+    {
+      type: 'section-group' as const,
+      title: t('navigation:instructor.managementToolsGroup'),
+      items: [
+        { type: 'link' as const, text: t('navigation:instructor.reports'), href: '/instructor/reports' },
+        { type: 'link' as const, text: t('navigation:instructor.statistics'), href: '/instructor/statistics' }
       ]
     }
   ] : [];
@@ -146,9 +122,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({
           ]
         },
         { type: 'link' as const, text: t('navigation:admin.settings'), href: '/admin/settings' },
-        { 
-          type: 'link' as const, 
-          text: t('navigation:admin.notifications'), 
+        {
+          type: 'link' as const,
+          text: t('navigation:admin.notifications'),
           href: '/admin/notifications',
           info: <Badge color="red">3</Badge>
         }
@@ -165,10 +141,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       items: [
         { type: 'link' as const, text: t('navigation:navigation.help'), href: '/help' },
         { type: 'link' as const, text: t('navigation:navigation.feedback'), href: '/feedback' },
-        { 
-          type: 'link' as const, 
-          text: t('navigation:navigation.aws'), 
-          href: 'https://aws.amazon.com', 
+        {
+          type: 'link' as const,
+          text: t('navigation:navigation.aws'),
+          href: 'https://aws.amazon.com',
           external: true,
           externalIconAriaLabel: t('navigation:navigation.externalLinkAriaLabel')
         }
@@ -177,7 +153,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   ];
 
   // 모든 메뉴 항목 결합
-  const navItems = [...publicItems, ...userItems, ...instructorItems, ...adminItems, ...supportItems];
+  const navItems = [...publicItems, ...instructorItems, ...adminItems, ...supportItems];
 
   return (
     <>
@@ -224,6 +200,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       />
     </>
   );
-};
+}
 
 export default MainLayout;

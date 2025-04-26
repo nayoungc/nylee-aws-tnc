@@ -1,50 +1,13 @@
 {
-  "app": {
-    "title": "AWS T&C 교육 포털",
-    "logo_alt": "AWS 로고",
-    "copyright": "© {{year}} Amazon Web Services, Inc. 또는 계열사"
-  },
-  "nav": {
-    "dashboard": "대시보드",
-    "courses": "교육 과정",
-    "instructors": "강사",
-    "customers": "고객사",
-    "settings": "설정"
-  },
-  "actions": {
-    "save": "저장",
-    "cancel": "취소",
-    "delete": "삭제",
-    "edit": "편집",
-    "create": "생성"
-  },
   "loading": "로딩 중...",
-  "error": "오류가 발생했습니다",
-  "unauthorized": "접근 권한이 없습니다",
-  "save": "저장",
+  "error": "오류",
+  "success": "성공",
   "cancel": "취소",
+  "save": "저장",
   "delete": "삭제",
   "edit": "편집",
-  "add": "추가",
-  "search": "검색",
-  "filter": "필터",
-  "sort": "정렬",
-  "welcome": "환영합니다",
-  "footer": {
-    "copyright": "© {year} Amazon Web Services, Inc. 또는 계열사"
-  },
-  "pageSize": "페이지 크기",
-  "itemsPerPage": "페이지당 항목 수",
-  "showing": "표시 중",
-  "of": "중",
-  "columns": "표시할 열",
-  "retry": "다시 시도",
-  "pagination": {
-    "next": "다음",
-    "previous": "이전",
-    "pageLabel": "페이지 {pageNumber}"
-  },
-  "errors": {
-    "loadError": "데이터 로딩 오류"
-  }
+  "close": "닫기",
+  "confirm": "확인",
+  "yes": "예",
+  "no": "아니오"
 }

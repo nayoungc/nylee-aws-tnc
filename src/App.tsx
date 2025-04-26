@@ -3,17 +3,22 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from '@/contexts/AppContext';
-import { NotificationProvider } from '@/contexts/NotificationContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import HomePage from '@/pages/public/HomePage';
-import TncPage from '@/pages/public/TncPage';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import InstructorCatalogPage from '@pages/catalog/CourseCatalogPage';
-import CourseManagementPage from '@pages/admin/CourseManagementPage';
-import SystemManagementPage from '@/pages/admin/SystemManagementPage';
 import { AuthProvider } from '@/hooks/useAuth';
 import '@/i18n';
+
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+
+import HomePage from '@/pages/public/HomePage';
+import TncPage from '@/pages/public/TncPage';
 import LoginPage from './pages/auth/LoginPage';
+
+import CourseCatalogPage from '@pages/catalog/CourseCatalogPage';
+
+import CourseManagementPage from '@pages/admin/CourseManagementPage';
+import SystemManagementPage from '@/pages/admin/SystemManagementPage';
+
 import NotFoundPage from './pages/errors/NotFoundPage'; 
 
 
@@ -37,7 +42,7 @@ const RouteLogger = () => {
 
 const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}> {/* React Query 제공자 추가 */}
+    <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AppProvider>
           <AuthProvider>
@@ -47,26 +52,19 @@ const App: React.FC = () => {
                 {/* 기존 라우트 */}
                 <Route path="/" element={<Navigate to="/tnc" replace />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/home" element={<HomePage />} /> {/* 주석 제거 */}
+                <Route path="/home" element={<HomePage />} /> 
                 <Route path="/tnc" element={<TncPage />} />
 
                 {/* 과정 카탈로그 - 강사와 관리자만 접근 가능 */}
                 <Route path="/instructor/catalog" element={
                   <ProtectedRoute requiredRoles={['instructor', 'admin']}>
-                    <InstructorCatalogPage />
-                  </ProtectedRoute>
-                } />
-
-                {/* 누락된 경로 추가 */}
-                <Route path="/instructor/courses" element={
-                  <ProtectedRoute requiredRoles={['instructor', 'admin']}>
-                    <InstructorCatalogPage /> {/* 임시로 같은 페이지 사용 */}
+                    <CourseCatalogPage />
                   </ProtectedRoute>
                 } />
 
                 <Route path="/resources" element={
                   <ProtectedRoute requiredRoles={['instructor', 'admin']}>
-                    <HomePage /> {/* 임시로 홈페이지 사용, 리소스 페이지 필요 */}
+                    <HomePage />
                   </ProtectedRoute>
                 } />
 

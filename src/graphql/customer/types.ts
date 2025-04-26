@@ -61,4 +61,3 @@ export interface DeleteCustomerResult {
     name: string;
   };
 }
-
