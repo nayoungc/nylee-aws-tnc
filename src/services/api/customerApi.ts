@@ -61,25 +61,25 @@ export const fetchAllCustomers = async (): Promise<Customer[]> => {
 /**
  * ID로 특정 고객 가져오기
  */
-export const fetchCustomerById = async (customerId: string): Promise<Customer | null> => {
+export const fetchCustomerById = async (id: string): Promise<Customer | null> => {
   // 개발 모드인 경우 모의 데이터 사용
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] ID \${customerId}로 모의 고객 조회`);
-    const customer = mockCustomers.find(c => c.customerId === customerId);
+    console.log(`[DEV_MODE] ID \${id}로 모의 고객 조회`);
+    const customer = mockCustomers.find(c => c.id === id);
     return Promise.resolve(customer || null);
   }
 
   try {
     const response = await client.graphql({
       query: getCustomer,
-      variables: { customerId }
+      variables: { id }
     });
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<GetCustomerResult>(response);
     return data?.getCustomer || null;
   } catch (error: unknown) {
-    console.error(`고객 조회 오류 (ID: \${customerId}):`, error);
+    console.error(`고객 조회 오류 (ID: \${id}):`, error);
     throw error;
   }
 };
@@ -90,9 +90,9 @@ export const fetchCustomerById = async (customerId: string): Promise<Customer | 
 export const createNewCustomer = async (input: CustomerInput): Promise<Customer> => {
   // 개발 모드인 경우 모의 데이터에 추가
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 새 고객 생성: \${input.customerName}`);
+    console.log(`[DEV_MODE] 새 고객 생성: \${input.name}`);
     const newCustomer: Customer = {
-      customerId: uuidv4(),
+      id: uuidv4(),
       ...input,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -124,14 +124,14 @@ export const createNewCustomer = async (input: CustomerInput): Promise<Customer>
 /**
  * 고객 정보 수정
  */
-export const updateCustomerInfo = async (customerId: string, input: Partial<CustomerInput>): Promise<Customer> => {
+export const updateCustomerInfo = async (id: string, input: Partial<CustomerInput>): Promise<Customer> => {
   // 개발 모드인 경우 모의 데이터 수정
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 고객 수정 ID: \${customerId}`);
-    const index = mockCustomers.findIndex(c => c.customerId === customerId);
+    console.log(`[DEV_MODE] 고객 수정 ID: \${id}`);
+    const index = mockCustomers.findIndex(c => c.id === id);
     
     if (index === -1) {
-      throw new Error(`ID가 \${customerId}인 고객을 찾을 수 없습니다`);
+      throw new Error(`ID가 \${id}인 고객을 찾을 수 없습니다`);
     }
     
     const updatedCustomer = {
@@ -147,18 +147,18 @@ export const updateCustomerInfo = async (customerId: string, input: Partial<Cust
   try {
     const response = await client.graphql({
       query: updateCustomer,
-      variables: { input: { customerId, ...input } }
+      variables: { input: { id, ...input } }
     });
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<UpdateCustomerResult>(response);
     if (!data?.updateCustomer) {
-      throw new Error(`ID가 \${customerId}인 고객 수정 응답이 유효하지 않습니다`);
+      throw new Error(`ID가 \${id}인 고객 수정 응답이 유효하지 않습니다`);
     }
     
     return data.updateCustomer;
   } catch (error: unknown) {
-    console.error(`고객 수정 오류 (ID: \${customerId}):`, error);
+    console.error(`고객 수정 오류 (ID: \${id}):`, error);
     throw error;
   }
 };
@@ -166,14 +166,14 @@ export const updateCustomerInfo = async (customerId: string, input: Partial<Cust
 /**
  * 고객 삭제
  */
-export const deleteCustomerById = async (customerId: string): Promise<{ success: boolean }> => {
+export const deleteCustomerById = async (id: string): Promise<{ success: boolean }> => {
   // 개발 모드인 경우 모의 데이터에서 삭제
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 고객 삭제 ID: \${customerId}`);
-    const index = mockCustomers.findIndex(c => c.customerId === customerId);
+    console.log(`[DEV_MODE] 고객 삭제 ID: \${id}`);
+    const index = mockCustomers.findIndex(c => c.id === id);
     
     if (index === -1) {
-      throw new Error(`ID가 \${customerId}인 고객을 찾을 수 없습니다`);
+      throw new Error(`ID가 \${id}인 고객을 찾을 수 없습니다`);
     }
     
     mockCustomers.splice(index, 1);
@@ -183,14 +183,14 @@ export const deleteCustomerById = async (customerId: string): Promise<{ success:
   try {
     const response = await client.graphql({
       query: deleteCustomer,
-      variables: { input: { customerId } }
+      variables: { input: { id } }
     });
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<DeleteCustomerResult>(response);
-    return { success: !!data?.deleteCustomer?.customerId };
+    return { success: !!data?.deleteCustomer?.id };
   } catch (error: unknown) {
-    console.error(`고객 삭제 오류 (ID: \${customerId}):`, error);
+    console.error(`고객 삭제 오류 (ID: \${id}):`, error);
     throw error;
   }
 };
@@ -204,18 +204,12 @@ export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<
     console.log(`[DEV_MODE] 필터로 모의 고객 검색: \${JSON.stringify(filter)}`);
     let filteredCustomers = [...mockCustomers];
     
-    // 조직으로 필터링
-    if (filter.organization) {
-      filteredCustomers = filteredCustomers.filter(c => c.organization === filter.organization);
-    }
-    
     // 텍스트 검색
     if (filter.text) {
       const searchText = filter.text.toLowerCase();
       filteredCustomers = filteredCustomers.filter(c => 
-        c.customerName.toLowerCase().includes(searchText) ||
-        (c.notes && c.notes.toLowerCase().includes(searchText)) ||
-        (c.email && c.email.toLowerCase().includes(searchText))
+        c.name.toLowerCase().includes(searchText) ||
+        (c.notes && c.notes.toLowerCase().includes(searchText))
       );
     }
     

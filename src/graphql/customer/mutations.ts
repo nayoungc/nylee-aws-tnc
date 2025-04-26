@@ -1,14 +1,12 @@
 // src/graphql/customer/mutations.ts
+
 // 고객 생성
 export const createCustomer = /* GraphQL */ `
   mutation CreateCustomer(\$input: CreateCustomerInput!) {
     createCustomer(input: \$input) {
-      customerId
-      customerName
+      id
+      name
       notes
-      email
-      phone
-      organization
       createdAt
       updatedAt
     }
@@ -19,12 +17,9 @@ export const createCustomer = /* GraphQL */ `
 export const updateCustomer = /* GraphQL */ `
   mutation UpdateCustomer(\$input: UpdateCustomerInput!) {
     updateCustomer(input: \$input) {
-      customerId
-      customerName
+      id
+      name
       notes
-      email
-      phone
-      organization
       createdAt
       updatedAt
     }
@@ -35,8 +30,8 @@ export const updateCustomer = /* GraphQL */ `
 export const deleteCustomer = /* GraphQL */ `
   mutation DeleteCustomer(\$input: DeleteCustomerInput!) {
     deleteCustomer(input: \$input) {
-      customerId
-      customerName
+      id
+      name
     }
   }
 `;

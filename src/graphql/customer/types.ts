@@ -1,63 +1,64 @@
 // src/graphql/customer/types.ts
+import { Customer } from '@models/customers';
+
+// 필터 타입 정의 (추가)
+export interface CustomerFilterInput {
+  id?: { eq?: string; contains?: string };
+  name?: { eq?: string; contains?: string };
+  and?: CustomerFilterInput[];
+  or?: CustomerFilterInput[];
+  not?: CustomerFilterInput;
+}
+
+export interface CustomerSearchFilterInput {
+  text?: string;
+  startDate?: string;
+  endDate?: string;
+}
 
 // 쿼리 결과 타입
 export interface ListCustomersResult {
   listCustomers: {
-    items: Array<any>;
-    nextToken?: string;
-  }
+    items: Customer[];
+    nextToken?: string | null;
+  };
 }
 
 export interface GetCustomerResult {
-  getCustomer: any | null;
+  getCustomer: Customer | null;
+}
+
+export interface ListCustomersResult {
+  listCustomers: {
+    items: Customer[];
+    nextToken?: string | null;
+  };
+}
+
+export interface GetCustomerResult {
+  getCustomer: Customer | null;
 }
 
 export interface SearchCustomersResult {
-  searchCustomers: Array<any>;
+  searchCustomers: {
+    items: Customer[];
+    nextToken?: string | null;
+  };
 }
 
-// 뮤테이션 결과 타입
+
 export interface CreateCustomerResult {
-  createCustomer: any;
+  createCustomer: Customer;
 }
 
 export interface UpdateCustomerResult {
-  updateCustomer: any;
+  updateCustomer: Customer;
 }
 
 export interface DeleteCustomerResult {
   deleteCustomer: {
-    customerId: string;
-  } | null;
+    id: string;
+    name: string;
+  };
 }
 
-// 필터 타입
-export interface CustomerFilterInput {
-  customerId?: string;
-  customerName?: string;
-  email?: string;
-  organization?: string;
-  and?: CustomerFilterInput[];
-  or?: CustomerFilterInput[];
-}
-
-// 고급 검색 결과 타입
-export interface AdvancedSearchCustomersResult {
-  advancedSearchCustomers: {
-    items: Array<any>;
-    nextToken?: string;
-    total: number;
-  }
-}
-
-// 고급 검색 필터 타입
-export interface AdvancedCustomerFilter {
-  name?: string;
-  organization?: string;
-  email?: string;
-  tags?: string[];
-  fromDate?: string;
-  toDate?: string;
-  sortField?: string;
-  sortOrder?: 'asc' | 'desc';
-}
