@@ -608,3 +608,6 @@ const CourseCalendar: React.FC = () => {
     </SpaceBetween>
   );
 };
+
+// 명시적인 default export 추가 (빌드 에러 해결을 위함)
+export default CourseCalendar;

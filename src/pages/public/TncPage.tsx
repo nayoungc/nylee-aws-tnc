@@ -1,3 +1,4 @@
+// src/pages/public/TncPage.tsx
 import React, { useState } from 'react';
 import { 
   Container, 
@@ -119,7 +120,7 @@ const AnnouncementCards: React.FC = () => {
       }
     />
   );
-}
+};
 
 const TncPage: React.FC = () => {
   const { t } = useTranslation(['common', 'tnc']);
