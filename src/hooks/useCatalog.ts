@@ -8,11 +8,11 @@ import {
   createCatalog,
   updateCatalog,
   deleteCatalog
-} from '@services/catalogService';
+} from '@services/api/catalogApi';
 import { CourseCatalog, CourseCatalogInput, CatalogFilter } from '@models/catalog';
 
 // 모든 카탈로그 조회 훅
-export const useCatalogs = (enabled = true) => {
+export const useCatalog = (enabled = true) => {
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs'],
     queryFn: fetchAllCatalogs,

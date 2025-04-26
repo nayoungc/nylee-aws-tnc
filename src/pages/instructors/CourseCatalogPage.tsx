@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import MainLayout from '@/components/layout/MainLayout';
 import CatalogTable from '@/components/catalog/CatalogTable';
 import { CourseCatalog } from '@/models/catalog';
-import { fetchAllCatalogs } from '@/services/catalogService';
+import { fetchAllCatalogs } from '@/services/api/catalogApi';
 
 const CourseCatalogtPage: React.FC = () => {
   const { t } = useTranslation(['catalog', 'common']);

@@ -28,7 +28,7 @@ import {
 
 // 모델과 모의 데이터
 import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@models/catalog';  // 경로 별칭 대신 상대 경로 사용
-import { mockCatalogs } from '../mocks/catalogData';
+import { mockCatalogs } from '../../mocks/catalogData';
 import { CalendarEvent } from '@models/calendar';  // 추가된 타입
 
 // Amplify API 클라이언트 생성

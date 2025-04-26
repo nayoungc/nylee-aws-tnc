@@ -24,20 +24,7 @@ import EnhancedTable from '@/components/common/EnhancedTable';
 
 const CustomersTab: React.FC = () => {
   const { t } = useTranslation(['admin', 'common']);
-  const {
-    catalogs,
-    selectedCatalog,
-    loading,
-    error,
-    refetch,
-    selectCatalog,
-    createNewCatalog,
-    updateSelectedCatalog,
-    deleteSelectedCatalog,
-    isCreating,
-    isUpdating,
-    isDeleting
-  } = useCatalog();
+  
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
