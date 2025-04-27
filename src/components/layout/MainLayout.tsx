@@ -59,26 +59,26 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const instructorItems = isInstructor || isAdmin ? [
     {
       type: 'section-group' as const,
-      title: t('instructor_title'),
+      title: t('navigation_title'),
       items: [
-        { type: 'link' as const, text: t('instructor_course_management'), href: '/instructor/courses' },
-        { type: 'link' as const, text: t('instructor_catalog'), href: '/instructor/catalog' }
+        { type: 'link' as const, text: t('navigation_course_management'), href: '/instructor/courses' },
+        { type: 'link' as const, text: t('navigation_catalog'), href: '/instructor/catalog' }
       ]
     },
     {
       type: 'section-group' as const,
-      title: t('instructor_assessment_tools_group'),
+      title: t('navigation_assessment_tools_group'),
       items: [
-        { type: 'link' as const, text: t('instructor_quizzes'), href: '/instructor/quizzes' },
-        { type: 'link' as const, text: t('instructor_surveys'), href: '/instructor/surveys' }
+        { type: 'link' as const, text: t('navigation_quizzes'), href: '/instructor/quizzes' },
+        { type: 'link' as const, text: t('navigation_surveys'), href: '/instructor/surveys' }
       ]
     },
     {
       type: 'section-group' as const,
-      title: t('instructor_management_tools_group'),
+      title: t('navigation_management_tools_group'),
       items: [
-        { type: 'link' as const, text: t('instructor_reports'), href: '/instructor/reports' },
-        { type: 'link' as const, text: t('instructor_statistics'), href: '/instructor/statistics' }
+        { type: 'link' as const, text: t('navigation_reports'), href: '/instructor/reports' },
+        { type: 'link' as const, text: t('navigation_statistics'), href: '/instructor/statistics' }
       ]
     },
     { type: 'divider' as const }
@@ -87,17 +87,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   const adminItems = isAdmin ? [
     {
       type: 'section-group' as const,
-      title: t('admin_dashboard_group'),
+      title: t('navigation_dashboard_group'),
       items: [
-        { type: 'link' as const, text: t('admin_dashboard'), href: '/admin/dashboard' }
+        { type: 'link' as const, text: t('navigation_dashboard'), href: '/admin/dashboard' }
       ]
     },
     {
       type: 'section-group' as const,
       title: t('admin_course_group'),
       items: [
-        { type: 'link' as const, text: t('admin_course_management'), href: '/admin/course-management' },
-        { type: 'link' as const, text: t('admin_system_management'), href: '/admin/system-management' }
+        { type: 'link' as const, text: t('navigation_course_management'), href: '/admin/course-management' },
+        { type: 'link' as const, text: t('navigation_system_management'), href: '/admin/system-management' }
 
       ]
     }, 

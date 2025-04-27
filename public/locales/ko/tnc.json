@@ -1,5 +1,34 @@
 {
-  "title": "이용약관",
-  "welcome": "AWS 교육 포털에 오신 것을 환영합니다",
-  "description": "이 플랫폼은 AWS 교육 및 훈련을 위한 포털입니다"
+  "tnc_title": "교육 및 자격증 센터",
+  "tnc_description": "AWS 교육 및 자격증 센터에 오신 것을 환영합니다. 최신 교육 일정과 리소스를 확인하세요.",
+
+  "tnc_announcements_title": "공지사항",
+  "tnc_announcements_all_announcements": "모든 공지사항",
+  "tnc_announcements_view_all": "모두 보기",
+  "tnc_announcements_important": "중요",
+  "tnc_announcements_title_header": "제목",
+  "tnc_announcements_content_header": "내용",
+  "tnc_announcements_no_announcements": "공지사항이 없습니다",
+  "tnc_announcements_check_later": "나중에 다시 확인해 주세요",
+
+  "tnc_categories_workshop": "워크샵",
+  "tnc_categories_certification": "자격증",
+  "tnc_categories_news": "뉴스",
+
+  "tnc_announcements_workshop_title": "AWS re:Invent 2025 워크샵 등록 오픈",
+  "tnc_announcements_workshop_preview": "올해 re:Invent 워크샵 등록이 시작되었습니다.",
+  "tnc_announcements_workshop_content": "AWS re:Invent 2025 워크샵 등록이 공식적으로 시작되었습니다. 올해는 새로운 서비스와 기술에 대한 심층 워크샵이 준비되어 있으니 서둘러 등록하세요.",
+
+  "tnc_announcements_certification_title": "AWS 자격증 시험 가이드 업데이트",
+  "tnc_announcements_certification_preview": "모든 AWS 자격증 시험 가이드가 최신 버전으로 업데이트되었습니다.",
+  "tnc_announcements_certification_content": "최신 AWS 서비스와 모범 사례를 반영하여 모든 자격증 시험 가이드가 업데이트되었습니다. 새로운 시험 준비 자료를 확인하세요.",
+
+  "tnc_announcements_news_title": "re:Invent 2024 주요 발표 요약",
+  "tnc_announcements_news_preview": "지난 re:Invent에서 발표된 주요 서비스와 기능을 확인하세요.",
+  "tnc_announcements_news_content": "AWS re:Invent 2024에서 발표된 주요 서비스와 기능에 대한 요약 정보가 준비되었습니다. 새로운 AI 서비스, 서버리스 기능 및 보안 업데이트에 대해 알아보세요.",
+
+  "tnc_tabs_calendar": "교육 일정",
+  "tnc_tabs_resources": "학습 자료",
+  
+  "loading": "로딩 중..."
 }

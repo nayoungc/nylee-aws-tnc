@@ -1,8 +1,32 @@
 {
-  "navigation_tnc": "Training Guide",
+  "navigation_tnc": "Training & Certification",
+  "badge_new": "New",
+  "navigation_title": "Instructor Tools",
+  "navigation_course_management": "Course Management",
+  "navigation_catalog": "Course Catalog",
+  
+  "navigation_assessment_tools_group": "Assessment Tools",
+  "navigation_quizzes": "Quizzes",
+  "navigation_surveys": "Surveys",
+  
+  "navigation_management_tools_group": "Management Tools",
+  "navigation_reports": "Reports",
+  "navigation_statistics": "Statistics",
+  
+  "navigation_dashboard_group": "Dashboard",
+  "navigation_dashboard": "Admin Dashboard",
+  
+  "admin_course_group": "System Administration",
+  "navigation_system_management": "System Management",
+  
   "navigation_support_section": "Support",
   "navigation_help": "Help",
   "navigation_feedback": "Feedback",
   "navigation_aws": "AWS Website",
-  "navigation_external_link_aria_label": "Opens in a new tab"
+  "navigation_external_link_aria_label": "(External link opens in a new tab)",
+  
+  "header_title": "AWS Training & Certification Center",
+  "header_logo_alt": "AWS Logo",
+  
+  "loading": "Loading..."
 }
