@@ -1,33 +1,50 @@
 // src/models/courseCatalog.ts
-export interface CourseCatalog {
-  id: string;
-  course_name: string;
-  course_id?: string;
-  level?: string;
-  duration?: string;
-  delivery_method?: string;
-  description?: string;
-  objectives?: string[];
-  target_audience?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { z } from 'zod';
 
-// 카탈로그 생성 및 수정에 사용되는 입력 타입
-export interface CourseCatalogInput {
-  course_name: string;
-  course_id?: string;
-  level?: string;
-  duration?: string;
-  delivery_method?: string;
-  description?: string;
-  objectives?: string[];
-  target_audience?: string;
-}
+// 기존 타입 정의 앞에 CourseCatalogStatus 열거형 추가
+export const CourseCatalogStatusEnum = z.enum([
+  'PUBLISHED',
+  'DRAFT',
+  'ARCHIVED'
+]);
+export type CourseCatalogStatus = z.infer<typeof CourseCatalogStatusEnum>;
 
-// 과정 카탈로그 필터링을 위한 인터페이스
-export interface CourseCatalogFilter {
-  text?: string;         // 검색어
-  level?: string;        // 레벨별 필터링
-  target_audience?: string; // 카테고리/대상별 필터링 (이전 category)
-}
+// 기존 타입 정의에 status 필드 추가
+export const CourseCatalogSchema = z.object({
+  id: z.string(),
+  course_name: z.string(),
+  course_id: z.string().optional(),
+  level: z.string().optional(),
+  duration: z.string().optional(),
+  delivery_method: z.string().optional(),
+  description: z.string().optional(),
+  objectives: z.array(z.string()).optional(),
+  target_audience: z.string().optional(),
+  status: CourseCatalogStatusEnum.default('DRAFT'), // 상태 필드 추가
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional()
+});
+export type CourseCatalog = z.infer<typeof CourseCatalogSchema>;
+
+// 입력 타입에도 status 추가
+export const CourseCatalogInputSchema = z.object({
+  course_name: z.string(),
+  course_id: z.string().optional(),
+  level: z.string().optional(),
+  duration: z.string().optional(),
+  delivery_method: z.string().optional(),
+  description: z.string().optional(),
+  objectives: z.array(z.string()).optional(),
+  target_audience: z.string().optional(),
+  status: CourseCatalogStatusEnum.optional() // 선택적 상태 필드
+});
+export type CourseCatalogInput = z.infer<typeof CourseCatalogInputSchema>;
+
+// 필터 타입에도 status 추가
+export const CourseCatalogFilterSchema = z.object({
+  text: z.string().optional(),
+  level: z.string().optional(),
+  target_audience: z.string().optional(),
+  status: CourseCatalogStatusEnum.optional() // 상태로 필터링 가능
+});
+export type CourseCatalogFilter = z.infer<typeof CourseCatalogFilterSchema>;
