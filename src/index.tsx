@@ -7,7 +7,7 @@ import { AppProvider } from './contexts/AppContext';
 import { Amplify } from 'aws-amplify';
 import { AuthProvider } from './hooks/useAuth';
 import './i18n';
-// import '@cloudscape-design/global-styles/index.css';
+import '@cloudscape-design/global-styles/index.css';
 
 
 // Amplify v6 형식에 맞게 구성

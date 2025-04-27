@@ -6,6 +6,7 @@ export const useAppTranslation = () => {
   return useTranslation([
     'common',
     'admin',
+    'calendar',
     'course_catalog',
     'navigation',
     'auth'

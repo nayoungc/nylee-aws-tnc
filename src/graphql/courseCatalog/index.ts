@@ -1,4 +1,4 @@
-// src/graphql/catalog/index.ts
+// src/graphql/courseCatalog/index.ts
+export * from './types';
 export * from './queries';
 export * from './mutations';
-export * from './types';

@@ -2,7 +2,7 @@
 import { generateClient } from 'aws-amplify/api';
 import { GraphQLResult } from '@aws-amplify/api';
 import i18n from '@/i18n'; 
-import { Course, CourseInput } from '@models/courses';
+import { Course, CourseInput } from '@models/course';
 import * as queries from '@graphql/course';
 import * as mutations from '@graphql/course';
 

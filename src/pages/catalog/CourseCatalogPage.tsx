@@ -16,9 +16,11 @@ import {
 import { fetchAllCourseCatalogs, searchCourseCatalogs } from '@/services/api/courseCatalogApi';
 import { CourseCatalog, CourseCatalogFilter } from '@/models/courseCatalog';
 import { useNavigate } from 'react-router-dom';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
+
 
 const CourseCatalogPage: React.FC = () => {
-  const { t } = useTranslation(['courseCatalog', 'common']);
+  const { t } = useAppTranslation();
   const navigate = useNavigate();
   
   const [catalogs, setCatalogs] = useState<CourseCatalog[]>([]);
@@ -48,10 +50,6 @@ const CourseCatalogPage: React.FC = () => {
             filter.text = filterText;
           }
           
-          if (selectedCategories.length > 0) {
-            filter.category = selectedCategories[0]; // 현재는 단일 카테고리만 지원
-          }
-          
           if (selectedLevels.length > 0) {
             filter.level = selectedLevels[0]; // 현재는 단일 레벨만 지원
           }
@@ -77,9 +75,6 @@ const CourseCatalogPage: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentCatalogs = catalogs.slice(startIndex, endIndex);
-  
-  // 카테고리 목록 (중복 제거)
-  const categories = Array.from(new Set(catalogs.map(c => c.category).filter(Boolean))) as string[];
   
   // 레벨 목록 (중복 제거)
   const levels = Array.from(new Set(catalogs.map(c => c.level).filter(Boolean))) as string[];
@@ -161,23 +156,18 @@ const CourseCatalogPage: React.FC = () => {
                 {
                   id: 'title',
                   header: t('fields.title', { ns: 'courseCatalog' }),
-                  cell: item => item.title,
+                  cell: item => item.course_name,
                   sortingField: 'title'
                 },
                 {
                   id: 'awsCode',
                   header: t('fields.awsCode', { ns: 'courseCatalog' }),
-                  cell: item => item.awsCode || '-'
+                  cell: item => item.course_id || '-'
                 },
                 {
                   id: 'level',
                   header: t('fields.level', { ns: 'courseCatalog' }),
                   cell: item => item.level || '-'
-                },
-                {
-                  id: 'category',
-                  header: t('fields.category', { ns: 'courseCatalog' }),
-                  cell: item => item.category || '-'
                 },
                 {
                   id: 'status',

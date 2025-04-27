@@ -1,129 +1,65 @@
 // src/graphql/calendar/mutations.ts
-
-// 이벤트 생성
-export const createCalendarEvent = /* GraphQL */ `
-  mutation CreateCalendarEvent(\$input: CreateCalendarEventInput!) {
-    createCalendarEvent(input: \$input) {
+// 뮤테이션 정의를 별도 파일로 분리
+export const createCalendar = /* GraphQL */ `
+  mutation CreateCalendar(\$input: CreateCalendarInput!) {
+    createCalendar(input: \$input) {
       id
-      title
       date
+      title
+      title_ko
+      title_en
       startTime
       endTime
-      type
-      description
       location
-      instructor
+      location_ko
+      location_en
+      instructorName
+      instructorId
       maxAttendees
       currentAttendees
-      isRegistrationOpen
+      eventType
       tags
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-// 이벤트 업데이트
-export const updateCalendarEvent = /* GraphQL */ `
-  mutation UpdateCalendarEvent(\$input: UpdateCalendarEventInput!) {
-    updateCalendarEvent(input: \$input) {
-      id
-      title
-      date
-      startTime
-      endTime
-      type
       description
-      location
-      instructor
-      maxAttendees
-      currentAttendees
-      isRegistrationOpen
-      tags
-      updatedAt
-    }
-  }
-`;
-
-// 이벤트 삭제
-export const deleteCalendarEvent = /* GraphQL */ `
-  mutation DeleteCalendarEvent(\$input: DeleteCalendarEventInput!) {
-    deleteCalendarEvent(input: \$input) {
-      id
-      title
-    }
-  }
-`;
-
-// 이벤트 등록 상태 변경 (오픈/클로즈)
-export const updateEventRegistrationStatus = /* GraphQL */ `
-  mutation UpdateEventRegistrationStatus(\$id: ID!, \$isOpen: Boolean!) {
-    updateEventRegistrationStatus(id: \$id, isOpen: \$isOpen) {
-      id
-      title
-      isRegistrationOpen
-      updatedAt
-    }
-  }
-`;
-
-// 이벤트 등록 (참가 신청)
-export const registerForEvent = /* GraphQL */ `
-  mutation RegisterForEvent(\$eventId: ID!, \$userName: String!, \$userEmail: String!) {
-    registerForEvent(eventId: \$eventId, userName: \$userName, userEmail: \$userEmail) {
-      id
-      eventId
-      userId
-      userName
-      userEmail
-      status
+      description_ko
+      description_en
       createdAt
     }
   }
 `;
 
-// 등록 취소
-export const cancelRegistration = /* GraphQL */ `
-  mutation CancelRegistration(\$registrationId: ID!) {
-    cancelRegistration(registrationId: \$registrationId)
-  }
-`;
-
-// 이벤트 참석자 수 업데이트
-export const updateEventAttendeeCount = /* GraphQL */ `
-  mutation UpdateEventAttendeeCount(\$id: ID!, \$count: Int!) {
-    updateEventAttendeeCount(id: \$id, count: \$count) {
+export const updateCalendar = /* GraphQL */ `
+  mutation UpdateCalendar(\$input: UpdateCalendarInput!) {
+    updateCalendar(input: \$input) {
       id
+      date
       title
-      currentAttendees
+      title_ko
+      title_en
+      startTime
+      endTime
+      location
+      location_ko
+      location_en
+      instructorName
+      instructorId
       maxAttendees
-      updatedAt
+      currentAttendees
+      eventType
+      tags
+      description
+      description_ko
+      description_en
+      createdAt
     }
   }
 `;
 
-// 반복 이벤트 생성
-export const createRecurringEvents = /* GraphQL */ `
-  mutation CreateRecurringEvents(\$input: CreateRecurringEventsInput!) {
-    createRecurringEvents(input: \$input) {
-      count
-      events {
-        id
-        title
-        date
-      }
-    }
-  }
-`;
-
-// 이벤트 강사 변경
-export const changeEventInstructor = /* GraphQL */ `
-  mutation ChangeEventInstructor(\$id: ID!, \$instructor: String!) {
-    changeEventInstructor(id: \$id, instructor: \$instructor) {
+export const deleteCalendar = /* GraphQL */ `
+  mutation DeleteCalendar(\$input: DeleteCalendarInput!) {
+    deleteCalendar(input: \$input) {
       id
+      date
       title
-      instructor
-      updatedAt
     }
   }
 `;

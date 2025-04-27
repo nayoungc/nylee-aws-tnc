@@ -1,7 +1,12 @@
 // src/graphql/calendar/types.ts
 import { BaseRecord } from '../common/types';
-import { CalendarEvent, EventRegistration } from '../../models/events';
+// 경로 수정: 슬래시 추가 (포맷에 따라 다름)
+import { CalendarEvent, EventRegistration } from '@/models/calendar';
 
+// 타입 에일리어스: CalendarEvent를 Calendar로도 사용할 수 있게 함
+export type Calendar = CalendarEvent;
+
+// 쿼리 결과 인터페이스
 export interface ListCalendarEventsResult {
   listCalendarEvents: {
     items: CalendarEvent[];
@@ -37,6 +42,7 @@ export interface GetUpcomingEventsResult {
   getUpcomingEvents: CalendarEvent[];
 }
 
+// 뮤테이션 결과 인터페이스
 export interface CreateCalendarEventResult {
   createCalendarEvent: CalendarEvent;
 }
@@ -68,6 +74,7 @@ export interface CancelRegistrationResult {
   cancelRegistration: boolean;
 }
 
+// 입력 타입
 export interface CalendarFilterInput {
   date?: string;
   startDate?: string;
@@ -93,5 +100,43 @@ export interface CreateRecurringEventsResult {
       title: string;
       date: string;
     }>;
+  };
+}
+
+// Calendar API 결과 타입 (Calendar 타입 사용)
+export interface ListCalendarsResult {
+  listCalendars?: {
+    items: Calendar[];
+    nextToken?: string;
+  };
+}
+
+export interface GetCalendarResult {
+  getCalendar?: Calendar;
+}
+
+export interface CalendarsByDateResult {
+  calendarsByDate?: {
+    items: Calendar[];
+    nextToken?: string;
+  };
+}
+
+export interface RecentCalendarsResult {
+  recentCalendars?: Calendar[];
+}
+
+export interface CreateCalendarResult {
+  createCalendar: Calendar;
+}
+
+export interface UpdateCalendarResult {
+  updateCalendar: Calendar;
+}
+
+export interface DeleteCalendarResult {
+  deleteCalendar: {
+    id: string;
+    title?: string;
   };
 }
