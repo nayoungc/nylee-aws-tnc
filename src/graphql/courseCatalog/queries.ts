@@ -1,5 +1,6 @@
 // src/graphql/courseCatalog/queries.ts
 
+// src/graphql/courseCatalog/queries.ts
 /**
  * 모든 코스 카탈로그 목록 조회
  * @param filter - 필터링 조건

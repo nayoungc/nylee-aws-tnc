@@ -9,12 +9,12 @@ import {
   getCourseCatalog,
   searchCatalog,
   getCatalogByCategory 
-} from '@graphql/catalog/queries';
+} from '@/graphql/courseCatalog/queries';
 import { 
   createCourseCatalog, 
   updateCourseCatalog,
   deleteCourseCatalog 
-} from '@graphql/catalog/mutations';
+} from '@/graphql/courseCatalog/mutations';
 import {
   ListCourseCatalogsResult,
   GetCourseCatalogResult,
@@ -24,7 +24,7 @@ import {
   UpdateCourseCatalogResult,
   DeleteCourseCatalogResult,
   CatalogFilterInput
-} from '@graphql/catalog';
+} from '@/graphql/courseCatalog';
 
 // 모델과 모의 데이터
 import { CatalogFilter, CourseCatalog, CourseCatalogInput } from '@models/catalog';

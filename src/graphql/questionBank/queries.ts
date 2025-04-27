@@ -1,3 +1,4 @@
+// src/graphql/questionBank/queries.ts
 /**
  * 모든 문항 조회
  */

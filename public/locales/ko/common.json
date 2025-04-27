@@ -1,13 +1,21 @@
+
 {
-  "loading": "로딩 중...",
-  "error": "오류",
-  "success": "성공",
+  "loading": "로딩 중",
+  "error": "오류가 발생했습니다",
+  "retry": "다시 시도",
   "cancel": "취소",
   "save": "저장",
-  "delete": "삭제",
   "edit": "편집",
-  "close": "닫기",
-  "confirm": "확인",
-  "yes": "예",
-  "no": "아니오"
+  "delete": "삭제",
+  "home": "홈",
+  "actions_delete_selected": "선택 항목 삭제",
+  "hours": "시간",
+  "pagination_next": "다음",
+  "pagination_previous": "이전",
+  "pagination_page_label": "페이지 {pageNumber}",
+  "tag_editor_key_header": "키",
+  "tag_editor_value_header": "값",
+  "tag_editor_add_button": "태그 추가",
+  "tag_editor_remove_button": "제거",
+  "tag_editor_loading": "로딩 중"
 }

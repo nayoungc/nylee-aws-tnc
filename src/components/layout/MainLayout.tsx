@@ -94,7 +94,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         { type: 'link' as const, text: t('navigation:instructor_reports'), href: '/instructor/reports' },
         { type: 'link' as const, text: t('navigation:instructor_statistics'), href: '/instructor/statistics' }
       ]
-    }
+    },
+    { type: 'divider' as const }
   ] : [];
 
   // 관리자용 메뉴 항목 (수정 - 강사 메뉴 스타일로)
@@ -116,32 +117,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         { type: 'link' as const, text: t('navigation:admin_course_management'), href: '/admin/course-management' },
         { type: 'link' as const, text: t('navigation:admin_catalog_management'), href: '/admin/catalog-management' }
       ]
-    },
+    }, 
 
-    // 사용자 관리 그룹
-    {
-      type: 'section-group' as const,
-      title: t('navigation:admin_user_group'),
-      items: [
-        { type: 'link' as const, text: t('navigation:admin_user_management'), href: '/admin/user-management' },
-        { type: 'link' as const, text: t('navigation:admin_role_management'), href: '/admin/role-management' }
-      ]
-    },
+    { type: 'divider' as const },
 
-    // 시스템 관리 그룹
-    {
-      type: 'section-group' as const,
-      title: t('navigation:admin_system_group'),
-      items: [
-        { type: 'link' as const, text: t('navigation:admin_settings'), href: '/admin/settings' },
-        {
-          type: 'link' as const,
-          text: t('navigation:admin_notifications'),
-          href: '/admin/notifications',
-          info: <Badge color="red">3</Badge>
-        }
-      ]
-    }
+    // // 시스템 관리 그룹
+    // {
+    //   type: 'section-group' as const,
+    //   title: t('navigation:admin_system_group'),
+    //   items: [
+    //     { type: 'link' as const, text: t('navigation:admin_settings'), href: '/admin/settings' },
+    //     {
+    //       type: 'link' as const,
+    //       text: t('navigation:admin_notifications'),
+    //       href: '/admin/notifications',
+    //       info: <Badge color="red">3</Badge>
+    //     }
+    //   ]
+    // }
   ] : [];
 
   // 외부 링크 및 지원 메뉴

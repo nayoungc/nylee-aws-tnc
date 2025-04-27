@@ -1,13 +1,20 @@
 {
-  "loading": "Loading...",
-  "error": "Error",
-  "success": "Success",
+  "loading": "Loading",
+  "error": "An error has occurred",
+  "retry": "Retry",
   "cancel": "Cancel",
   "save": "Save",
-  "delete": "Delete",
   "edit": "Edit",
-  "close": "Close",
-  "confirm": "Confirm",
-  "yes": "Yes",
-  "no": "No"
+  "delete": "Delete",
+  "home": "Home",
+  "actions_delete_selected": "Delete selected",
+  "hours": "hours",
+  "pagination_next": "Next",
+  "pagination_previous": "Previous",
+  "pagination_page_label": "Page {pageNumber}",
+  "tag_editor_key_header": "Key",
+  "tag_editor_value_header": "Value",
+  "tag_editor_add_button": "Add tag",
+  "tag_editor_remove_button": "Remove",
+  "tag_editor_loading": "Loading"
 }

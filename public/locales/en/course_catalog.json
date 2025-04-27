@@ -1,0 +1,33 @@
+
+
+  {
+    "error_failed_to_list": "Failed to list course catalogs: {error}",
+    "error_failed_to_get": "Failed to get course catalog: {error}",
+    "error_failed_to_search": "Failed to search course catalogs: {error}",
+    "error_failed_to_get_by_category": "Failed to get course catalogs by category: {error}",
+    "error_failed_to_create": "Failed to create course catalog: {error}",
+    "error_failed_to_update": "Failed to update course catalog: {error}",
+    "error_failed_to_delete": "Failed to delete course catalog: {error}",
+    "error_invalid_create_response": "Invalid create course catalog response",
+    "error_invalid_update_response": "Invalid update course catalog response",
+    "error_catalog_not_found": "Course catalog not found: {id}",
+    "error_failed_to_load_catalogs": "Failed to load catalogs",
+    "filter_search_placeholder": "Search catalogs...",
+    "filter_search_aria_label": "Search catalogs",
+    "action_create_catalog": "Create Catalog",
+    "action_create_first_catalog": "Create First Catalog",
+    "action_view": "View",
+    "action_edit": "Edit",
+    "field_title": "Title",
+    "field_aws_code": "AWS Code",
+    "field_level": "Level",
+    "field_category": "Category",
+    "field_status": "Status",
+    "field_actions": "Actions",
+    "empty_state_title": "No catalogs",
+    "empty_state_message": "Create a new catalog to get started",
+    "empty_state_no_results": "No matching results found",
+    "empty_state_clear_filters": "Clear filters and try again",
+    "title_course_catalogs": "Course Catalogs"
+  }
+  

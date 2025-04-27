@@ -13,7 +13,7 @@ import {
   createCourseCatalog as createCourseCatalogMutation, 
   updateCourseCatalog as updateCourseCatalogMutation,
   deleteCourseCatalog as deleteCourseCatalogMutation
-} from '@graphql/catalog';
+} from '@/graphql/courseCatalog';
 
 import {
   ListCourseCatalogsResult,
@@ -24,7 +24,7 @@ import {
   UpdateCourseCatalogResult,
   DeleteCourseCatalogResult,
   SearchableCourseCatalogFilterInput
-} from '@/graphql/catalog';
+} from '@/graphql/courseCatalog';
 
 import { CourseCatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/courseCatalog'; 
 import { mockCourseCatalogs } from '../../mocks/catalogData'; 
