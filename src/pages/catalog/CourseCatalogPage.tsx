@@ -1,4 +1,4 @@
-// src/pages/instructors/CourseCatalogPage.tsx
+// src/pages/catalog/CourseCatalogPage.tsx
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -13,8 +13,8 @@ import {
   Spinner,
   Box
 } from '@cloudscape-design/components';
-import { fetchAllCourseCatalogs, searchCourseCatalogs } from '@/services/api/catalogApi';
-import { CourseCatalog, CourseCatalogFilter } from '@/models/catalog';
+import { fetchAllCourseCatalogs, searchCourseCatalogs } from '@/services/api/courseCatalogApi';
+import { CourseCatalog, CourseCatalogFilter } from '@/models/courseCatalog';
 import { useNavigate } from 'react-router-dom';
 
 const CourseCatalogPage: React.FC = () => {
@@ -85,15 +85,15 @@ const CourseCatalogPage: React.FC = () => {
   const levels = Array.from(new Set(catalogs.map(c => c.level).filter(Boolean))) as string[];
   
   const handleCreateCatalog = () => {
-    navigate('/instructors/catalogs/create');
+    navigate('/catalog/create');
   };
   
   const handleEditCatalog = (id: string) => {
-    navigate(`/instructors/catalogs/edit/\${id}`);
+    navigate(`/catalog/edit/\${id}`); // 수정된 템플릿 문자열
   };
   
   const handleViewCatalog = (id: string) => {
-    navigate(`/instructors/catalogs/\${id}`);
+    navigate(`/catalog/\${id}`); // 수정된 템플릿 문자열
   };
 
   if (loading) {
@@ -110,16 +110,13 @@ const CourseCatalogPage: React.FC = () => {
   if (error) {
     return (
       <Container>
-        {/* <EmptyState
-          title={t('errors.loadError', { ns: 'common' })}
-          message={error}
-          action={
-            <Button onClick={() => window.location.reload()}>
-              {t('retry', { ns: 'common' })}
-            </Button>
-          }
-        /> */}
-        0
+        <Box textAlign="center" padding="l">
+          <h2>{t('errors.loadError', { ns: 'common' })}</h2>
+          <p>{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            {t('retry', { ns: 'common' })}
+          </Button>
+        </Box>
       </Container>
     );
   }
@@ -146,16 +143,17 @@ const CourseCatalogPage: React.FC = () => {
         />
         
         {catalogs.length === 0 ? (
-          // <EmptyState
-          //   title={t('emptyState.title', { ns: 'courseCatalog' })}
-          //   message={t('emptyState.message', { ns: 'courseCatalog' })}
-          //   action={
-          //     <Button onClick={handleCreateCatalog}>
-          //       {t('actions.createFirstCatalog', { ns: 'courseCatalog' })}
-          //     </Button>
-          //   }
-          // />
-          0
+          <Box textAlign="center" padding={{ top: 'xxl', bottom: 'xxl' }}>
+            <Box variant="h3">
+              {t('emptyState.title', { ns: 'courseCatalog' })}
+            </Box>
+            <Box variant="p" padding={{ bottom: 'm' }}>
+              {t('emptyState.message', { ns: 'courseCatalog' })}
+            </Box>
+            <Button onClick={handleCreateCatalog}>
+              {t('actions.createFirstCatalog', { ns: 'courseCatalog' })}
+            </Button>
+          </Box>
         ) : (
           <>
             <Table

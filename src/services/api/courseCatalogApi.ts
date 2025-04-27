@@ -9,7 +9,7 @@ import {
   listCourseCatalogs,
   getCourseCatalog,
   searchCourseCatalogs as searchCourseCatalogsQuery,
-  getCourseCatalogsByCategory as getCourseCatalogsByCategoryQuery, // 별칭 추가
+  getCourseCatalogsByCategory as getCourseCatalogsByCategoryQuery,
   createCourseCatalog as createCourseCatalogMutation, 
   updateCourseCatalog as updateCourseCatalogMutation,
   deleteCourseCatalog as deleteCourseCatalogMutation
@@ -26,7 +26,6 @@ import {
   SearchableCourseCatalogFilterInput
 } from '@/graphql/catalog';
 
-// 필터 타입 수정
 import { CourseCatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/courseCatalog'; 
 import { mockCourseCatalogs } from '../../mocks/catalogData'; 
 
@@ -174,9 +173,9 @@ export const fetchCourseCatalogsByCategory = async (category: string): Promise<C
       variables: { category }
     });
     
-    // 안전하게 데이터 추출 - 여기서 올바른 속성 이름 사용
+    // 안전하게 데이터 추출
     const data = safelyExtractData<GetCourseCatalogByCategoryResult>(response);
-    return data?.getCourseCatalogByCategory?.items || []; // 단수형으로 수정
+    return data?.getCourseCatalogByCategory?.items || [];
   } catch (error: unknown) {
     console.error(`카테고리별 코스 카탈로그 조회 오류 (\${category}):`, error);
     throw new Error(i18n.t('errors.failedToGetCourseCatalogsByCategory', { category, error: String(error), ns: 'courseCatalog' }));
