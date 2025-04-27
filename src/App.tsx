@@ -81,10 +81,6 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 } />
 
-                
-
-                
-
                 {/* 404 페이지 추가 */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
