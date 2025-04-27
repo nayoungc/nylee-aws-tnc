@@ -17,9 +17,6 @@ i18n
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
     
-    defaultNS: 'common',
-    ns: ['common', 'catalog', 'navigation', 'auth', 'admin'],
-    
     interpolation: {
       escapeValue: false,
     },

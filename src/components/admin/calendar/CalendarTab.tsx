@@ -1,104 +1,27 @@
 // src/components/admin/calendar/CalendarTab.tsx
+import React, { useState, useEffect } from 'react';
+import { useCollection } from '@cloudscape-design/collection-hooks';
 import {
     Box,
     Button,
     Calendar,
     Container,
-    DatePicker,
-    FormField,
+    ColumnLayout,
     Grid,
     Header,
-    Input,
-    Modal,
+    Pagination,
     Select,
     SpaceBetween,
+    Spinner,
     Table,
     Tabs,
-    Textarea
+    TextFilter
 } from '@cloudscape-design/components';
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-
-// 강의 타입 정의
-interface Course {
-    id: string;
-    title: string;
-    instructor: string;
-    startDate: string;
-    endDate: string;
-    time: string;
-    location: string;
-    type: string;
-    level: string;
-    seats: number;
-    remainingSeats: number;
-    description: string;
-    status: 'scheduled' | 'canceled' | 'completed';
-}
-
-// 샘플 교육 과정 데이터
-const sampleCourses: Course[] = [
-    {
-        id: "course1",
-        title: "AWS 아키텍처 설계 기초",
-        instructor: "김철수",
-        startDate: "2025-04-15",
-        endDate: "2025-04-15",
-        time: "10:00 - 16:00",
-        location: "강남 교육센터",
-        type: "오프라인",
-        level: "초급",
-        seats: 15,
-        remainingSeats: 5,
-        description: "AWS의 기본 서비스를 활용한 아키텍처 설계 기초를 학습합니다. EC2, S3, RDS 등의 핵심 서비스 실습이 포함됩니다.",
-        status: 'scheduled'
-    },
-    {
-        id: "course2",
-        title: "서버리스 애플리케이션 개발",
-        instructor: "이영희",
-        startDate: "2025-04-15",
-        endDate: "2025-04-15",
-        time: "13:00 - 17:00",
-        location: "온라인 화상 강의",
-        type: "온라인",
-        level: "중급",
-        seats: 30,
-        remainingSeats: 12,
-        description: "AWS Lambda와 API Gateway를 활용한 서버리스 애플리케이션 개발 방법론을 배웁니다.",
-        status: 'scheduled'
-    },
-    {
-        id: "course3",
-        title: "AWS 보안 최적화 워크샵",
-        instructor: "박보안",
-        startDate: "2025-04-20",
-        endDate: "2025-04-20",
-        time: "09:00 - 18:00",
-        location: "역삼 AWS 교육장",
-        type: "오프라인",
-        level: "고급",
-        seats: 20,
-        remainingSeats: 3,
-        description: "AWS 환경에서의 보안 위협에 대응하고 보안 서비스를 활용해 인프라를 보호하는 방법을 학습합니다.",
-        status: 'scheduled'
-    },
-    {
-        id: "course4",
-        title: "컨테이너 오케스트레이션 마스터",
-        instructor: "정도커",
-        startDate: "2025-04-25",
-        endDate: "2025-04-25",
-        time: "10:00 - 17:00",
-        location: "온라인 화상 강의",
-        type: "온라인",
-        level: "중급",
-        seats: 25,
-        remainingSeats: 8,
-        description: "ECS와 EKS를 활용한 컨테이너 오케스트레이션 방법을 배웁니다. 실제 운영 환경에서 활용 가능한 배포 전략을 다룹니다.",
-        status: 'scheduled'
-    }
-];
+import { useCalendar } from '@/hooks/useCalendar';
+import { CalendarEvent, EventType } from '@/models/calendar';
+import EventFormModal from './EventFormModal';
+import { formatDate, getTodayString } from '@/utils/dateUtils';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
 // 강사 인터페이스
 interface Instructor {
@@ -117,7 +40,7 @@ interface Location {
     isVirtual: boolean;
 }
 
-// 샘플 강사 데이터
+// 샘플 강사 데이터 (실제 구현에서는 API에서 가져옴)
 const sampleInstructors: Instructor[] = [
     {
         id: "inst1",
@@ -145,7 +68,7 @@ const sampleInstructors: Instructor[] = [
     }
 ];
 
-// 샘플 장소 데이터
+// 샘플 장소 데이터 (실제 구현에서는 API에서 가져옴)
 const sampleLocations: Location[] = [
     {
         id: "loc1",
@@ -172,35 +95,35 @@ const sampleLocations: Location[] = [
 
 // 이벤트 날짜 목록 컴포넌트
 interface EventDateListProps {
-    courses: Course[];
+    events: CalendarEvent[];
     selectedDate: string | null;
     onSelectDate: (date: string) => void;
 }
 
-const EventDateList: React.FC<EventDateListProps> = ({ courses, selectedDate, onSelectDate }) => {
-    const { t } = useTranslation(['admin']);
+const EventDateList: React.FC<EventDateListProps> = ({ events, selectedDate, onSelectDate }) => {
+    const { t } = useAppTranslation();
 
-    // 날짜별로 그룹화된 코스
-    const groupedByDate = courses.reduce((acc, course) => {
-        const date = course.startDate;
+    // 날짜별로 그룹화된 이벤트
+    const groupedByDate = events.reduce((acc, event) => {
+        const date = event.date;
         if (!acc[date]) {
             acc[date] = [];
         }
-        acc[date].push(course);
+        acc[date].push(event);
         return acc;
-    }, {} as Record<string, Course[]>);
+    }, {} as Record<string, CalendarEvent[]>);
 
     // 날짜 정렬
     const sortedDates = Object.keys(groupedByDate).sort();
 
     return (
         <Box padding={{ top: 's' }}>
-            <Header variant="h3">{t('calendar.upcoming_events', '예정된 교육')}</Header>
+            <Header variant="h3">{t('calendar_upcoming_events')}</Header>
             {sortedDates.length > 0 ? (
                 <Box padding={{ left: 's', top: 's' }}>
                     <SpaceBetween size="xs">
                         {sortedDates.map(date => {
-                            const formattedDate = new Date(date).toLocaleDateString();
+                            const formattedDate = formatDate(date);
                             return (
                                 <Button
                                     key={date}
@@ -208,7 +131,7 @@ const EventDateList: React.FC<EventDateListProps> = ({ courses, selectedDate, on
                                     onClick={() => onSelectDate(date)}
                                     iconName="calendar"
                                 >
-                                    {formattedDate} - {groupedByDate[date].length}개 과정
+                                    {formattedDate} - {groupedByDate[date].length}{t('course_count')}
                                 </Button>
                             );
                         })}
@@ -216,7 +139,7 @@ const EventDateList: React.FC<EventDateListProps> = ({ courses, selectedDate, on
                 </Box>
             ) : (
                 <Box color="text-body-secondary" padding={{ top: 's', left: 's' }}>
-                    {t('calendar.no_events', '예정된 교육이 없습니다')}
+                    {t('calendar_no_events')}
                 </Box>
             )}
         </Box>
@@ -224,68 +147,180 @@ const EventDateList: React.FC<EventDateListProps> = ({ courses, selectedDate, on
 };
 
 const CalendarTab: React.FC = () => {
-    const { t } = useTranslation(['admin', 'common']);
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
-    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { t } = useAppTranslation();
     const [activeTabId, setActiveTabId] = useState<string>("calendar");
-    const [courses, setCourses] = useState<Course[]>(sampleCourses);
+    const [selectedDate, setSelectedDate] = useState<string | null>(getTodayString());
+    const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    // 추가 상태 변수들
     const [instructors] = useState<Instructor[]>(sampleInstructors);
     const [locations] = useState<Location[]>(sampleLocations);
 
-    // 선택한 날짜의 강의 필터링
-    const coursesForSelectedDate = selectedDate
-        ? courses.filter(course => course.startDate === selectedDate)
+    // useCalendar 훅 사용
+    const {
+        events,
+        error,
+        getCalendars,
+        getEventsByDate,
+        createEvent,
+        updateEvent,
+        deleteEvent
+    } = useCalendar();
+
+    // 컴포넌트 마운트 시 이벤트 로드
+    useEffect(() => {
+        loadEvents();
+    }, []);
+
+    // 선택된 날짜에 따라 이벤트 로드
+    useEffect(() => {
+        if (selectedDate) {
+            loadEventsByDate(selectedDate);
+        }
+    }, [selectedDate]);
+
+    // 이벤트 로드 함수
+    const loadEvents = async () => {
+        setLoading(true);
+        try {
+            await getCalendars();
+        } catch (err) {
+            console.error('이벤트 로드 오류:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 날짜별 이벤트 로드
+    const loadEventsByDate = async (dateStr: string) => {
+        setLoading(true);
+        try {
+            await getEventsByDate(dateStr);
+        } catch (err) {
+            console.error('날짜별 이벤트 로드 오류:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
+    // 이벤트 생성 처리
+    const handleCreateEvent = async (eventData: Omit<CalendarEvent, 'id' | 'createdAt'>) => {
+        try {
+            await createEvent(eventData);
+            setIsModalOpen(false);
+
+            if (eventData.date === selectedDate) {
+                loadEventsByDate(selectedDate);
+            } else {
+                loadEvents();
+            }
+        } catch (err) {
+            console.error('이벤트 생성 오류:', err);
+        }
+    };
+
+    // 이벤트 수정 처리
+    const handleUpdateEvent = async (id: string, eventData: Partial<CalendarEvent>) => {
+        try {
+            await updateEvent(id, eventData);
+            setIsModalOpen(false);
+            setSelectedEvent(null);
+
+            if (eventData.date && eventData.date !== selectedDate) {
+                loadEvents();
+            } else if (selectedDate) { // null 체크 추가
+                loadEventsByDate(selectedDate);
+            } else {
+                // selectedDate가 null인 경우 전체 이벤트 로드
+                loadEvents();
+            }
+        } catch (err) {
+            console.error('이벤트 수정 오류:', err);
+        }
+    };
+
+    // 이벤트 삭제 처리
+    const handleDeleteEvent = async (id: string) => {
+        try {
+            await deleteEvent(id);
+            if (selectedDate) { // null 체크 추가
+                loadEventsByDate(selectedDate);
+            } else {
+                // selectedDate가 null인 경우 전체 이벤트 로드
+                loadEvents();
+            }
+        } catch (err) {
+            console.error('이벤트 삭제 오류:', err);
+        }
+    };
+
+    // 캘린더 뷰에서 날짜별 이벤트 정보
+    const calendarEventsMap = events.reduce((acc, event) => {
+        const date = event.date;
+        if (!acc[date]) {
+            acc[date] = [];
+        }
+        acc[date].push(event);
+        return acc;
+    }, {} as Record<string, CalendarEvent[]>);
+
+    // 선택된 날짜의 이벤트
+    const eventsForSelectedDate = selectedDate
+        ? calendarEventsMap[selectedDate] || []
         : [];
+
+    // 날짜에 이벤트가 있는지 확인하는 함수
+    const isDateWithEvent = (dateString: string): boolean => {
+        return !!calendarEventsMap[dateString] && calendarEventsMap[dateString].length > 0;
+    };
 
     // 날짜 선택 핸들러
     const handleDateSelect = (date: string) => {
         setSelectedDate(date);
     };
 
-    // 과정 추가 핸들러
-    const handleAddCourse = () => {
-        // 빈 과정 객체로 모달 열기
-        setSelectedCourse({
-            id: `course\${Date.now()}`,
-            title: "",
-            instructor: "",
-            startDate: selectedDate || new Date().toISOString().split('T')[0],
-            endDate: selectedDate || new Date().toISOString().split('T')[0],
-            time: "09:00 - 17:00",
-            location: "",
-            type: "오프라인",
-            level: "초급",
-            seats: 20,
-            remainingSeats: 20,
-            description: "",
-            status: 'scheduled'
-        });
+    // 이벤트 추가 핸들러
+    const handleAddEvent = () => {
+        setSelectedEvent(null);
         setIsModalOpen(true);
     };
 
-    // 과정 편집 핸들러
-    const handleEditCourse = (course: Course) => {
-        setSelectedCourse({ ...course });
+    // 이벤트 편집 핸들러
+    const handleEditEvent = (event: CalendarEvent) => {
+        setSelectedEvent({ ...event });
         setIsModalOpen(true);
     };
 
-    // 과정 삭제 핸들러
-    const handleDeleteCourse = (courseId: string) => {
-        setCourses(prev => prev.filter(course => course.id !== courseId));
-    };
+    // Collection Hooks를 사용한 필터링 및 페이지네이션
+    const { items, filterProps, paginationProps } = useCollection(events, {
+        filtering: {
+            empty: <Box textAlign="center" color="inherit">{t('no_events')}</Box>,
+            noMatch: <Box textAlign="center" color="inherit">{t('no_search_results')}</Box>,
+        },
+        pagination: { pageSize: 10 },
+        sorting: {},
+    });
 
-    // 과정 저장 핸들러
-    const handleSaveCourse = (course: Course) => {
-        if (courses.some(c => c.id === course.id)) {
-            // 기존 과정 업데이트
-            setCourses(prev => prev.map(c => c.id === course.id ? course : c));
-        } else {
-            // 새 과정 추가
-            setCourses(prev => [...prev, course]);
-        }
-        setIsModalOpen(false);
-        setSelectedCourse(null);
+    // 날짜 표시 커스텀 렌더러
+    const renderDateContent = (date: Date) => {
+        const dateStr = date.toISOString().split('T')[0];
+        const dayEvents = calendarEventsMap[dateStr] || [];
+
+        if (dayEvents.length === 0) return null;
+
+        return (
+            <div style={{
+                width: '100%',
+                height: '4px',
+                backgroundColor: '#0972d3',
+                borderRadius: '2px',
+                marginTop: '2px'
+            }} />
+        );
     };
 
     return (
@@ -295,14 +330,14 @@ const CalendarTab: React.FC = () => {
                 onChange={({ detail }) => setActiveTabId(detail.activeTabId)}
                 tabs={[
                     {
-                        label: t('calendar.calendar_view', '캘린더 뷰'),
+                        label: t('calendar_view'),
                         id: "calendar",
                         content: (
                             <Grid gridDefinition={[{ colspan: 4 }, { colspan: 8 }]}>
                                 <Container
                                     header={
                                         <Header variant="h2">
-                                            {t('calendar.title', '교육 일정 관리')}
+                                            {t('calendar_title')}
                                         </Header>
                                     }
                                 >
@@ -310,30 +345,79 @@ const CalendarTab: React.FC = () => {
                                         <Calendar
                                             value={selectedDate || ""}
                                             onChange={({ detail }) => handleDateSelect(detail.value)}
-                                            locale={t('common:locale', 'ko-KR')}
+                                            locale="ko-KR"
                                             startOfWeek={0}
-                                            isDateEnabled={() => true}
+                                            // renderDayContent 속성 제거
+                                            isDateEnabled={(date) => true} // 모든 날짜 선택 가능
                                             i18nStrings={{
-                                                todayAriaLabel: t('calendar.today', '오늘'),
-                                                previousMonthAriaLabel: t('calendar.previous_month', '이전 달'),
-                                                nextMonthAriaLabel: t('calendar.next_month', '다음 달')
+                                                todayAriaLabel: t('calendar_today'),
+                                                previousMonthAriaLabel: t('calendar_previous_month'),
+                                                nextMonthAriaLabel: t('calendar_next_month'),
                                             }}
-                                            ariaLabelledby="calendar-heading"
                                         />
+
+                                        {/* 이벤트가 있는 날짜를 표시하는 방법을 대체 */}
+                                        {/* 이벤트 가이드 */}
+                                        <Box padding={{ top: 's' }}>
+                                            <SpaceBetween size="xs">
+                                                <Box color="text-body-secondary" fontSize="body-s">
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <div style={{
+                                                            width: '8px',
+                                                            height: '8px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: '#0972d3',
+                                                            marginRight: '5px'
+                                                        }} />
+                                                        {t('dates_with_events')}
+                                                    </div>
+                                                </Box>
+                                                <Box color="text-body-secondary" fontSize="body-s">
+                                                    {selectedDate
+                                                        ? `\${formatDate(selectedDate)}: \${eventsForSelectedDate.length}\${t('events_count')}`
+                                                        : t('select_date')
+                                                    }
+                                                </Box>
+                                            </SpaceBetween>
+                                        </Box>
 
                                         {/* 이벤트 날짜 목록 */}
                                         <EventDateList
-                                            courses={courses}
+                                            events={events}
                                             selectedDate={selectedDate}
                                             onSelectDate={handleDateSelect}
                                         />
 
-                                        {/* 새 과정 추가 버튼 */}
+                                        {/* 이벤트 가이드 */}
+                                        <Box padding={{ top: 's' }}>
+                                            <SpaceBetween size="xs">
+                                                <Box color="text-body-secondary" fontSize="body-s">
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <div style={{
+                                                            width: '8px',
+                                                            height: '8px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: '#0972d3',
+                                                            marginRight: '5px'
+                                                        }} />
+                                                        {t('dates_with_events')}
+                                                    </div>
+                                                </Box>
+                                                <Box color="text-body-secondary" fontSize="body-s">
+                                                    {selectedDate
+                                                        ? `\${formatDate(selectedDate)}: \${eventsForSelectedDate.length}\${t('events_count')}`
+                                                        : t('select_date')
+                                                    }
+                                                </Box>
+                                            </SpaceBetween>
+                                        </Box>
+
+                                        {/* 새 이벤트 추가 버튼 */}
                                         <Button
                                             iconName="add-plus"
-                                            onClick={handleAddCourse}
+                                            onClick={handleAddEvent}
                                         >
-                                            {t('calendar.add_course', '새 교육 과정 추가')}
+                                            {t('add_new_event')}
                                         </Button>
                                     </SpaceBetween>
                                 </Container>
@@ -342,59 +426,62 @@ const CalendarTab: React.FC = () => {
                                     header={
                                         <Header variant="h2">
                                             {selectedDate
-                                                ? t('calendar.courses_for_date', '{{date}} 교육 과정',
-                                                    { date: new Date(selectedDate).toLocaleDateString() })
-                                                : t('calendar.select_date', '날짜를 선택하세요')}
+                                                ? `\${formatDate(selectedDate)} \${t('events')}`
+                                                : t('select_date')}
                                         </Header>
                                     }
                                 >
                                     {selectedDate ? (
                                         <SpaceBetween size="l">
-                                            {coursesForSelectedDate.length > 0 ? (
+                                            {eventsForSelectedDate.length > 0 ? (
                                                 <Table
-                                                    items={coursesForSelectedDate}
+                                                    items={eventsForSelectedDate}
                                                     columnDefinitions={[
                                                         {
                                                             id: "title",
-                                                            header: t('calendar.course_title', '교육명'),
+                                                            header: t('event_title'),
                                                             cell: item => item.title
                                                         },
                                                         {
                                                             id: "instructor",
-                                                            header: t('calendar.instructor', '강사'),
-                                                            cell: item => item.instructor
+                                                            header: t('instructor'),
+                                                            cell: item => item.instructorName
                                                         },
                                                         {
                                                             id: "time",
-                                                            header: t('calendar.time', '시간'),
-                                                            cell: item => item.time
+                                                            header: t('time'),
+                                                            cell: item => `\${item.startTime} - \${item.endTime}`
                                                         },
                                                         {
-                                                            id: "type",
-                                                            header: t('calendar.type', '유형'),
-                                                            cell: item => item.type
+                                                            id: "location",
+                                                            header: t('location'),
+                                                            cell: item => item.location
                                                         },
                                                         {
                                                             id: "seats",
-                                                            header: t('calendar.seats', '좌석'),
-                                                            cell: item => `\${item.remainingSeats}/\${item.seats}`
+                                                            header: t('seats'),
+                                                            cell: item => `\${item.currentAttendees}/\${item.maxAttendees}`
                                                         },
                                                         {
                                                             id: "actions",
-                                                            header: t('common:actions', '작업'),
+                                                            header: t('actions'),
                                                             cell: item => (
                                                                 <SpaceBetween direction="horizontal" size="xs">
                                                                     <Button
                                                                         variant="link"
-                                                                        onClick={() => handleEditCourse(item)}
+                                                                        onClick={() => handleEditEvent(item)}
                                                                     >
-                                                                        {t('common:edit', '편집')}
+                                                                        {t('edit')}
                                                                     </Button>
                                                                     <Button
                                                                         variant="link"
-                                                                        onClick={() => handleDeleteCourse(item.id)}
+                                                                        onClick={() => {
+                                                                            if (window.confirm(t('confirm_delete'))) {
+                                                                                handleDeleteEvent(item.id);
+                                                                            }
+                                                                        }}
                                                                     >
-                                                                        {t('common:delete', '삭제')}
+                                                                        {t('delete')}
                                                                     </Button>
                                                                 </SpaceBetween>
                                                             )
@@ -403,12 +490,12 @@ const CalendarTab: React.FC = () => {
                                                 />
                                             ) : (
                                                 <Box textAlign="center" color="text-body-secondary" padding="l">
-                                                    <h3>{t('calendar.no_courses', '해당 날짜에 예정된 교육 과정이 없습니다')}</h3>
+                                                    <h3>{t('no_events_for_date')}</h3>
                                                     <p>
                                                         <Button
-                                                            onClick={handleAddCourse}
+                                                            onClick={handleAddEvent}
                                                         >
-                                                            {t('calendar.add_course_for_date', '이 날짜에 교육 과정 추가')}
+                                                            {t('add_event_for_date')}
                                                         </Button>
                                                     </p>
                                                 </Box>
@@ -416,8 +503,8 @@ const CalendarTab: React.FC = () => {
                                         </SpaceBetween>
                                     ) : (
                                         <Box textAlign="center" color="text-body-secondary" padding="l">
-                                            <h3>{t('calendar.please_select_date', '왼쪽 캘린더에서 날짜를 선택하세요')}</h3>
-                                            <p>{t('calendar.courses_will_appear', '선택한 날짜의 교육 과정이 여기에 표시됩니다')}</p>
+                                            <h3>{t('please_select_date')}</h3>
+                                            <p>{t('events_will_appear')}</p>
                                         </Box>
                                     )}
                                 </Container>
@@ -425,7 +512,7 @@ const CalendarTab: React.FC = () => {
                         )
                     },
                     {
-                        label: t('calendar.list_view', '목록 뷰'),
+                        label: t('list_view'),
                         id: "list",
                         content: (
                             <Container
@@ -435,265 +522,131 @@ const CalendarTab: React.FC = () => {
                                         actions={
                                             <Button
                                                 iconName="add-plus"
-                                                onClick={handleAddCourse}
+                                                onClick={handleAddEvent}
                                             >
-                                                {t('calendar.add_course', '새 교육 과정 추가')}
+                                                {t('add_new_event')}
                                             </Button>
                                         }
                                     >
-                                        {t('calendar.all_courses', '전체 교육 과정')}
+                                        {t('all_events')}
                                     </Header>
                                 }
                             >
-                                <Table
-                                    items={courses}
-                                    columnDefinitions={[
-                                        {
-                                            id: "title",
-                                            header: t('calendar.course_title', '교육명'),
-                                            cell: item => item.title
-                                        },
-                                        {
-                                            id: "date",
-                                            header: t('calendar.date', '날짜'),
-                                            cell: item => new Date(item.startDate).toLocaleDateString()
-                                        },
-                                        {
-                                            id: "instructor",
-                                            header: t('calendar.instructor', '강사'),
-                                            cell: item => item.instructor
-                                        },
-                                        {
-                                            id: "location",
-                                            header: t('calendar.location', '장소'),
-                                            cell: item => item.location
-                                        },
-                                        {
-                                            id: "type",
-                                            header: t('calendar.type', '유형'),
-                                            cell: item => item.type
-                                        },
-                                        {
-                                            id: "status",
-                                            header: t('calendar.status', '상태'),
-                                            cell: item => item.status
-                                        },
-                                        {
-                                            id: "actions",
-                                            header: t('common:actions', '작업'),
-                                            cell: item => (
-                                                <SpaceBetween direction="horizontal" size="xs">
-                                                    <Button
-                                                        variant="link"
-                                                        onClick={() => handleEditCourse(item)}
+                                <SpaceBetween size="l">
+                                    <TextFilter
+                                        {...filterProps}
+                                        countText={t('event_count', { count: items.length })}
+                                        filteringAriaLabel={t('search_events')}
+                                        filteringPlaceholder={t('search_events_placeholder')}
+                                    />
+
+                                    {loading ? (
+                                        <Spinner size="large" />
+                                    ) : (
+                                        <>
+                                            <Table
+                                                items={items}
+                                                columnDefinitions={[
+                                                    {
+                                                        id: "title",
+                                                        header: t('event_title'),
+                                                        cell: item => item.title
+                                                    },
+                                                    {
+                                                        id: "date",
+                                                        header: t('date'),
+                                                        cell: item => formatDate(item.date)
+                                                    },
+                                                    {
+                                                        id: "instructor",
+                                                        header: t('instructor'),
+                                                        cell: item => item.instructorName
+                                                    },
+                                                    {
+                                                        id: "location",
+                                                        header: t('location'),
+                                                        cell: item => item.location
+                                                    },
+                                                    {
+                                                        id: "time",
+                                                        header: t('time'),
+                                                        cell: item => `\${item.startTime} - \${item.endTime}`
+                                                    },
+                                                    {
+                                                        id: "type",
+                                                        header: t('event_type'),
+                                                        cell: item => item.eventType === 'CLASS'
+                                                            ? t('class_type')
+                                                            : t('event_type')
+                                                    },
+                                                    {
+                                                        id: "actions",
+                                                        header: t('actions'),
+                                                        cell: item => (
+                                                            <SpaceBetween direction="horizontal" size="xs">
+                                                                <Button
+                                                                    variant="link"
+                                                                    onClick={() => handleEditEvent(item)}
+                                                                >
+                                                                    {t('edit')}
+                                                                </Button>
+                                                                <Button
+                                                                    variant="link"
+                                                                    onClick={() => {
+                                                                        if (window.confirm(t('confirm_delete'))) {
+                                                                            handleDeleteEvent(item.id);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {t('delete')}
+                                                                </Button>
+                                                            </SpaceBetween>
+                                                        )
+                                                    }
+                                                ]}
+                                                sortingColumn={{
+                                                    sortingField: 'date'
+                                                }}
+                                                pagination={<Pagination {...paginationProps} />}
+                                                loading={loading}
+                                                loadingText={t('loading_events')}
+                                                empty={
+                                                    <Box
+                                                        textAlign="center"
+                                                        color="inherit"
                                                     >
-                                                        {t('common:edit', '편집')}
-                                                    </Button>
-                                                    <Button
-                                                        variant="link"
-                                                        onClick={() => handleDeleteCourse(item.id)}
-                                                    >
-                                                        {t('common:delete', '삭제')}
-                                                    </Button>
-                                                </SpaceBetween>
-                                            )
-                                        }
-                                    ]}
-                                    sortingColumn={{
-                                        sortingField: 'date'
-                                    }}
-                                />
+                                                        <b>{t('no_events')}</b>
+                                                        <Box padding={{ bottom: "s" }}>
+                                                            {t('add_new_event_message')}
+                                                        </Box>
+                                                    </Box>
+                                                }
+                                            />
+                                        </>
+                                    )}
+                                </SpaceBetween>
                             </Container>
                         )
                     }
                 ]}
             />
 
-            {/* 교육 과정 편집 모달 */}
-            {isModalOpen && selectedCourse && (
-                <Modal
-                    visible={isModalOpen}
-                    onDismiss={() => setIsModalOpen(false)}
-                    header={
-                        selectedCourse.id.includes('course') && !courses.some(c => c.id === selectedCourse.id)
-                            ? t('calendar.add_course', '새 교육 과정 추가')
-                            : t('calendar.edit_course', '교육 과정 편집')
+            {/* 이벤트 편집 모달 컴포넌트 */}
+            <EventFormModal
+                event={selectedEvent}
+                visible={isModalOpen}
+                onDismiss={() => {
+                    setIsModalOpen(false);
+                    setSelectedEvent(null);
+                }}
+                onSubmit={(data) => {
+                    if (selectedEvent) {
+                        handleUpdateEvent(selectedEvent.id, data);
+                    } else {
+                        handleCreateEvent(data as Omit<CalendarEvent, 'id' | 'createdAt'>);
                     }
-                    size="large"
-                    footer={
-                        <Box float="right">
-                            <SpaceBetween direction="horizontal" size="xs">
-                                <Button variant="link" onClick={() => setIsModalOpen(false)}>
-                                    {t('common:cancel', '취소')}
-                                </Button>
-                                <Button variant="primary" onClick={() => handleSaveCourse(selectedCourse)}>
-                                    {t('common:save', '저장')}
-                                </Button>
-                            </SpaceBetween>
-                        </Box>
-                    }
-                >
-                    <SpaceBetween size="l">
-                        <FormField label={t('calendar.course_title', '교육명')}>
-                            <Input
-                                value={selectedCourse.title}
-                                onChange={e => setSelectedCourse(prev => ({ ...prev!, title: e.detail.value }))}
-                            />
-                        </FormField>
-
-                        <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
-                            <FormField label={t('calendar.start_date', '시작 날짜')}>
-                                <DatePicker
-                                    value={selectedCourse.startDate}
-                                    onChange={({ detail }) =>
-                                        setSelectedCourse(prev => ({ ...prev!, startDate: detail.value }))
-                                    }
-                                />
-                            </FormField>
-
-                            <FormField label={t('calendar.end_date', '종료 날짜')}>
-                                <DatePicker
-                                    value={selectedCourse.endDate}
-                                    onChange={({ detail }) =>
-                                        setSelectedCourse(prev => ({ ...prev!, endDate: detail.value }))
-                                    }
-                                />
-                            </FormField>
-                        </Grid>
-
-                        <FormField label={t('calendar.time', '시간')}>
-                            <Input
-                                value={selectedCourse.time}
-                                onChange={e => setSelectedCourse(prev => ({ ...prev!, time: e.detail.value }))}
-                                placeholder="예: 09:00 - 17:00"
-                            />
-                        </FormField>
-
-                        <FormField label={t('calendar.instructor', '강사')}>
-                            <Select
-                                selectedOption={{
-                                    value: selectedCourse.instructor,
-                                    label: instructors.find(i => i.name === selectedCourse.instructor)?.name || selectedCourse.instructor
-                                }}
-                                onChange={e => setSelectedCourse(prev => ({
-                                    ...prev!,
-                                    instructor: e.detail.selectedOption.value || '' // 빈 문자열을 기본값으로 설정
-                                }))}
-                                options={instructors.map(instructor => ({
-                                    value: instructor.name,
-                                    label: instructor.name
-                                }))}
-                            />
-                        </FormField>
-
-                        <FormField label={t('calendar.location', '장소')}>
-                            <Select
-                                selectedOption={{
-                                    value: selectedCourse.location,
-                                    label: locations.find(l => l.name === selectedCourse.location)?.name || selectedCourse.location
-                                }}
-                                onChange={e => setSelectedCourse(prev => ({
-                                    ...prev!,
-                                    location: e.detail.selectedOption.value || '' // 빈 문자열을 기본값으로 설정
-                                }))}
-                                options={locations.map(location => ({
-                                    value: location.name,
-                                    label: location.name
-                                }))}
-                            />
-                        </FormField>
-
-                        <Grid gridDefinition={[{ colspan: 4 }, { colspan: 4 }, { colspan: 4 }]}>
-                            <FormField label={t('calendar.type', '유형')}>
-                                <Select
-                                    selectedOption={{
-                                        value: selectedCourse.type,
-                                        label: selectedCourse.type
-                                    }}
-                                    onChange={e => setSelectedCourse(prev => ({
-                                        ...prev!,
-                                        type: e.detail.selectedOption.value || '오프라인' // 기본값 설정
-                                    }))}
-                                    options={[
-                                        { value: '온라인', label: '온라인' },
-                                        { value: '오프라인', label: '오프라인' }
-                                    ]}
-                                />
-                            </FormField>
-
-                            <FormField label={t('calendar.level', '수준')}>
-                                <Select
-                                    selectedOption={{
-                                        value: selectedCourse.level,
-                                        label: selectedCourse.level
-                                    }}
-                                    onChange={e => setSelectedCourse(prev => ({
-                                        ...prev!,
-                                        level: e.detail.selectedOption.value || '초급' // 기본값 설정
-                                    }))}
-                                    options={[
-                                        { value: '초급', label: '초급' },
-                                        { value: '중급', label: '중급' },
-                                        { value: '고급', label: '고급' }
-                                    ]}
-                                />
-                            </FormField>
-
-                            <FormField label={t('calendar.status', '상태')}>
-                                <Select
-                                    selectedOption={{
-                                        value: selectedCourse.status,
-                                        label: selectedCourse.status === 'scheduled' ? '예정됨' :
-                                            selectedCourse.status === 'canceled' ? '취소됨' : '완료됨'
-                                    }}
-                                    onChange={e => setSelectedCourse(prev => ({
-                                        ...prev!,
-                                        status: (e.detail.selectedOption.value as 'scheduled' | 'canceled' | 'completed') || 'scheduled' // 기본값 설정
-                                    }))}
-                                    options={[
-                                        { value: 'scheduled', label: '예정됨' },
-                                        { value: 'canceled', label: '취소됨' },
-                                        { value: 'completed', label: '완료됨' }
-                                    ]}
-                                />
-                            </FormField>
-                        </Grid>
-
-                        <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
-                            <FormField label={t('calendar.total_seats', '총 좌석 수')}>
-                                <Input
-                                    type="number"
-                                    value={selectedCourse.seats.toString()}
-                                    onChange={e => setSelectedCourse(prev => ({ ...prev!, seats: parseInt(e.detail.value) || 0 }))}
-                                />
-                            </FormField>
-
-                            <FormField label={t('calendar.remaining_seats', '남은 좌석 수')}>
-                                <Input
-                                    type="number"
-                                    value={selectedCourse.remainingSeats.toString()}
-                                    onChange={e => setSelectedCourse(prev => ({ ...prev!, remainingSeats: parseInt(e.detail.value) || 0 }))}
-                                />
-                            </FormField>
-                        </Grid>
-
-                        <FormField label={t('calendar.description', '설명')}>
-                            <Textarea
-                                rows={5}
-                                value={selectedCourse.description}
-                                onChange={e => {
-                                    if (selectedCourse) {
-                                        setSelectedCourse({
-                                            ...selectedCourse,
-                                            description: e.detail.value
-                                        });
-                                    }
-                                }}
-                            />
-                        </FormField>
-                    </SpaceBetween>
-                </Modal>
-            )}
+                }}
+            />
         </SpaceBetween>
     );
 };
