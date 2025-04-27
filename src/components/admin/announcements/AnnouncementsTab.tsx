@@ -1,532 +1,322 @@
-// app/components/admin/catalog/CourseCatalogTab.tsx
+// src/components/common/EnhancedTable.tsx
 import React, { useState } from 'react';
 import {
-  ContentLayout,
-  SpaceBetween,
-  Container,
-  Header,
+  Table,
   Box,
   Button,
-  BreadcrumbGroup,
-  Alert,
-  Modal,
-  Form,
-  FormField,
-  Input,
-  Textarea,
-  Select,
-  TagEditor,
-  StatusIndicator,
-  SelectProps
+  Header,
+  Pagination,
+  PropertyFilter,
+  CollectionPreferences,
+  SpaceBetween,
+  TextFilter,
+  PropertyFilterProps
 } from '@cloudscape-design/components';
-import { useTranslation } from 'react-i18next';
-import { useCatalog } from '@/hooks/useCatalog';
-import { CourseCatalog, CourseCatalogInput } from '@/models/catalog';
-import EnhancedTable from '@/components/common/EnhancedTable';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
-const AnnouncementsTab: React.FC = () => {
-  const { t } = useTranslation(['admin', 'common']);
-  const {
-    catalogs,
-    selectedCatalog,
-    loading,
-    error,
-    refetch,
-    selectCatalog,
-    createNewCatalog,
-    updateSelectedCatalog,
-    deleteSelectedCatalog,
-    isCreating,
-    isUpdating,
-    isDeleting
-  } = useCatalog();
+interface EnhancedTableEmptyText {
+  title: string;
+  subtitle?: string;
+  action?: {
+    text: string;
+    onClick: () => void;
+  };
+}
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [selectedCatalogs, setSelectedCatalogs] = useState<CourseCatalog[]>([]);
+// 필터링 속성의 확장된 타입 정의
+interface EnhancedFilteringProperty {
+  key: string;
+  label: string;
+}
 
-  // 폼 상태
-  const [formData, setFormData] = useState<CourseCatalogInput>({
-    title: '',
-    awsCode: '',
-    version: '1.0',
-    durations: 8,
-    level: 'beginner',
-    description: '',
-    category: '',
-    tags: [],
-    prerequisites: [],
-    objectives: [],
-    status: 'draft'
+interface EnhancedTableProps {
+  title: string;
+  description?: string;
+  columnDefinitions: any[];
+  items: any[];
+  loading?: boolean;
+  selectionType?: "multi" | "single";
+  selectedItems?: any[];
+  onSelectionChange?: (items: any[]) => void;
+  onRefresh?: () => void;
+  actions?: {
+    primary?: {
+      text: string;
+      onClick: () => void;
+    };
+    secondary?: {
+      text: string;
+      onClick: () => void;
+    }[];
+  };
+  batchActions?: {
+    text: string;
+    onClick: () => void;
+    disabled?: boolean;
+  }[];
+  filteringProperties?: EnhancedFilteringProperty[];
+  usePropertyFilter?: boolean;
+  defaultSortingColumn?: string;
+  defaultSortingDescending?: boolean;
+  emptyText?: EnhancedTableEmptyText;
+  stickyHeader?: boolean;
+  stripedRows?: boolean;
+  resizableColumns?: boolean;
+  visibleContentOptions?: any[];
+  preferences?: boolean;
+  trackBy?: string;
+}
+
+const AnnouncementsTab: React.FC<EnhancedTableProps> = ({
+  title,
+  description,
+  columnDefinitions,
+  items,
+  loading = false,
+  selectionType,
+  selectedItems = [],
+  onSelectionChange = () => {},
+  onRefresh,
+  actions,
+  batchActions,
+  filteringProperties = [],
+  usePropertyFilter = true,
+  defaultSortingColumn,
+  defaultSortingDescending = false,
+  emptyText,
+  stickyHeader = false,
+  stripedRows = false,
+  resizableColumns = false,
+  visibleContentOptions,
+  preferences = false,
+  trackBy = 'id'
+}) => {
+  const { t } = useAppTranslation();
+  
+  const [sortingColumn, setSortingColumn] = useState<any>(
+    defaultSortingColumn ? { sortingField: defaultSortingColumn } : undefined
+  );
+  const [sortingDescending, setSortingDescending] = useState<boolean>(defaultSortingDescending);
+  const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(20);
+  const [selectedVisibleContent, setSelectedVisibleContent] = useState<any[]>(
+    visibleContentOptions ? visibleContentOptions.map(group => group.options.map((o: any) => o.id)).flat() : []
+  );
+  // 추가: 필터링을 위한 상태
+  const [filteringQuery, setFilteringQuery] = useState<PropertyFilterProps.Query>({ tokens: [], operation: "and" });
+
+  // 테이블 헤더 렌더링
+  const tableHeader = (
+    <Header
+      variant="awsui-h1-sticky"
+      actions={
+        <SpaceBetween direction="horizontal" size="xs">
+          {onRefresh && (
+            <Button
+              iconName="refresh"
+              onClick={onRefresh}
+              ariaLabel={t('table_refresh_aria_label')}
+              disabled={loading}
+            />
+          )}
+          {batchActions && batchActions.length > 0 && selectedItems.length > 0 && (
+            batchActions.map((action, idx) => (
+              <Button
+                key={idx}
+                disabled={action.disabled}
+                onClick={action.onClick}
+              >
+                {action.text}
+              </Button>
+            ))
+          )}
+          {actions?.secondary && actions.secondary.map((action, idx) => (
+            <Button
+              key={idx}
+              onClick={action.onClick}
+            >
+              {action.text}
+            </Button>
+          ))}
+          {actions?.primary && (
+            <Button
+              variant="primary"
+              onClick={actions.primary.onClick}
+            >
+              {actions.primary.text}
+            </Button>
+          )}
+        </SpaceBetween>
+      }
+      description={description}
+      counter={
+        items.length > 0 
+          ? `(\${items.length})`
+          : undefined
+      }
+    >
+      {title}
+    </Header>
+  );
+
+  // 페이지네이션 계산
+  const paginatedItems = items.slice((currentPageIndex - 1) * pageSize, currentPageIndex * pageSize);
+  const pagesCount = Math.ceil(items.length / pageSize);
+
+  // 기본 정렬 적용
+  const sortedItems = [...paginatedItems].sort((a, b) => {
+    if (!sortingColumn) return 0;
+    
+    const aValue = a[sortingColumn.sortingField];
+    const bValue = b[sortingColumn.sortingField];
+    
+    if (aValue === bValue) return 0;
+    if (aValue == null) return 1;
+    if (bValue == null) return -1;
+    
+    if (typeof aValue === 'string') {
+      return sortingDescending ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
+    }
+    
+    return sortingDescending ? bValue - aValue : aValue - bValue;
   });
 
-  // 카탈로그 생성 처리
-  const handleCreate = async () => {
-    try {
-      await createNewCatalog(formData);
-      setShowCreateModal(false);
-      resetForm();
-    } catch (err) {
-      console.error('Failed to create catalog:', err);
-    }
+  // 페이지 변경 핸들러
+  const handlePaginationChange = ({ detail }: { detail: { currentPageIndex: number } }) => {
+    setCurrentPageIndex(detail.currentPageIndex);
   };
 
-  // 카탈로그 수정 처리
-  const handleEdit = async () => {
-    try {
-      await updateSelectedCatalog(formData);
-      setShowEditModal(false);
-    } catch (err) {
-      console.error('Failed to update catalog:', err);
-    }
+  // 열 정렬 핸들러 수정
+  const handleSortingChange = (event: any) => {
+    const { sortingColumn, isDescending = false } = event.detail;
+    setSortingColumn(sortingColumn);
+    setSortingDescending(isDescending);
   };
 
-  // 카탈로그 삭제 처리
-  const handleDelete = async () => {
-    try {
-      await deleteSelectedCatalog();
-      setShowDeleteConfirm(false);
-      setSelectedCatalogs([]);
-    } catch (err) {
-      console.error('Failed to delete catalog:', err);
-    }
+  // 가시적 콘텐츠 선택 처리
+  const handleVisibleContentChange = ({ detail }: { detail: { visibleContent: any[] } }) => {
+    setSelectedVisibleContent(detail.visibleContent);
   };
 
-  // 단일 카탈로그 삭제 시작
-  const handleDeleteClick = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
-    setSelectedCatalogs([catalog]);
-    setShowDeleteConfirm(true);
+  // 기본 설정 변경 처리 수정
+  const handlePreferencesChange = (event: any) => {
+    const { pageSize = 20, visibleContent = [] } = event.detail;
+    setPageSize(pageSize);
+    setSelectedVisibleContent(visibleContent);
   };
 
-  // 배치 삭제 시작
-  const handleBatchDelete = () => {
-    if (selectedCatalogs.length === 1) {
-      selectCatalog(selectedCatalogs[0].id);
-    }
-    setShowDeleteConfirm(true);
-  };
-
-  // 편집 모달 열기
-  const openEditModal = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
-    setFormData({
-      title: catalog.title,
-      awsCode: catalog.awsCode || '',
-      version: catalog.version || '1.0',
-      durations: catalog.durations || 8,
-      level: catalog.level || 'beginner',
-      description: catalog.description || '',
-      category: catalog.category || '',
-      tags: catalog.tags || [],
-      prerequisites: catalog.prerequisites || [],
-      objectives: catalog.objectives || [],
-      status: catalog.status || 'draft'
-    });
-    setShowEditModal(true);
-  };
-
-  // 폼 초기화
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      awsCode: '',
-      version: '1.0',
-      durations: 8,
-      level: 'beginner',
-      description: '',
-      category: '',
-      tags: [],
-      prerequisites: [],
-      objectives: [],
-      status: 'draft'
+  // 필터링 변경 처리 - 타입 수정
+  const handleFilterChange = (event: any) => {
+    // 필요한 경우 깊은 복사로 readonly 문제 해결
+    const tokens = [...event.detail.tokens];
+    setFilteringQuery({
+      tokens,
+      operation: event.detail.operation
     });
   };
 
-  // Select 컴포넌트 타입 처리를 위한 핸들러
-  const handleLevelChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({ ...prev, level: event.detail.selectedOption.value }));
-  };
-
-  // Select 컴포넌트 타입 처리를 위한 핸들러
-  const handleStatusChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({
-      ...prev,
-      status: event.detail.selectedOption.value as 'active' | 'draft' | 'archived'
-    }));
-  };
-
-  // 테이블 칼럼 정의
-  const columnDefinitions = [
-    {
-      id: 'title',
-      header: t('admin:catalog.fields.title'),
-      cell: (item: CourseCatalog) => item.title,
-      sortingField: 'title',
-    },
-    {
-      id: 'awsCode',
-      header: t('admin:catalog.fields.awsCode'),
-      cell: (item: CourseCatalog) => item.awsCode || '-',
-      sortingField: 'awsCode',
-    },
-    {
-      id: 'version',
-      header: t('admin:catalog.fields.version'),
-      cell: (item: CourseCatalog) => item.version || '1.0',
-      sortingField: 'version',
-    },
-    {
-      id: 'level',
-      header: t('admin:catalog.fields.level'),
-      cell: (item: CourseCatalog) => t(`admin:catalog.levels.\${item.level}`) || item.level,
-      sortingField: 'level',
-    },
-    {
-      id: 'duration',
-      header: t('admin:catalog.fields.duration'),
-      cell: (item: CourseCatalog) => item.durations ? 
-        `\${item.durations} \${t('common:hours')}` : '-',
-      sortingField: 'durations',
-    },
-    {
-      id: 'status',
-      header: t('admin:catalog.fields.status'),
-      cell: (item: CourseCatalog) => {
-        const statusMap: Record<string, { type: string; text: string }> = {
-          active: { type: 'success', text: t('admin:catalog.status.active') },
-          draft: { type: 'pending', text: t('admin:catalog.status.draft') },
-          archived: { type: 'stopped', text: t('admin:catalog.status.archived') },
-        };
-        
-        // item.status가 undefined일 수 있으므로 안전한 접근 방법 사용
-        const statusKey = item.status || 'unknown';
-        const status = statusMap[statusKey] || { 
-          type: 'info', 
-          text: statusKey === 'unknown' ? t('admin:catalog.status.unknown', '알 수 없음') : statusKey
-        };
-        
-        return (
-          <StatusIndicator type={status.type as any}>
-            {status.text}
-          </StatusIndicator>
-        );
-      },
-      sortingField: 'status',
-    },
-    {
-      id: 'actions',
-      header: t('common:actions'),
-      cell: (item: CourseCatalog) => (
-        <SpaceBetween direction="horizontal" size="xs">
-          <Button 
-            variant="link" 
-            onClick={() => openEditModal(item)}
-          >
-            {t('common:edit')}
-          </Button>
-          <Button 
-            variant="link" 
-            onClick={() => handleDeleteClick(item)}
-          >
-            {t('common:delete')}
-          </Button>
-        </SpaceBetween>
-      ),
-    }
-  ];
-
-  // 필터링 속성
-  const filteringProperties = [
-    { key: 'title', label: t('admin:catalog.fields.title') },
-    { key: 'awsCode', label: t('admin:catalog.fields.awsCode') },
-    { key: 'level', label: t('admin:catalog.fields.level') },
-    { key: 'status', label: t('admin:catalog.fields.status') },
-  ];
+  // PropertyFilter를 위한 필터링 속성 변환
+  const formattedFilteringProperties = filteringProperties.map(prop => ({
+    key: prop.key,
+    propertyLabel: prop.label,
+    groupValuesLabel: `\${prop.label} values`,
+    operators: [':', '!:', '=', '!='] as const
+  }));
 
   return (
-    <ContentLayout>
-      <SpaceBetween size="l">
-        {/* 페이지 머리글 */}
-        <Box padding={{ top: 's' }}>
-          <BreadcrumbGroup
-            items={[
-              { text: t('common:home'), href: '/' },
-              { text: t('admin:title'), href: '/admin' },
-              { text: t('admin:catalog.title'), href: '#' }
-            ]}
-            ariaLabel={t('common:breadcrumbs')}
+    <Table
+      columnDefinitions={columnDefinitions}
+      items={sortedItems}
+      loading={loading}
+      loadingText={t('loading')}
+      selectionType={selectionType}
+      selectedItems={selectedItems}
+      onSelectionChange={({ detail }) => onSelectionChange(detail.selectedItems)}
+      header={tableHeader}
+      filter={
+        usePropertyFilter && filteringProperties.length > 0 ? (
+          <PropertyFilter
+            i18nStrings={{
+              filteringAriaLabel: t('table_filtering_aria_label'),
+              filteringPlaceholder: t('table_filtering_placeholder'),
+              // filteringCounterText 제거 (지원되지 않음)
+              groupValuesText: t('table_filtering_group_values', { count: 0 }).replace('0', '{count}'),
+              operationAndText: t('table_filtering_operation_and'),
+              operationOrText: t('table_filtering_operation_or'),
+              operatorContainsText: t('contains'),
+              operatorDoesNotContainText: t('does_not_contain'),
+              operatorEqualsText: t('equals'),
+              operatorDoesNotEqualText: t('not_equals')
+            }}
+            // 별도의 countText 속성으로 이동
+            countText={t('table_filtering_count_text', { count: items.length })}
+            filteringProperties={formattedFilteringProperties}
+            query={filteringQuery}
+            onChange={handleFilterChange}
           />
-        </Box>
-
-        {/* 오류 표시 */}
-        {error && (
-          <Alert
-            type="error"
-            header={t('common:error')}
-            action={<Button onClick={refetch}>{t('common:retry')}</Button>}
-            dismissible
-          >
-            {t('admin:catalog.errors.loadFailed')}
-          </Alert>
-        )}
-
-        {/* EnhancedTable 사용 */}
-        <EnhancedTable
-          title={t('admin:catalog.title')}
-          description={t('admin:catalog.description')}
-          columnDefinitions={columnDefinitions}
-          items={catalogs}
-          loading={loading}
-          selectionType="multi"
-          selectedItems={selectedCatalogs}
-          onSelectionChange={setSelectedCatalogs}
-          onRefresh={refetch}
-          actions={{
-            primary: {
-              text: t('admin:catalog.actions.createCatalog'),
-              onClick: () => setShowCreateModal(true)
-            }
+        ) : null
+      }
+      pagination={
+        <Pagination
+          currentPageIndex={currentPageIndex}
+          pagesCount={pagesCount}
+          onChange={handlePaginationChange}
+          ariaLabels={{
+            nextPageLabel: t('pagination_next'),
+            previousPageLabel: t('pagination_previous'),
+            pageLabel: (pageNumber) => t('pagination_page_label', { pageNumber })
           }}
-          batchActions={[
-            {
-              text: t('common:actions.deleteSelected'),
-              onClick: handleBatchDelete,
-              disabled: selectedCatalogs.length === 0
-            }
-          ]}
-          filteringProperties={filteringProperties}
-          stickyHeader={true}
-          stripedRows={true}
-          defaultSortingColumn="title"
-          emptyText={{
-            title: t('admin:catalog.noCatalogs'),
-            subtitle: t('admin:catalog.createPrompt'),
-            action: {
-              text: t('admin:catalog.actions.createCatalog'),
-              onClick: () => setShowCreateModal(true)
-            }
-          }}
-          visibleContentOptions={[
-            {
-              id: 'main',
-              label: t('admin:catalog.columns.main'),
-              options: [
-                { id: 'title', label: t('admin:catalog.fields.title') },
-                { id: 'awsCode', label: t('admin:catalog.fields.awsCode') },
-                { id: 'version', label: t('admin:catalog.fields.version') },
-              ]
-            },
-            {
-              id: 'details',
-              label: t('admin:catalog.columns.details'),
-              options: [
-                { id: 'level', label: t('admin:catalog.fields.level') },
-                { id: 'duration', label: t('admin:catalog.fields.duration') },
-                { id: 'status', label: t('admin:catalog.fields.status') },
-              ]
-            }
-          ]}
-          preferences={true}
         />
-
-        {/* 카탈로그 생성 모달 */}
-        <Modal
-          visible={showCreateModal}
-          onDismiss={() => setShowCreateModal(false)}
-          header={t('admin:catalog.modals.create.title')}
-          size="large"
-          footer={
-            <Box float="right">
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => setShowCreateModal(false)}>{t('common:cancel')}</Button>
-                <Button
-                  variant="primary"
-                  onClick={handleCreate}
-                  loading={isCreating}
-                  disabled={!formData.title}
-                >
-                  {t('admin:catalog.actions.create')}
-                </Button>
-              </SpaceBetween>
+      }
+      preferences={preferences ? (
+        <CollectionPreferences
+          title={t('table_preferences_title')}
+          confirmLabel={t('confirm')}
+          cancelLabel={t('cancel')}
+          pageSizePreference={{
+            title: t('table_preferences_page_size_title'),
+            options: [
+              { value: 10, label: "10" },
+              { value: 20, label: "20" },
+              { value: 50, label: "50" },
+              { value: 100, label: "100" }
+            ]
+          }}
+          visibleContentPreference={visibleContentOptions ? {
+            title: t('table_preferences_visible_content_title'),
+            options: visibleContentOptions
+          } : undefined}
+          onConfirm={handlePreferencesChange}
+        />
+      ) : undefined}
+      sortingColumn={sortingColumn}
+      sortingDescending={sortingDescending}
+      onSortingChange={handleSortingChange}
+      stickyHeader={stickyHeader}
+      stripedRows={stripedRows}
+      resizableColumns={resizableColumns}
+      visibleColumns={selectedVisibleContent}
+      trackBy={trackBy}
+      empty={
+        emptyText ? (
+          <Box textAlign="center" color="inherit">
+            <Box variant="h2" padding="s">
+              {emptyText.title}
             </Box>
-          }
-        >
-          <Form>
-            <SpaceBetween size="l">
-              <FormField
-                label={
-                  <span>
-                    {t('admin:catalog.fields.title')}
-                    <span className="awsui-key-label-required"> *</span>
-                  </span>
-                }
-                description={t('admin:catalog.fields.titleDescription')}
-              >
-                <Input
-                  value={formData.title}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, title: detail.value }))}
-                />
-              </FormField>
-
-              {/* 나머지 폼 필드들 */}
-              <FormField label={t('admin:catalog.fields.awsCode')}>
-                <Input
-                  value={formData.awsCode || ''}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, awsCode: detail.value }))}
-                  placeholder="AWS-100"
-                />
-              </FormField>
-
-              <SpaceBetween direction="horizontal" size="xs">
-                <FormField label={t('admin:catalog.fields.version')}>
-                  <Input
-                    value={formData.version || ''}
-                    onChange={({ detail }) => setFormData(prev => ({ ...prev, version: detail.value }))}
-                    placeholder="1.0"
-                  />
-                </FormField>
-
-                <FormField label={t('admin:catalog.fields.duration')}>
-                  <Input
-                    type="number"
-                    value={formData.durations?.toString() || '0'}
-                    onChange={({ detail }) => setFormData(prev => ({ 
-                      ...prev, 
-                      durations: detail.value ? parseInt(detail.value) : 0 
-                    }))}
-                  />
-                </FormField>
-
-                <FormField label={t('admin:catalog.fields.level')}>
-                  <Select
-                    selectedOption={{
-                      value: formData.level || 'beginner',
-                      label: t(`admin:catalog.levels.\${formData.level || 'beginner'}`)
-                    }}
-                    onChange={handleLevelChange}
-                    options={[
-                      { value: 'beginner', label: t('admin:catalog.levels.beginner') },
-                      { value: 'intermediate', label: t('admin:catalog.levels.intermediate') },
-                      { value: 'advanced', label: t('admin:catalog.levels.advanced') }
-                    ]}
-                  />
-                </FormField>
-              </SpaceBetween>
-
-              <FormField label={t('admin:catalog.fields.description')}>
-                <Textarea
-                  value={formData.description || ''}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, description: detail.value }))}
-                  rows={4}
-                />
-              </FormField>
-
-              <FormField label={t('admin:catalog.fields.tags')}>
-                <TagEditor
-                  tags={(formData.tags || []).map(tag => ({
-                    key: tag,
-                    value: tag,
-                    existing: true
-                  }))}
-                  onChange={({ detail }) => {
-                    const newTags = detail.tags
-                      .filter(tag => !tag.markedForRemoval)
-                      .map(tag => tag.value);
-                    setFormData(prev => ({ ...prev, tags: newTags }));
-                  }}
-                  i18nStrings={{
-                    // 간소화된 i18n 문자열
-                    keyHeader: t('common:tagEditor.keyHeader', '키'),
-                    valueHeader: t('common:tagEditor.valueHeader', '값'),
-                    addButton: t('common:tagEditor.addButton', '태그 추가'),
-                    removeButton: t('common:tagEditor.removeButton', '제거'),
-                    loading: t('common:loading'),
-                    // 기타 필요한 문자열...
-                  }}
-                />
-              </FormField>
-
-              <FormField label={t('admin:catalog.fields.status')}>
-                <Select
-                  selectedOption={{
-                    value: formData.status || 'draft',
-                    label: t(`admin:catalog.status.\${formData.status || 'draft'}`)
-                  }}
-                  onChange={handleStatusChange}
-                  options={[
-                    { value: 'draft', label: t('admin:catalog.status.draft') },
-                    { value: 'active', label: t('admin:catalog.status.active') },
-                    { value: 'archived', label: t('admin:catalog.status.archived') }
-                  ]}
-                />
-              </FormField>
-            </SpaceBetween>
-          </Form>
-        </Modal>
-
-        {/* 카탈로그 편집 모달 */}
-        <Modal
-          visible={showEditModal}
-          onDismiss={() => setShowEditModal(false)}
-          header={t('admin:catalog.modals.edit.title')}
-          size="large"
-          footer={
-            <Box float="right">
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => setShowEditModal(false)}>{t('common:cancel')}</Button>
-                <Button
-                  variant="primary"
-                  onClick={handleEdit}
-                  loading={isUpdating}
-                  disabled={!formData.title}
-                >
-                  {t('common:save')}
-                </Button>
-              </SpaceBetween>
-            </Box>
-          }
-        >
-          <Form>
-            <SpaceBetween size="l">
-              {/* 동일한 폼 필드 반복 (생략) */}
-              {/* 필요시 편집 모달에 특화된 추가 필드 */}
-            </SpaceBetween>
-          </Form>
-        </Modal>
-
-        {/* 삭제 확인 모달 */}
-        <Modal
-          visible={showDeleteConfirm}
-          onDismiss={() => setShowDeleteConfirm(false)}
-          header={t('admin:catalog.modals.delete.title')}
-          footer={
-            <Box float="right">
-              <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => setShowDeleteConfirm(false)}>
-                  {t('common:cancel')}
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleDelete}
-                  loading={isDeleting}
-                  iconName="remove"
-                >
-                  {t('common:delete')}
-                </Button>
-              </SpaceBetween>
-            </Box>
-          }
-        >
-          <Box>
-            {selectedCatalogs.length === 1 ? 
-              t('admin:catalog.modals.delete.confirmation', { title: selectedCatalogs[0].title }) :
-              t('admin:catalog.modals.delete.confirmationBatch', { count: selectedCatalogs.length })}
+            {emptyText.subtitle && (
+              <Box variant="p" padding={{ bottom: 's' }} color="inherit">
+                {emptyText.subtitle}
+              </Box>
+            )}
+            {emptyText.action && (
+              <Button onClick={emptyText.action.onClick}>
+                {emptyText.action.text}
+              </Button>
+            )}
           </Box>
-        </Modal>
-      </SpaceBetween>
-    </ContentLayout>
+        ) : undefined
+      }
+    />
   );
 };
 

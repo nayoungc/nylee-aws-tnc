@@ -9,8 +9,8 @@ import {
   CollectionPreferences,
   StatusIndicator
 } from '@cloudscape-design/components';
-import { CourseCatalog } from '@/models/catalog';
-import { useTranslation } from 'react-i18next';
+import { CourseCatalog } from '@/models/courseCatalog';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
 interface CatalogTableProps {
   catalogs: CourseCatalog[];
@@ -18,12 +18,12 @@ interface CatalogTableProps {
   onViewDetails: (catalog: CourseCatalog) => void;
 }
 
-const CatalogTable: React.FC<CatalogTableProps> = ({
+const CourseCatalogTable: React.FC<CatalogTableProps> = ({
   catalogs,
   loading,
   onViewDetails
 }) => {
-  const { t } = useTranslation(['catalog']);
+  const { t } = useAppTranslation();
   const [filterText, setFilterText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -32,10 +32,10 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   const [preferences, setPreferences] = useState({
     pageSize: 10,
     columnDisplay: [
-      { id: 'title', visible: true },
-      { id: 'awsCode', visible: true },
+      { id: 'course_name', visible: true },
+      { id: 'course_id', visible: true },
       { id: 'version', visible: true },
-      { id: 'hours', visible: true },
+      { id: 'duration', visible: true },
       { id: 'level', visible: true },
       { id: 'updatedAt', visible: true },
       { id: 'actions', visible: true }
@@ -48,8 +48,8 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
     const searchText = filterText.toLowerCase();
 
     return (
-      catalog.title.toLowerCase().includes(searchText) ||
-      (catalog.awsCode?.toLowerCase().includes(searchText) || false) ||
+      catalog.course_name.toLowerCase().includes(searchText) ||
+      (catalog.course_id?.toLowerCase().includes(searchText) || false) ||
       (catalog.description?.toLowerCase().includes(searchText) || false)
     );
   });
@@ -66,15 +66,15 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
 
   // 레벨에 따른 상태 표시
   const getLevelIndicator = (level?: string) => {
-    if (!level) return <StatusIndicator type="info">{t('catalog:table.level.undefined')}</StatusIndicator>;
+    if (!level) return <StatusIndicator type="info">{t('catalog_level_undefined')}</StatusIndicator>;
 
     switch (level) {
-      case '입문':
-        return <StatusIndicator type="success">{t('catalog:table.level.beginner')}</StatusIndicator>;
-      case '중급':
-        return <StatusIndicator type="info">{t('catalog:table.level.intermediate')}</StatusIndicator>;
-      case '고급':
-        return <StatusIndicator type="warning">{t('catalog:table.level.advanced')}</StatusIndicator>;
+      case 'beginner':
+        return <StatusIndicator type="success">{t('catalog_level_beginner')}</StatusIndicator>;
+      case 'intermediate':
+        return <StatusIndicator type="info">{t('catalog_level_intermediate')}</StatusIndicator>;
+      case 'advanced':
+        return <StatusIndicator type="warning">{t('catalog_level_advanced')}</StatusIndicator>;
       default:
         return <StatusIndicator type="info">{level}</StatusIndicator>;
     }
@@ -83,49 +83,49 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   // 컬럼 정의
   const columnDefinitions = [
     {
-      id: 'title',
-      header: t('catalog:table.title'),
-      cell: (item: CourseCatalog) => item.title,
-      sortingField: 'title',
+      id: 'course_name',
+      header: t('catalog_field_title'),
+      cell: (item: CourseCatalog) => item.course_name,
+      sortingField: 'course_name',
     },
     {
-      id: 'awsCode',
-      header: t('catalog:table.awsCode'),
-      cell: (item: CourseCatalog) => item.awsCode || '-',
-      sortingField: 'awsCode',
+      id: 'course_id',
+      header: t('catalog_field_aws_code'),
+      cell: (item: CourseCatalog) => item.course_id || '-',
+      sortingField: 'course_id',
     },
     {
       id: 'version',
-      header: t('catalog:table.version'),
-      cell: (item: CourseCatalog) => item.version,
+      header: t('catalog_field_version'),
+      cell: (item: CourseCatalog) => '1.0', // 기본값 표시
       sortingField: 'version',
     },
     {
-      id: 'hours',
-      header: t('catalog:table.hours'),
+      id: 'duration',
+      header: t('catalog_field_duration'),
       cell: (item: CourseCatalog) => (
-        item.durations ? t('catalog:table.hoursFormat', { hours: item.durations }) : '-'
+        item.duration ? `\${item.duration} \${t('hours')}` : '-'
       ),
-      sortingField: 'hours',
+      sortingField: 'duration',
     },
     {
       id: 'level',
-      header: t('catalog:table.level'),
+      header: t('catalog_field_level'),
       cell: (item: CourseCatalog) => getLevelIndicator(item.level),
       sortingField: 'level',
     },
     {
       id: 'updatedAt',
-      header: t('catalog:table.updatedAt'),
+      header: t('catalog_field_updated_at'),
       cell: (item: CourseCatalog) => formatDate(item.updatedAt),
       sortingField: 'updatedAt',
     },
     {
       id: 'actions',
-      header: t('catalog:table.actions'),
+      header: t('field_actions'),
       cell: (item: CourseCatalog) => (
         <Button onClick={() => onViewDetails(item)} variant="link">
-          {t('catalog:table.viewDetails')}
+          {t('catalog_action_view_details')}
         </Button>
       ),
     },
@@ -134,14 +134,14 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   // 컬렉션 환경설정 옵션
   const visibleContentOptions = [
     {
-      label: t('catalog:preferences.columns.title'),
+      label: t('catalog_preferences_columns_title'),
       options: [
-        { id: 'title', label: t('catalog:table.title') },
-        { id: 'awsCode', label: t('catalog:table.awsCode') },
-        { id: 'version', label: t('catalog:table.version') },
-        { id: 'hours', label: t('catalog:table.hours') },
-        { id: 'level', label: t('catalog:table.level') },
-        { id: 'updatedAt', label: t('catalog:table.updatedAt') }
+        { id: 'course_name', label: t('catalog_field_title') },
+        { id: 'course_id', label: t('catalog_field_aws_code') },
+        { id: 'version', label: t('catalog_field_version') },
+        { id: 'duration', label: t('catalog_field_duration') },
+        { id: 'level', label: t('catalog_field_level') },
+        { id: 'updatedAt', label: t('catalog_field_updated_at') }
       ]
     }
   ];
@@ -158,31 +158,31 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
       columnDefinitions={columnDefinitions}
       columnDisplay={preferences.columnDisplay}
       ariaLabels={{
-        tableLabel: t('catalog:table.tableLabel'),
+        tableLabel: t('catalog_table_label'),
         allItemsSelectionLabel: ({ selectedItems }) =>
-          t('catalog:table.selectionLabel', { count: selectedItems.length }),
+          t('catalog_selection_label', { count: selectedItems.length }),
         itemSelectionLabel: ({ selectedItems }, item) =>
-          `\${item.title} \${
+          `\${item.course_name} \${
             selectedItems.includes(item)
-              ? t('catalog:table.itemSelected')
-              : t('catalog:table.itemNotSelected')
+              ? t('catalog_item_selected')
+              : t('catalog_item_not_selected')
           }`
       }}
       selectionType="single"
-      trackBy="catalogId"
+      trackBy="id"
       empty={
         <Box textAlign="center" color="inherit">
-          <b>{t('catalog:table.emptyText')}</b>
+          <b>{t('empty_state_title')}</b>
           <Box padding={{ bottom: 's' }} variant="p" color="inherit">
-            {t('catalog:table.emptyDescription')}
+            {t('empty_state_message')}
           </Box>
         </Box>
       }
       filter={
         <TextFilter
           filteringText={filterText}
-          filteringPlaceholder={t('catalog:table.searchPlaceholder')}
-          filteringAriaLabel={t('catalog:table.searchAriaLabel')}
+          filteringPlaceholder={t('catalog_search_placeholder')}
+          filteringAriaLabel={t('catalog_search_aria_label')}
           onChange={({ detail }) => setFilterText(detail.filteringText)}
         />
       }
@@ -195,9 +195,9 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
       }
       preferences={
         <CollectionPreferences
-          title={t('catalog:preferences.title')}
-          confirmLabel={t('catalog:preferences.confirm')}
-          cancelLabel={t('catalog:preferences.cancel')}
+          title={t('catalog_preferences_title')}
+          confirmLabel={t('confirm')}
+          cancelLabel={t('cancel')}
           preferences={{
             pageSize: preferences.pageSize,
             contentDisplay: preferences.columnDisplay.map(col => ({
@@ -206,15 +206,15 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
             }))
           }}
           pageSizePreference={{
-            title: t('catalog:preferences.pageSize.title'),
+            title: t('catalog_preferences_page_size_title'),
             options: [
-              { value: 10, label: t('catalog:preferences.pageSize.items_10') },
-              { value: 20, label: t('catalog:preferences.pageSize.items_20') },
-              { value: 50, label: t('catalog:preferences.pageSize.items_50') }
+              { value: 10, label: t('catalog_preferences_page_size_items_10') },
+              { value: 20, label: t('catalog_preferences_page_size_items_20') },
+              { value: 50, label: t('catalog_preferences_page_size_items_50') }
             ]
           }}
           visibleContentPreference={{
-            title: t('catalog:preferences.columns.title'),
+            title: t('catalog_preferences_columns_title'),
             options: visibleContentOptions
           }}
           onConfirm={({ detail }) => {
@@ -243,4 +243,4 @@ const CatalogTable: React.FC<CatalogTableProps> = ({
   );
 };
 
-export default CatalogTable;
+export default CourseCatalogTable;
