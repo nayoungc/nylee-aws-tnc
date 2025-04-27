@@ -60,7 +60,7 @@ export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
     const catalogs = data.listCourseCatalogs.items || [];
     return catalogs.map((catalog: CourseCatalog) => ({
       ...catalog,
-      status: catalog.status || "DRAFT"
+      status: catalog.status || "ACTIVE"
     }));
   } catch (error: unknown) {
     console.error('코스 카탈로그 목록 조회 오류:', error);

@@ -5,9 +5,8 @@ import { BaseRecord } from '../common/types';
  * 코스 카탈로그 상태 정의
  */
 export enum CourseCatalogStatus {
-  DRAFT = 'DRAFT',
   ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED'
+  EOL = 'EOL',
 }
 
 /**
