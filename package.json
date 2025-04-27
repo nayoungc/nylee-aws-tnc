@@ -2,6 +2,7 @@
   "name": "nylee-aws-tnc",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@aws-amplify/api": "^6.3.10",
     "@aws-amplify/auth": "^6.12.3",
