@@ -4,8 +4,8 @@
  * 모든 코스 카탈로그 목록 조회
  */
 export const listCourseCatalogs = /* GraphQL */ `
-  query ListCourseCatalog(\$limit: Int, \$nextToken: String) {
-    listCourseCatalog(limit: \$limit, nextToken: \$nextToken) {
+  query ListCourseCatalogs {
+    listCourseCatalogs {
       items {
         id
         course_name

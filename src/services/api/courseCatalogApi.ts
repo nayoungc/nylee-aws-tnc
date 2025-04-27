@@ -1,14 +1,14 @@
 // src/services/api/courseCatalogApi.ts
 import { generateClient } from 'aws-amplify/api';
-import { 
-  listCourseCatalogs, 
+import {
+  listCourseCatalogs,
   getCourseCatalog,
   createCourseCatalog as createCourseCatalogMutation,
   updateCourseCatalog as updateCourseCatalogMutation,
   deleteCourseCatalog as deleteCourseCatalogMutation
 } from '@/graphql/courseCatalog';
-import { 
-  ListCourseCatalogsResult, 
+import {
+  ListCourseCatalogsResult,
   GetCourseCatalogResult,
   CreateCourseCatalogInput,
   UpdateCourseCatalogInput,
@@ -39,28 +39,46 @@ type StatusType = "PUBLISHED" | "DRAFT" | "ARCHIVED";
  */
 export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
   console.log("코스 카탈로그 데이터 가져오기 시도");
-    
+
   try {
     const response = await client.graphql({
       query: listCourseCatalogs,
       variables: { limit: 1000 }
     });
-    
+
+    // API 응답 전체를 로깅하여 디버깅
+    console.log("API 응답:", response);
+
     const data = extractData<ListCourseCatalogsResult>(response);
-    const catalogs = data?.listCourseCatalog?.items || [];
     
-    // status 필드가 없거나 타입이 일치하지 않는 경우 매핑
+    // API 응답 구조 확인을 위한 로깅
+    console.log("추출된 데이터 구조:", JSON.stringify(data, null, 2));
+
+    // 데이터가 null인 경우 처리
+    if (!data?.listCourseCatalog?.items) {
+      console.warn("API에서 반환된 데이터가 없습니다:", data);
+      return []; // 빈 배열 반환
+    }
+
+    const catalogs = data.listCourseCatalog.items || [];
+    
+    // 방법 1: 타입 단언 사용
+    return catalogs.map(catalog => ({
+      ...catalog,
+      // null 또는 undefined인 경우 기본값 "DRAFT" 사용하고, 결과를 명시적으로 타입 단언
+      status: (catalog.status || "DRAFT") as "PUBLISHED" | "DRAFT" | "ARCHIVED"
+    })) as CourseCatalog[];
+    
+    /* 방법 2: 명시적 매핑 사용
     return catalogs.map(catalog => {
-      // 필드가 없는 경우 기본값 설정
-      let status: StatusType = "DRAFT"; 
+      // status 값을 명시적으로 매핑
+      let status: "PUBLISHED" | "DRAFT" | "ARCHIVED" = "DRAFT";
       
-      // status 매핑 (ACTIVE → PUBLISHED)
-      if (catalog.status) {
-        if (catalog.status === "ACTIVE") {
-          status = "PUBLISHED";
-        } else if (catalog.status === "DRAFT" || catalog.status === "ARCHIVED") {
-          status = catalog.status as StatusType;
-        }
+      if (catalog.status === "PUBLISHED" || catalog.status === "ARCHIVED") {
+        status = catalog.status;
+      } else if (catalog.status === "ACTIVE") {
+        // ACTIVE를 PUBLISHED로 매핑 (필요한 경우)
+        status = "PUBLISHED";
       }
       
       return {
@@ -68,13 +86,23 @@ export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
         status
       };
     });
-    
+    */
   } catch (error: unknown) {
+    // 더 명확한 오류 로깅
     console.error('코스 카탈로그 목록 조회 오류:', error);
-    throw new Error(i18n.t('errors.failedToListCourseCatalogs', { error: String(error), ns: 'courseCatalog' }));
+
+    // 오류 객체 상세 정보 출력
+    if (error instanceof Error) {
+      console.error('오류 메시지:', error.message);
+      console.error('오류 스택:', error.stack);
+    } else {
+      console.error('알 수 없는 오류 유형:', typeof error);
+    }
+
+    // i18n 오류 대신 직접적인 오류 메시지 제공
+    throw new Error(`코스 카탈로그를 불러오는데 실패했습니다: \${String(error)}`);
   }
 };
-
 /**
  * ID로 특정 코스 카탈로그 가져오기
  */
@@ -84,14 +112,14 @@ export const fetchCourseCatalogById = async (id: string): Promise<CourseCatalog 
       query: getCourseCatalog,
       variables: { id }
     });
-    
+
     const data = extractData<GetCourseCatalogResult>(response);
     const catalog = data?.getCourseCatalog || null;
-    
+
     // 결과가 있을 경우 status 매핑
     if (catalog) {
       let status: StatusType = "DRAFT";
-      
+
       // status 매핑 (ACTIVE → PUBLISHED)
       if (catalog.status) {
         if (catalog.status === "ACTIVE") {
@@ -100,13 +128,13 @@ export const fetchCourseCatalogById = async (id: string): Promise<CourseCatalog 
           status = catalog.status as StatusType;
         }
       }
-      
+
       return {
         ...catalog,
         status
       };
     }
-    
+
     return null;
   } catch (error: unknown) {
     console.error(`코스 카탈로그 조회 오류 (ID: \${id}):`, error);
@@ -123,10 +151,10 @@ export const searchCourseCatalogs = async (filter: CourseCatalogFilter = {}): Pr
     if (Object.keys(filter).length === 0) {
       return await fetchAllCourseCatalogs();
     }
-    
+
     // 클라이언트 측 필터링
     const catalogs = await fetchAllCourseCatalogs();
-    
+
     return catalogs.filter(catalog => {
       // 텍스트 검색
       if (filter.text) {
@@ -137,16 +165,16 @@ export const searchCourseCatalogs = async (filter: CourseCatalogFilter = {}): Pr
           catalog.course_id,
           catalog.level
         ].filter(Boolean).join(' ').toLowerCase();
-        
+
         if (!searchFields.includes(searchText)) return false;
       }
-      
+
       // 레벨 필터링
       if (filter.level && catalog.level !== filter.level) return false;
-      
+
       // 카테고리/대상 필터링
       if (filter.target_audience && catalog.target_audience !== filter.target_audience) return false;
-      
+
       return true;
     });
   } catch (error) {
@@ -179,16 +207,16 @@ export const createCourseCatalog = async (input: CreateCourseCatalogInput): Prom
       query: createCourseCatalogMutation,
       variables: { input }
     });
-    
+
     const data = extractData<CreateCourseCatalogResult>(response);
     if (!data?.createCourseCatalog) {
       throw new Error('코스 카탈로그 생성에 실패했습니다.');
     }
-    
+
     // 타입 단언(type assertion)을 사용하여 타입 에러 해결
     return {
       ...data.createCourseCatalog,
-      status: (data.createCourseCatalog.status as any) || "DRAFT" 
+      status: (data.createCourseCatalog.status as any) || "DRAFT"
     } as CourseCatalog;
   } catch (error: unknown) {
     console.error('코스 카탈로그 생성 오류:', error);
@@ -207,12 +235,12 @@ export const updateCourseCatalog = async (input: UpdateCourseCatalogInput): Prom
       query: updateCourseCatalogMutation,
       variables: { input }
     });
-    
+
     const data = extractData<UpdateCourseCatalogResult>(response);
     if (!data?.updateCourseCatalog) {
       throw new Error('코스 카탈로그 업데이트에 실패했습니다.');
     }
-    
+
     // 타입 단언(type assertion)을 사용하여 타입 에러 해결
     return {
       ...data.updateCourseCatalog,
@@ -232,17 +260,17 @@ export const updateCourseCatalog = async (input: UpdateCourseCatalogInput): Prom
 export const deleteCourseCatalog = async (id: string): Promise<{ id: string, course_name?: string }> => {
   try {
     const input: DeleteCourseCatalogInput = { id };
-    
+
     const response = await client.graphql({
       query: deleteCourseCatalogMutation,
       variables: { input }
     });
-    
+
     const data = extractData<DeleteCourseCatalogResult>(response);
     if (!data?.deleteCourseCatalog) {
       throw new Error('코스 카탈로그 삭제에 실패했습니다.');
     }
-    
+
     return data.deleteCourseCatalog;
   } catch (error: unknown) {
     console.error(`코스 카탈로그 삭제 오류 (ID: \${id}):`, error);
