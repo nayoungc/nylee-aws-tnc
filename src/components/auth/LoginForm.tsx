@@ -25,7 +25,7 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ 
   onLoginSuccess,
-  logoSrc = '/images/aws.png' 
+  logoSrc = '/assets/aws.png' 
 }) => {
   const { t, i18n } = useAppTranslation();
   const { login } = useAuth();

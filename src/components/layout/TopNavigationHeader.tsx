@@ -20,7 +20,7 @@ const TopNavigationHeader: React.FC = () => {
         href: "/",
         title: t('app_title'),
         logo: {
-          src: "/assets/logo.svg",
+          src: "/assets/aws.png",
           alt: t('app_logo_alt')
         }
       }}
