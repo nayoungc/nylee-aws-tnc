@@ -97,14 +97,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       title: t('admin_course_group'),
       items: [
         { type: 'link' as const, text: t('admin_course_management'), href: '/admin/course-management' },
-        { type: 'link' as const, text: t('admin_catalog_management'), href: '/admin/catalog-management' }
+        { type: 'link' as const, text: t('admin_system_management'), href: '/admin/system-management' }
+
       ]
     }, 
     { type: 'divider' as const }
   ] : [];
 
   const supportItems = [
-    { type: 'divider' as const },
     {
       type: 'section-group' as const,
       title: t('navigation_support_section'),
