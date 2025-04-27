@@ -1,4 +1,4 @@
-// src/App.tsx
+// src / App.tsx
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -28,7 +28,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 10 * 1000, // 10초
+      staleTime: 10 * 1000, //10초
     },
   },
 });
@@ -42,13 +42,12 @@ const RouteLogger = () => {
 
 const App: React.FC = () => {
   return (
-  <>
-    {/* // <QueryClientProvider client={queryClient}>
-    //   <ThemeProvider>
-    //     <AppProvider>
-    //       <AuthProvider>
-    //         <NotificationProvider>
-              <RouteLogger />  */}
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AppProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <RouteLogger />
               <Routes>
                 {/* 기존 라우트 */}
                 <Route path="/" element={<Navigate to="/tnc" replace />} />
@@ -85,13 +84,10 @@ const App: React.FC = () => {
                 {/* 404 페이지 추가 */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
-    {/* //         </NotificationProvider>
-    //       </AuthProvider>
-    //     </AppProvider>
-    //   </ThemeProvider>
-    // </QueryClientProvider> */}
-    </>
-  );
-};
-
+            </NotificationProvider>
+          </AuthProvider>
+        </AppProvider>
+      </ThemeProvider>
+    </QueryClientProvider> 
+)};
 export default App;
