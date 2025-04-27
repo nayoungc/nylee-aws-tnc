@@ -1,4 +1,3 @@
-// app/components/admin/catalog/CourseCatalogTab.tsx
 // src/components/admin/catalog/CourseCatalogTab.tsx
 import React, { useState } from 'react';
 import {
@@ -20,9 +19,9 @@ import {
   SelectProps
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
-import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup'; // 커스텀 컴포넌트 사용
-import { useCatalog } from '@/hooks/useCatalog';
-import { CourseCatalog, CourseCatalogInput } from '@/models/catalog';
+import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
+import { useCourseCatalog } from '@/hooks/useCourseCatalog';
+import { CourseCatalog, CourseCatalogInput } from '@/models/courseCatalog';
 import EnhancedTable from '@/components/common/EnhancedTable';
 
 const CourseCatalogTab: React.FC = () => {
@@ -33,14 +32,14 @@ const CourseCatalogTab: React.FC = () => {
     loading,
     error,
     refetch,
-    selectCatalog,
-    createNewCatalog,
-    updateSelectedCatalog,
-    deleteSelectedCatalog,
+    selectCourseCatalog,
+    createNewCourseCatalog,
+    updateSelectedCourseCatalog,
+    deleteSelectedCourseCatalog,
     isCreating,
     isUpdating,
     isDeleting
-  } = useCatalog();
+  } = useCourseCatalog();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -57,14 +56,13 @@ const CourseCatalogTab: React.FC = () => {
     description: '',
     category: '',
     tags: [],
-    prerequisites: [],
     objectives: [],
   });
 
   // 카탈로그 생성 처리
   const handleCreate = async () => {
     try {
-      await createNewCatalog(formData);
+      await createNewCourseCatalog(formData);
       setShowCreateModal(false);
       resetForm();
     } catch (err) {
@@ -75,7 +73,7 @@ const CourseCatalogTab: React.FC = () => {
   // 카탈로그 수정 처리
   const handleEdit = async () => {
     try {
-      await updateSelectedCatalog(formData);
+      await updateSelectedCourseCatalog(formData);
       setShowEditModal(false);
     } catch (err) {
       console.error('Failed to update catalog:', err);
@@ -85,7 +83,7 @@ const CourseCatalogTab: React.FC = () => {
   // 카탈로그 삭제 처리
   const handleDelete = async () => {
     try {
-      await deleteSelectedCatalog();
+      await deleteSelectedCourseCatalog();
       setShowDeleteConfirm(false);
       setSelectedCatalogs([]);
     } catch (err) {
@@ -95,7 +93,7 @@ const CourseCatalogTab: React.FC = () => {
 
   // 단일 카탈로그 삭제 시작
   const handleDeleteClick = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
+    selectCourseCatalog(catalog.id);
     setSelectedCatalogs([catalog]);
     setShowDeleteConfirm(true);
   };
@@ -103,14 +101,14 @@ const CourseCatalogTab: React.FC = () => {
   // 배치 삭제 시작
   const handleBatchDelete = () => {
     if (selectedCatalogs.length === 1) {
-      selectCatalog(selectedCatalogs[0].id);
+      selectCourseCatalog(selectedCatalogs[0].id);
     }
     setShowDeleteConfirm(true);
   };
 
   // 편집 모달 열기
   const openEditModal = (catalog: CourseCatalog) => {
-    selectCatalog(catalog.id);
+    selectCourseCatalog(catalog.id);
     setFormData({
       title: catalog.title,
       awsCode: catalog.awsCode || '',
@@ -120,7 +118,6 @@ const CourseCatalogTab: React.FC = () => {
       description: catalog.description || '',
       category: catalog.category || '',
       tags: catalog.tags || [],
-      prerequisites: catalog.prerequisites || [],
       objectives: catalog.objectives || [],
     });
     setShowEditModal(true);
@@ -137,7 +134,6 @@ const CourseCatalogTab: React.FC = () => {
       description: '',
       category: '',
       tags: [],
-      prerequisites: [],
       objectives: [],
     });
   };
@@ -176,8 +172,7 @@ const CourseCatalogTab: React.FC = () => {
     {
       id: 'duration',
       header: t('admin:catalog.fields.duration'),
-      cell: (item: CourseCatalog) => item.durations ?
-        `\${item.durations} \${t('common:hours')}` : '-',
+      cell: (item: CourseCatalog) => item.durations ? `\${item.durations} \${t('common:hours')}` : '-',
       sortingField: 'durations',
     },
     {
@@ -244,7 +239,7 @@ const CourseCatalogTab: React.FC = () => {
             items={[
               { text: t('common:home'), href: '/' },
               { text: t('admin:title'), href: '/admin' },
-              { text: t('admin:catalog.title'), href: '/admin/catalog' } // href 추가
+              { text: t('admin:catalog.title'), href: '/admin/catalog' }
             ]}
           />
         </Box>

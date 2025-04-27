@@ -11,7 +11,7 @@ import {
   BreadcrumbGroup
 } from '@cloudscape-design/components';
 import AdminProtectedRoute from '@components/common/AdminProtectedRoute';
-import CourseCatalogTab from '@components/admin/catalog/CourseCatalogTab';
+import CourseCatalogTab from '@/components/admin/courseCatalog/CourseCatalogTab';
 import CustomersTab from '@pages/admin/customers/CustomersTab';
 import InstructorsTab from '@pages/admin/instructors/InstructorsTab';
 

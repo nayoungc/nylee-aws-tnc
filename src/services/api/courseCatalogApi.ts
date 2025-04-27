@@ -41,13 +41,29 @@ export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
   console.log("코스 카탈로그 데이터 가져오기 시도");
     
   try {
+    // GraphQL 쿼리 로깅
+    console.log("GraphQL 쿼리:", listCourseCatalogs);
+    
     const response = await client.graphql({
       query: listCourseCatalogs
     });
     
+    // 전체 응답 로깅
+    console.log("GraphQL 원본 응답:", JSON.stringify(response, null, 2));
+    
     // 안전하게 데이터 추출
     const data = safelyExtractData<ListCourseCatalogsResult>(response);
-    return data?.listCourseCatalogs?.items || [];
+    console.log("추출된 데이터:", JSON.stringify(data, null, 2));
+    
+    const items = data?.listCourseCatalogs?.items || [];
+    console.log("최종 반환 항목 수:", items.length);
+    if (items.length > 0) {
+      console.log("첫 번째 항목 샘플:", items[0]);
+    } else {
+      console.log("반환된 항목 없음");
+    }
+    
+    return items;
   } catch (error: unknown) {
     console.error('코스 카탈로그 목록 조회 오류:', error);
     throw new Error(i18n.t('errors.failedToListCourseCatalogs', { error: String(error), ns: 'courseCatalog' }));

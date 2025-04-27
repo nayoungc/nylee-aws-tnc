@@ -10,7 +10,7 @@ import {
 } from '@cloudscape-design/components';
 import { useTranslation } from 'react-i18next';
 import MainLayout from '@/components/layout/MainLayout';
-import CourseCatalogTab from '@components/admin/catalog/CourseCatalogTab';
+import CourseCatalogTab from '@/components/admin/courseCatalog/CourseCatalogTab';
 import CustomersTab from '@components/admin/customers/CustomersTab';
 import InstructorsTab from '@components/admin/instructors/InstructorsTab';
 

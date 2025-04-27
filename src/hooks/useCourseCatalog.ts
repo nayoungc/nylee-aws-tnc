@@ -1,5 +1,5 @@
-// src/hooks/useCatalog.ts
-import { useState, useCallback, useEffect } from 'react';
+// src/hooks/useCourseCatalog.ts
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   fetchAllCourseCatalogs, 
@@ -15,7 +15,7 @@ import { CourseCatalog, CourseCatalogInput, CourseCatalogFilter } from '@/models
 /**
  * Admin CourseCatalogTab에서 사용할 통합된 카탈로그 훅
  */
-export const useCatalog = () => {
+export const useCourseCatalog = () => {
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   
@@ -27,7 +27,17 @@ export const useCatalog = () => {
     refetch
   } = useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs'],
-    queryFn: fetchAllCourseCatalogs, 
+    queryFn: async () => {
+      console.log('useCourseCatalog - fetchAllCourseCatalogs 호출');
+      try {
+        const results = await fetchAllCourseCatalogs();
+        console.log('useCourseCatalog - 결과 받음:', results);
+        return results;
+      } catch (err) {
+        console.error('useCourseCatalog - 오류 발생:', err);
+        throw err;
+      }
+    },
     staleTime: 1000 * 60 * 5 // 5분
   });
 
@@ -68,23 +78,23 @@ export const useCatalog = () => {
   });
 
   // 카탈로그 선택
-  const selectCatalog = useCallback((id: string) => {
+  const selectCourseCatalog = useCallback((id: string) => {
     setSelectedId(id);
   }, []);
 
   // 새 카탈로그 생성
-  const createNewCatalog = useCallback(async (input: CourseCatalogInput) => {
+  const createNewCourseCatalog = useCallback(async (input: CourseCatalogInput) => {
     return await createMutation.mutateAsync(input);
   }, [createMutation]);
 
   // 선택된 카탈로그 업데이트
-  const updateSelectedCatalog = useCallback(async (input: Partial<CourseCatalogInput>) => {
+  const updateSelectedCourseCatalog = useCallback(async (input: Partial<CourseCatalogInput>) => {
     if (!selectedId) throw new Error('선택된 카탈로그가 없습니다');
     return await updateMutation.mutateAsync({ id: selectedId, input });
   }, [selectedId, updateMutation]);
 
   // 선택된 카탈로그 삭제
-  const deleteSelectedCatalog = useCallback(async () => {
+  const deleteSelectedCourseCatalog = useCallback(async () => {
     if (!selectedId) throw new Error('선택된 카탈로그가 없습니다');
     return await deleteMutation.mutateAsync(selectedId);
   }, [selectedId, deleteMutation]);
@@ -95,10 +105,10 @@ export const useCatalog = () => {
     loading,
     error: error as Error | null,
     refetch,
-    selectCatalog,
-    createNewCatalog,
-    updateSelectedCatalog,
-    deleteSelectedCatalog,
+    selectCourseCatalog,
+    createNewCourseCatalog,
+    updateSelectedCourseCatalog,
+    deleteSelectedCourseCatalog,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending
@@ -108,7 +118,7 @@ export const useCatalog = () => {
 /**
  * 카탈로그 목록 조회 훅
  */
-export const useCatalogs = (enabled = true) => {
+export const useCourseCatalogs = (enabled = true) => {
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs'],
     queryFn: fetchAllCourseCatalogs, 
@@ -120,7 +130,7 @@ export const useCatalogs = (enabled = true) => {
 /**
  * ID로 특정 카탈로그 조회 훅
  */
-export const useCatalogById = (id: string | undefined, enabled = true) => {
+export const useCourseCatalogById = (id: string | undefined, enabled = true) => {
   return useQuery<CourseCatalog | null, Error>({
     queryKey: ['catalog', id],
     queryFn: () => (id ? fetchCourseCatalogById(id) : Promise.resolve(null)), 
@@ -132,7 +142,7 @@ export const useCatalogById = (id: string | undefined, enabled = true) => {
 /**
  * 필터를 사용한 카탈로그 검색 훅
  */
-export const useSearchCatalogs = (filter: CourseCatalogFilter = {}, enabled = true) => {
+export const useSearchCourseCatalogs = (filter: CourseCatalogFilter = {}, enabled = true) => {
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs', 'search', filter],
     queryFn: () => searchCourseCatalogs(filter), 
@@ -144,7 +154,7 @@ export const useSearchCatalogs = (filter: CourseCatalogFilter = {}, enabled = tr
 /**
  * 카테고리별 카탈로그 조회 훅
  */
-export const useCatalogsByCategory = (category: string | undefined, enabled = true) => {
+export const useCourseCatalogsByCategory = (category: string | undefined, enabled = true) => {
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs', 'category', category],
     queryFn: () => (category ? fetchCourseCatalogsByCategory(category) : Promise.resolve([])), 
@@ -156,7 +166,7 @@ export const useCatalogsByCategory = (category: string | undefined, enabled = tr
 /**
  * 카탈로그 생성 뮤테이션 훅
  */
-export const useCreateCatalog = () => {
+export const useCreateCourseCatalog = () => {
   const queryClient = useQueryClient();
   
   return useMutation<CourseCatalog, Error, CourseCatalogInput>({
@@ -171,7 +181,7 @@ export const useCreateCatalog = () => {
 /**
  * 카탈로그 수정 뮤테이션 훅
  */
-export const useUpdateCatalog = () => {
+export const useUpdateCourseCatalog = () => {
   const queryClient = useQueryClient();
   
   interface UpdateCatalogVars {
@@ -194,7 +204,7 @@ export const useUpdateCatalog = () => {
 /**
  * 카탈로그 삭제 뮤테이션 훅
  */
-export const useDeleteCatalog = () => {
+export const useDeleteCourseCatalog = () => {
   const queryClient = useQueryClient();
   
   return useMutation<{ success: boolean }, Error, string>({
