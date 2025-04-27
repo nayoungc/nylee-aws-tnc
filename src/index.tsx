@@ -12,6 +12,8 @@ import '@cloudscape-design/global-styles/index.css';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 
 // Amplify v6 형식에 맞게 구성
@@ -40,10 +42,21 @@ Amplify.configure({
   }
 });
 
+// QueryClient 생성
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 10 * 1000, // 10초
+    },
+  },
+});
+
 // 디버깅을 위한 로그 출력
 console.log('Amplify 구성 완료');
 
-// const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 // root.render(
 //   <React.StrictMode>
 //     <BrowserRouter>
