@@ -75,7 +75,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         { type: 'link' as const, text: t('navigation:instructor_catalog'), href: '/instructor/catalog' }
       ]
     },
-    
+
     // 평가 도구 그룹
     {
       type: 'section-group' as const,
@@ -97,30 +97,42 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     }
   ] : [];
 
-  // 관리자용 메뉴 항목 (수정)
+  // 관리자용 메뉴 항목 (수정 - 강사 메뉴 스타일로)
   const adminItems = isAdmin ? [
-    { type: 'divider' as const },
+    // 대시보드 그룹
     {
       type: 'section-group' as const,
-      title: t('navigation:admin_title'),
+      title: t('navigation:admin_dashboard_group'),
       items: [
-        { type: 'link' as const, text: t('navigation:admin_dashboard'), href: '/admin/dashboard' },
-        {
-          type: 'section' as const,
-          text: t('navigation:admin_course_section'),
-          items: [
-            { type: 'link' as const, text: t('navigation:admin_course_management'), href: '/admin/course-management' },
-            { type: 'link' as const, text: t('navigation:admin_catalog_management'), href: '/admin/catalog-management' }
-          ]
-        },
-        {
-          type: 'section' as const,
-          text: t('navigation:admin_user_section'),
-          items: [
-            { type: 'link' as const, text: t('navigation:admin_user_management'), href: '/admin/user-management' },
-            { type: 'link' as const, text: t('navigation:admin_role_management'), href: '/admin/role-management' }
-          ]
-        },
+        { type: 'link' as const, text: t('navigation:admin_dashboard'), href: '/admin/dashboard' }
+      ]
+    },
+
+    // 과정 관리 그룹
+    {
+      type: 'section-group' as const,
+      title: t('navigation:admin_course_group'),
+      items: [
+        { type: 'link' as const, text: t('navigation:admin_course_management'), href: '/admin/course-management' },
+        { type: 'link' as const, text: t('navigation:admin_catalog_management'), href: '/admin/catalog-management' }
+      ]
+    },
+
+    // 사용자 관리 그룹
+    {
+      type: 'section-group' as const,
+      title: t('navigation:admin_user_group'),
+      items: [
+        { type: 'link' as const, text: t('navigation:admin_user_management'), href: '/admin/user-management' },
+        { type: 'link' as const, text: t('navigation:admin_role_management'), href: '/admin/role-management' }
+      ]
+    },
+
+    // 시스템 관리 그룹
+    {
+      type: 'section-group' as const,
+      title: t('navigation:admin_system_group'),
+      items: [
         { type: 'link' as const, text: t('navigation:admin_settings'), href: '/admin/settings' },
         {
           type: 'link' as const,

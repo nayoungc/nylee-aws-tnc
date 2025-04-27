@@ -9,8 +9,8 @@ import {
   createCourseCatalog, 
   updateCourseCatalog, 
   deleteCourseCatalog 
-} from '@/services/api/catalogApi'; // 경로도 변경 (필요한 경우)
-import { CourseCatalog, CourseCatalogInput, CourseCatalogFilter } from '@/models/catalog'; // 필터 타입 이름도 확인
+} from '@/services/api/courseCatalogApi'; 
+import { CourseCatalog, CourseCatalogInput, CourseCatalogFilter } from '@/models/courseCatalog'; 
 
 /**
  * Admin CourseCatalogTab에서 사용할 통합된 카탈로그 훅
@@ -132,7 +132,7 @@ export const useCatalogById = (id: string | undefined, enabled = true) => {
 /**
  * 필터를 사용한 카탈로그 검색 훅
  */
-export const useSearchCatalogs = (filter: CourseCatalogFilter = {}, enabled = true) => { // 필터 타입 이름도 변경
+export const useSearchCatalogs = (filter: CourseCatalogFilter = {}, enabled = true) => {
   return useQuery<CourseCatalog[], Error>({
     queryKey: ['catalogs', 'search', filter],
     queryFn: () => searchCourseCatalogs(filter), 
@@ -153,7 +153,9 @@ export const useCatalogsByCategory = (category: string | undefined, enabled = tr
   });
 };
 
-// 카탈로그 생성 뮤테이션 훅
+/**
+ * 카탈로그 생성 뮤테이션 훅
+ */
 export const useCreateCatalog = () => {
   const queryClient = useQueryClient();
   
@@ -166,7 +168,9 @@ export const useCreateCatalog = () => {
   });
 };
 
-// 카탈로그 수정 뮤테이션 훅
+/**
+ * 카탈로그 수정 뮤테이션 훅
+ */
 export const useUpdateCatalog = () => {
   const queryClient = useQueryClient();
   
@@ -187,7 +191,9 @@ export const useUpdateCatalog = () => {
   });
 };
 
-// 카탈로그 삭제 뮤테이션 훅
+/**
+ * 카탈로그 삭제 뮤테이션 훅
+ */
 export const useDeleteCatalog = () => {
   const queryClient = useQueryClient();
   

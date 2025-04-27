@@ -8,26 +8,26 @@ import i18n from '@/i18n';
 import { 
   listCourseCatalogs,
   getCourseCatalog,
-  searchCourseCatalog,
-  getCourseCatalogByCategory,
+  searchCourseCatalogs as searchCourseCatalogsQuery,
+  getCourseCatalogsByCategory as getCourseCatalogsByCategoryQuery, // 별칭 추가
   createCourseCatalog as createCourseCatalogMutation, 
   updateCourseCatalog as updateCourseCatalogMutation,
   deleteCourseCatalog as deleteCourseCatalogMutation
 } from '@graphql/catalog';
 
 import {
-  ListCourseCatalogsResult, 
+  ListCourseCatalogsResult,
   GetCourseCatalogResult,
   SearchCourseCatalogResult,
   GetCourseCatalogByCategoryResult,
   CreateCourseCatalogResult,
   UpdateCourseCatalogResult,
   DeleteCourseCatalogResult,
-  CourseCatalogFilterInput
+  SearchableCourseCatalogFilterInput
 } from '@/graphql/catalog';
 
 // 필터 타입 수정
-import { CourseCatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/catalog'; 
+import { CourseCatalogFilter, CourseCatalog, CourseCatalogInput } from '@/models/courseCatalog'; 
 import { mockCourseCatalogs } from '../../mocks/catalogData'; 
 
 const client = generateClient();
@@ -107,16 +107,14 @@ export const searchCourseCatalogs = async (filter: CourseCatalogFilter = {}): Pr
         c.title.toLowerCase().includes(searchText) ||
         (c.description && c.description.toLowerCase().includes(searchText)) ||
         (c.awsCode && c.awsCode.toLowerCase().includes(searchText)) ||
-        (c.tags && c.tags.some(tag => tag.toLowerCase().includes(searchText)))
+        (c.tags && c.tags.some((tag: string) => tag.toLowerCase().includes(searchText)))
       );
     }
     
     // 태그 필터링
     if (filter.tags && filter.tags.length > 0) {
       filteredCourseCatalogs = filteredCourseCatalogs.filter(c => 
-        c.tags && c.tags.some(tag => 
-          filter.tags!.includes(tag)
-        )
+        c.tags && c.tags.some((tag: string) => filter.tags!.includes(tag))
       );
     }
     
@@ -124,15 +122,35 @@ export const searchCourseCatalogs = async (filter: CourseCatalogFilter = {}): Pr
   }
 
   try {
-    const variables = { filter: filter as CourseCatalogFilterInput };
+    // 클라이언트 필터를 SearchableCourseCatalogFilterInput으로 변환
+    const searchFilter: SearchableCourseCatalogFilterInput = {};
+    
+    if (filter.text) {
+      searchFilter.title = { match: filter.text };
+      searchFilter.description = { match: filter.text };
+    }
+    
+    if (filter.level) {
+      searchFilter.level = { eq: filter.level };
+    }
+    
+    if (filter.category) {
+      searchFilter.category = { eq: filter.category };
+    }
+    
+    if (filter.tags && filter.tags.length) {
+      // 태그는 배열이므로 OR 조건으로 구성
+      searchFilter.tags = { match: filter.tags.join(' OR ') };
+    }
+    
     const response = await client.graphql({
-      query: searchCourseCatalog,
-      variables
+      query: searchCourseCatalogsQuery,
+      variables: { filter: searchFilter }
     });
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<SearchCourseCatalogResult>(response);
-return data?.searchCatalog || []; // searchCourseCatalog -> searchCatalog
+    return data?.searchCourseCatalogs?.items || [];
   } catch (error: unknown) {
     console.error('코스 카탈로그 검색 오류:', error);
     throw new Error(i18n.t('errors.failedToSearchCourseCatalogs', { error: String(error), ns: 'courseCatalog' }));
@@ -152,13 +170,13 @@ export const fetchCourseCatalogsByCategory = async (category: string): Promise<C
 
   try {
     const response = await client.graphql({
-      query: getCourseCatalogByCategory,
+      query: getCourseCatalogsByCategoryQuery,
       variables: { category }
     });
     
-    // 안전하게 데이터 추출
+    // 안전하게 데이터 추출 - 여기서 올바른 속성 이름 사용
     const data = safelyExtractData<GetCourseCatalogByCategoryResult>(response);
-return data?.getCatalogByCategory || []; // getCourseCatalogByCategory -> getCatalogByCategory
+    return data?.getCourseCatalogByCategory?.items || []; // 단수형으로 수정
   } catch (error: unknown) {
     console.error(`카테고리별 코스 카탈로그 조회 오류 (\${category}):`, error);
     throw new Error(i18n.t('errors.failedToGetCourseCatalogsByCategory', { category, error: String(error), ns: 'courseCatalog' }));
