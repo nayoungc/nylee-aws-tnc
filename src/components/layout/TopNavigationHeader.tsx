@@ -1,46 +1,44 @@
 // src/components/layout/TopNavigationHeader.tsx
 import React from 'react';
 import { TopNavigation } from '@cloudscape-design/components';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '@hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
 const TopNavigationHeader: React.FC = () => {
-  const { t, i18n } = useTranslation(['navigation']);
+  const { t, i18n } = useAppTranslation();
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // 현재 언어에 따라 표시 텍스트 결정
   const currentLanguageText = i18n.language === 'ko' 
-    ? t('navigation:language_korean') 
-    : t('navigation:language_english');
+    ? t('language_korean') 
+    : t('language_english');
 
   return (
     <TopNavigation
       identity={{
         href: "/",
-        title: t('navigation:app_title'),
+        title: t('app_title'),
         logo: {
           src: "/assets/logo.svg",
-          alt: t('navigation:app_logo_alt')
+          alt: t('app_logo_alt')
         }
       }}
       utilities={[
-        // 언어 선택 드롭다운 메뉴
         {
           type: "menu-dropdown",
           text: currentLanguageText,
           iconName: "globe",
-          title: t('navigation:language_label'),
+          title: t('language_label'),
           items: [
             { 
               id: "ko", 
-              text: t('navigation:language_korean'),
+              text: t('language_korean'),
               checked: i18n.language === 'ko'
             },
             { 
               id: "en", 
-              text: t('navigation:language_english'),
+              text: t('language_english'),
               checked: i18n.language === 'en'
             }
           ],
@@ -48,26 +46,22 @@ const TopNavigationHeader: React.FC = () => {
             i18n.changeLanguage(detail.id);
           }
         },
-        
-        // 도움말 버튼
         {
           type: "button",
-          text: t('navigation:help'),
+          text: t('help'),
           href: "/help",
           external: false
         },
-        
-        // 인증 관련 메뉴
         isAuthenticated ? {
           type: "menu-dropdown",
-          text: user?.name || t('navigation:account'),
+          text: user?.name || t('account'),
           description: user?.email || "",
           iconName: "user-profile",
           items: [
-            { id: "profile", text: t('navigation:profile') },
-            { id: "preferences", text: t('navigation:preferences') },
-            { id: "security", text: t('navigation:security') },
-            { id: "signout", text: t('navigation:sign_out') }
+            { id: "profile", text: t('profile') },
+            { id: "preferences", text: t('preferences') },
+            { id: "security", text: t('security') },
+            { id: "signout", text: t('sign_out') }
           ],
           onItemClick: ({ detail }) => {
             if (detail.id === "signout") {
@@ -79,7 +73,7 @@ const TopNavigationHeader: React.FC = () => {
           }
         } : {
           type: "button",
-          text: t('navigation:sign_in'),
+          text: t('sign_in'),
           onClick: () => navigate("/login")
         }
       ]}

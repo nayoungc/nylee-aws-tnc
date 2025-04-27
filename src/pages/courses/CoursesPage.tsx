@@ -1,4 +1,4 @@
-// src/pages/instructors/CoursesPage.tsx
+// src/pages/courses/CoursesPage.tsx
 import { useCollection } from '@cloudscape-design/collection-hooks';
 import {
   Table,
@@ -14,7 +14,7 @@ import {
 } from '@cloudscape-design/components';
 import { useState } from "react";
 
-// Course 타입 정의
+// Course 타입 정의 - 백엔드 API 스키마에 맞게 그대로 유지
 interface Course {
   courseId: string;
   startDate: string;

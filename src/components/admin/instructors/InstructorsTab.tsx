@@ -5,7 +5,6 @@ import {
   SpaceBetween,
   Box,
   Button,
-  BreadcrumbGroup,
   Alert,
   Modal,
   Form,
@@ -15,13 +14,14 @@ import {
   StatusIndicator,
   TextFilter
 } from '@cloudscape-design/components';
-import { useTranslation } from 'react-i18next';
 import { useInstructor } from '@/hooks/useInstructor';
 import { Instructor, InstructorInput } from '@/models/instructor';
 import EnhancedTable from '@/components/common/EnhancedTable';
+import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
 const InstructorsTab: React.FC = () => {
-  const { t } = useTranslation(['admin', 'common']);
+  const { t } = useAppTranslation();
   const {
     instructors,
     selectedInstructor,
@@ -43,12 +43,13 @@ const InstructorsTab: React.FC = () => {
   const [selectedInstructors, setSelectedInstructors] = useState<Instructor[]>([]);
   const [searchText, setSearchText] = useState('');
 
-  // 폼 상태
+  // 폼 상태 - 백엔드 스키마에 맞게 조정
+  // 백엔드 API 응답을 검사한 결과, 필드명이 이미 일치하는 것으로 보임
   const [formData, setFormData] = useState<InstructorInput>({
-    username: '',
-    email: '',
     name: '',
-    profile: ''
+    email: '',
+    status: 'ACTIVE',
+    profile: '',
   });
 
   // 강사 생성 처리
@@ -94,10 +95,10 @@ const InstructorsTab: React.FC = () => {
   const openEditModal = (instructor: Instructor) => {
     selectInstructor(instructor.id);
     setFormData({
-      username: instructor.username,
-      email: instructor.email,
       name: instructor.name,
-      profile: instructor.profile || ''
+      email: instructor.email,
+      status: instructor.status || 'ACTIVE',
+      profile: instructor.profile || '',
     });
     setShowEditModal(true);
   };
@@ -105,10 +106,10 @@ const InstructorsTab: React.FC = () => {
   // 폼 초기화
   const resetForm = () => {
     setFormData({
-      username: '',
-      email: '',
       name: '',
-      profile: ''
+      email: '',
+      status: 'ACTIVE',
+      profile: '',
     });
   };
 
@@ -117,7 +118,6 @@ const InstructorsTab: React.FC = () => {
     instructors.filter(instructor =>
       instructor.name.toLowerCase().includes(searchText.toLowerCase()) ||
       instructor.email.toLowerCase().includes(searchText.toLowerCase()) ||
-      instructor.username.toLowerCase().includes(searchText.toLowerCase()) ||
       (instructor.profile && instructor.profile.toLowerCase().includes(searchText.toLowerCase()))
     ) :
     instructors;
@@ -126,7 +126,7 @@ const InstructorsTab: React.FC = () => {
   const columnDefinitions = [
     {
       id: 'name',
-      header: t('admin:instructors.fields.name'),
+      header: t('instructors_fields_name'),
       cell: (item: Instructor) => (
         <div style={{
           fontWeight: '500',
@@ -141,21 +141,14 @@ const InstructorsTab: React.FC = () => {
     },
     {
       id: 'email',
-      header: t('admin:instructors.fields.email'),
+      header: t('instructors_fields_email'),
       cell: (item: Instructor) => item.email,
       sortingField: 'email',
       width: 200
     },
     {
-      id: 'username',
-      header: t('admin:instructors.fields.username'),
-      cell: (item: Instructor) => item.username,
-      sortingField: 'username',
-      width: 150
-    },
-    {
       id: 'profile',
-      header: t('admin:instructors.fields.profile'),
+      header: t('instructors_fields_profile'),
       cell: (item: Instructor) => (
         <div style={{
           maxHeight: '80px',
@@ -173,17 +166,17 @@ const InstructorsTab: React.FC = () => {
     },
     {
       id: 'status',
-      header: t('admin:instructors.fields.status'),
+      header: t('instructors_fields_status'),
       cell: (item: Instructor) => {
         const statusMap: Record<string, { type: string; text: string }> = {
-          ACTIVE: { type: 'success', text: t('admin:instructors.status.active') },
-          INACTIVE: { type: 'stopped', text: t('admin:instructors.status.inactive') }
+          ACTIVE: { type: 'success', text: t('instructors_status_active') },
+          INACTIVE: { type: 'stopped', text: t('instructors_status_inactive') }
         };
 
         const statusKey = item.status || 'unknown';
         const status = statusMap[statusKey] || {
           type: 'info',
-          text: statusKey === 'unknown' ? t('admin:instructors.status.unknown') : statusKey
+          text: statusKey === 'unknown' ? t('instructors_status_unknown') : statusKey
         };
 
         return (
@@ -197,7 +190,7 @@ const InstructorsTab: React.FC = () => {
     },
     {
       id: 'createdAt',
-      header: t('admin:instructors.fields.createdAt'),
+      header: t('instructors_fields_createdAt'),
       cell: (item: Instructor) => (
         <div style={{ whiteSpace: 'nowrap' }}>
           {item.createdAt ? 
@@ -215,7 +208,7 @@ const InstructorsTab: React.FC = () => {
     },
     {
       id: 'actions',
-      header: t('common:actions'),
+      header: t('actions'),
       cell: (item: Instructor) => (
         <SpaceBetween direction="horizontal" size="xs">
           <Button
@@ -223,7 +216,7 @@ const InstructorsTab: React.FC = () => {
             onClick={() => openEditModal(item)}
             iconName="edit"
           >
-            {t('common:edit')}
+            {t('edit')}
           </Button>
           {item.status === 'ACTIVE' ? (
             <Button
@@ -231,7 +224,7 @@ const InstructorsTab: React.FC = () => {
               onClick={() => openStatusChangeModal(item, 'INACTIVE')}
               iconName="remove"
             >
-              {t('admin:instructors.actions.deactivate')}
+              {t('instructors_actions_deactivate')}
             </Button>
           ) : (
             <Button
@@ -239,7 +232,7 @@ const InstructorsTab: React.FC = () => {
               onClick={() => openStatusChangeModal(item, 'ACTIVE')}
               iconName="check"
             >
-              {t('admin:instructors.actions.activate')}
+              {t('instructors_actions_activate')}
             </Button>
           )}
         </SpaceBetween>
@@ -250,11 +243,10 @@ const InstructorsTab: React.FC = () => {
 
   // 필터링 속성
   const filteringProperties = [
-    { key: 'name', label: t('admin:instructors.fields.name') },
-    { key: 'email', label: t('admin:instructors.fields.email') },
-    { key: 'username', label: t('admin:instructors.fields.username') },
-    { key: 'profile', label: t('admin:instructors.fields.profile') },
-    { key: 'status', label: t('admin:instructors.fields.status') }
+    { key: 'name', label: t('instructors_fields_name') },
+    { key: 'email', label: t('instructors_fields_email') },
+    { key: 'profile', label: t('instructors_fields_profile') },
+    { key: 'status', label: t('instructors_fields_status') }
   ];
 
   return (
@@ -264,19 +256,18 @@ const InstructorsTab: React.FC = () => {
         <Box padding={{ top: 's' }}>
           <BreadcrumbGroup
             items={[
-              { text: t('common:home'), href: '/' },
-              { text: t('admin:title'), href: '/admin' },
-              { text: t('admin:instructors.title'), href: '/admin/instructors' }
+              { translationKey: 'navigation_home', href: '/' },
+              { translationKey: 'admin_title', href: '/admin' },
+              { translationKey: 'instructors_title', href: '/admin/instructors' }
             ]}
-            ariaLabel={t('common:breadcrumbs')}
           />
         </Box>
 
         {/* 검색 필터 */}
         <TextFilter
           filteringText={searchText}
-          filteringPlaceholder={t('admin:instructors.searchPlaceholder', '강사 검색...')}
-          filteringAriaLabel="강사 검색"
+          filteringPlaceholder={t('instructors_searchPlaceholder')}
+          filteringAriaLabel={t('instructors_search_aria_label')}
           onChange={({ detail }) => setSearchText(detail.filteringText)}
         />
 
@@ -284,20 +275,20 @@ const InstructorsTab: React.FC = () => {
         {error && (
           <Alert
             type="error"
-            header={t('common:error')}
-            action={<Button onClick={() => refetch()}>{t('common:retry')}</Button>}
+            header={t('error')}
+            action={<Button onClick={() => refetch()}>{t('retry')}</Button>}
             dismissible
           >
-            {t('admin:instructors.errors.loadFailed')}
+            {t('instructors_errors_loadFailed')}
           </Alert>
         )}
 
         {/* EnhancedTable 사용 */}
         <EnhancedTable
-          title={t('admin:instructors.title')}
+          title={t('instructors_title')}
           description={searchText ?
-            t('admin:instructors.searchResults', { count: filteredInstructors.length }) :
-            t('admin:instructors.description')}
+            t('instructors_searchResults', { count: filteredInstructors.length }) :
+            t('instructors_description')}
           columnDefinitions={columnDefinitions}
           items={filteredInstructors}
           loading={loading}
@@ -307,7 +298,7 @@ const InstructorsTab: React.FC = () => {
           onRefresh={refetch}
           actions={{
             primary: {
-              text: t('admin:instructors.actions.createInstructor'),
+              text: t('instructors_actions_createInstructor'),
               onClick: () => setShowCreateModal(true)
             }
           }}
@@ -316,33 +307,32 @@ const InstructorsTab: React.FC = () => {
           defaultSortingColumn="name"
           emptyText={{
             title: searchText ?
-              t('admin:instructors.noSearchResults') :
-              t('admin:instructors.noInstructors'),
+              t('instructors_noSearchResults') :
+              t('instructors_noInstructors'),
             subtitle: searchText ?
-              t('admin:instructors.tryOtherSearch') :
-              t('admin:instructors.createPrompt'),
+              t('instructors_tryOtherSearch') :
+              t('instructors_createPrompt'),
             action: searchText ? undefined : {
-              text: t('admin:instructors.actions.createInstructor'),
+              text: t('instructors_actions_createInstructor'),
               onClick: () => setShowCreateModal(true)
             }
           }}
           visibleContentOptions={[
             {
               id: 'main',
-              label: t('admin:instructors.columns.main'),
+              label: t('instructors_columns_main'),
               options: [
-                { id: 'name', label: t('admin:instructors.fields.name') },
-                { id: 'email', label: t('admin:instructors.fields.email') },
-                { id: 'username', label: t('admin:instructors.fields.username') },
+                { id: 'name', label: t('instructors_fields_name') },
+                { id: 'email', label: t('instructors_fields_email') },
               ]
             },
             {
               id: 'details',
-              label: t('admin:instructors.columns.details'),
+              label: t('instructors_columns_details'),
               options: [
-                { id: 'profile', label: t('admin:instructors.fields.profile') },
-                { id: 'status', label: t('admin:instructors.fields.status') },
-                { id: 'createdAt', label: t('admin:instructors.fields.createdAt') },
+                { id: 'profile', label: t('instructors_fields_profile') },
+                { id: 'status', label: t('instructors_fields_status') },
+                { id: 'createdAt', label: t('instructors_fields_createdAt') },
               ]
             }
           ]}
@@ -353,19 +343,19 @@ const InstructorsTab: React.FC = () => {
         <Modal
           visible={showCreateModal}
           onDismiss={() => setShowCreateModal(false)}
-          header={t('admin:instructors.modals.create.title')}
+          header={t('instructors_modals_create_title')}
           size="large"
           footer={
             <Box float="right">
               <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => setShowCreateModal(false)}>{t('common:cancel')}</Button>
+                <Button onClick={() => setShowCreateModal(false)}>{t('cancel')}</Button>
                 <Button
                   variant="primary"
                   onClick={handleCreate}
                   loading={isCreating}
-                  disabled={!formData.username || !formData.email || !formData.name}
+                  disabled={!formData.name || !formData.email}
                 >
-                  {t('admin:instructors.actions.create')}
+                  {t('instructors_actions_create')}
                 </Button>
               </SpaceBetween>
             </Box>
@@ -376,60 +366,44 @@ const InstructorsTab: React.FC = () => {
               <FormField
                 label={
                   <span>
-                    {t('admin:instructors.fields.name')}
+                    {t('instructors_fields_name')}
                     <span className="awsui-key-label-required"> *</span>
                   </span>
                 }
-                description={t('admin:instructors.fields.nameDescription')}
+                description={t('instructors_fields_nameDescription')}
               >
                 <Input
                   value={formData.name}
                   onChange={({ detail }) => setFormData(prev => ({ ...prev, name: detail.value }))}
-                  placeholder="홍길동"
+                  placeholder={t('instructors_name_placeholder')}
                 />
               </FormField>
 
               <FormField
                 label={
                   <span>
-                    {t('admin:instructors.fields.email')}
+                    {t('instructors_fields_email')}
                     <span className="awsui-key-label-required"> *</span>
                   </span>
                 }
-                description={t('admin:instructors.fields.emailDescription')}
+                description={t('instructors_fields_emailDescription')}
               >
                 <Input
                   type="email"
                   value={formData.email}
                   onChange={({ detail }) => setFormData(prev => ({ ...prev, email: detail.value }))}
-                  placeholder="example@example.com"
+                  placeholder={t('instructors_email_placeholder')}
                 />
               </FormField>
 
               <FormField
-                label={
-                  <span>
-                    {t('admin:instructors.fields.username')}
-                    <span className="awsui-key-label-required"> *</span>
-                  </span>
-                }
-                description={t('admin:instructors.fields.usernameDescription')}
-              >
-                <Input
-                  value={formData.username}
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, username: detail.value }))}
-                  placeholder="username123"
-                />
-              </FormField>
-
-              <FormField
-                label={t('admin:instructors.fields.profile')}
-                description={t('admin:instructors.fields.profileDescription')}
+                label={t('instructors_fields_profile')}
+                description={t('instructors_fields_profileDescription')}
               >
                 <Textarea
                   value={formData.profile || ''}
                   onChange={({ detail }) => setFormData(prev => ({ ...prev, profile: detail.value }))}
-                  placeholder="강사 소개 및 전문 분야"
+                  placeholder={t('instructors_profile_placeholder')}
                   rows={4}
                 />
               </FormField>
@@ -441,19 +415,19 @@ const InstructorsTab: React.FC = () => {
         <Modal
           visible={showEditModal}
           onDismiss={() => setShowEditModal(false)}
-          header={t('admin:instructors.modals.edit.title')}
+          header={t('instructors_modals_edit_title')}
           size="large"
           footer={
             <Box float="right">
               <SpaceBetween direction="horizontal" size="xs">
-                <Button onClick={() => setShowEditModal(false)}>{t('common:cancel')}</Button>
+                <Button onClick={() => setShowEditModal(false)}>{t('cancel')}</Button>
                 <Button
                   variant="primary"
                   onClick={handleEdit}
                   loading={isUpdating}
                   disabled={!formData.name || !formData.email}
                 >
-                  {t('common:save')}
+                  {t('save')}
                 </Button>
               </SpaceBetween>
             </Box>
@@ -464,11 +438,11 @@ const InstructorsTab: React.FC = () => {
               <FormField
                 label={
                   <span>
-                    {t('admin:instructors.fields.name')}
+                    {t('instructors_fields_name')}
                     <span className="awsui-key-label-required"> *</span>
                   </span>
                 }
-                description={t('admin:instructors.fields.nameDescription')}
+                description={t('instructors_fields_nameDescription')}
               >
                 <Input
                   value={formData.name}
@@ -479,11 +453,11 @@ const InstructorsTab: React.FC = () => {
               <FormField
                 label={
                   <span>
-                    {t('admin:instructors.fields.email')}
+                    {t('instructors_fields_email')}
                     <span className="awsui-key-label-required"> *</span>
                   </span>
                 }
-                description={t('admin:instructors.fields.emailDescription')}
+                description={t('instructors_fields_emailDescription')}
               >
                 <Input
                   type="email"
@@ -493,8 +467,8 @@ const InstructorsTab: React.FC = () => {
               </FormField>
 
               <FormField
-                label={t('admin:instructors.fields.profile')}
-                description={t('admin:instructors.fields.profileDescription')}
+                label={t('instructors_fields_profile')}
+                description={t('instructors_fields_profileDescription')}
               >
                 <Textarea
                   value={formData.profile || ''}
@@ -512,14 +486,14 @@ const InstructorsTab: React.FC = () => {
           onDismiss={() => setShowStatusChangeModal(false)}
           header={
             selectedInstructor?.status === 'ACTIVE' ?
-              t('admin:instructors.modals.deactivate.title') :
-              t('admin:instructors.modals.activate.title')
+              t('instructors_modals_deactivate_title') :
+              t('instructors_modals_activate_title')
           }
           footer={
             <Box float="right">
               <SpaceBetween direction="horizontal" size="xs">
                 <Button onClick={() => setShowStatusChangeModal(false)}>
-                  {t('common:cancel')}
+                  {t('cancel')}
                 </Button>
                 <Button
                   variant="primary"
@@ -529,8 +503,8 @@ const InstructorsTab: React.FC = () => {
                   loading={isChangingStatus}
                 >
                   {selectedInstructor?.status === 'ACTIVE' ?
-                    t('admin:instructors.actions.deactivate') :
-                    t('admin:instructors.actions.activate')
+                    t('instructors_actions_deactivate') :
+                    t('instructors_actions_activate')
                   }
                 </Button>
               </SpaceBetween>
@@ -539,8 +513,8 @@ const InstructorsTab: React.FC = () => {
         >
           <Box>
             {selectedInstructor?.status === 'ACTIVE' ?
-              t('admin:instructors.modals.deactivate.confirmation', { name: selectedInstructor?.name }) :
-              t('admin:instructors.modals.activate.confirmation', { name: selectedInstructor?.name })
+              t('instructors_modals_deactivate_confirmation', { name: selectedInstructor?.name }) :
+              t('instructors_modals_activate_confirmation', { name: selectedInstructor?.name })
             }
           </Box>
         </Modal>

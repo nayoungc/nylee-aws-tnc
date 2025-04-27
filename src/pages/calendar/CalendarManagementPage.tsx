@@ -1,6 +1,5 @@
 // src/pages/admin/CalendarManagementPage.tsx
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -17,6 +16,7 @@ import {
   Textarea,
   StatusIndicator
 } from '@cloudscape-design/components';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
 // 강의 타입 정의
 interface Course {
@@ -108,7 +108,7 @@ const initialCoursesData: CoursesCalendarData = {
 };
 
 const CalendarManagementPage: React.FC = () => {
-  const { t } = useTranslation(['common', 'tnc', 'admin']);
+  const { t } = useAppTranslation();
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [coursesData, setCoursesData] = useState<CoursesCalendarData>(initialCoursesData);
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
@@ -220,15 +220,15 @@ const CalendarManagementPage: React.FC = () => {
 
   // 교육 과정 유형 옵션
   const courseTypeOptions = [
-    { label: '오프라인', value: '오프라인' },
-    { label: '온라인', value: '온라인' }
+    { label: t('calendar_course_type_offline'), value: '오프라인' },
+    { label: t('calendar_course_type_online'), value: '온라인' }
   ];
 
   // 교육 과정 레벨 옵션
   const courseLevelOptions = [
-    { label: '초급', value: '초급' },
-    { label: '중급', value: '중급' },
-    { label: '고급', value: '고급' }
+    { label: t('calendar_course_level_beginner'), value: '초급' },
+    { label: t('calendar_course_level_intermediate'), value: '중급' },
+    { label: t('calendar_course_level_advanced'), value: '고급' }
   ];
 
   return (
@@ -237,9 +237,9 @@ const CalendarManagementPage: React.FC = () => {
         header={
           <Header
             variant="h1"
-            description={t('admin:calendar.management_description', '캘린더에 표시될 교육 과정을 추가, 수정 및 삭제합니다.')}
+            description={t('calendar_management_description')}
           >
-            {t('admin:calendar.management_title', '교육 일정 관리')}
+            {t('calendar_management_title')}
           </Header>
         }
       >
@@ -249,27 +249,27 @@ const CalendarManagementPage: React.FC = () => {
             <Container
               header={
                 <Header variant="h2">
-                  {t('tnc:calendar.select_date', '날짜 선택')}
+                  {t('calendar_select_date')}
                 </Header>
               }
             >
               <Calendar
                 value={selectedDate}
                 onChange={({ detail }) => handleDateSelect(detail.value)}
-                locale={t('common:locale', 'ko-KR')}
+                locale={t('locale')}
                 startOfWeek={0}
                 isDateEnabled={() => true}
                 i18nStrings={{
-                  todayAriaLabel: t('tnc:calendar.today', '오늘'),
-                  previousMonthAriaLabel: t('tnc:calendar.previous_month', '이전 달'),
-                  nextMonthAriaLabel: t('tnc:calendar.next_month', '다음 달')
+                  todayAriaLabel: t('calendar_today'),
+                  previousMonthAriaLabel: t('calendar_previous_month'),
+                  nextMonthAriaLabel: t('calendar_next_month')
                 }}
                 ariaLabelledby="calendar-heading"
               />
               
               {/* 교육 일정 가이드 */}
               <Container
-                header={<Header variant="h3">{t('admin:calendar.guide', '캘린더 가이드')}</Header>}
+                header={<Header variant="h3">{t('calendar_guide')}</Header>}
               >
                 <SpaceBetween size="s">
                   <Box padding="s">
@@ -282,7 +282,7 @@ const CalendarManagementPage: React.FC = () => {
                         marginRight: '8px'
                       }} />
                       <Box color="text-body-secondary" fontSize="body-m">
-                        {t('tnc:calendar.dates_with_courses', '교육 과정이 있는 날짜')}
+                        {t('calendar_dates_with_courses')}
                       </Box>
                     </div>
                   </Box>
@@ -290,9 +290,9 @@ const CalendarManagementPage: React.FC = () => {
                   <Box color="text-body-secondary" fontSize="body-m" padding="s">
                     {selectedDate
                       ? (coursesData[selectedDate]
-                        ? t('tnc:calendar.courses_found', '{{count}}개 과정 찾음', { count: coursesData[selectedDate].length })
-                        : t('tnc:calendar.no_courses_found', '과정 없음'))
-                      : t('tnc:calendar.select_date_to_view', '날짜를 선택하여 과정 확인')
+                        ? t('calendar_courses_found', { count: coursesData[selectedDate].length })
+                        : t('calendar_no_courses_found'))
+                      : t('calendar_select_date_to_view')
                     }
                   </Box>
                 </SpaceBetween>
@@ -312,13 +312,13 @@ const CalendarManagementPage: React.FC = () => {
                     disabled={!selectedDate}
                     onClick={handleOpenAddCourseModal}
                   >
-                    {t('admin:calendar.add_course', '과정 추가')}
+                    {t('calendar_add_course')}
                   </Button>
                 }
               >
                 {selectedDate
-                  ? t('tnc:calendar.courses_for_date', '{{date}} 교육 과정', { date: selectedDate })
-                  : t('tnc:calendar.select_date', '날짜를 선택하세요')}
+                  ? t('calendar_courses_for_date', { date: selectedDate })
+                  : t('calendar_select_date')}
               </Header>
             }
           >
@@ -329,23 +329,23 @@ const CalendarManagementPage: React.FC = () => {
                   columnDefinitions={[
                     {
                       id: "title",
-                      header: t('admin:calendar.course_title', '과정명'),
+                      header: t('calendar_course_title'),
                       cell: item => item.title,
                       sortingField: "title"
                     },
                     {
                       id: "instructor",
-                      header: t('tnc:calendar.instructor', '강사'),
+                      header: t('calendar_instructor'),
                       cell: item => item.instructor
                     },
                     {
                       id: "time",
-                      header: t('tnc:calendar.time', '시간'),
+                      header: t('calendar_time'),
                       cell: item => item.time
                     },
                     {
                       id: "type",
-                      header: t('admin:calendar.course_type', '유형'),
+                      header: t('calendar_course_type'),
                       cell: item => (
                         <StatusIndicator type={item.type === '온라인' ? 'info' : 'success'}>
                           {item.type}
@@ -354,7 +354,7 @@ const CalendarManagementPage: React.FC = () => {
                     },
                     {
                       id: "level",
-                      header: t('admin:calendar.course_level', '레벨'),
+                      header: t('calendar_course_level'),
                       cell: item => (
                         <StatusIndicator type={
                           item.level === '초급' ? 'success' :
@@ -366,57 +366,57 @@ const CalendarManagementPage: React.FC = () => {
                     },
                     {
                       id: "seats",
-                      header: t('admin:calendar.seats', '좌석'),
+                      header: t('calendar_seats'),
                       cell: item => `\${item.remainingSeats} / \${item.seats}`
                     },
                     {
                       id: "actions",
-                      header: t('admin:calendar.actions', '작업'),
+                      header: t('calendar_actions'),
                       cell: item => (
                         <SpaceBetween direction="horizontal" size="xs">
                           <Button
                             iconName="edit"
                             variant="icon"
-                            ariaLabel={t('admin:calendar.edit_course', '과정 편집')}
+                            ariaLabel={t('calendar_edit_course')}
                             onClick={() => handleOpenEditCourseModal(item)}
                           />
                           <Button
                             iconName="remove"
                             variant="icon"
-                            ariaLabel={t('admin:calendar.delete_course', '과정 삭제')}
+                            ariaLabel={t('calendar_delete_course')}
                             onClick={() => handleOpenDeleteModal(item.id)}
                           />
                         </SpaceBetween>
                       )
                     }
                   ]}
-                  loadingText={t('common:loading', '로딩 중...')}
+                  loadingText={t('loading')}
                   empty={
                     <Box textAlign="center" color="text-body-secondary" padding="l">
-                      <h3>{t('tnc:calendar.no_courses', '해당 날짜에 예정된 교육 과정이 없습니다')}</h3>
-                      <p>{t('admin:calendar.add_course_prompt', '새 교육 과정을 추가해보세요.')}</p>
+                      <h3>{t('calendar_no_courses')}</h3>
+                      <p>{t('calendar_add_course_prompt')}</p>
                     </Box>
                   }
                   header={
                     <Header
                       counter={`(\${coursesForSelectedDate.length})`}
                     >
-                      {t('admin:calendar.courses_list', '교육 과정 목록')}
+                      {t('calendar_courses_list')}
                     </Header>
                   }
                 />
               ) : (
                 <Box textAlign="center" color="text-body-secondary" padding="l">
-                  <h3>{t('tnc:calendar.no_courses', '해당 날짜에 예정된 교육 과정이 없습니다')}</h3>
+                  <h3>{t('calendar_no_courses')}</h3>
                   <Button onClick={handleOpenAddCourseModal}>
-                    {t('admin:calendar.add_first_course', '첫 교육 과정 추가하기')}
+                    {t('calendar_add_first_course')}
                   </Button>
                 </Box>
               )
             ) : (
               <Box textAlign="center" color="text-body-secondary" padding="l">
-                <h3>{t('tnc:calendar.please_select_date', '왼쪽 캘린더에서 날짜를 선택하세요')}</h3>
-                <p>{t('admin:calendar.date_selection_prompt', '날짜를 선택하면 해당 날짜의 교육 과정을 관리할 수 있습니다.')}</p>
+                <h3>{t('calendar_please_select_date')}</h3>
+                <p>{t('calendar_date_selection_prompt')}</p>
               </Box>
             )}
           </Container>
@@ -430,14 +430,14 @@ const CalendarManagementPage: React.FC = () => {
         size="large"
         header={
           isEditMode 
-            ? t('admin:calendar.edit_course', '교육 과정 편집') 
-            : t('admin:calendar.add_course', '새 교육 과정 추가')
+            ? t('calendar_edit_course')
+            : t('calendar_add_course')
         }
         footer={
           <Box float="right">
             <SpaceBetween direction="horizontal" size="xs">
               <Button variant="link" onClick={() => setIsFormModalVisible(false)}>
-                {t('common:cancel', '취소')}
+                {t('cancel')}
               </Button>
               <Button 
                 variant="primary" 
@@ -445,7 +445,7 @@ const CalendarManagementPage: React.FC = () => {
                 loading={loading}
                 disabled={!currentCourse.title || !currentCourse.instructor}
               >
-                {t('common:save', '저장')}
+                {t('save')}
               </Button>
             </SpaceBetween>
           </Box>
@@ -453,42 +453,42 @@ const CalendarManagementPage: React.FC = () => {
       >
         <SpaceBetween size="l">
           <FormField
-            label={t('admin:calendar.course_title', '과정명')}
-            description={t('admin:calendar.course_title_desc', '교육 과정의 정식 이름을 입력해주세요.')}
+            label={t('calendar_course_title')}
+            description={t('calendar_course_title_desc')}
           >
             <Input
               value={currentCourse.title}
               onChange={({ detail }) => handleFormChange('title', detail.value)}
-              placeholder={t('admin:calendar.course_title_placeholder', '예: AWS 아키텍처 설계 기초')}
+              placeholder={t('calendar_course_title_placeholder')}
             />
           </FormField>
 
           <FormField
-            label={t('tnc:calendar.instructor', '강사')}
-            description={t('admin:calendar.instructor_desc', '강의를 진행할 강사의 이름을 입력해주세요.')}
+            label={t('calendar_instructor')}
+            description={t('calendar_instructor_desc')}
           >
             <Input
               value={currentCourse.instructor}
               onChange={({ detail }) => handleFormChange('instructor', detail.value)}
-              placeholder={t('admin:calendar.instructor_placeholder', '예: 김철수')}
+              placeholder={t('calendar_instructor_placeholder')}
             />
           </FormField>
 
           <Grid gridDefinition={[{ colspan: 4 }, { colspan: 4 }, { colspan: 4 }]}>
             <FormField
-              label={t('tnc:calendar.time', '시간')}
-              description={t('admin:calendar.time_desc', '교육 시작 및 종료 시간')}
+              label={t('calendar_time')}
+              description={t('calendar_time_desc')}
             >
               <Input
                 value={currentCourse.time}
                 onChange={({ detail }) => handleFormChange('time', detail.value)}
-                placeholder={t('admin:calendar.time_placeholder', '예: 10:00 - 16:00')}
+                placeholder={t('calendar_time_placeholder')}
               />
             </FormField>
 
             <FormField
-              label={t('admin:calendar.course_type', '유형')}
-              description={t('admin:calendar.course_type_desc', '교육 진행 방식')}
+              label={t('calendar_course_type')}
+              description={t('calendar_course_type_desc')}
             >
               <Select
                 selectedOption={{ label: currentCourse.type, value: currentCourse.type }}
@@ -500,8 +500,8 @@ const CalendarManagementPage: React.FC = () => {
             </FormField>
 
             <FormField
-              label={t('admin:calendar.course_level', '레벨')}
-              description={t('admin:calendar.course_level_desc', '교육 난이도')}
+              label={t('calendar_course_level')}
+              description={t('calendar_course_level_desc')}
             >
               <Select
                 selectedOption={{ label: currentCourse.level, value: currentCourse.level }}
@@ -515,19 +515,19 @@ const CalendarManagementPage: React.FC = () => {
 
           <Grid gridDefinition={[{ colspan: 6 }, { colspan: 6 }]}>
             <FormField
-              label={t('admin:calendar.location', '장소')}
-              description={t('admin:calendar.location_desc', '교육 진행 장소')}
+              label={t('calendar_location')}
+              description={t('calendar_location_desc')}
             >
               <Input
                 value={currentCourse.location}
                 onChange={({ detail }) => handleFormChange('location', detail.value)}
-                placeholder={t('admin:calendar.location_placeholder', '예: 강남 교육센터')}
+                placeholder={t('calendar_location_placeholder')}
               />
             </FormField>
 
             <FormField
-              label={t('admin:calendar.seats', '총 좌석 수')}
-              description={t('admin:calendar.seats_desc', '수용 가능한 최대 인원')}
+              label={t('calendar_seats')}
+              description={t('calendar_seats_desc')}
             >
               <Input
                 type="number"
@@ -545,8 +545,8 @@ const CalendarManagementPage: React.FC = () => {
 
             {isEditMode && (
               <FormField
-                label={t('admin:calendar.remaining_seats', '남은 좌석 수')}
-                description={t('admin:calendar.remaining_seats_desc', '현재 예약 가능한 좌석')}
+                label={t('calendar_remaining_seats')}
+                description={t('calendar_remaining_seats_desc')}
               >
                 <Input
                   type="number"
@@ -558,14 +558,14 @@ const CalendarManagementPage: React.FC = () => {
           </Grid>
 
           <FormField
-            label={t('admin:calendar.description', '설명')}
-            description={t('admin:calendar.description_desc', '교육 과정에 대한 상세 설명')}
+            label={t('calendar_description')}
+            description={t('calendar_description_desc')}
           >
             <Textarea
               value={currentCourse.description}
               onChange={({ detail }) => handleFormChange('description', detail.value)}
               rows={5}
-              placeholder={t('admin:calendar.description_placeholder', '교육 과정에 대한 설명을 입력하세요...')}
+              placeholder={t('calendar_description_placeholder')}
             />
           </FormField>
         </SpaceBetween>
@@ -576,26 +576,26 @@ const CalendarManagementPage: React.FC = () => {
         visible={isDeleteModalVisible}
         onDismiss={() => setIsDeleteModalVisible(false)}
         size="small"
-        header={t('admin:calendar.confirm_delete', '삭제 확인')}
+        header={t('calendar_confirm_delete')}
         footer={
           <Box float="right">
             <SpaceBetween direction="horizontal" size="xs">
               <Button variant="link" onClick={() => setIsDeleteModalVisible(false)}>
-                {t('common:cancel', '취소')}
+                {t('cancel')}
               </Button>
               <Button 
                 variant="primary" 
                 onClick={handleDeleteCourse} 
                 loading={loading}
               >
-                {t('common:delete', '삭제')}
+                {t('delete')}
               </Button>
             </SpaceBetween>
           </Box>
         }
       >
         <Box variant="span">
-          {t('admin:calendar.delete_confirmation', '정말로 이 교육 과정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')}
+          {t('calendar_delete_confirmation')}
         </Box>
       </Modal>
     </SpaceBetween>

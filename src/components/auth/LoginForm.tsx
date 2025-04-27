@@ -1,4 +1,4 @@
-// /src/components/auth/LoginForm.tsx
+// src/components/auth/LoginForm.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Button,
@@ -15,8 +15,8 @@ import {
 } from '@cloudscape-design/components';
 import { useAuth } from '@/hooks/useAuth';
 import { validateLoginForm, getLoginErrorMessage } from '@/utils/authUtils';
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
 interface LoginFormProps {
   onLoginSuccess?: () => void;
@@ -27,7 +27,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
   onLoginSuccess,
   logoSrc = '/images/aws.png' 
 }) => {
-  const { t } = useTranslation(['auth', 'common']);
+  const { t, i18n } = useAppTranslation();
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -60,7 +60,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
     setFormErrors(errors);
     
     if (!isValid) {
-      setError(t('auth:fields_required'));
+      setError(t('fields_required'));
       return;
     }
 
@@ -78,7 +78,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         localStorage.removeItem('rememberedUsername');
       }
       
-      setSuccessMessage(t('auth:login_success_redirecting'));
+      setSuccessMessage(t('login_success_redirecting'));
 
       // 로그인 성공 후 콜백
       setTimeout(() => {
@@ -171,7 +171,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <Box textAlign="center" padding={{ top: "l", bottom: "l" }}>
           <img
             src={logoSrc}
-            alt="Company Logo"
+            alt={t('app_logo_alt')}
             style={styles.logo}
           />
           <Box
@@ -179,14 +179,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
             fontWeight="heavy"
             color="text-label"
           >
-            {t('auth:account_login')}
+            {t('account_login')}
           </Box>
           <Box
             fontSize="body-m"
             color="text-body-secondary"
             padding={{ top: 's' }}
           >
-            {t('auth:sign_in_to_continue')}
+            {t('sign_in_to_continue')}
           </Box>
         </Box>
       }
@@ -220,14 +220,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
             <SpaceBetween size="l">
               {/* 사용자명 필드 */}
               <FormField
-                label={t('auth:username')}
+                label={t('username')}
                 errorText={formErrors.username}
                 stretch
               >
                 <Input
                   value={username}
                   onChange={({ detail }) => setUsername(detail.value)}
-                  placeholder={t('auth:username_placeholder')}
+                  placeholder={t('username_placeholder')}
                   disabled={isLoading}
                   autoFocus
                   onKeyDown={({ detail }) => {
@@ -241,7 +241,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
               {/* 비밀번호 필드 */}
               <FormField
-                label={t('auth:password')}
+                label={t('password')}
                 errorText={formErrors.password}
                 stretch
               >
@@ -249,7 +249,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                   value={password}
                   onChange={({ detail }) => setPassword(detail.value)}
                   type="password"
-                  placeholder={t('auth:password_placeholder')}
+                  placeholder={t('password_placeholder')}
                   disabled={isLoading}
                   onKeyDown={({ detail }) => {
                     if (detail.key === 'Enter') attemptLogin();
@@ -263,14 +263,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
                   checked={rememberMe}
                   onChange={({ detail }) => setRememberMe(detail.checked)}
                 >
-                  <Box fontSize="body-s">{t('auth:remember_me')}</Box>
+                  <Box fontSize="body-s">{t('remember_me')}</Box>
                 </Checkbox>
 
                 <Link
                   to="/forgot-password"
                   style={styles.forgotPasswordLink}
                 >
-                  {t('auth:forgot_password')}
+                  {t('forgot_password')}
                 </Link>
               </div>
             </SpaceBetween>
@@ -288,7 +288,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 iconAlign="right"
                 iconName="angle-right"
               >
-                {t('auth:sign_in')}
+                {t('sign_in')}
               </Button>
             </div>
           </Box>
@@ -296,12 +296,12 @@ const LoginForm: React.FC<LoginFormProps> = ({
           {/* 계정 생성 링크 */}
           <div style={styles.createAccountSection}>
             <Box fontSize="body-m" color="text-body-secondary">
-              {t('auth:no_account')}{' '}
+              {t('no_account')}{' '}
               <Link 
                 to="/register" 
                 style={styles.createAccountLink}
               >
-                {t('auth:create_account')}
+                {t('create_account')}
               </Link>
             </Box>
 
@@ -311,7 +311,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 size="small"
                 variant="subtle"
               /> 
-              <span style={{ marginLeft: '4px' }}>{t('auth:secure_connection')}</span>
+              <span style={{ marginLeft: '4px' }}>{t('secure_connection')}</span>
             </div>
           </div>
 
@@ -322,8 +322,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
               fontSize="body-s"
               href="#en"
               onFollow={() => {
-                // i18n 언어 변경 로직
-                // 예: i18n.changeLanguage('en')
+                i18n.changeLanguage('en');
               }}
             >
               English
@@ -333,8 +332,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
               fontSize="body-s"
               href="#ko"
               onFollow={() => {
-                // i18n 언어 변경 로직
-                // 예: i18n.changeLanguage('ko')
+                i18n.changeLanguage('ko');
               }}
             >
               한국어

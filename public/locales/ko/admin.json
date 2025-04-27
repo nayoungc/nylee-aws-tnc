@@ -1,36 +1,24 @@
 {
-  "dashboard": {
-    "title": "관리자 대시보드",
-    "systemStatus": "시스템 상태",
-    "userMetrics": "사용자 지표",
-    "courseMetrics": "강좌 지표"
-  },
-  "userManagement": {
-    "title": "사용자 관리",
-    "createUser": "사용자 생성",
-    "editUser": "사용자 편집",
-    "deleteUser": "사용자 삭제",
-    "importUsers": "사용자 가져오기",
-    "exportUsers": "사용자 내보내기",
-    "searchPlaceholder": "사용자 검색"
-  },
-  "roleManagement": {
-    "title": "역할 관리",
-    "createRole": "역할 생성",
-    "editRole": "역할 편집",
-    "deleteRole": "역할 삭제",
-    "roles": {
-      "admin": "관리자",
-      "instructor": "강사",
-      "student": "학생"
-    }
-  },
-  "settings": {
-    "title": "시스템 설정",
-    "general": "일반 설정",
-    "security": "보안 설정",
-    "notifications": "알림 설정",
-    "appearance": "외관 설정",
-    "saveSuccess": "설정이 성공적으로 저장되었습니다"
-  }
+  "title": "관리자",
+  "dashboard_title": "대시보드",
+  "dashboard_overview": "개요",
+  "dashboard_overview_description": "시스템 통계 및 중요 지표",
+  "dashboard_active_users": "활성 사용자",
+  "dashboard_courses": "과정",
+  "dashboard_enrollment_rate": "등록률",
+  "dashboard_completion_rate": "완료율",
+  "dashboard_quick_links": "바로가기 링크",
+  "dashboard_recent_activity": "최근 활동",
+  "dashboard_view_all_activity": "모든 활동 보기",
+  "dashboard_activity_course_created": "과정 생성",
+  "dashboard_activity_user_registered": "사용자 등록",
+  "dashboard_activity_catalog_updated": "카탈로그 업데이트",
+  "dashboard_link_courses": "과정 관리",
+  "dashboard_link_courses_description": "과정, 콘텐츠 및 일정 관리",
+  "dashboard_link_users": "사용자 관리",
+  "dashboard_link_users_description": "사용자 계정 및 권한 관리",
+  "dashboard_link_reports": "보고서",
+  "dashboard_link_reports_description": "시스템 보고서 생성 및 보기",
+  "dashboard_link_settings": "설정",
+  "dashboard_link_settings_description": "시스템 설정 및 기본 설정 구성"
 }

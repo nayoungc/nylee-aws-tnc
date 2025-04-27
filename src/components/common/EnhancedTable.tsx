@@ -1,411 +1,323 @@
-import React, { useState, useEffect } from 'react';
+// src/components/common/EnhancedTable.tsx
+import React, { useState } from 'react';
 import {
   Table,
   Box,
   Button,
-  TextFilter,
-  Pagination,
   Header,
-  SpaceBetween,
-  ButtonDropdown,
+  Pagination,
   PropertyFilter,
   CollectionPreferences,
-  CollectionPreferencesProps
+  SpaceBetween,
+  TextFilter,
+  PropertyFilterProps
 } from '@cloudscape-design/components';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
-import { useTranslation } from 'react-i18next';
+interface EnhancedTableEmptyText {
+  title: string;
+  subtitle?: string;
+  action?: {
+    text: string;
+    onClick: () => void;
+  };
+}
 
-type TableColumnDefinition<T> = Parameters<typeof Table<T>>[0]["columnDefinitions"][0];
-type TableProps<T> = Parameters<typeof Table<T>>[0];
-type SortingState<T> = {
-  sortingColumn: TableProps<T>["sortingColumn"];
-  sortingDescending: boolean;
-};
+// 필터링 속성의 확장된 타입 정의
+interface EnhancedFilteringProperty {
+  key: string;
+  label: string;
+}
 
-export interface EnhancedTableProps<T> {
+interface EnhancedTableProps {
   title: string;
   description?: string;
-  columnDefinitions: TableColumnDefinition<T>[];
-  visibleContentOptions?: {
-    id: string;
-    label: string;
-    options: Array<{
-      id: string;
-      label: string;
-    }>
-  }[];
-  items: T[];
+  columnDefinitions: any[];
+  items: any[];
   loading?: boolean;
-  selectionType?: "single" | "multi";
-  selectedItems?: T[];
-  onSelectionChange?: (items: T[]) => void;
+  selectionType?: "multi" | "single";
+  selectedItems?: any[];
+  onSelectionChange?: (items: any[]) => void;
   onRefresh?: () => void;
   actions?: {
     primary?: {
       text: string;
       onClick: () => void;
-      disabled?: boolean;
     };
-    secondary?: Array<{
+    secondary?: {
       text: string;
       onClick: () => void;
-      disabled?: boolean;
-    }>;
+    }[];
   };
-  batchActions?: Array<{
+  batchActions?: {
     text: string;
     onClick: () => void;
     disabled?: boolean;
-  }>;
-  filteringProperties?: Array<{
-    key: string;
-    label: string;
-    operators?: string[];
-    propertyLabel?: string;
-  }>;
+  }[];
+  filteringProperties?: EnhancedFilteringProperty[];
   usePropertyFilter?: boolean;
-  pagination?: boolean;
-  pageSize?: number;
+  defaultSortingColumn?: string;
+  defaultSortingDescending?: boolean;
+  emptyText?: EnhancedTableEmptyText;
   stickyHeader?: boolean;
   stripedRows?: boolean;
   resizableColumns?: boolean;
-  trackBy?: string;
-  defaultSortingColumn?: string;
-  defaultSortingDescending?: boolean;
-  emptyText?: {
-    title?: string;
-    subtitle?: string;
-    action?: {
-      text: string;
-      onClick: () => void;
-    };
-  };
+  visibleContentOptions?: any[];
   preferences?: boolean;
-  onPreferencesChange?: (preferences: CollectionPreferencesProps.Preferences) => void;
+  trackBy?: string;
 }
 
-function EnhancedTable<T extends object>({
+const EnhancedTable: React.FC<EnhancedTableProps> = ({
   title,
   description,
   columnDefinitions,
-  visibleContentOptions,
   items,
   loading = false,
   selectionType,
-  selectedItems: externalSelectedItems,
-  onSelectionChange,
+  selectedItems = [],
+  onSelectionChange = () => {},
   onRefresh,
   actions,
   batchActions,
   filteringProperties = [],
-  usePropertyFilter = false,
-  pagination = true,
-  pageSize = 10,
-  stickyHeader = true,
-  stripedRows = true,
-  resizableColumns = true,
-  trackBy = "id",
+  usePropertyFilter = true,
   defaultSortingColumn,
   defaultSortingDescending = false,
   emptyText,
+  stickyHeader = false,
+  stripedRows = false,
+  resizableColumns = false,
+  visibleContentOptions,
   preferences = false,
-  onPreferencesChange
-}: EnhancedTableProps<T>) {
-  const { t } = useTranslation(['common']);
+  trackBy = 'id'
+}) => {
+  const { t } = useAppTranslation();
+  
+  const [sortingColumn, setSortingColumn] = useState<any>(
+    defaultSortingColumn ? { sortingField: defaultSortingColumn } : undefined
+  );
+  const [sortingDescending, setSortingDescending] = useState<boolean>(defaultSortingDescending);
+  const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(20);
+  const [selectedVisibleContent, setSelectedVisibleContent] = useState<any[]>(
+    visibleContentOptions ? visibleContentOptions.map(group => group.options.map((o: any) => o.id)).flat() : []
+  );
+  // 추가: 필터링을 위한 상태
+  const [filteringQuery, setFilteringQuery] = useState<PropertyFilterProps.Query>({ tokens: [], operation: "and" });
 
-  // 상태 관리
-  const [selectedItems, setSelectedItems] = useState<T[]>(externalSelectedItems || []);
-  const [filteringText, setFilteringText] = useState('');
-  const [filteringTokens, setFilteringTokens] = useState([]);  
-  const [currentPageIndex, setCurrentPageIndex] = useState(1);
-  const [sorting, setSorting] = useState<SortingState<T>>({
-    sortingColumn: defaultSortingColumn ? { sortingField: defaultSortingColumn } : undefined,
-    sortingDescending: defaultSortingDescending
+  // 테이블 헤더 렌더링
+  const tableHeader = (
+    <Header
+      variant="awsui-h1-sticky"
+      actions={
+        <SpaceBetween direction="horizontal" size="xs">
+          {onRefresh && (
+            <Button
+              iconName="refresh"
+              onClick={onRefresh}
+              ariaLabel={t('table_refresh_aria_label')}
+              disabled={loading}
+            />
+          )}
+          {batchActions && batchActions.length > 0 && selectedItems.length > 0 && (
+            batchActions.map((action, idx) => (
+              <Button
+                key={idx}
+                disabled={action.disabled}
+                onClick={action.onClick}
+              >
+                {action.text}
+              </Button>
+            ))
+          )}
+          {actions?.secondary && actions.secondary.map((action, idx) => (
+            <Button
+              key={idx}
+              onClick={action.onClick}
+            >
+              {action.text}
+            </Button>
+          ))}
+          {actions?.primary && (
+            <Button
+              variant="primary"
+              onClick={actions.primary.onClick}
+            >
+              {actions.primary.text}
+            </Button>
+          )}
+        </SpaceBetween>
+      }
+      description={description}
+      counter={
+        items.length > 0 
+          ? `(\${items.length})`
+          : undefined
+      }
+    >
+      {title}
+    </Header>
+  );
+
+  // 페이지네이션 계산
+  const paginatedItems = items.slice((currentPageIndex - 1) * pageSize, currentPageIndex * pageSize);
+  const pagesCount = Math.ceil(items.length / pageSize);
+
+  // 기본 정렬 적용
+  const sortedItems = [...paginatedItems].sort((a, b) => {
+    if (!sortingColumn) return 0;
+    
+    const aValue = a[sortingColumn.sortingField];
+    const bValue = b[sortingColumn.sortingField];
+    
+    if (aValue === bValue) return 0;
+    if (aValue == null) return 1;
+    if (bValue == null) return -1;
+    
+    if (typeof aValue === 'string') {
+      return sortingDescending ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
+    }
+    
+    return sortingDescending ? bValue - aValue : aValue - bValue;
   });
 
-  // 외부 selectedItems가 변경되면 내부 상태도 업데이트
-  useEffect(() => {
-    if (externalSelectedItems) {
-      setSelectedItems(externalSelectedItems);
-    }
-  }, [externalSelectedItems]);
+  // 페이지 변경 핸들러
+  const handlePaginationChange = ({ detail }: { detail: { currentPageIndex: number } }) => {
+    setCurrentPageIndex(detail.currentPageIndex);
+  };
 
-  // 필터 토큰 타입을 직접 정의
-type FilterToken = {
-  propertyKey: string;
-  operator: string;
-  value: string;
-};
+  // 열 정렬 핸들러 수정
+  const handleSortingChange = (event: any) => {
+    const { sortingColumn, isDescending = false } = event.detail;
+    setSortingColumn(sortingColumn);
+    setSortingDescending(isDescending);
+  };
 
-  // 필터링된 아이템
-  const filteredItems = React.useMemo(() => {
-    if (usePropertyFilter && filteringTokens.length > 0) {
-      // PropertyFilter 로직 구현 (간소화)
-      return items;
-    } else if (!filteringText || filteringText.trim() === '') {
-      return items;
-    } else {
-      const lowercaseFilteringText = filteringText.toLowerCase();
+  // 가시적 콘텐츠 선택 처리
+  const handleVisibleContentChange = ({ detail }: { detail: { visibleContent: any[] } }) => {
+    setSelectedVisibleContent(detail.visibleContent);
+  };
 
-      return items.filter(item => {
-        return filteringProperties.some(prop => {
-          const value = item[prop.key as keyof T];
-          if (value === null || value === undefined) return false;
-          return String(value).toLowerCase().includes(lowercaseFilteringText);
-        });
-      });
-    }
-  }, [items, filteringText, filteringTokens, filteringProperties, usePropertyFilter]);
+  // 기본 설정 변경 처리 수정
+  const handlePreferencesChange = (event: any) => {
+    const { pageSize = 20, visibleContent = [] } = event.detail;
+    setPageSize(pageSize);
+    setSelectedVisibleContent(visibleContent);
+  };
 
-  // 정렬된 아이템
-  const sortedItems = React.useMemo(() => {
-    if (!sorting.sortingColumn?.sortingField) return filteredItems;
-
-    const { sortingField } = sorting.sortingColumn;
-
-    return [...filteredItems].sort((a, b) => {
-      const aValue = a[sortingField as keyof T];
-      const bValue = b[sortingField as keyof T];
-
-      if (aValue === null || aValue === undefined) return sorting.sortingDescending ? 1 : -1;
-      if (bValue === null || bValue === undefined) return sorting.sortingDescending ? -1 : 1;
-
-      if (aValue === bValue) return 0;
-
-      const compareResult = aValue < bValue ? -1 : 1;
-      return sorting.sortingDescending ? -compareResult : compareResult;
+  // 필터링 변경 처리 - 타입 수정
+  const handleFilterChange = (event: any) => {
+    // 필요한 경우 깊은 복사로 readonly 문제 해결
+    const tokens = [...event.detail.tokens];
+    setFilteringQuery({
+      tokens,
+      operation: event.detail.operation
     });
-  }, [filteredItems, sorting]);
-
-  // 페이지 아이템
-  const paginatedItems = React.useMemo(() => {
-    if (!pagination) return sortedItems;
-
-    const startIndex = (currentPageIndex - 1) * pageSize;
-    return sortedItems.slice(startIndex, startIndex + pageSize);
-  }, [sortedItems, currentPageIndex, pagination, pageSize]);
-
-  // 선택 변경 처리
-  const handleSelectionChange = ({ detail }: { detail: { selectedItems: T[] } }) => {
-    setSelectedItems(detail.selectedItems);
-    if (onSelectionChange) {
-      onSelectionChange(detail.selectedItems);
-    }
   };
 
-  // 기본 빈 상태
-  const defaultEmptyText = {
-    title: t('common:no_data.title', '데이터가 없습니다'),
-    subtitle: t('common:no_data.description', '표시할 데이터가 없습니다'),
-  };
-
-  const finalEmptyText = { ...defaultEmptyText, ...emptyText };
-
-  // PropertyFilter 옵션 변환
-  const propertyFilterOptions = filteringProperties.map(prop => ({
-    propertyKey: prop.key,
-    value: '', // 기본값 제공
-    operator: ':', // 기본 연산자
-    propertyLabel: prop.propertyLabel || prop.label
+  // PropertyFilter를 위한 필터링 속성 변환
+  const formattedFilteringProperties = filteringProperties.map(prop => ({
+    key: prop.key,
+    propertyLabel: prop.label,
+    groupValuesLabel: `\${prop.label} values`,
+    operators: [':', '!:', '=', '!='] as const
   }));
 
   return (
     <Table
-      loading={loading}
-      loadingText={t('common:loading', '로딩 중')}
       columnDefinitions={columnDefinitions}
-      items={paginatedItems}
-      trackBy={trackBy}
+      items={sortedItems}
+      loading={loading}
+      loadingText={t('loading')}
       selectionType={selectionType}
       selectedItems={selectedItems}
-      onSelectionChange={handleSelectionChange}
+      onSelectionChange={({ detail }) => onSelectionChange(detail.selectedItems)}
+      header={tableHeader}
+      filter={
+        usePropertyFilter && filteringProperties.length > 0 ? (
+          <PropertyFilter
+            i18nStrings={{
+              filteringAriaLabel: t('table_filtering_aria_label'),
+              filteringPlaceholder: t('table_filtering_placeholder'),
+              // filteringCounterText 제거 (지원되지 않음)
+              groupValuesText: t('table_filtering_group_values', { count: 0 }).replace('0', '{count}'),
+              operationAndText: t('table_filtering_operation_and'),
+              operationOrText: t('table_filtering_operation_or'),
+              operatorContainsText: t('contains'),
+              operatorDoesNotContainText: t('does_not_contain'),
+              operatorEqualsText: t('equals'),
+              operatorDoesNotEqualText: t('not_equals')
+            }}
+            // 별도의 countText 속성으로 이동
+            countText={t('table_filtering_count_text', { count: items.length })}
+            filteringProperties={formattedFilteringProperties}
+            query={filteringQuery}
+            onChange={handleFilterChange}
+          />
+        ) : null
+      }
+      pagination={
+        <Pagination
+          currentPageIndex={currentPageIndex}
+          pagesCount={pagesCount}
+          onChange={handlePaginationChange}
+          ariaLabels={{
+            nextPageLabel: t('pagination_next'),
+            previousPageLabel: t('pagination_previous'),
+            pageLabel: (pageNumber) => t('pagination_page_label', { pageNumber })
+          }}
+        />
+      }
+      preferences={preferences ? (
+        <CollectionPreferences
+          title={t('table_preferences_title')}
+          confirmLabel={t('confirm')}
+          cancelLabel={t('cancel')}
+          pageSizePreference={{
+            title: t('table_preferences_page_size_title'),
+            options: [
+              { value: 10, label: "10" },
+              { value: 20, label: "20" },
+              { value: 50, label: "50" },
+              { value: 100, label: "100" }
+            ]
+          }}
+          visibleContentPreference={visibleContentOptions ? {
+            title: t('table_preferences_visible_content_title'),
+            options: visibleContentOptions
+          } : undefined}
+          onConfirm={handlePreferencesChange}
+        />
+      ) : undefined}
+      sortingColumn={sortingColumn}
+      sortingDescending={sortingDescending}
+      onSortingChange={handleSortingChange}
       stickyHeader={stickyHeader}
       stripedRows={stripedRows}
       resizableColumns={resizableColumns}
-      header={
-        <Header
-          variant="awsui-h1-sticky"
-          description={description}
-          actions={
-            <SpaceBetween direction="horizontal" size="xs">
-              {onRefresh && (
-                <Button
-                  iconName="refresh"
-                  onClick={onRefresh}
-                  ariaLabel={t('common:refresh', '새로고침')}
-                />
-              )}
-
-              {batchActions && selectedItems.length > 0 && (
-                <ButtonDropdown
-                  items={batchActions.map(action => ({
-                    text: action.text,
-                    id: action.text,
-                    disabled: action.disabled
-                  }))}
-                  onItemClick={({ detail }) => {
-                    const selectedAction = batchActions.find(a => a.text === detail.id);
-                    if (selectedAction) selectedAction.onClick();
-                  }}
-                >
-                  {t('common:actions', '작업')}
-                </ButtonDropdown>
-              )}
-
-              {actions?.secondary?.map((action, index) => (
-                <Button
-                  key={index}
-                  onClick={action.onClick}
-                  disabled={action.disabled}
-                >
-                  {action.text}
-                </Button>
-              ))}
-
-              {actions?.primary && (
-                <Button
-                  variant="primary"
-                  onClick={actions.primary.onClick}
-                  disabled={actions.primary.disabled}
-                >
-                  {actions.primary.text}
-                </Button>
-              )}
-            </SpaceBetween>
-          }
-        >
-          {title}
-        </Header>
-      }
-      filter={
-        usePropertyFilter ? (
-          <PropertyFilter
-            query={{  // query 속성 필수!
-              tokens: filteringTokens,
-              operation: 'and'
-            }}
-            i18nStrings={{
-              filteringAriaLabel: t('common:property_filtering.aria_label', '속성으로 필터링'),
-              dismissAriaLabel: t('common:property_filtering.dismiss', '해제'),
-              filteringPlaceholder: t('common:property_filtering.placeholder', '속성으로 필터링'),
-              groupValuesText: t('common:property_filtering.group_values', '값'),
-              groupPropertiesText: t('common:property_filtering.group_properties', '속성'),
-              operatorsText: t('common:property_filtering.operators', '연산자'),
-              operationAndText: t('common:property_filtering.and', 'AND'),
-              operationOrText: t('common:property_filtering.or', 'OR'),
-              operatorLessText: t('common:property_filtering.less', '미만'),
-              operatorLessOrEqualText: t('common:property_filtering.less_or_equal', '이하'),
-              operatorGreaterText: t('common:property_filtering.greater', '초과'),
-              operatorGreaterOrEqualText: t('common:property_filtering.greater_or_equal', '이상'),
-              operatorContainsText: t('common:property_filtering.contains', '포함'),
-              operatorDoesNotContainText: t('common:property_filtering.does_not_contain', '포함하지 않음'),
-              operatorEqualsText: t('common:property_filtering.equals', '같음'),
-              operatorDoesNotEqualText: t('common:property_filtering.does_not_equal', '같지 않음'),
-              editTokenHeader: t('common:property_filtering.edit_token', '필터 편집'),
-              propertyText: t('common:property_filtering.property', '속성'),
-              operatorText: t('common:property_filtering.operator', '연산자'),
-              valueText: t('common:property_filtering.value', '값'),
-              cancelActionText: t('common:cancel', '취소'),
-              applyActionText: t('common:apply', '적용'),
-              allPropertiesLabel: t('common:property_filtering.all_properties', '모든 속성')
-            }}
-            filteringOptions={propertyFilterOptions}
-            filteringProperties={filteringProperties.map(prop => ({
-              key: prop.key,
-              operators: prop.operators || [':', '!:', '=', '!=', '>', '<', '>=', '<='],
-              propertyLabel: prop.propertyLabel || prop.label,
-              groupValuesLabel: prop.label
-            }))}
-            onChange={({ detail }) => {
-              // 타입 단언 사용하여 타입 검사 우회
-              const safeTokens = [...detail.tokens] as unknown as typeof filteringTokens;
-              setFilteringTokens(safeTokens);
-            }}
-          />
-        ) : filteringProperties.length > 0 ? (
-          <TextFilter
-            filteringText={filteringText}
-            filteringPlaceholder={t('common:search_placeholder', '검색')}
-            filteringAriaLabel={t('common:search_aria_label', '검색')}
-            onChange={({ detail }) => {
-              setFilteringText(detail.filteringText);
-              setCurrentPageIndex(1); // 검색 시 첫 페이지로
-            }}
-          />
-        ) : null  // 중복된 조건문 제거 및 닫기 태그 수정
-      }
-      pagination={
-        pagination && (
-          <Pagination
-            currentPageIndex={currentPageIndex}
-            onChange={({ detail }) => setCurrentPageIndex(detail.currentPageIndex)}
-            pagesCount={Math.max(1, Math.ceil(sortedItems.length / pageSize))}
-            ariaLabels={{
-              nextPageLabel: t('common:pagination.next', '다음'),
-              previousPageLabel: t('common:pagination.previous', '이전'),
-              pageLabel: (pageNumber) => t('common:pagination.page_label', { pageNumber })
-            }}
-          />
-        )
-      }
-      sortingColumn={sorting.sortingColumn}
-      sortingDescending={sorting.sortingDescending}
-      onSortingChange={({ detail }) => {
-        setSorting({
-          sortingColumn: detail.sortingColumn,
-          sortingDescending: detail.isDescending ?? false
-        });
-      }}
+      visibleColumns={selectedVisibleContent}
+      trackBy={trackBy}
       empty={
-        <Box textAlign="center" padding="l">
-          <b>{finalEmptyText.title}</b>
-          <Box padding={{ bottom: 's' }} variant="p">
-            {finalEmptyText.subtitle}
+        emptyText ? (
+          <Box textAlign="center" color="inherit">
+            <Box variant="h2" padding="s">
+              {emptyText.title}
+            </Box>
+            {emptyText.subtitle && (
+              <Box variant="p" padding={{ bottom: 's' }} color="inherit">
+                {emptyText.subtitle}
+              </Box>
+            )}
+            {emptyText.action && (
+              <Button onClick={emptyText.action.onClick}>
+                {emptyText.action.text}
+              </Button>
+            )}
           </Box>
-          {finalEmptyText.action && (
-            <Button onClick={finalEmptyText.action.onClick}>
-              {finalEmptyText.action.text}
-            </Button>
-          )}
-        </Box>
-      }
-      preferences={
-        preferences ? (
-          <CollectionPreferences
-            title={t('common:preferences.title', '환경설정')}
-            confirmLabel={t('common:confirm', '확인')}
-            cancelLabel={t('common:cancel', '취소')}
-            onConfirm={({ detail }) => {
-              if (onPreferencesChange) {
-                onPreferencesChange(detail);
-              }
-            }}
-            preferences={{
-              pageSize,
-              visibleContent: columnDefinitions.map(col => col.id as string)
-            }}
-            pageSizePreference={{
-              title: t('common:preferences.page_size.title', '페이지 크기'),
-              options: [
-                { value: 10, label: '10' },
-                { value: 20, label: '20' },
-                { value: 50, label: '50' },
-                { value: 100, label: '100' }
-              ]
-            }}
-            visibleContentPreference={
-              visibleContentOptions ? {
-                title: t('common:preferences.visible_content.title', '표시할 콘텐츠'),
-                options: visibleContentOptions
-              } : undefined
-            }
-          />
         ) : undefined
       }
-      wrapLines
-      variant="full-page"
     />
   );
-}
+};
 
 export default EnhancedTable;

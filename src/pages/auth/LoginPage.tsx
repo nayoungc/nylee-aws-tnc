@@ -15,11 +15,11 @@ import Icon from '@cloudscape-design/components/icon';
 import Container from '@cloudscape-design/components/container';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslation } from 'react-i18next';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 import AuthLayout from '@components/layout/AuthLayout';
 
 const LoginPage: React.FC = () => {
-  const { t } = useTranslation(['auth', 'common']);
+  const { t, i18n } = useAppTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, loading, login } = useAuth();
 
@@ -48,7 +48,7 @@ const LoginPage: React.FC = () => {
 
   const handleSignIn = async () => {
     if (!username || !password) {
-      setError(t('auth:fields_required'));
+      setError(t('fields_required'));
       return;
     }
 
@@ -65,13 +65,13 @@ const LoginPage: React.FC = () => {
         localStorage.removeItem('rememberedUsername');
       }
       
-      setSuccessMessage(t('auth:login_success_redirecting'));
+      setSuccessMessage(t('login_success_redirecting'));
       
       setTimeout(() => {
         navigate('/tnc');
       }, 800);
     } catch (err: any) {
-      setError(err.message || t('auth:login_error_generic'));
+      setError(err.message || t('login_error_generic'));
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +80,7 @@ const LoginPage: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <AuthLayout>
+    <AuthLayout titleKey="account_login">
       <div style={{ width: '100%', maxWidth: '480px', padding: '20px' }}>
         <Container
           media={{
@@ -94,7 +94,7 @@ const LoginPage: React.FC = () => {
               }}>
                 <img
                   src="/assets/aws-login-logo.png"
-                  alt="AWS Logo"
+                  alt={t('app_logo_alt')}
                   style={{ 
                     width: '120px',
                     height: 'auto'
@@ -114,7 +114,7 @@ const LoginPage: React.FC = () => {
             >
               <SpaceBetween direction="horizontal" size="xs" alignItems="center">
                 <Icon name="lock-private" size="small" />
-                <Box>{t('auth:secure_connection')}</Box>
+                <Box>{t('secure_connection')}</Box>
                 <Box margin={{ left: 'm' }}>
                   &copy; {currentYear} Amazon Web Services, Inc.
                 </Box>
@@ -124,10 +124,10 @@ const LoginPage: React.FC = () => {
           header={
             <Box textAlign="center" padding={{ top: 's', bottom: 'xs' }}>
               <Box variant="h1" padding={{ bottom: 'xxs' }}>
-                {t('auth:account_login')}
+                {t('account_login')}
               </Box>
               <Box variant="p" color="text-body-secondary">
-                {t('auth:sign_in_to_continue')}
+                {t('sign_in_to_continue')}
               </Box>
             </Box>
           }
@@ -149,8 +149,8 @@ const LoginPage: React.FC = () => {
             {/* 로그인 폼 */}
             <SpaceBetween size="l">
               <FormField 
-                label={t('auth:username')}
-                constraintText={t('auth:username_constraint')}
+                label={t('username')}
+                constraintText={t('username_constraint')}
               >
                 <Input
                   value={username}
@@ -162,15 +162,15 @@ const LoginPage: React.FC = () => {
                     }
                   }}
                   autoFocus
-                  placeholder={t('auth:username_placeholder')}
+                  placeholder={t('username_placeholder')}
                 />
               </FormField>
 
               <FormField 
-                label={t('auth:password')}
+                label={t('password')}
                 info={
                   <Link href="/forgot-password">
-                    {t('auth:forgot_password')}
+                    {t('forgot_password')}
                   </Link>
                 }
               >
@@ -181,7 +181,7 @@ const LoginPage: React.FC = () => {
                   onKeyDown={({ detail }) => {
                     if (detail.key === 'Enter') handleSignIn();
                   }}
-                  placeholder={t('auth:password_placeholder')}
+                  placeholder={t('password_placeholder')}
                 />
               </FormField>
               
@@ -189,7 +189,7 @@ const LoginPage: React.FC = () => {
                 checked={rememberMe}
                 onChange={({ detail }) => setRememberMe(detail.checked)}
               >
-                {t('auth:remember_me')}
+                {t('remember_me')}
               </Checkbox>
 
               {/* 로그인 버튼 */}
@@ -201,15 +201,15 @@ const LoginPage: React.FC = () => {
                 iconName="angle-right"
                 fullWidth
               >
-                {t('auth:sign_in')}
+                {t('sign_in')}
               </Button>
               
               {/* 계정 생성 링크 */}
               <Box textAlign="center">
                 <span style={{ fontSize: '14px', color: 'var(--color-text-body-secondary)' }}>
-                  {t('auth:no_account')}{' '}
+                  {t('no_account')}{' '}
                   <Link href="/register">
-                    {t('auth:create_account')}
+                    {t('create_account')}
                   </Link>
                 </span>
               </Box>
@@ -218,9 +218,15 @@ const LoginPage: React.FC = () => {
             {/* 언어 선택 */}
             <Box textAlign="center" padding={{ top: 's', bottom: 's' }}>
               <SpaceBetween direction="horizontal" size="xs">
-                <Link href="#en">English</Link>
-                <Link href="#ko">한국어</Link>
-                <Link href="#ja">日本語</Link>
+                <Link href="#en" onFollow={() => i18n.changeLanguage('en')}>
+                  {t('language_english')}
+                </Link>
+                <Link href="#ko" onFollow={() => i18n.changeLanguage('ko')}>
+                  {t('language_korean')}
+                </Link>
+                <Link href="#ja" onFollow={() => i18n.changeLanguage('ja')}>
+                  {t('language_japanese')}
+                </Link>
               </SpaceBetween>
             </Box>
           </SpaceBetween>

@@ -13,13 +13,13 @@ import {
   Icon,
   ColumnLayout
 } from '@cloudscape-design/components';
-import { useTranslation } from 'react-i18next';
 import MainLayout from '@/components/layout/MainLayout';
 import CourseCalendar from './components/CourseCalendar';
 import Resources from './components/Resources';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 
 const TncPage: React.FC = () => {
-  const { t, i18n } = useTranslation(['common', 'tnc']);
+  const { t } = useAppTranslation();
   const [activeTabId, setActiveTabId] = useState('calendar');
   const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
@@ -27,32 +27,32 @@ const TncPage: React.FC = () => {
   const announcementItems = [
     {
       id: "1",
-      title: t('tnc:announcements.items.workshop.title'),
+      title: t('tnc_announcements_workshop_title'),
       date: "2025-04-15",
-      category: t('tnc:categories.workshop'),
+      category: t('tnc_categories_workshop'),
       isImportant: true,
-      preview: t('tnc:announcements.items.workshop.preview'),
-      content: t('tnc:announcements.items.workshop.content'),
+      preview: t('tnc_announcements_workshop_preview'),
+      content: t('tnc_announcements_workshop_content'),
       link: "/events/workshop-2023"
     },
     {
       id: "2",
-      title: t('tnc:announcements.items.certification.title'),
+      title: t('tnc_announcements_certification_title'),
       date: "2025-04-10",
-      category: t('tnc:categories.certification'),
+      category: t('tnc_categories_certification'),
       isImportant: false,
-      preview: t('tnc:announcements.items.certification.preview'),
-      content: t('tnc:announcements.items.certification.content'),
+      preview: t('tnc_announcements_certification_preview'),
+      content: t('tnc_announcements_certification_content'),
       link: "/resources/certification-guide"
     },
     {
       id: "3",
-      title: t('tnc:announcements.items.news.title'),
+      title: t('tnc_announcements_news_title'),
       date: "2025-04-05",
-      category: t('tnc:categories.news'),
+      category: t('tnc_categories_news'),
       isImportant: true,
-      preview: t('tnc:announcements.items.news.preview'),
-      content: t('tnc:announcements.items.news.content'),
+      preview: t('tnc_announcements_news_preview'),
+      content: t('tnc_announcements_news_content'),
       link: "/news/reinvent-summary"
     },
   ];
@@ -65,7 +65,7 @@ const TncPage: React.FC = () => {
             <Box margin={{ bottom: 'xs' }}>
               <SpaceBetween direction="horizontal" size="xs">
                 {item.isImportant && (
-                  <Badge color="red">{t('tnc:announcements.important')}</Badge>
+                  <Badge color="red">{t('tnc_announcements_important')}</Badge>
                 )}
                 <Badge color="blue">{item.category}</Badge>
                 <Box color="text-body-secondary" fontSize="body-s">
@@ -77,7 +77,7 @@ const TncPage: React.FC = () => {
           sections: [
             {
               id: 'title',
-              header: t('tnc:announcements.title_header'),
+              header: t('tnc_announcements_title_header'),
               content: item => (
                 <Link href={item.link} fontSize="heading-s">
                   {item.title}
@@ -86,7 +86,7 @@ const TncPage: React.FC = () => {
             },
             {
               id: 'content',
-              header: t('tnc:announcements.content_header'),
+              header: t('tnc_announcements_content_header'),
               content: item => (
                 <Box color="text-body-secondary">
                   {item.content}
@@ -100,7 +100,7 @@ const TncPage: React.FC = () => {
           { minWidth: 500, cards: 2 }
         ]}
         items={announcementItems}
-        loadingText={t('common:loading')}
+        loadingText={t('loading')}
         selectionType="single"
         selectedItems={selectedItems}
         onSelectionChange={({ detail }) => setSelectedItems(detail.selectedItems)}
@@ -109,15 +109,15 @@ const TncPage: React.FC = () => {
             <Box padding={{ bottom: 's' }}>
               <Icon name="notification" size="large" />
             </Box>
-            <h3>{t('tnc:announcements.no_announcements')}</h3>
+            <h3>{t('tnc_announcements_no_announcements')}</h3>
             <Box padding={{ bottom: 's' }}>
-              {t('tnc:announcements.check_later')}
+              {t('tnc_announcements_check_later')}
             </Box>
           </Box>
         }
         header={
           <Header counter={`(\${announcementItems.length})`}>
-            {t('tnc:announcements.all_announcements')}
+            {t('tnc_announcements_all_announcements')}
           </Header>
         }
       />
@@ -130,9 +130,9 @@ const TncPage: React.FC = () => {
         header={
           <Header 
             variant="h1"
-            description={t('tnc:description')}
+            description={t('tnc_description')}
           >
-            {t('tnc:title')}
+            {t('tnc_title')}
           </Header>
         }
       >
@@ -144,11 +144,11 @@ const TncPage: React.FC = () => {
                 variant="h2"
                 actions={
                   <Link href="/announcements">
-                    {t('tnc:announcements.view_all')}
+                    {t('tnc_announcements_view_all')}
                   </Link>
                 }
               >
-                {t('tnc:announcements.title')}
+                {t('tnc_announcements_title')}
               </Header>
             }
           >
@@ -163,12 +163,12 @@ const TncPage: React.FC = () => {
               tabs={[
                 {
                   id: 'calendar',
-                  label: t('tnc:tabs.calendar'),
+                  label: t('tnc_tabs_calendar'),
                   content: <CourseCalendar />
                 },
                 {
                   id: 'resources',
-                  label: t('tnc:tabs.resources'),
+                  label: t('tnc_tabs_resources'),
                   content: <Resources />
                 }
               ]}

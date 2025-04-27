@@ -9,7 +9,7 @@ import { CourseCatalogStatus, CourseCatalog } from '@models/courseCatalog';
  * 코스 카탈로그 목록 및 페이지네이션 토큰 포함
  */
 export interface ListCourseCatalogsResult {
-  listCourseCatalogs: {
+  listCourseCatalog: {
     items: CourseCatalog[];
     nextToken?: string | null;
   };
@@ -145,6 +145,17 @@ export interface BulkUpdateCourseCatalogsResult {
       errorMessage: string;
     }>;
   };
+}
+
+export interface ListCourseCatalogsResult {
+  listCourseCatalog: {
+    items: CourseCatalog[];
+    nextToken?: string | null;
+  };
+}
+
+export interface GetCourseCatalogResult {
+  getCourseCatalog: CourseCatalog | null;
 }
 
 // ===== 입력 타입 =====
