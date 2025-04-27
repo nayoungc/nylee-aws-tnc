@@ -3,9 +3,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
-import { AppProvider } from './contexts/AppContext';
+import { AppProvider } from '@contexts/AppContext';
 import { Amplify } from 'aws-amplify';
-import { AuthProvider } from './hooks/useAuth';
+import { AuthProvider } from '@hooks/useAuth';
 import './i18n';
 import '@cloudscape-design/global-styles/index.css';
 
