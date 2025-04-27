@@ -51,7 +51,7 @@ export const useCustomer = () => {
     mutationFn: ({ customerId, input }) => updateCustomerInfo(customerId, input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      queryClient.invalidateQueries({ queryKey: ['customer', data.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['customer', data.id] });
     }
   });
 
@@ -157,9 +157,7 @@ export const useUpdateCustomer = () => {
     mutationFn: ({ customerId, input }: UpdateCustomerVars) => updateCustomerInfo(customerId, input),
     onSuccess: (updatedCustomer) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      if (updatedCustomer.customerId) {
-        queryClient.invalidateQueries({ queryKey: ['customer', updatedCustomer.customerId] });
-      }
+      queryClient.invalidateQueries({ queryKey: ['customer', updatedCustomer.id] });
     }
   });
 };
@@ -183,11 +181,10 @@ export const useDeleteCustomer = () => {
  * 필터를 사용한 고객 검색 훅
  */
 export const useSearchCustomers = (filter: CustomerFilter = {}, enabled = true) => {
-    return useQuery<Customer[], Error>({
-      queryKey: ['customers', 'search', filter],
-      queryFn: () => searchCustomersList(filter),
-      enabled,
-      staleTime: 1000 * 60 * 5 // 5분
-    });
-  };
-  
+  return useQuery<Customer[], Error>({
+    queryKey: ['customers', 'search', filter],
+    queryFn: () => searchCustomersList(filter),
+    enabled,
+    staleTime: 1000 * 60 * 5 // 5분
+  });
+};

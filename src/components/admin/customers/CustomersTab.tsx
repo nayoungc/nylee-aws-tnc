@@ -80,7 +80,7 @@ const CustomersTab: React.FC = () => {
 
   // 폼 상태
   const [formData, setFormData] = useState<CustomerInput>({
-    customerName: '',
+    customName: '',
     notes: '',
     email: '',
     phone: '',

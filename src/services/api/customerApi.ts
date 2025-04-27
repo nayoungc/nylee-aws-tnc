@@ -21,7 +21,7 @@ import {
   CreateCustomerResult,
   UpdateCustomerResult,
   DeleteCustomerResult,
-  CustomerFilterInput
+  ModelCustomerFilterInput
 } from '@/graphql/customer';
 
 // 모델과 모의 데이터
@@ -208,8 +208,8 @@ export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<
     if (filter.text) {
       const searchText = filter.text.toLowerCase();
       filteredCustomers = filteredCustomers.filter(c => 
-        c.name.toLowerCase().includes(searchText) ||
-        (c.notes && c.notes.toLowerCase().includes(searchText))
+        c.name.toLowerCase().includes(searchText)
+        // notes 필드 제거 (백엔드에 존재하지 않음)
       );
     }
     
@@ -217,15 +217,20 @@ export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<
   }
 
   try {
-    const variables = { filter: filter as CustomerFilterInput };
+    // CustomerFilter를 SearchableCustomerFilterInput으로 변환
+    const searchFilter = {
+      text: filter.text,
+      // 다른 필드 필요시 추가
+    };
+    
     const response = await client.graphql({
       query: searchCustomers,
-      variables
+      variables: { filter: searchFilter }
     });
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<SearchCustomersResult>(response);
-    return data?.searchCustomers || [];
+    return data?.searchCustomers?.items || [];
   } catch (error: unknown) {
     console.error('고객 검색 오류:', error);
     throw error;
