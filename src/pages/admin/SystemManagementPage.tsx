@@ -8,19 +8,19 @@ import {
   Header,
   BreadcrumbGroup
 } from '@cloudscape-design/components';
-import { useTranslation } from 'react-i18next';
 import MainLayout from '@/components/layout/MainLayout';
+import { useAppTranslation } from '@/hooks/useAppTranslation';
 import CalendarTab from '@components/admin/calendar/CalendarTab';
-import AnnouncementsTab from '@/components/admin/announcements/AnnouncementsTab';
+import AnnouncementsTab from '@components/admin/announcements/AnnouncementsTab';
 
-const SystemManagementPage: React.FC = () => {
-  const { t } = useTranslation(['admin', 'navigation', 'common']);
-  const [activeTabId, setActiveTabId] = useState('calendar');
+const CourseManagementPage: React.FC = () => {
+  const { t } = useAppTranslation()
+  const [activeTabId, setActiveTabId] = useState('catalog');
 
   return (
     <MainLayout 
-      activeHref="/admin/system-management"
-      title={t('admin:systemManagement.title', '시스템 관리')}
+      activeHref="/admin/course-management"
+      title={t('admin:courseManagement.title', '교육 관리')}
     >
       <ContentLayout>
         <SpaceBetween size="l">
@@ -28,7 +28,7 @@ const SystemManagementPage: React.FC = () => {
             items={[
               { text: t('common:home'), href: '/' },
               { text: t('navigation:admin.title'), href: '/admin' },
-              { text: t('navigation:admin.systemManagement'), href: '/admin/system-management' }
+              { text: t('navigation:admin.courseManagement'), href: '/admin/course-management' }
             ]}
             ariaLabel={t('common:breadcrumbs')}
           />
@@ -44,8 +44,8 @@ const SystemManagementPage: React.FC = () => {
                   content: <CalendarTab />
                 },
                 {
-                  id: 'announcements',
-                  label: t('navigation:admin.tabs.announcements'),
+                  id: 'announcements', // ID도 명확하게 수정
+                  label: t('navigation:admin.tabs.announcements'), // 라벨도 적절히 수정
                   content: <AnnouncementsTab />
                 }
               ]}
@@ -57,4 +57,6 @@ const SystemManagementPage: React.FC = () => {
   );
 };
 
-export default SystemManagementPage;
+export default CourseManagementPage;
+
+

@@ -45,8 +45,8 @@ const CourseManagementPage: React.FC = () => {
                   content: <CourseCatalogTab />
                 },
                 {
-                  id: 'clients',
-                  label: t('navigation:admin.tabs.clients'),
+                  id: 'customer',
+                  label: t('navigation:admin.tabs.customer'),
                   content: <CustomersTab />
                 },
                 {
