@@ -42,12 +42,13 @@ const RouteLogger = () => {
 
 const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AppProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <RouteLogger /> {/* 현재 경로 로깅 */}
+  <>
+    {/* // <QueryClientProvider client={queryClient}>
+    //   <ThemeProvider>
+    //     <AppProvider>
+    //       <AuthProvider>
+    //         <NotificationProvider>
+              <RouteLogger />  */}
               <Routes>
                 {/* 기존 라우트 */}
                 <Route path="/" element={<Navigate to="/tnc" replace />} />
@@ -84,11 +85,12 @@ const App: React.FC = () => {
                 {/* 404 페이지 추가 */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
-            </NotificationProvider>
-          </AuthProvider>
-        </AppProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    {/* //         </NotificationProvider>
+    //       </AuthProvider>
+    //     </AppProvider>
+    //   </ThemeProvider>
+    // </QueryClientProvider> */}
+    </>
   );
 };
 
