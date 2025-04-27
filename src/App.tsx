@@ -51,8 +51,8 @@ const App: React.FC = () => {
               <Routes>
                 {/* 기존 라우트 */}
                 <Route path="/" element={<Navigate to="/tnc" replace />} />
-                {/* <Route path="/login" element={<LoginPage />} />
-                <Route path="/home" element={<HomePage />} />  */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/home" element={<HomePage />} />
                 <Route path="/tnc" element={<TncPage />} />
 
                 {/* 과정 카탈로그 - 강사와 관리자만 접근 가능 */}
@@ -75,11 +75,11 @@ const App: React.FC = () => {
                   </ProtectedRoute>
                 } />
 
-                {/* <Route path="/admin/system-management" element={
+                <Route path="/admin/system-management" element={
                   <ProtectedRoute requiredRoles={['admin']}>
                     <SystemManagementPage />
                   </ProtectedRoute>
-                } /> */}
+                } />
 
                 {/* 404 페이지 추가 */}
                 <Route path="*" element={<NotFoundPage />} />
@@ -91,14 +91,3 @@ const App: React.FC = () => {
     </QueryClientProvider> 
 )};
 export default App;
-
-// function App() {
-//   return (
-//     <div>
-//       <h1>Hello World</h1>
-//       <p>This is a test page</p>
-//     </div>
-//   )
-// }
-
-// export default App

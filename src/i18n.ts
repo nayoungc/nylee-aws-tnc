@@ -1,4 +1,3 @@
-// src/i18n.ts
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
@@ -11,12 +10,18 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'ko',
-    debug: isDevelopment, // 개발 환경에서만 디버그 활성화
+    debug: isDevelopment,
     
-    // 기본 네임스페이스와 사용할 모든 네임스페이스 명시
+    // 'en-US'를 'en'으로 처리하는 설정
+    load: 'languageOnly',  // 언어 코드만 사용하고 국가 코드는 무시
+    
+    // 지원하는 언어 목록
+    supportedLngs: ['en', 'ko'],
+    
+    // 기존 설정을 유지
     defaultNS: 'common',
     ns: ['common', 'admin', 'calendar', 'course_catalog', 'navigation', 'auth', 'tnc'],
-        
+    
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
