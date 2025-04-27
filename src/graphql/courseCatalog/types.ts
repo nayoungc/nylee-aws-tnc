@@ -18,15 +18,15 @@ export interface CourseCatalog {
   id: string;
   course_name: string;
   course_id?: string;
+  version?:string;
   level?: string;
   duration?: string;
   delivery_method?: string;
   description?: string;
   objectives?: string[];
-  target_audience?: string;
+  status?: CourseCatalogStatus;
   createdAt?: string;
   updatedAt?: string;
-  status?: CourseCatalogStatus;
 }
 
 // ===== 입력 타입 =====
@@ -70,7 +70,7 @@ export interface DeleteCourseCatalogInput {
 // ===== 쿼리/뮤테이션 결과 타입 =====
 
 export interface ListCourseCatalogsResult {
-  listCourseCatalog: {
+  listCourseCatalogs: {
     items: CourseCatalog[];
     nextToken?: string | null;
   };

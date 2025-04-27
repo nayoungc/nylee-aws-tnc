@@ -37,6 +37,7 @@ type StatusType = "PUBLISHED" | "DRAFT" | "ARCHIVED";
 /**
  * 모든 코스 카탈로그 가져오기
  */
+// src/services/api/courseCatalogApi.ts
 export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
   console.log("코스 카탈로그 데이터 가져오기 시도");
 
@@ -46,63 +47,36 @@ export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
       variables: { limit: 1000 }
     });
 
-    // API 응답 전체를 로깅하여 디버깅
-    console.log("API 응답:", response);
+    console.log("API 응답:", JSON.stringify(response, null, 2));
 
     const data = extractData<ListCourseCatalogsResult>(response);
     
-    // API 응답 구조 확인을 위한 로깅
-    console.log("추출된 데이터 구조:", JSON.stringify(data, null, 2));
-
-    // 데이터가 null인 경우 처리
-    if (!data?.listCourseCatalog?.items) {
+    // 백엔드 필드명 확인 
+    if (!data?.listCourseCatalogs?.items) {
       console.warn("API에서 반환된 데이터가 없습니다:", data);
-      return []; // 빈 배열 반환
+      return [];
     }
 
-    const catalogs = data.listCourseCatalog.items || [];
-    
-    // 방법 1: 타입 단언 사용
-    return catalogs.map(catalog => ({
+    const catalogs = data.listCourseCatalogs.items || [];
+    return catalogs.map((catalog: CourseCatalog) => ({
       ...catalog,
-      // null 또는 undefined인 경우 기본값 "DRAFT" 사용하고, 결과를 명시적으로 타입 단언
-      status: (catalog.status || "DRAFT") as "PUBLISHED" | "DRAFT" | "ARCHIVED"
-    })) as CourseCatalog[];
-    
-    /* 방법 2: 명시적 매핑 사용
-    return catalogs.map(catalog => {
-      // status 값을 명시적으로 매핑
-      let status: "PUBLISHED" | "DRAFT" | "ARCHIVED" = "DRAFT";
-      
-      if (catalog.status === "PUBLISHED" || catalog.status === "ARCHIVED") {
-        status = catalog.status;
-      } else if (catalog.status === "ACTIVE") {
-        // ACTIVE를 PUBLISHED로 매핑 (필요한 경우)
-        status = "PUBLISHED";
-      }
-      
-      return {
-        ...catalog,
-        status
-      };
-    });
-    */
+      status: catalog.status || "DRAFT"
+    }));
   } catch (error: unknown) {
-    // 더 명확한 오류 로깅
     console.error('코스 카탈로그 목록 조회 오류:', error);
 
-    // 오류 객체 상세 정보 출력
     if (error instanceof Error) {
       console.error('오류 메시지:', error.message);
       console.error('오류 스택:', error.stack);
     } else {
       console.error('알 수 없는 오류 유형:', typeof error);
     }
-
-    // i18n 오류 대신 직접적인 오류 메시지 제공
+    
+    // 백틱(``)으로 수정해서 템플릿 리터럴 작동하게 함
     throw new Error(`코스 카탈로그를 불러오는데 실패했습니다: \${String(error)}`);
   }
 };
+
 /**
  * ID로 특정 코스 카탈로그 가져오기
  */

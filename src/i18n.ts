@@ -15,7 +15,7 @@ i18n
     
     // 기본 네임스페이스와 사용할 모든 네임스페이스 명시
     defaultNS: 'common',
-    ns: ['common', 'admin', 'calendar', 'course_catalog', 'navigation', 'auth', 'tnc', 'course'],
+    ns: ['common', 'admin', 'calendar', 'course_catalog', 'navigation', 'auth', 'tnc'],
         
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
