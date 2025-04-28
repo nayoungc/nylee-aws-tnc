@@ -24,6 +24,7 @@ import CourseManagementPage from '@pages/admin/CourseManagementPage';
 import SystemManagementPage from '@/pages/admin/SystemManagementPage';
 
 import NotFoundPage from './pages/errors/NotFoundPage';
+import { checkAndRefreshToken } from './utils/apiClient';
 
 // 로딩 컴포넌트 추가
 const LoadingComponent: React.FC<{ message?: string }> = ({ message = "로딩 중..." }) => {
@@ -52,6 +53,19 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// 토큰 자동 갱신 관리
+useEffect(() => {
+  // 앱 초기 실행 시 토큰 확인
+  checkAndRefreshToken();
+
+  // 토큰 정기적으로 확인 (5분마다)
+  const tokenCheckInterval = setInterval(() => {
+    checkAndRefreshToken();
+  }, 5 * 60 * 1000);
+
+  return () => clearInterval(tokenCheckInterval);
+}, []);
 
 // 디버그용 로케이션 컴포넌트
 const RouteLogger = () => {

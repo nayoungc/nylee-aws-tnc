@@ -35,7 +35,12 @@ export const useCourseCatalog = () => {
         return results;
       } catch (err) {
         console.error('useCourseCatalog - 오류 발생:', err);
-        throw err;
+        // 에러 메시지 개선 (백슬래시 제거)
+        if (err instanceof Error) {
+          throw new Error(`코스 카탈로그를 불러오는데 실패했습니다: \${err.message}`);
+        } else {
+          throw new Error('코스 카탈로그를 불러오는데 실패했습니다: 알 수 없는 오류');
+        }
       }
     },
     staleTime: 1000 * 60 * 5 // 5분
@@ -68,7 +73,12 @@ export const useCourseCatalog = () => {
 
   // 카탈로그 삭제 뮤테이션
   const deleteMutation = useMutation<{ success: boolean }, Error, string>({
-    mutationFn: deleteCourseCatalog, 
+    mutationFn: async (id: string) => {
+      // 타입 변환 어댑터
+      const result = await deleteCourseCatalog(id);
+      // API 함수가 success 필드를 직접 반환하지 않는 경우를 대비한 변환
+      return { success: !!result };
+    }, 
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });
       if (selectedId === id) {
@@ -208,7 +218,12 @@ export const useDeleteCourseCatalog = () => {
   const queryClient = useQueryClient();
   
   return useMutation<{ success: boolean }, Error, string>({
-    mutationFn: (id: string) => deleteCourseCatalog(id), 
+    mutationFn: async (id: string) => {
+      // 타입 변환 어댑터
+      const result = await deleteCourseCatalog(id);
+      // API 함수가 success 필드를 직접 반환하지 않는 경우를 대비한 변환
+      return { success: !!result };
+    },
     onSuccess: (_, deletedId) => {
       // 캐시 업데이트
       queryClient.invalidateQueries({ queryKey: ['catalogs'] });

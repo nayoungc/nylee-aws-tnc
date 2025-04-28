@@ -1,5 +1,4 @@
 // src/services/api/courseCatalogApi.ts
-import { generateClient } from 'aws-amplify/api';
 import {
   listCourseCatalogs,
   getCourseCatalog,
@@ -17,9 +16,10 @@ import {
   UpdateCourseCatalogResult,
   DeleteCourseCatalogResult
 } from '@/graphql/courseCatalog';
-import { CourseCatalog } from '@/models/courseCatalog';
+import { CourseCatalog, CourseCatalogInput } from '@/models/courseCatalog';
 import { safelyExtractData as extractData } from '@/utils/graphql';
 import i18n from '@/i18n';
+import { executeGraphQL } from '@/utils/apiClient';
 
 // CourseCatalogFilter 타입 정의
 export interface CourseCatalogFilter {
@@ -29,42 +29,46 @@ export interface CourseCatalogFilter {
   objectives?: string[];
 }
 
-const client = generateClient();
+// 기존 클라이언트는 인증된 클라이언트로 교체
+// const client = generateClient();
 
-// CourseCatalogStatus enum을 완전히 제거하고 string literal 사용
-type StatusType = "PUBLISHED" | "DRAFT" | "ARCHIVED";
+// 실제 사용하는 상태 타입 정의
+type StatusType = "ACTIVE" | "EOL";
 
 /**
  * 모든 코스 카탈로그 가져오기
  */
-// src/services/api/courseCatalogApi.ts
 export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
   console.log("코스 카탈로그 데이터 가져오기 시도");
 
   try {
-    const response = await client.graphql({
-      query: listCourseCatalogs,
-      variables: { limit: 1000 }
-    });
-
+    // 중앙화된 executeGraphQL 함수 사용
+    const response = await executeGraphQL(listCourseCatalogs, { limit: 1000 });
+    
     console.log("API 응답:", JSON.stringify(response, null, 2));
 
     const data = extractData<ListCourseCatalogsResult>(response);
     
-    // 백엔드 필드명 확인 
     if (!data?.listCourseCatalogs?.items) {
       console.warn("API에서 반환된 데이터가 없습니다:", data);
       return [];
     }
 
     const catalogs = data.listCourseCatalogs.items || [];
-    return catalogs.map((catalog: CourseCatalog) => ({
-      ...catalog,
-      status: catalog.status || "ACTIVE"
-    }));
+    
+    // 상태 타입 매핑 - "ACTIVE" 또는 "EOL"만 허용
+    return catalogs.map((catalog) => {
+      // 기본값은 "ACTIVE"
+      const status: StatusType = catalog.status === "EOL" ? "EOL" : "ACTIVE";
+      
+      return {
+        ...catalog,
+        status
+      };
+    });
   } catch (error: unknown) {
     console.error('코스 카탈로그 목록 조회 오류:', error);
-
+    
     if (error instanceof Error) {
       console.error('오류 메시지:', error.message);
       console.error('오류 스택:', error.stack);
@@ -72,8 +76,8 @@ export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
       console.error('알 수 없는 오류 유형:', typeof error);
     }
     
-    // 백틱(``)으로 수정해서 템플릿 리터럴 작동하게 함
-    throw new Error(`코스 카탈로그를 불러오는데 실패했습니다: \${String(error)}`);
+    // 템플릿 리터럴 수정 (백슬래시 제거)
+    throw new Error(`코스 카탈로그를 불러오는데 실패했습니다: \${error instanceof Error ? error.message : String(error)}`);
   }
 };
 
@@ -82,26 +86,15 @@ export const fetchAllCourseCatalogs = async (): Promise<CourseCatalog[]> => {
  */
 export const fetchCourseCatalogById = async (id: string): Promise<CourseCatalog | null> => {
   try {
-    const response = await client.graphql({
-      query: getCourseCatalog,
-      variables: { id }
-    });
+    const response = await executeGraphQL(getCourseCatalog, { id });
 
     const data = extractData<GetCourseCatalogResult>(response);
     const catalog = data?.getCourseCatalog || null;
 
     // 결과가 있을 경우 status 매핑
     if (catalog) {
-      let status: StatusType = "DRAFT";
-
-      // status 매핑 (ACTIVE → PUBLISHED)
-      if (catalog.status) {
-        if (catalog.status === "ACTIVE") {
-          status = "PUBLISHED";
-        } else if (catalog.status === "DRAFT" || catalog.status === "ARCHIVED") {
-          status = catalog.status as StatusType;
-        }
-      }
+      // "EOL"이 아닌 모든 값은 "ACTIVE"로 처리
+      const status: StatusType = catalog.status === "EOL" ? "EOL" : "ACTIVE";
 
       return {
         ...catalog,
@@ -177,20 +170,19 @@ export const fetchCourseCatalogsByCategory = async (category: string): Promise<C
  */
 export const createCourseCatalog = async (input: CreateCourseCatalogInput): Promise<CourseCatalog> => {
   try {
-    const response = await client.graphql({
-      query: createCourseCatalogMutation,
-      variables: { input }
-    });
+    const response = await executeGraphQL(createCourseCatalogMutation, { input });
 
     const data = extractData<CreateCourseCatalogResult>(response);
     if (!data?.createCourseCatalog) {
       throw new Error('코스 카탈로그 생성에 실패했습니다.');
     }
 
-    // 타입 단언(type assertion)을 사용하여 타입 에러 해결
+    // status 속성이 "EOL"이 아니면 "ACTIVE"로 설정
+    const status: StatusType = data.createCourseCatalog.status === "EOL" ? "EOL" : "ACTIVE";
+
     return {
       ...data.createCourseCatalog,
-      status: (data.createCourseCatalog.status as any) || "DRAFT"
+      status
     } as CourseCatalog;
   } catch (error: unknown) {
     console.error('코스 카탈로그 생성 오류:', error);
@@ -200,28 +192,33 @@ export const createCourseCatalog = async (input: CreateCourseCatalogInput): Prom
 
 /**
  * 기존 코스 카탈로그 업데이트
+ * @param id 업데이트할 코스 ID
  * @param input 업데이트 데이터
  * @returns 업데이트된 코스 카탈로그 정보
  */
-export const updateCourseCatalog = async (input: UpdateCourseCatalogInput): Promise<CourseCatalog> => {
+export const updateCourseCatalog = async (id: string, input: Partial<CourseCatalogInput>): Promise<CourseCatalog> => {
   try {
-    const response = await client.graphql({
-      query: updateCourseCatalogMutation,
-      variables: { input }
-    });
+    const updateInput: UpdateCourseCatalogInput = { 
+      id,
+      ...input
+    };
+
+    const response = await executeGraphQL(updateCourseCatalogMutation, { input: updateInput });
 
     const data = extractData<UpdateCourseCatalogResult>(response);
     if (!data?.updateCourseCatalog) {
       throw new Error('코스 카탈로그 업데이트에 실패했습니다.');
     }
 
-    // 타입 단언(type assertion)을 사용하여 타입 에러 해결
+    // status 속성이 "EOL"이 아니면 "ACTIVE"로 설정
+    const status: StatusType = data.updateCourseCatalog.status === "EOL" ? "EOL" : "ACTIVE";
+
     return {
       ...data.updateCourseCatalog,
-      status: (data.updateCourseCatalog.status as any) || "DRAFT"
+      status
     } as CourseCatalog;
   } catch (error: unknown) {
-    console.error(`코스 카탈로그 업데이트 오류 (ID: \${input.id}):`, error);
+    console.error(`코스 카탈로그 업데이트 오류 (ID: \${id}):`, error);
     throw new Error(i18n.t('errors.failedToUpdateCourseCatalog', { error: String(error), ns: 'courseCatalog' }));
   }
 };
@@ -229,25 +226,26 @@ export const updateCourseCatalog = async (input: UpdateCourseCatalogInput): Prom
 /**
  * 코스 카탈로그 삭제
  * @param id 삭제할 코스 ID
- * @returns 삭제된 코스 카탈로그 정보
+ * @returns 삭제 성공 여부를 포함한 객체
  */
-export const deleteCourseCatalog = async (id: string): Promise<{ id: string, course_name?: string }> => {
+export const deleteCourseCatalog = async (id: string): Promise<{ success: boolean }> => {
   try {
     const input: DeleteCourseCatalogInput = { id };
 
-    const response = await client.graphql({
-      query: deleteCourseCatalogMutation,
-      variables: { input }
-    });
+    const response = await executeGraphQL(deleteCourseCatalogMutation, { input });
 
     const data = extractData<DeleteCourseCatalogResult>(response);
     if (!data?.deleteCourseCatalog) {
       throw new Error('코스 카탈로그 삭제에 실패했습니다.');
     }
 
-    return data.deleteCourseCatalog;
+    // id가 존재하면 삭제 성공으로 간주하고 success: true 반환
+    return { success: true };
   } catch (error: unknown) {
     console.error(`코스 카탈로그 삭제 오류 (ID: \${id}):`, error);
+    
+    // 오류가 발생해도 명시적으로 success: false를 반환하지 않고 예외를 발생시킵니다.
+    // useMutation은 이 예외를 적절히 처리합니다.
     throw new Error(i18n.t('errors.failedToDeleteCourseCatalog', { error: String(error), ns: 'courseCatalog' }));
   }
 };

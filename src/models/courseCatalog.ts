@@ -3,9 +3,8 @@ import { z } from 'zod';
 
 // 기존 타입 정의 앞에 CourseCatalogStatus 열거형 추가
 export const CourseCatalogStatusEnum = z.enum([
-  'PUBLISHED',
-  'DRAFT',
-  'ARCHIVED'
+  'ACTIVE',
+  'EOL'
 ]);
 export type CourseCatalogStatus = z.infer<typeof CourseCatalogStatusEnum>;
 
@@ -20,7 +19,7 @@ export const CourseCatalogSchema = z.object({
   description: z.string().optional(),
   objectives: z.array(z.string()).optional(),
   target_audience: z.string().optional(),
-  status: CourseCatalogStatusEnum.default('DRAFT'), // 상태 필드 추가
+  status: CourseCatalogStatusEnum.default('ACTIVE'), // 상태 필드 추가
   createdAt: z.string().optional(),
   updatedAt: z.string().optional()
 });
