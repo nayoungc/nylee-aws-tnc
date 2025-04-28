@@ -25,36 +25,39 @@ const TncPage: React.FC = () => {
 
   // 다국어 처리된 공지사항 데이터
   const announcementItems = [
-    {
-      id: "1",
-      title: t('tnc_announcements_workshop_title'),
-      date: "2025-04-15",
-      category: t('tnc_categories_workshop'),
-      isImportant: true,
-      preview: t('tnc_announcements_workshop_preview'),
-      content: t('tnc_announcements_workshop_content'),
-      link: "/events/workshop-2023"
-    },
-    {
-      id: "2",
-      title: t('tnc_announcements_certification_title'),
-      date: "2025-04-10",
-      category: t('tnc_categories_certification'),
-      isImportant: false,
-      preview: t('tnc_announcements_certification_preview'),
-      content: t('tnc_announcements_certification_content'),
-      link: "/resources/certification-guide"
-    },
+    // {
+    //   id: "1",
+    //   title: t('tnc_announcements_workshop_title'),
+    //   date: "2025-04-30",
+    //   category: t('tnc_categories_workshop'),
+    //   isImportant: true,
+    //   preview: t('tnc_announcements_workshop_preview'),
+    //   content: t('tnc_announcements_workshop_content'),
+    //   link: "/events/workshop-2023"
+    // },
+    // {
+    //   id: "2",
+    //   title: t('tnc_announcements_certification_title'),
+    //   date: "2025-04-10",
+    //   category: t('tnc_categories_certification'),
+    //   isImportant: false,
+    //   preview: t('tnc_announcements_certification_preview'),
+    //   content: t('tnc_announcements_certification_content'),
+    //   link: "/resources/certification-guide"
+    // },
+    // {
+    //   id: "3",
+    //   title: t('tnc_announcements_news_title'),
+    //   date: "2025-04-05",
+    //   category: t('tnc_categories_news'),
+    //   isImportant: true,
+    //   preview: t('tnc_announcements_news_preview'),
+    //   content: t('tnc_announcements_news_content'),
+    //   link: "/news/reinvent-summary"
+    // },
     {
       id: "3",
-      title: t('tnc_announcements_news_title'),
-      date: "2025-04-05",
-      category: t('tnc_categories_news'),
-      isImportant: true,
-      preview: t('tnc_announcements_news_preview'),
-      content: t('tnc_announcements_news_content'),
-      link: "/news/reinvent-summary"
-    },
+    }
   ];
 
   const AnnouncementCards: React.FC = () => {
