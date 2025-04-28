@@ -1,11 +1,11 @@
 {
-  "instructor_title": "Instructor Tools",
-  "instructor_course_management": "Course Management",
-  "instructor_catalog": "Course Catalog",
-  "instructor_assessment_tools_group": "Assessment Tools",
-  "instructor_quizzes": "Quizzes",
-  "instructor_surveys": "Surveys",
-  "instructor_management_tools_group": "Management Tools",
-  "instructor_reports": "Reports",
-  "instructor_statistics": "Statistics"
+  "title": "Instructor Tools",
+  "course_management": "Course Management",
+  "catalog": "Course Catalog",
+  "assessment_tools_group": "Assessment Tools",
+  "quizzes": "Quizzes",
+  "surveys": "Surveys",
+  "management_tools_group": "Management Tools",
+  "reports": "Reports",
+  "statistics": "Statistics"
 }

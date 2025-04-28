@@ -5,5 +5,14 @@
   "week": "Week",
   "day": "Day",
   "add_event": "Add Event",
-  "event_details": "Event Details"
+  "event_details": "Event Details",
+  "current_month": "Current Month",
+  "previous_month": "Previous Month",
+  "next_month": "Next Month",
+  "dates_with_courses": "Dates with Training Courses",
+  "select_date_to_view": "Select a date to view courses",
+  "select_date": "Select a date",
+  "please_select_date": "Please select a date from the calendar on the left",
+  "courses_will_appear": "Training courses for the selected date will appear here",
+  "events_this_month": "Training Schedule"
 }

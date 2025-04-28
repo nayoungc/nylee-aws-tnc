@@ -1,11 +1,11 @@
 {
-"instructor_title": "강사 도구",
-"instructor_course_management": "과정 관리",
-"instructor_catalog": "과정 카탈로그",
-"instructor_assessment_tools_group": "평가 도구",
-"instructor_quizzes": "퀴즈",
-"instructor_surveys": "설문조사",
-"instructor_management_tools_group": "관리 도구",
-"instructor_reports": "보고서",
-"instructor_statistics": "통계"
-}
+    "title": "강사 도구",
+    "course_management": "과정 관리",
+    "catalog": "과정 카탈로그",
+    "assessment_tools_group": "평가 도구",
+    "quizzes": "퀴즈",
+    "surveys": "설문조사",
+    "management_tools_group": "관리 도구",
+    "reports": "보고서",
+    "statistics": "통계"
+  }

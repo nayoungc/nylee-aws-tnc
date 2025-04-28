@@ -1,32 +1,29 @@
 {
-  "navigation_tnc": "교육 및 자격증",
-  "badge_new": "신규",
-  "navigation_title": "강사 도구",
-  "navigation_course_management": "과정 관리",
-  "navigation_catalog": "과정 카탈로그",
-  
-  "navigation_assessment_tools_group": "평가 도구",
-  "navigation_quizzes": "퀴즈",
-  "navigation_surveys": "설문조사",
-  
-  "navigation_management_tools_group": "관리 도구",
-  "navigation_reports": "보고서",
-  "navigation_statistics": "통계",
-  
-  "navigation_dashboard_group": "대시보드",
-  "navigation_dashboard": "관리자 대시보드",
-  
-  "admin_course_group": "시스템 관리",
-  "navigation_system_management": "시스템 관리",
-  
-  "navigation_support_section": "지원",
-  "navigation_help": "도움말",
-  "navigation_feedback": "피드백",
-  "navigation_aws": "AWS 웹사이트",
-  "navigation_external_link_aria_label": "(외부 링크가 새 탭에서 열립니다)",
-  
-  "header_title": "AWS 교육 및 자격증 센터",
-  "header_logo_alt": "AWS 로고",
-  
-  "loading": "로딩 중..."
+  "tnc": "교육 및 자격증",
+  "title": "강사 도구",
+  "course_management": "과정 관리",
+  "catalog": "과정 카탈로그",
+  "assessment_tools_group": "평가 도구",
+  "quizzes": "퀴즈",
+  "surveys": "설문조사",
+  "management_tools_group": "관리 도구",
+  "reports": "보고서",
+  "statistics": "통계",
+  "dashboard_group": "대시보드",
+  "dashboard": "관리자 대시보드",
+  "system_management": "시스템 관리",
+  "support_section": "지원",
+  "help": "도움말",
+  "feedback": "피드백",
+  "aws": "AWS 웹사이트",
+  "external_link_aria_label": "(새 탭에서 외부 링크 열림)",
+  "admin_title": "관리자",
+  "admin_courseManagement": "교육 관리",
+  "admin_tabs_courseCatalog": "과정 카탈로그",
+  "admin_tabs_customer": "고객",
+  "admin_tabs_instructors": "강사",
+  "admin_tabs_calendar": "달력",
+  "admin_tabs_announcements": "공지사항",
+  "home": "홈",
+  "breadcrumb_label": "탐색 경로"
 }

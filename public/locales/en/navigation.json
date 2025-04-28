@@ -1,32 +1,29 @@
 {
-  "navigation_tnc": "Training & Certification",
-  "badge_new": "New",
-  "navigation_title": "Instructor Tools",
-  "navigation_course_management": "Course Management",
-  "navigation_catalog": "Course Catalog",
-  
-  "navigation_assessment_tools_group": "Assessment Tools",
-  "navigation_quizzes": "Quizzes",
-  "navigation_surveys": "Surveys",
-  
-  "navigation_management_tools_group": "Management Tools",
-  "navigation_reports": "Reports",
-  "navigation_statistics": "Statistics",
-  
-  "navigation_dashboard_group": "Dashboard",
-  "navigation_dashboard": "Admin Dashboard",
-  
-  "admin_course_group": "System Administration",
-  "navigation_system_management": "System Management",
-  
-  "navigation_support_section": "Support",
-  "navigation_help": "Help",
-  "navigation_feedback": "Feedback",
-  "navigation_aws": "AWS Website",
-  "navigation_external_link_aria_label": "(External link opens in a new tab)",
-  
-  "header_title": "AWS Training & Certification Center",
-  "header_logo_alt": "AWS Logo",
-  
-  "loading": "Loading..."
+  "tnc": "Training & Certification",
+  "title": "Instructor Tools",
+  "course_management": "Course Management",
+  "catalog": "Course Catalog",
+  "assessment_tools_group": "Assessment Tools",
+  "quizzes": "Quizzes",
+  "surveys": "Surveys",
+  "management_tools_group": "Management Tools",
+  "reports": "Reports",
+  "statistics": "Statistics",
+  "dashboard_group": "Dashboard",
+  "dashboard": "Admin Dashboard",
+  "system_management": "System Management",
+  "support_section": "Support",
+  "help": "Help",
+  "feedback": "Feedback",
+  "aws": "AWS Website",
+  "external_link_aria_label": "(External link opens in a new tab)",
+  "admin_title": "Administrator",
+  "admin_courseManagement": "Training Management",
+  "admin_tabs_courseCatalog": "Course Catalog",
+  "admin_tabs_customer": "Customers",
+  "admin_tabs_instructors": "Instructors",
+  "admin_tabs_calendar": "Calendar",
+  "admin_tabs_announcements": "Announcements",
+  "home": "Home",
+  "breadcrumb_label": "Navigation Path"
 }
