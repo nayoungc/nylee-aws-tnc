@@ -25,5 +25,13 @@
   "admin_tabs_calendar": "Calendar",
   "admin_tabs_announcements": "Announcements",
   "home": "Home",
-  "breadcrumb_label": "Navigation Path"
+  "breadcrumb_label": "Navigation Path",
+  "admin_surveyManagement": "Survey Management",
+  "admin_tabs_surveyDashboard": "Survey Dashboard",
+  "admin_tabs_surveyQuestionBank": "Question Management",
+  "admin_tabs_surveyCatalog": "Survey Templates",
+  "admin_quizManagement": "Quiz Management",
+  "admin_tabs_quizDashboard": "Quiz Dashboard",
+  "admin_tabs_questionBank": "Question Bank",
+  "admin_tabs_quizCatalog": "Quiz Templates"
 }

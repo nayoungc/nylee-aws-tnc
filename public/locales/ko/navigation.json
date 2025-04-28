@@ -32,5 +32,13 @@
   "admin.tabs.customer": "고객",
   "admin.tabs.instructors": "강사",
   "admin.tabs.calendar": "캘린더",
-  "admin.tabs.announcements": "공지사항"
+  "admin.tabs.announcements": "공지사항",
+  "admin_surveyManagement": "설문조사 관리",
+  "admin_tabs_surveyDashboard": "설문조사 대시보드",
+  "admin_tabs_surveyQuestionBank": "설문 문항 관리",
+  "admin_tabs_surveyCatalog": "설문 템플릿 관리",
+  "admin_quizManagement": "퀴즈 관리",
+  "admin_tabs_quizDashboard": "퀴즈 대시보드",
+  "admin_tabs_questionBank": "문항 은행",
+  "admin_tabs_quizCatalog": "퀴즈 템플릿"
 }
