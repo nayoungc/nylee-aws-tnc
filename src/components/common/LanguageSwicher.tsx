@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Select } from '@cloudscape-design/components';
+import { Select, SelectProps } from '@cloudscape-design/components';
 
 const LanguageSwitcher: React.FC = () => {
   const { i18n, t } = useTranslation(['navigation']);
@@ -16,8 +16,9 @@ const LanguageSwitcher: React.FC = () => {
     { label: '한국어', value: 'ko' },
   ];
 
-  const handleLanguageChange = ({ detail }) => {
-    const newLang = detail.selectedOption.value;
+  // 타입 정의 추가
+  const handleLanguageChange = ({ detail }: { detail: SelectProps.ChangeDetail }) => {
+    const newLang = detail.selectedOption?.value ?? 'en'; // 기본값으로 'en' 설정
     i18n.changeLanguage(newLang);
     
     // 필요하다면 언어 설정을 localStorage에 저장
