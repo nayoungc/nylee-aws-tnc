@@ -32,5 +32,19 @@
   "tnc_announcements_no_announcements": "공지사항이 없습니다",
   "tnc_announcements_check_later": "나중에 다시 확인해 주세요",
   "tnc_announcements_all_announcements": "모든 공지사항",
-  "locale": "ko-KR"
+  "locale": "ko-KR",
+  "secure_connection": "보안 연결",
+  "account_login": "계정 로그인",
+  "sign_in_to_continue": "계속하려면 로그인하세요",
+  "username": "사용자 이름",
+  "username_constraint": "이메일 또는 사용자 이름",
+  "username_placeholder": "사용자 이름을 입력하세요",
+  "password": "비밀번호",
+  "forgot_password": "비밀번호를 잊으셨나요?",
+  "password_placeholder": "비밀번호를 입력하세요",
+  "remember_me": "로그인 상태 유지",
+  "no_account": "계정이 없으신가요?",
+  "create_account": "계정 만들기",
+  "language_japanese": "일본어",
+  "login_success_redirecting": "로그인 성공. 리디렉션 중..."
 }

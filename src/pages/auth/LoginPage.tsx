@@ -93,7 +93,7 @@ const LoginPage: React.FC = () => {
                 padding: '40px 0' 
               }}>
                 <img
-                  src="/assets/aws-login-logo.png"
+                  src="/assets/aws.png"
                   alt={t('app_logo_alt')}
                   style={{ 
                     width: '120px',

@@ -32,5 +32,19 @@
   "tnc_announcements_no_announcements": "No announcements",
   "tnc_announcements_check_later": "Please check back later",
   "tnc_announcements_all_announcements": "All announcements",
-  "locale": "en-US"
+  "locale": "en-US",
+  "secure_connection": "Secure Connection",
+  "account_login": "Account Login",
+  "sign_in_to_continue": "Sign in to continue",
+  "username": "Username",
+  "username_constraint": "Email or username",
+  "username_placeholder": "Enter your username",
+  "password": "Password",
+  "forgot_password": "Forgot password?",
+  "password_placeholder": "Enter your password",
+  "remember_me": "Remember me",
+  "no_account": "Don't have an account?",
+  "create_account": "Create account",
+  "language_japanese": "Japanese",
+  "login_success_redirecting": "Login successful. Redirecting..."
 }
