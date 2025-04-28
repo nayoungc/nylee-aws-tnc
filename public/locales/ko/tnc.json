@@ -22,5 +22,16 @@
   "announcements_news_preview": "지난 re:Invent에서 발표된 주요 서비스 및 기능을 확인하세요.",
   "announcements_news_content": "AWS re:Invent 2024에서 발표된 주요 서비스 및 기능에 대한 요약이 제공됩니다. 새로운 AI 서비스, 서버리스 기능 및 보안 업데이트에 대해 알아보세요.",
   "tabs_calendar": "교육 일정",
-  "tabs_resources": "학습 리소스"
+  "tabs_resources": "학습 리소스",
+  "calendar.title": "교육 일정 캘린더",
+  "calendar.current_month": "이번 달",
+  "calendar.today": "오늘",
+  "calendar.previous_month": "이전 달",
+  "calendar.next_month": "다음 달",
+  "calendar.dates_with_courses": "교육 과정이 있는 날짜",
+  "calendar.select_date_to_view": "날짜를 선택하여 과정 확인",
+  "calendar.select_date": "날짜를 선택하세요",
+  "calendar.please_select_date": "왼쪽 캘린더에서 날짜를 선택하세요",
+  "calendar.courses_will_appear": "선택한 날짜의 교육 과정이 여기에 표시됩니다",
+  "calendar.events_this_month": "교육 일정"
 }

@@ -38,5 +38,13 @@
   "admin_tabs_customer": "Customers",
   "admin_tabs_instructors": "Instructors",
   "admin_tabs_calendar": "Calendar",
-  "admin_tabs_announcements": "Announcements"
+  "admin_tabs_announcements": "Announcements",
+  "admin.title": "Administrator",
+  "admin.courseManagement": "Training Management",
+  "admin.tabs.courseCatalog": "Course Catalog",
+  "admin.tabs.customer": "Customers",
+  "admin.tabs.instructors": "Instructors",
+  "admin.tabs.calendar": "Calendar",
+  "admin.tabs.announcements": "Announcements",
+  "courseManagement.title": "Training Management"
 }

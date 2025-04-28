@@ -69,16 +69,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       type: 'section-group' as const,
       title: t('navigation_assessment_tools_group'),
       items: [
-        { type: 'link' as const, text: t('navigation_quizzes'), href: '/instructor/quizzes' },
-        { type: 'link' as const, text: t('navigation_surveys'), href: '/instructor/surveys' }
+        { type: 'link' as const, text: t('navigation_quizzes'), href: '/instructor/quiz' },
+        { type: 'link' as const, text: t('navigation_surveys'), href: '/instructor/survey' }
       ]
     },
     {
       type: 'section-group' as const,
       title: t('navigation_management_tools_group'),
       items: [
-        { type: 'link' as const, text: t('navigation_reports'), href: '/instructor/reports' },
-        { type: 'link' as const, text: t('navigation_statistics'), href: '/instructor/statistics' }
+        { type: 'link' as const, text: t('navigation_reports'), href: '/instructor/report' },
+        { type: 'link' as const, text: t('navigation_statistics'), href: '/instructor/statistic' }
       ]
     },
     { type: 'divider' as const }

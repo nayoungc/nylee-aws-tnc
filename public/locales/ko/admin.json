@@ -38,5 +38,6 @@
   "admin_tabs_customer": "고객",
   "admin_tabs_instructors": "강사",
   "admin_tabs_calendar": "달력",
-  "admin_tabs_announcements": "공지사항"
+  "admin_tabs_announcements": "공지사항",
+  "courseManagement.title": "교육 관리"
 }

@@ -29,5 +29,6 @@
   "catalog_modal_delete_title": "Delete Catalog",
   "catalog_modal_delete_confirmation_batch": "Are you sure you want to delete the selected items?",
   "empty_state_title": "Catalog is empty",
-  "empty_state_message": "Please add courses to the catalog"
+  "empty_state_message": "Please add courses to the catalog",
+  "errors.failedToLoadCatalogs": "Failed to load catalogs"
 }

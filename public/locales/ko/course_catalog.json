@@ -29,5 +29,6 @@
   "catalog_modal_delete_title": "카탈로그 삭제",
   "catalog_modal_delete_confirmation_batch": "선택한 항목을 삭제하시겠습니까?",
   "empty_state_title": "카탈로그가 비어 있습니다",
-  "empty_state_message": "카탈로그에 과정을 추가해 주세요"
+  "empty_state_message": "카탈로그에 과정을 추가해 주세요",
+  "errors.failedToLoadCatalogs": "카탈로그를 불러오는데 실패했습니다"
 }

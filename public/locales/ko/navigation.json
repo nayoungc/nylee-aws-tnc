@@ -25,5 +25,12 @@
   "admin_tabs_calendar": "달력",
   "admin_tabs_announcements": "공지사항",
   "home": "홈",
-  "breadcrumb_label": "탐색 경로"
+  "breadcrumb_label": "탐색 경로",
+  "admin.title": "관리자",
+  "admin.courseManagement": "교육 관리",
+  "admin.tabs.courseCatalog": "과정 카탈로그",
+  "admin.tabs.customer": "고객",
+  "admin.tabs.instructors": "강사",
+  "admin.tabs.calendar": "캘린더",
+  "admin.tabs.announcements": "공지사항"
 }
