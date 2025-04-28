@@ -12,8 +12,6 @@ import '@cloudscape-design/global-styles/index.css';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-
-
 // Amplify v6 형식에 맞게 구성
 Amplify.configure({
   // v6에서는 Auth 구성이 변경됨

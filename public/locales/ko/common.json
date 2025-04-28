@@ -46,5 +46,155 @@
   "no_account": "계정이 없으신가요?",
   "create_account": "계정 만들기",
   "language_japanese": "일본어",
-  "login_success_redirecting": "로그인 성공. 리디렉션 중..."
+  "login_success_redirecting": "로그인 성공. 리디렉션 중...",
+  "navigation_tnc": "교육 및 인증",
+  "badge_new": "신규",
+  "navigation_title": "강사 도구",
+  "navigation_course_management": "과정 관리",
+  "navigation_catalog": "과정 카탈로그",
+  
+  "navigation_assessment_tools_group": "평가 도구",
+  "navigation_quizzes": "퀴즈",
+  "navigation_surveys": "설문조사",
+  
+  "navigation_management_tools_group": "관리 도구",
+  "navigation_reports": "보고서",
+  "navigation_statistics": "통계",
+  
+  "navigation_dashboard_group": "대시보드",
+  "navigation_dashboard": "관리자 대시보드",
+  
+  "admin_course_group": "시스템 관리",
+  "navigation_system_management": "시스템 관리",
+  
+  "navigation_support_section": "지원",
+  "navigation_help": "도움말",
+  "navigation_feedback": "피드백",
+  "navigation_aws": "AWS 웹사이트",
+  "navigation_external_link_aria_label": "(외부 링크가 새 탭에서 열립니다)",
+  
+  "header_title": "AWS 교육 및 인증 센터",
+  "header_logo_alt": "AWS 로고",
+  
+  "loading": "로딩 중...",
+
+  "tnc_description": "AWS 교육 및 인증 센터에 오신 것을 환영합니다",
+  "tnc_title": "교육 및 인증 센터",
+  "tnc_announcements_view_all": "모든 공지사항 보기",
+  "tnc_announcements_title": "공지사항",
+  "tnc_tabs_calendar": "일정 캘린더",
+  "tnc_tabs_resources": "교육 자료",
+  
+  "language_korean": "한국어",
+  "language_english": "영어",
+  "language_label": "언어",
+  
+  "app_title": "AWS 교육 관리 시스템",
+  "app_logo_alt": "AWS 교육 관리 시스템 로고",
+  
+  "help": "도움말",
+  "sign_in": "로그인",
+  
+  "tnc_announcements_title_header": "공지사항 제목",
+  "tnc_announcements_content_header": "내용",
+  "tnc_announcements_no_announcements": "공지사항이 없습니다",
+  "tnc_announcements_check_later": "나중에 다시 확인해 주세요",
+  "tnc_announcements_all_announcements": "모든 공지사항",
+  
+  "home": "홈",
+  "admin_title": "관리자",
+  "customers_title": "고객",
+  "instructors_title": "강사",
+  
+  "locale": "ko-KR",
+  
+  "breadcrumbs": "내비게이션 경로",
+  
+  "catalog_error_load_failed": "카탈로그 로드 실패",
+  "retry": "다시 시도",
+  
+  "catalog_title": "카탈로그",
+  "catalog_action_create_catalog": "카탈로그 생성",
+  "catalog_description": "모든 교육 과정을 관리합니다",
+  
+  "catalog_field_title": "제목",
+  "catalog_field_aws_code": "AWS 코드",
+  "catalog_field_version": "버전",
+  "catalog_field_level": "레벨",
+  "catalog_field_duration": "기간",
+  "catalog_field_status": "상태",
+  
+  "empty_state_title": "카탈로그가 비어 있습니다",
+  "empty_state_message": "카탈로그에 과정을 추가해 주세요",
+  
+  "catalog_column_main": "기본 정보",
+  "catalog_field_title_description": "과정 제목을 입력하세요",
+  "catalog_column_details": "상세 정보",
+  "catalog_field_description": "설명",
+  "catalog_field_category": "카테고리",
+  
+  "catalog_modal_create_title": "새 카탈로그 생성",
+  "cancel": "취소",
+  "catalog_action_create": "생성",
+  
+  "catalog_level_beginner": "초급",
+  "catalog_level_intermediate": "중급",
+  "catalog_level_advanced": "고급",
+  
+  "catalog_modal_edit_title": "카탈로그 수정",
+  "save": "저장",
+  
+  "catalog_modal_delete_title": "카탈로그 삭제",
+  "delete": "삭제",
+  
+  "catalog_modal_delete_confirmation_batch": "선택한 항목을 삭제하시겠습니까?",
+  
+  "error": "오류",
+  "field_actions": "작업",
+  "actions_delete_selected": "선택 항목 삭제",
+  
+  "table_refresh_aria_label": "새로고침",
+  "table_filtering_aria_label": "필터링",
+  "table_filtering_placeholder": "검색어 입력",
+  "table_filtering_group_values": "값 그룹화",
+  "table_filtering_operation_and": "그리고",
+  "table_filtering_operation_or": "또는",
+  "contains": "포함",
+  "does_not_contain": "포함하지 않음",
+  "equals": "같음",
+  "not_equals": "같지 않음",
+  "table_filtering_count_text": "{count}개 결과",
+  
+  "pagination_next": "다음",
+  "pagination_previous": "이전",
+  "table_preferences_title": "테이블 설정",
+  "confirm": "확인",
+  "table_preferences_page_size_title": "페이지 크기",
+  "table_preferences_visible_content_title": "표시할 열",
+  "pagination_page_label": "페이지:",
+  
+  "customers_errors_loadFailed": "고객 정보 로드 실패",
+  "customers_actions_createCustomer": "고객 생성",
+  "customers_description": "고객 정보를 관리합니다",
+  
+  "customers_fields_customerName": "고객명",
+  "customers_fields_createdAt": "생성일",
+  
+  "customers_noCustomers": "등록된 고객이 없습니다",
+  "customers_createPrompt": "새 고객을 등록해 주세요",
+  
+  "instructors_errors_loadFailed": "강사 정보 로드 실패",
+  "instructors_actions_createInstructor": "강사 등록",
+  "instructors_description": "강사 정보를 관리합니다",
+  
+  "instructors_fields_name": "이름",
+  "instructors_fields_email": "이메일",
+  "instructors_fields_profile": "프로필",
+  "instructors_fields_status": "상태",
+  "instructors_fields_createdAt": "등록일",
+  
+  "instructors_noInstructors": "등록된 강사가 없습니다",
+  "instructors_createPrompt": "새 강사를 등록해 주세요",
+  
+  "actions": "작업"
 }

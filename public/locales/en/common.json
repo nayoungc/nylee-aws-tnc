@@ -46,5 +46,155 @@
   "no_account": "Don't have an account?",
   "create_account": "Create account",
   "language_japanese": "Japanese",
-  "login_success_redirecting": "Login successful. Redirecting..."
+  "login_success_redirecting": "Login successful. Redirecting...",
+  "navigation_tnc": "Training & Certification",
+  "badge_new": "New",
+  "navigation_title": "Instructor Tools",
+  "navigation_course_management": "Course Management",
+  "navigation_catalog": "Course Catalog",
+  
+  "navigation_assessment_tools_group": "Assessment Tools",
+  "navigation_quizzes": "Quizzes",
+  "navigation_surveys": "Surveys",
+  
+  "navigation_management_tools_group": "Management Tools",
+  "navigation_reports": "Reports",
+  "navigation_statistics": "Statistics",
+  
+  "navigation_dashboard_group": "Dashboard",
+  "navigation_dashboard": "Admin Dashboard",
+  
+  "admin_course_group": "System Administration",
+  "navigation_system_management": "System Management",
+  
+  "navigation_support_section": "Support",
+  "navigation_help": "Help",
+  "navigation_feedback": "Feedback",
+  "navigation_aws": "AWS Website",
+  "navigation_external_link_aria_label": "(External link opens in a new tab)",
+  
+  "header_title": "AWS Training & Certification Center",
+  "header_logo_alt": "AWS Logo",
+  
+  "loading": "Loading...",
+
+  "tnc_description": "Welcome to AWS Training & Certification Center",
+  "tnc_title": "Training & Certification Center",
+  "tnc_announcements_view_all": "View All Announcements",
+  "tnc_announcements_title": "Announcements",
+  "tnc_tabs_calendar": "Calendar",
+  "tnc_tabs_resources": "Resources",
+  
+  "language_korean": "Korean",
+  "language_english": "English",
+  "language_label": "Language",
+  
+  "app_title": "AWS Training Management System",
+  "app_logo_alt": "AWS Training Management System Logo",
+  
+  "help": "Help",
+  "sign_in": "Sign In",
+  
+  "tnc_announcements_title_header": "Announcement Title",
+  "tnc_announcements_content_header": "Content",
+  "tnc_announcements_no_announcements": "No announcements available",
+  "tnc_announcements_check_later": "Please check again later",
+  "tnc_announcements_all_announcements": "All Announcements",
+  
+  "home": "Home",
+  "admin_title": "Administrator",
+  "customers_title": "Customers",
+  "instructors_title": "Instructors",
+  
+  "locale": "en-US",
+  
+  "breadcrumbs": "Navigation Path",
+  
+  "catalog_error_load_failed": "Failed to load catalog",
+  "retry": "Retry",
+  
+  "catalog_title": "Catalog",
+  "catalog_action_create_catalog": "Create Catalog",
+  "catalog_description": "Manage all training courses",
+  
+  "catalog_field_title": "Title",
+  "catalog_field_aws_code": "AWS Code",
+  "catalog_field_version": "Version",
+  "catalog_field_level": "Level",
+  "catalog_field_duration": "Duration",
+  "catalog_field_status": "Status",
+  
+  "empty_state_title": "Catalog is empty",
+  "empty_state_message": "Please add courses to the catalog",
+  
+  "catalog_column_main": "Main Information",
+  "catalog_field_title_description": "Enter the course title",
+  "catalog_column_details": "Details",
+  "catalog_field_description": "Description",
+  "catalog_field_category": "Category",
+  
+  "catalog_modal_create_title": "Create New Catalog",
+  "cancel": "Cancel",
+  "catalog_action_create": "Create",
+  
+  "catalog_level_beginner": "Beginner",
+  "catalog_level_intermediate": "Intermediate",
+  "catalog_level_advanced": "Advanced",
+  
+  "catalog_modal_edit_title": "Edit Catalog",
+  "save": "Save",
+  
+  "catalog_modal_delete_title": "Delete Catalog",
+  "delete": "Delete",
+  
+  "catalog_modal_delete_confirmation_batch": "Are you sure you want to delete the selected items?",
+  
+  "error": "Error",
+  "field_actions": "Actions",
+  "actions_delete_selected": "Delete Selected",
+  
+  "table_refresh_aria_label": "Refresh",
+  "table_filtering_aria_label": "Filter",
+  "table_filtering_placeholder": "Enter search term",
+  "table_filtering_group_values": "Group values",
+  "table_filtering_operation_and": "AND",
+  "table_filtering_operation_or": "OR",
+  "contains": "Contains",
+  "does_not_contain": "Does not contain",
+  "equals": "Equals",
+  "not_equals": "Not equals",
+  "table_filtering_count_text": "{count} results",
+  
+  "pagination_next": "Next",
+  "pagination_previous": "Previous",
+  "table_preferences_title": "Table Preferences",
+  "confirm": "Confirm",
+  "table_preferences_page_size_title": "Page size",
+  "table_preferences_visible_content_title": "Visible columns",
+  "pagination_page_label": "Page:",
+  
+  "customers_errors_loadFailed": "Failed to load customer information",
+  "customers_actions_createCustomer": "Create Customer",
+  "customers_description": "Manage customer information",
+  
+  "customers_fields_customerName": "Customer Name",
+  "customers_fields_createdAt": "Created At",
+  
+  "customers_noCustomers": "No customers registered",
+  "customers_createPrompt": "Please register a new customer",
+  
+  "instructors_errors_loadFailed": "Failed to load instructor information",
+  "instructors_actions_createInstructor": "Register Instructor",
+  "instructors_description": "Manage instructor information",
+  
+  "instructors_fields_name": "Name",
+  "instructors_fields_email": "Email",
+  "instructors_fields_profile": "Profile",
+  "instructors_fields_status": "Status",
+  "instructors_fields_createdAt": "Registration Date",
+  
+  "instructors_noInstructors": "No instructors registered",
+  "instructors_createPrompt": "Please register a new instructor",
+  
+  "actions": "Actions"
 }
