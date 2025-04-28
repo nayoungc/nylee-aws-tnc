@@ -1,7 +1,7 @@
 const config = {
   Auth: {
     Cognito: {
-      userPoolId: "us-east-1_AFeIVnWIU",
+      userPoolId: "us-east-1_zrHUYDT0e",
       //userPoolClientId: "6tdhvgmafd2uuhbc2naqg96g12",
     }
   },
