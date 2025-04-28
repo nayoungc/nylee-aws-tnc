@@ -1,5 +1,12 @@
 // src/graphql/customer/types.ts
-import { Customer } from '@models/customers';
+
+export interface Customer {
+  id: string;
+  customerName: string; // name -> customerName
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 /**
  * 필터 타입 정의

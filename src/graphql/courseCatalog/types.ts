@@ -1,6 +1,4 @@
 // src/graphql/courseCatalog/types.ts
-import { BaseRecord } from '../common/types';
-
 /**
  * 코스 카탈로그 상태 정의
  */
@@ -17,15 +15,16 @@ export interface CourseCatalog {
   id: string;
   course_name: string;
   course_id?: string;
-  version?:string;
+  version?: string;
   level?: string;
-  duration?: string;
+  durations?: number;  // duration -> durations, string -> number
   delivery_method?: string;
   description?: string;
   objectives?: string[];
   status?: CourseCatalogStatus;
   createdAt?: string;
   updatedAt?: string;
+  createdBy?: string;  // 추가
 }
 
 // ===== 입력 타입 =====
