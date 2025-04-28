@@ -1,17 +1,18 @@
 // src/pages/public/TncPage.tsx
 import React, { useState } from 'react';
-import { 
-  Container, 
-  Header, 
-  Tabs, 
-  ContentLayout, 
+import {
+  Container,
+  Header,
+  Tabs,
+  ContentLayout,
   SpaceBetween,
   Cards,
   Box,
   Link,
   Badge,
   Icon,
-  ColumnLayout
+  ColumnLayout,
+  ExpandableSection
 } from '@cloudscape-design/components';
 import MainLayout from '@/components/layout/MainLayout';
 import CourseCalendar from './components/CourseCalendar';
@@ -119,7 +120,7 @@ const TncPage: React.FC = () => {
           </Box>
         }
         header={
-          <Header counter={`(\${announcementItems.length})`}>
+          <Header>
             {t('tnc_announcements_all_announcements')}
           </Header>
         }
@@ -131,7 +132,7 @@ const TncPage: React.FC = () => {
     <MainLayout activeHref="/tnc">
       <ContentLayout
         header={
-          <Header 
+          <Header
             variant="h1"
             description={t('tnc_description')}
           >
@@ -142,6 +143,14 @@ const TncPage: React.FC = () => {
         <SpaceBetween size="l">
           {/* 공지사항 섹션 - 새로운 카드 형태 */}
           <Container
+            footer={
+              <ExpandableSection
+                header="Additional settings"
+                variant="footer"
+              >
+                Place additional form fields here.
+              </ExpandableSection>
+            }
             header={
               <Header
                 variant="h2"
@@ -155,6 +164,16 @@ const TncPage: React.FC = () => {
               </Header>
             }
           >
+            <ul>
+              <li>AWS Workshop</li>
+              <li>AWS SkillBuilder : <Link
+                external
+                href="https://explore.skillbuilder.aws/"
+                variant="primary"
+              >
+                Learn more
+              </Link></li>
+            </ul>
             <AnnouncementCards />
           </Container>
 
