@@ -19,8 +19,8 @@ Amplify.configure({
   // v6에서는 Auth 구성이 변경됨
   Auth: {
     Cognito: {
-      userPoolId: "us-east-1_AFeIVnWIU",
-      userPoolClientId: "6tdhvgmafd2uuhbc2naqg96g12",
+      userPoolId: "us-east-1_zrHUYDT0e",
+      userPoolClientId: "3o43ivb8om0tbvkok0tuvpcv3s",
       // identityPoolId는 사용하지 않으므로 생략
     }
   },

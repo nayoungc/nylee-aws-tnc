@@ -8,19 +8,21 @@ i18n
   .use(Backend)
   .use(LanguageDetector)
   .use(initReactI18next)
+  i18n
+  .use(Backend)
+  .use(LanguageDetector)
+  .use(initReactI18next)
   .init({
     fallbackLng: 'ko',
-    debug: isDevelopment,
+    debug: true, 
     
     // 'en-US'를 'en'으로 처리하는 설정
-    load: 'languageOnly',  // 언어 코드만 사용하고 국가 코드는 무시
+    load: 'languageOnly',
     
-    // 지원하는 언어 목록
+    // 모든 네임스페이스 포함
     supportedLngs: ['en', 'ko'],
-    
-    // 기존 설정을 유지
     defaultNS: 'common',
-    ns: ['common', 'admin', 'calendar', 'course_catalog', 'navigation', 'auth', 'tnc'],
+    ns: ['common', 'admin', 'calendar', 'course_catalog', 'navigation', 'auth', 'tnc', 'instructor'],
     
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
