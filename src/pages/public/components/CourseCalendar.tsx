@@ -19,13 +19,12 @@ import { useTranslation } from 'react-i18next';
 interface Course {
   id: string;
   title: string;
+  event:string;
   instructor: string;
   time: string;
   location: string;
   type: string;
   level: string;
-  seats: number;
-  remainingSeats: number;
   description: string;
 }
 
@@ -88,58 +87,81 @@ const EventDateList: React.FC<EventDateListProps> = ({ month, courses, selectedD
 
 // 샘플 교육 과정 데이터
 const sampleCourses: CoursesCalendarData = {
-  "2025-04-15": [
+  "2025-04-28": [
     {
       id: "course1",
-      title: "AWS 아키텍처 설계 기초",
-      instructor: "김철수",
-      time: "10:00 - 16:00",
-      location: "강남 교육센터",
+      title: "Kick-off",
+      instructor: "LG CNS & AWS T&C",
+      event :"EVENT",
+      time: "13:00 - 14:00",
+      location: "L1",
       type: "오프라인",
-      level: "초급",
-      seats: 15,
-      remainingSeats: 5,
+      level: "Event",
       description: "AWS의 기본 서비스를 활용한 아키텍처 설계 기초를 학습합니다. EC2, S3, RDS 등의 핵심 서비스 실습이 포함됩니다."
     },
     {
       id: "course2",
-      title: "서버리스 애플리케이션 개발",
-      instructor: "이영희",
-      time: "13:00 - 17:00",
-      location: "온라인 화상 강의",
-      type: "온라인",
-      level: "중급",
-      seats: 30,
-      remainingSeats: 12,
-      description: "AWS Lambda와 API Gateway를 활용한 서버리스 애플리케이션 개발 방법론을 배웁니다."
+      title: "AWS 기본 교육",
+      instructor: "이나영",
+      event :"CLASS",
+      time: "14:00 - 18:00",
+      location: "L1",
+      type: "오프라인",
+      level: "Review",
+
+      description: "Architecting on AWS & Developing on AWS Review"
     }
   ],
-  "2025-04-20": [
+  "2025-04-30": [
     {
       id: "course3",
-      title: "AWS 보안 최적화 워크샵",
-      instructor: "박보안",
-      time: "09:00 - 18:00",
-      location: "역삼 AWS 교육장",
+      title: "Generative AI on AWS",
+      instructor: "이나영",
+      event :"CLASS",
+      time: "09:00 - 17:00",
+      location: "L1",
       type: "오프라인",
-      level: "고급",
-      seats: 20,
-      remainingSeats: 3,
-      description: "AWS 환경에서의 보안 위협에 대응하고 보안 서비스를 활용해 인프라를 보호하는 방법을 학습합니다."
+      level: "Generative AI",
+
+      description: "Generative AI, Amazon Bedrock"
     }
   ],
-  "2025-04-25": [
+  "2025-05-07": [
     {
       id: "course4",
-      title: "컨테이너 오케스트레이션 마스터",
-      instructor: "정도커",
-      time: "10:00 - 17:00",
+      title: "Developing Generative AI Applications on AWS - Day 01",
+      instructor: "이나영",
+      event :"CLASS",
+      time: "09:00 - 17:00",
       location: "온라인 화상 강의",
-      type: "온라인",
-      level: "중급",
-      seats: 25,
-      remainingSeats: 8,
-      description: "ECS와 EKS를 활용한 컨테이너 오케스트레이션 방법을 배웁니다. 실제 운영 환경에서 활용 가능한 배포 전략을 다룹니다."
+      type: "오프라인",
+      level: "Generative AI",
+      description: "Generative AI, Amazon Bedrock"
+    }],
+  "2025-05-08": [
+    {
+      id: "course4",
+      title: "Developing Generative AI Applications on AWS - Day 02",
+      instructor: "이나영",
+      event :"CLASS",
+      time: "09:00 - 17:00",
+      location: "온라인 화상 강의",
+      type: "오프라인",
+      level: "Generative AI",
+      description: "Generative AI, Amazon Bedrock"
+    }
+  ],
+  "2025-05-09": [
+    {
+      id: "course5",
+      title: "Developing Generative AI Applications on AWS - Day 02",
+      instructor: "이나영",
+      event :"EVENT",
+      time: "09:00 - 17:00",
+      location: "오프라인",
+      type: "오프라인",
+      level: "Generative AI",
+      description: "Generative AI, Amazon Bedrock"
     }
   ]
 };
@@ -403,8 +425,8 @@ const CourseCalendar: React.FC = () => {
                               {course.title}
                             </Box>
                             <Box textAlign="right">
-                            <Badge color="red">EVENT</Badge>
-                            <Badge color="severity-medium">CLASS</Badge>;
+                              <Badge color="red">EVENT</Badge>
+                              <Badge color="severity-medium">CLASS</Badge>;
                             </Box>
                           </SpaceBetween>
                         }

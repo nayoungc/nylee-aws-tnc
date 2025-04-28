@@ -148,7 +148,16 @@ const TncPage: React.FC = () => {
                 header="Additional settings"
                 variant="footer"
               >
-                Place additional form fields here.
+                <ul>
+              <li>AWS Workshop</li>
+              <li>AWS SkillBuilder : <Link
+                external
+                href="https://explore.skillbuilder.aws/"
+                variant="primary"
+              >
+                Learn more
+              </Link></li>
+            </ul>
               </ExpandableSection>
             }
             header={
@@ -164,16 +173,6 @@ const TncPage: React.FC = () => {
               </Header>
             }
           >
-            <ul>
-              <li>AWS Workshop</li>
-              <li>AWS SkillBuilder : <Link
-                external
-                href="https://explore.skillbuilder.aws/"
-                variant="primary"
-              >
-                Learn more
-              </Link></li>
-            </ul>
             <AnnouncementCards />
           </Container>
 
