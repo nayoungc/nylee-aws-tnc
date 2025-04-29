@@ -1,4 +1,3 @@
-// src/utils/apiClient.ts
 import { generateClient } from 'aws-amplify/api';
 import { fetchAuthSession } from 'aws-amplify/auth';
 
@@ -58,8 +57,11 @@ export const executeGraphQL = async (
  */
 export const checkAndRefreshToken = async (): Promise<boolean> => {
   try {
+    console.log('토큰 상태 확인 중...');
     const session = await fetchAuthSession();
+    
     if (!session?.tokens) {
+      console.log('유효한 세션이 없습니다.');
       return false;
     }
     
@@ -67,17 +69,44 @@ export const checkAndRefreshToken = async (): Promise<boolean> => {
     const expiresAt = session.tokens.accessToken?.payload?.exp || 0;
     const timeRemaining = expiresAt - now;
     
+    // 토큰 만료 시간 표시
+    if (timeRemaining > 0) {
+      console.log(`토큰 만료까지 남은 시간: \${Math.round(timeRemaining / 60)}분`);
+    } else {
+      console.log('토큰이 만료되었습니다.');
+    }
+    
     // 토큰이 15분 이내에 만료될 예정이면 갱신
-    if (timeRemaining < 900) {
+    if (timeRemaining < 900 && timeRemaining > 0) {
+      console.log('토큰이 곧 만료됩니다. 갱신 시도 중...');
       await fetchAuthSession({ forceRefresh: true });
       // 클라이언트 캐시 초기화하여 다음 호출에서 새로 생성되게 함
       userPoolClient = null;
+      console.log('토큰이 갱신되었습니다.');
       return true;
     }
     
-    return true;
+    return timeRemaining > 0; // 토큰이 유효한지 여부 반환
   } catch (error) {
     console.error('토큰 확인/갱신 중 오류:', error);
     return false;
+  }
+};
+
+/**
+ * API 호출을 위한 인증 헤더를 가져오는 함수
+ */
+export const getAuthHeaders = async (): Promise<{ Authorization?: string }> => {
+  try {
+    const session = await fetchAuthSession();
+    if (session?.tokens?.idToken) {
+      return {
+        Authorization: `Bearer \${session.tokens.idToken.toString()}`
+      };
+    }
+    return {};
+  } catch (error) {
+    console.error('인증 헤더 가져오기 실패:', error);
+    return {};
   }
 };

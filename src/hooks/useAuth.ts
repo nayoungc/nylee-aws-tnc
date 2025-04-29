@@ -1,4 +1,3 @@
-// src/hooks/useAuth.ts
 import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { 
   signIn, 
@@ -18,7 +17,7 @@ interface AuthContextType {
   checkAuth: () => Promise<any>;
   isAdmin: boolean;
   isInstructor: boolean;
-  getUserRoles: () => string[]; // 추가된 함수 타입
+  getUserRoles: () => string[];
 }
 
 // 기본값으로 사용할 빈 컨텍스트 객체 생성
@@ -31,7 +30,7 @@ const defaultContext: AuthContextType = {
   checkAuth: async () => null,
   isAdmin: false,
   isInstructor: false,
-  getUserRoles: () => [] // 기본값 추가
+  getUserRoles: () => []
 };
 
 // Auth 컨텍스트 생성
@@ -64,7 +63,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     };
   }, []);
   
-  // 추가: 사용자 역할을 배열로 반환하는 함수
+  // 사용자 역할을 배열로 반환하는 함수
   const getUserRoles = useCallback((): string[] => {
     if (!user || !user.attributes) return [];
     
@@ -97,6 +96,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
       setIsAuthenticated(true);
       return userData;
     } catch (error) {
+      console.log('인증 확인 중 오류:', error);
       setUser(null);
       setIsAuthenticated(false);
       setIsAdmin(false);
@@ -124,11 +124,23 @@ export const AuthProvider = (props: AuthProviderProps) => {
   const logout = async () => {
     try {
       setLoading(true);
-      await signOut();
+      // 개선된 로그아웃 처리
+      await signOut({ global: true });
+      
+      // 상태 리셋
       setUser(null);
       setIsAuthenticated(false);
       setIsAdmin(false);
       setIsInstructor(false);
+      
+      // 로컬 스토리지에서 'rememberedUsername'이외의 인증 관련 데이터 제거
+      const username = localStorage.getItem('rememberedUsername');
+      localStorage.clear();
+      if (username) {
+        localStorage.setItem('rememberedUsername', username);
+      }
+      
+      console.log('로그아웃 성공');
       return { success: true };
     } catch (error) {
       console.error('로그아웃 오류:', error);
@@ -153,7 +165,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     checkAuth,
     isAdmin,
     isInstructor,
-    getUserRoles // 추가된 함수
+    getUserRoles
   };
   
   return React.createElement(
