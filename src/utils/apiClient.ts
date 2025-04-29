@@ -1,11 +1,77 @@
 // src/utils/apiClient.ts
 import { fetchAuthSession } from 'aws-amplify/auth';
+import { generateClient } from 'aws-amplify/api';
 
-// 로깅 함수 (Logger 클래스 대신 직접 사용)
-const logDebug = (message: string, ...params: any[]) => console.debug(`[Token] \${message}`, ...params);
-const logInfo = (message: string, ...params: any[]) => console.info(`[Token] \${message}`, ...params);
-const logWarn = (message: string, ...params: any[]) => console.warn(`[Token] \${message}`, ...params);
-const logError = (message: string, ...params: any[]) => console.error(`[Token] \${message}`, ...params);
+// 로깅 함수
+const logDebug = (message: string, ...params: any[]) => console.debug(`[API] \${message}`, ...params);
+const logInfo = (message: string, ...params: any[]) => console.info(`[API] \${message}`, ...params);
+const logWarn = (message: string, ...params: any[]) => console.warn(`[API] \${message}`, ...params);
+const logError = (message: string, ...params: any[]) => console.error(`[API] \${message}`, ...params);
+
+// 클라이언트 인스턴스 캐싱
+let userPoolClient: any = null;
+let apiKeyClient: any = null;
+
+/**
+ * 인증 상태에 따라 적절한 API 클라이언트를 반환
+ */
+export const getAuthClient = async () => {
+  try {
+    const session = await fetchAuthSession();
+    
+    if (session?.tokens) {
+      // 사용자 인증 있음 - userPool 클라이언트 사용
+      if (!userPoolClient) {
+        userPoolClient = generateClient({ authMode: 'userPool' });
+        logInfo('사용자 인증 클라이언트 생성됨');
+      }
+      return userPoolClient;
+    } else {
+      // 인증 없음 - apiKey 클라이언트 사용
+      if (!apiKeyClient) {
+        apiKeyClient = generateClient({ authMode: 'apiKey' });
+        logInfo('API 키 클라이언트 생성됨');
+      }
+      return apiKeyClient;
+    }
+  } catch (error) {
+    logError('API 클라이언트 생성 오류:', error);
+    
+    // 폴백: apiKey 클라이언트
+    if (!apiKeyClient) {
+      apiKeyClient = generateClient({ authMode: 'apiKey' });
+    }
+    return apiKeyClient;
+  }
+};
+
+/**
+ * GraphQL 쿼리 실행 헬퍼 함수
+ * @param query GraphQL 쿼리/뮤테이션 문자열
+ * @param variables 쿼리 변수 객체
+ * @returns 쿼리 실행 결과
+ */
+export const executeGraphQL = async (
+  query: string,
+  variables?: Record<string, any>
+) => {
+  try {
+    // 토큰 상태 확인 및 필요시 갱신
+    await checkAndRefreshToken();
+    
+    // 적절한 클라이언트 가져오기
+    const client = await getAuthClient();
+    
+    // GraphQL 쿼리 실행
+    return client.graphql({
+      query,
+      variables
+    });
+  } catch (error) {
+    logError('GraphQL 쿼리 실행 오류:', error);
+    throw error;
+  }
+};
 
 /**
  * 인증 토큰을 확인하고 필요시 갱신하는 함수
@@ -34,6 +100,9 @@ export const checkAndRefreshToken = async (): Promise<boolean> => {
         logInfo('토큰이 곧 만료됩니다. 갱신 시도 중...');
         await fetchAuthSession({ forceRefresh: true });
         logInfo('토큰이 갱신되었습니다.');
+        
+        // 클라이언트 캐시 초기화
+        userPoolClient = null;
       }
       
       return true;
@@ -67,7 +136,7 @@ export const getAuthHeaders = async (): Promise<{ Authorization?: string }> => {
 };
 
 /**
- * 인증 요청을 수행하는 함수
+ * 인증된 API 요청을 수행하는 함수
  * @param url 요청 URL
  * @param options fetch 옵션
  * @returns 응답 데이터
