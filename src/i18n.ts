@@ -12,7 +12,7 @@ export const i18nInstance = i18n
 
 export const initI18n = i18nInstance.init({
   fallbackLng: 'ko',
-  debug: true,
+  debug: false,
   
   // 'en-US'를 'en'으로 처리하는 설정
   load: 'languageOnly',

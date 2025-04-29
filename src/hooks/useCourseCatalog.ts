@@ -39,7 +39,7 @@ export const useCourseCatalog = () => {
         if (err instanceof Error) {
           throw new Error(`코스 카탈로그를 불러오는데 실패했습니다: \${err.message}`);
         } else {
-          throw new Error('코스 카탈로그를 불러오는데 실패했습니다: 알 수 없는 오류');
+          throw new Error(`코스 카탈로그를 불러오는데 실패했습니다: \${error instanceof Error ? error.message : String(error)}`);
         }
       }
     },
@@ -99,13 +99,13 @@ export const useCourseCatalog = () => {
 
   // 선택된 카탈로그 업데이트
   const updateSelectedCourseCatalog = useCallback(async (input: Partial<CourseCatalogInput>) => {
-    if (!selectedId) throw new Error('선택된 카탈로그가 없습니다');
+    if (!selectedId) throw new Error(`선택된 카탈로그가 없습니다`);
     return await updateMutation.mutateAsync({ id: selectedId, input });
   }, [selectedId, updateMutation]);
 
   // 선택된 카탈로그 삭제
   const deleteSelectedCourseCatalog = useCallback(async () => {
-    if (!selectedId) throw new Error('선택된 카탈로그가 없습니다');
+    if (!selectedId) throw new Error(`선택된 카탈로그가 없습니다`);
     return await deleteMutation.mutateAsync(selectedId);
   }, [selectedId, deleteMutation]);
 
