@@ -1,37 +1,9 @@
 // src/graphql/course/queries.ts
-
 /**
  * 모든 과정 목록 조회
  * @param filter - 필터링 조건
  * @param limit - 한 번에 가져올 항목 수
  * @param nextToken - 페이지네이션 토큰
- */
-export const listCourses = /* GraphQL */ `
-  query ListCourses(\$filter: ModelCourseFilterInput, \$limit: Int, \$nextToken: String) {
-    listCourses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        courseId
-        startDate
-        catalogId
-        shareCode
-        instructor
-        customerId
-        durations
-        location
-        attendance
-        status
-        isAddedToCalendar
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-/**
- * 특정 과정 조회
- * @param courseId - 조회할 과정의 ID
  */
 export const getCourse = /* GraphQL */ `
   query GetCourse(\$courseId: ID!) {
@@ -46,9 +18,34 @@ export const getCourse = /* GraphQL */ `
       location
       attendance
       status
-      isAddedToCalendar
       createdAt
       updatedAt
+    }
+  }
+`;
+
+/**
+ * 특정 과정 조회
+ * @param courseId - 조회할 과정의 ID
+ */
+export const listCourses = /* GraphQL */ `
+  query ListCourses(\$filter: CourseFilterInput, \$limit: Int, \$nextToken: String) {
+    listCourses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        courseId
+        startDate
+        catalogId
+        shareCode
+        instructor
+        customerId
+        durations
+        location
+        attendance
+        status
+        createdAt
+        updatedAt
+      }
+      nextToken
     }
   }
 `;

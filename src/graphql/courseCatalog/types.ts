@@ -1,30 +1,32 @@
 // src/graphql/courseCatalog/types.ts
-/**
- * 코스 카탈로그 상태 정의
- */
-export enum CourseCatalogStatus {
-  ACTIVE = 'ACTIVE',
-  EOL = 'EOL',
-}
+import { CourseCatalogStatus } from '@/models/courseCatalog';
 
 /**
- * 코스 카탈로그 모델 타입
- * 백엔드 스키마와 일치하는 필드 사용
+ * API에서 반환되는 코스 카탈로그 타입
+ * @description 백엔드 GraphQL 스키마와 일치하는 타입 정의
  */
-export interface CourseCatalog {
+export interface ApiCourseCatalog {
   id: string;
   course_name: string;
   course_id?: string;
-  version?: string;
   level?: string;
-  durations?: number;  // duration -> durations, string -> number
+  duration?: string;  // 백엔드는 string 타입 사용
   delivery_method?: string;
   description?: string;
   objectives?: string[];
-  status?: CourseCatalogStatus;
+  target_audience?: string;
+  status?: string;  // 백엔드는 string으로 반환
   createdAt?: string;
   updatedAt?: string;
-  createdBy?: string;  // 추가
+  createdBy?: string;
+}
+
+/**
+ * 코스 카탈로그 연결 타입 (페이지네이션)
+ */
+export interface CourseCatalogConnection {
+  items: ApiCourseCatalog[];
+  nextToken?: string | null;
 }
 
 // ===== 입력 타입 =====
@@ -41,6 +43,7 @@ export interface CreateCourseCatalogInput {
   description?: string;
   objectives?: string[];
   target_audience?: string;
+  status?: CourseCatalogStatus;
 }
 
 /**
@@ -56,6 +59,7 @@ export interface UpdateCourseCatalogInput {
   description?: string;
   objectives?: string[];
   target_audience?: string;
+  status?: CourseCatalogStatus;
 }
 
 /**
@@ -67,25 +71,40 @@ export interface DeleteCourseCatalogInput {
 
 // ===== 쿼리/뮤테이션 결과 타입 =====
 
+/**
+ * 코스 카탈로그 목록 쿼리 결과 타입
+ */
 export interface ListCourseCatalogsResult {
   listCourseCatalogs: {
-    items: CourseCatalog[];
+    items: ApiCourseCatalog[];
     nextToken?: string | null;
   };
 }
 
+/**
+ * 코스 카탈로그 조회 쿼리 결과 타입
+ */
 export interface GetCourseCatalogResult {
-  getCourseCatalog: CourseCatalog | null;
+  getCourseCatalog: ApiCourseCatalog | null;
 }
 
+/**
+ * 코스 카탈로그 생성 뮤테이션 결과 타입
+ */
 export interface CreateCourseCatalogResult {
-  createCourseCatalog: CourseCatalog;
+  createCourseCatalog: ApiCourseCatalog;
 }
 
+/**
+ * 코스 카탈로그 수정 뮤테이션 결과 타입
+ */
 export interface UpdateCourseCatalogResult {
-  updateCourseCatalog: CourseCatalog;
+  updateCourseCatalog: ApiCourseCatalog;
 }
 
+/**
+ * 코스 카탈로그 삭제 뮤테이션 결과 타입
+ */
 export interface DeleteCourseCatalogResult {
   deleteCourseCatalog: {
     id: string;
@@ -95,13 +114,9 @@ export interface DeleteCourseCatalogResult {
 
 // ===== 필터 타입 =====
 
-export interface CourseCatalogFilterInput {
-  text?: string;
-  level?: string;
-  target_audience?: string;
-  objectives?: string[];
-}
-
+/**
+ * 코스 카탈로그 검색 필터 타입
+ */
 export interface ModelCourseCatalogFilterInput {
   id?: ModelIDInput;
   course_name?: ModelStringInput;
@@ -114,7 +129,7 @@ export interface ModelCourseCatalogFilterInput {
   not?: ModelCourseCatalogFilterInput;
 }
 
-// ===== 기타 타입 =====
+// ===== 기타 필터 모델 타입 =====
 
 interface ModelIDInput {
   ne?: string;
@@ -137,8 +152,4 @@ interface ModelSizeInput {
   gt?: number;
   lt?: number;
   between?: [number, number];
-}
-
-export interface BulkUpdateCourseCatalogsInput {
-  items: Array<UpdateCourseCatalogInput>;
 }

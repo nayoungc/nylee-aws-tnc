@@ -1,105 +1,138 @@
 // src/graphql/surveyQuestionBank/queries.ts
 /**
- * 모든 설문 문항 조회
+ * 설문 질문 은행 관련 GraphQL 쿼리 및 뮤테이션
+ * 
+ * 설문조사 시스템의 재사용 가능한 질문 항목들을 관리하기 위한 GraphQL 작업 정의
+ * @module graphql/surveyQuestionBank
  */
-export const listSurveyQuestionBankItems = /* GraphQL */ `
+
+// Amplify Gen 2에서는 graphql 태그 템플릿을 사용하지 않고 문자열로 직접 정의
+export const listSurveyQuestionBankItems = `
   query ListSurveyQuestionBankItems(\$filter: ModelSurveyQuestionBankFilterInput, \$limit: Int, \$nextToken: String) {
     listSurveyQuestionBankItems(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         questionId
         content
-        type
+        questionType
         options {
-          optionId
-          content
+          value
+          label
         }
         required
         tags
+        courseId
+        courseName
+        moduleId
+        moduleName
         createdAt
         updatedAt
         createdBy
+        metadata
       }
       nextToken
     }
   }
 `;
 
-/**
- * 특정 설문 문항 조회
- */
-export const getSurveyQuestionBankItem = /* GraphQL */ `
+export const getSurveyQuestionBankItem = `
   query GetSurveyQuestionBankItem(\$questionId: ID!) {
     getSurveyQuestionBankItem(questionId: \$questionId) {
       questionId
       content
-      type
+      questionType
       options {
-        optionId
-        content
+        value
+        label
       }
       required
       tags
+      courseId
+      courseName
+      moduleId
+      moduleName
       createdAt
       updatedAt
       createdBy
+      metadata
     }
   }
 `;
 
-/**
- * 설문 문항 검색
- */
-export const searchSurveyQuestionBankItems = /* GraphQL */ `
-  query SearchSurveyQuestionBankItems(\$filter: SearchableSurveyQuestionBankFilterInput, \$limit: Int, \$nextToken: String) {
-    searchSurveyQuestionBankItems(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+export const searchSurveyQuestionBankItems = `
+  query SearchSurveyQuestionBankItems(\$text: String!, \$limit: Int, \$nextToken: String) {
+    searchSurveyQuestionBankItems(text: \$text, limit: \$limit, nextToken: \$nextToken) {
       items {
         questionId
         content
-        type
+        questionType
+        options {
+          value
+          label
+        }
         required
         tags
+        courseId
+        courseName
+        moduleId
+        moduleName
         createdAt
         updatedAt
+        createdBy
+        metadata
       }
       nextToken
     }
   }
 `;
 
-/**
- * 태그별 설문 문항 조회
- */
-export const getSurveyQuestionBankItemsByTag = /* GraphQL */ `
+export const getSurveyQuestionBankItemsByTag = `
   query GetSurveyQuestionBankItemsByTag(\$tag: String!, \$limit: Int, \$nextToken: String) {
     getSurveyQuestionBankItemsByTag(tag: \$tag, limit: \$limit, nextToken: \$nextToken) {
       items {
         questionId
         content
-        type
+        questionType
+        options {
+          value
+          label
+        }
         required
         tags
+        courseId
+        courseName
+        moduleId
+        moduleName
         createdAt
         updatedAt
+        createdBy
+        metadata
       }
       nextToken
     }
   }
 `;
 
-/**
- * 유형별 설문 문항 조회
- */
-export const getSurveyQuestionBankItemsByType = /* GraphQL */ `
+export const getSurveyQuestionBankItemsByType = `
   query GetSurveyQuestionBankItemsByType(\$type: String!, \$limit: Int, \$nextToken: String) {
     getSurveyQuestionBankItemsByType(type: \$type, limit: \$limit, nextToken: \$nextToken) {
       items {
         questionId
         content
-        type
+        questionType
+        options {
+          value
+          label
+        }
         required
         tags
+        courseId
+        courseName
+        moduleId
+        moduleName
         createdAt
         updatedAt
+        createdBy
+        metadata
       }
       nextToken
     }

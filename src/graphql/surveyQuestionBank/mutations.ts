@@ -1,54 +1,55 @@
 // src/graphql/surveyQuestionBank/mutations.ts
-/**
- * 설문 문항 생성
- */
-export const createSurveyQuestionBankItem = /* GraphQL */ `
+export const createSurveyQuestionBankItem = `
   mutation CreateSurveyQuestionBankItem(\$input: CreateSurveyQuestionBankItemInput!) {
     createSurveyQuestionBankItem(input: \$input) {
       questionId
       content
-      type
+      questionType
       options {
-        optionId
-        content
+        value
+        label
       }
       required
       tags
+      courseId
+      courseName
+      moduleId
+      moduleName
       createdAt
       updatedAt
       createdBy
+      metadata
     }
   }
 `;
 
-/**
- * 설문 문항 수정
- */
-export const updateSurveyQuestionBankItem = /* GraphQL */ `
-  mutation UpdateSurveyQuestionBankItem(\$input: UpdateSurveyQuestionBankItemInput!) {
-    updateSurveyQuestionBankItem(input: \$input) {
+export const updateSurveyQuestionBankItem = `
+  mutation UpdateSurveyQuestionBankItem(\$questionId: ID!, \$input: UpdateSurveyQuestionBankItemInput!) {
+    updateSurveyQuestionBankItem(questionId: \$questionId, input: \$input) {
       questionId
       content
-      type
+      questionType
       options {
-        optionId
-        content
+        value
+        label
       }
       required
       tags
+      courseId
+      courseName
+      moduleId
+      moduleName
       createdAt
       updatedAt
       createdBy
+      metadata
     }
   }
 `;
 
-/**
- * 설문 문항 삭제
- */
-export const deleteSurveyQuestionBankItem = /* GraphQL */ `
-  mutation DeleteSurveyQuestionBankItem(\$input: DeleteSurveyQuestionBankItemInput!) {
-    deleteSurveyQuestionBankItem(input: \$input) {
+export const deleteSurveyQuestionBankItem = `
+  mutation DeleteSurveyQuestionBankItem(\$questionId: ID!) {
+    deleteSurveyQuestionBankItem(questionId: \$questionId) {
       questionId
     }
   }

@@ -1,19 +1,16 @@
+// src/api/instructorApi.ts
 import { generateClient } from 'aws-amplify/api';
-import { v4 as uuidv4 } from 'uuid';
 import { safelyExtractData } from '@/utils/graphql';
-import { mockInstructors } from '@/mocks/instructorData';
 
 // 강사 관련 쿼리와 뮤테이션
 import { 
   listInstructors, 
   getInstructor,
-  searchInstructors
-} from '@/graphql/instructor';
-import { 
   createInstructor, 
   updateInstructor,
   changeInstructorStatus
 } from '@/graphql/instructor';
+
 import {
   ListInstructorsResult,
   GetInstructorResult,
@@ -25,17 +22,11 @@ import {
   ApiInstructor
 } from '@/graphql/instructor/types';
 
-// 모델과 모의 데이터
-import { Instructor, InstructorInput, InstructorFilter } from '@/models/instructor';
+// 모델
+import { Instructor, InstructorInput, InstructorFilter, InstructorStatus } from '@/models/instructor';
 
 // Amplify API 클라이언트 생성
 const client = generateClient();
-
-/**
- * 개발 모드 활성화 여부
- * GraphQL 스키마 불일치 문제를 해결하기 위해 모의 데이터 사용
- */
-const DEV_MODE = false; // 개발 모드 활성화로 변경
 
 /**
  * 백엔드 응답을 프론트엔드 모델로 변환
@@ -45,14 +36,53 @@ const DEV_MODE = false; // 개발 모드 활성화로 변경
 const mapToFrontendModel = (apiInstructor: ApiInstructor): Instructor => {
   return {
     id: apiInstructor.id,
-    username: apiInstructor.email.split('@')[0], // username이 없으므로 이메일에서 임시 생성
     email: apiInstructor.email,
     name: apiInstructor.name,
     profile: apiInstructor.profile || '',
-    status: apiInstructor.status || 'ACTIVE',
+    status: apiInstructor.status || InstructorStatus.ACTIVE,
     createdAt: apiInstructor.createdAt,
-    updatedAt: apiInstructor.updatedAt
+    updatedAt: apiInstructor.updatedAt,
+    username: apiInstructor.email.split('@')[0] // username은 프론트엔드에서 생성
   };
+};
+
+/**
+ * 필터를 백엔드 API 필터로 변환
+ * @param filter 프론트엔드 필터
+ * @returns 백엔드 API 필터
+ */
+const mapToApiFilter = (filter: InstructorFilter): ModelInstructorFilterInput => {
+  const apiFilter: ModelInstructorFilterInput = {};
+  
+  // 상태 필터 적용
+  if (filter.status) {
+    apiFilter.status = filter.status;
+  }
+  
+  // 검색어 필터 적용
+  if (filter.searchText) {
+    const searchFilters: ModelInstructorFilterInput[] = [];
+    
+    // 이름 검색
+    searchFilters.push({
+      name: { contains: filter.searchText }
+    });
+    
+    // 이메일 검색
+    searchFilters.push({
+      email: { contains: filter.searchText }
+    });
+    
+    // 프로필 검색
+    searchFilters.push({
+      profile: { contains: filter.searchText }
+    });
+    
+    // OR 조건으로 필터 적용
+    apiFilter.or = searchFilters;
+  }
+  
+  return apiFilter;
 };
 
 /**
@@ -60,12 +90,6 @@ const mapToFrontendModel = (apiInstructor: ApiInstructor): Instructor => {
  * @returns 강사 목록
  */
 export const fetchAllInstructors = async (): Promise<Instructor[]> => {
-  // 개발 모드인 경우 모의 데이터 사용
-  if (DEV_MODE) {
-    console.log('[DEV_MODE] 모의 강사 데이터 사용 중');
-    return Promise.resolve([...mockInstructors]);
-  }
-
   try {
     const response = await client.graphql({
       query: listInstructors
@@ -76,11 +100,6 @@ export const fetchAllInstructors = async (): Promise<Instructor[]> => {
     return (data?.listInstructors?.items || []).map(mapToFrontendModel);
   } catch (error: unknown) {
     console.error('강사 목록 조회 오류:', error);
-    // 오류 발생 시 모의 데이터 반환 (개발 환경)
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('오류 발생으로 모의 데이터 반환');
-      return [...mockInstructors];
-    }
     throw error;
   }
 };
@@ -91,13 +110,6 @@ export const fetchAllInstructors = async (): Promise<Instructor[]> => {
  * @returns 강사 정보 또는 null
  */
 export const fetchInstructorById = async (id: string): Promise<Instructor | null> => {
-  // 개발 모드인 경우 모의 데이터 사용
-  if (DEV_MODE) {
-    console.log(`[DEV_MODE] ID \${id}로 모의 강사 조회`);
-    const instructor = mockInstructors.find(i => i.id === id);
-    return Promise.resolve(instructor || null);
-  }
-
   try {
     const response = await client.graphql({
       query: getInstructor,
@@ -119,40 +131,18 @@ export const fetchInstructorById = async (id: string): Promise<Instructor | null
  * @returns 검색 조건에 맞는 강사 목록
  */
 export const searchInstructorsList = async (filter: InstructorFilter = {}): Promise<Instructor[]> => {
-  // 개발 모드인 경우 모의 데이터 필터링
-  if (DEV_MODE) {
-    console.log(`[DEV_MODE] 필터로 모의 강사 검색: \${JSON.stringify(filter)}`);
-    let filteredInstructors = [...mockInstructors];
-    
-    // 상태로 필터링
-    if (filter.status) {
-      filteredInstructors = filteredInstructors.filter(i => i.status === filter.status);
-    }
-    
-    // 텍스트 검색
-    if (filter.searchText) {
-      const searchText = filter.searchText.toLowerCase();
-      filteredInstructors = filteredInstructors.filter(i => 
-        i.name.toLowerCase().includes(searchText) ||
-        i.username.toLowerCase().includes(searchText) ||
-        i.email.toLowerCase().includes(searchText) ||
-        (i.profile && i.profile.toLowerCase().includes(searchText))
-      );
-    }
-    
-    return Promise.resolve(filteredInstructors);
-  }
-
   try {
-    const variables = { filter };
+    const apiFilter = mapToApiFilter(filter);
+    
+    // searchInstructors 대신 listInstructors를 필터와 함께 사용
     const response = await client.graphql({
-      query: searchInstructors,
-      variables
+      query: listInstructors,
+      variables: { filter: apiFilter }
     });
     
-    // 안전하게 데이터 추출
-    const data = safelyExtractData<SearchInstructorsResult>(response);
-    return (data?.searchInstructors?.items || []).map(mapToFrontendModel);
+    // 안전하게 데이터 추출 (여기서 ListInstructorsResult 타입 사용)
+    const data = safelyExtractData<ListInstructorsResult>(response);
+    return (data?.listInstructors?.items || []).map(mapToFrontendModel);
   } catch (error: unknown) {
     console.error('강사 검색 오류:', error);
     throw error;
@@ -165,31 +155,10 @@ export const searchInstructorsList = async (filter: InstructorFilter = {}): Prom
  * @returns 생성된 강사 정보
  */
 export const createNewInstructor = async (input: InstructorInput): Promise<Instructor> => {
-  // 개발 모드인 경우 모의 데이터에 추가
-  if (DEV_MODE) {
-    console.log(`[DEV_MODE] 새 강사 생성: \${input.name}`);
-    const newInstructor: Instructor = {
-      id: uuidv4(),
-      username: `user_\${uuidv4().substring(0, 8)}`,
-      email: input.email || `instructor_\${uuidv4().substring(0, 8)}@example.com`,
-      name: input.name || '새 강사',
-      profile: input.profile || '',
-      status: 'ACTIVE',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    mockInstructors.push(newInstructor);
-    return Promise.resolve({...newInstructor});
-  }
-
   try {
-    // username 필드 제거 (백엔드 스키마에 없음)
-    const { username, ...apiInput } = input as any;
-    
     const response = await client.graphql({
       query: createInstructor,
-      variables: { input: apiInput }
+      variables: { input }
     });
     
     // 안전하게 데이터 추출
@@ -212,32 +181,10 @@ export const createNewInstructor = async (input: InstructorInput): Promise<Instr
  * @returns 수정된 강사 정보
  */
 export const updateInstructorInfo = async (id: string, input: Partial<InstructorInput>): Promise<Instructor> => {
-  // 개발 모드인 경우 모의 데이터 수정
-  if (DEV_MODE) {
-    console.log(`[DEV_MODE] 강사 수정 ID: \${id}`);
-    const index = mockInstructors.findIndex(i => i.id === id);
-    
-    if (index === -1) {
-      throw new Error(`ID가 \${id}인 강사를 찾을 수 없습니다`);
-    }
-    
-    const updatedInstructor = {
-      ...mockInstructors[index],
-      ...input,
-      updatedAt: new Date().toISOString()
-    };
-    
-    mockInstructors[index] = updatedInstructor;
-    return Promise.resolve({...updatedInstructor});
-  }
-
   try {
-    // username 필드 제거 (백엔드 스키마에 없음)
-    const { username, ...apiInput } = input as any;
-    
     const response = await client.graphql({
       query: updateInstructor,
-      variables: { input: { id, ...apiInput } }
+      variables: { input: { id, ...input } }
     });
     
     // 안전하게 데이터 추출
@@ -259,29 +206,7 @@ export const updateInstructorInfo = async (id: string, input: Partial<Instructor
  * @param status 변경할 상태
  * @returns 상태 변경 결과
  */
-export const changeInstructorStatusById = async (id: string, status: 'ACTIVE' | 'INACTIVE'): Promise<{ id: string; status: string; updatedAt: string }> => {
-  // 개발 모드인 경우 모의 데이터 수정
-  if (DEV_MODE) {
-    console.log(`[DEV_MODE] 강사 상태 변경 ID: \${id}, 상태: \${status}`);
-    const index = mockInstructors.findIndex(i => i.id === id);
-    
-    if (index === -1) {
-      throw new Error(`ID가 \${id}인 강사를 찾을 수 없습니다`);
-    }
-    
-    // 현재 시간으로 업데이트 시간 설정
-    const updateTime = new Date().toISOString();
-    
-    mockInstructors[index].status = status;
-    mockInstructors[index].updatedAt = updateTime;
-    
-    return Promise.resolve({
-      id,
-      status,
-      updatedAt: updateTime
-    });
-  }
-
+export const changeInstructorStatusById = async (id: string, status: InstructorStatus): Promise<{ id: string; status: string; updatedAt: string }> => {
   try {
     const response = await client.graphql({
       query: changeInstructorStatus,

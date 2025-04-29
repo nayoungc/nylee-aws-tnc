@@ -1,7 +1,4 @@
 // src/graphql/surveyCatalog/mutations.ts
-/**
- * 설문조사 카탈로그 생성
- */
 export const createSurveyCatalog = /* GraphQL */ `
   mutation CreateSurveyCatalog(\$input: SurveyCatalogInput!) {
     createSurveyCatalog(input: \$input) {
@@ -33,7 +30,7 @@ export const createSurveyCatalog = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 카탈로그 수정
+ * 설문조사 템플릿 업데이트 뮤테이션
  */
 export const updateSurveyCatalog = /* GraphQL */ `
   mutation UpdateSurveyCatalog(\$input: UpdateSurveyCatalogInput!) {
@@ -66,7 +63,7 @@ export const updateSurveyCatalog = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 카탈로그 삭제
+ * 설문조사 템플릿 삭제 뮤테이션
  */
 export const deleteSurveyCatalog = /* GraphQL */ `
   mutation DeleteSurveyCatalog(\$surveyCatalogId: ID!) {
@@ -75,12 +72,13 @@ export const deleteSurveyCatalog = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 문항 추가
+ * 문항 추가 뮤테이션
  */
 export const addQuestionItems = /* GraphQL */ `
   mutation AddQuestionItems(\$surveyCatalogId: ID!, \$questionItems: [QuestionItemInput!]!) {
     addQuestionItems(surveyCatalogId: \$surveyCatalogId, questionItems: \$questionItems) {
       surveyCatalogId
+      title
       questionItems {
         id
         type
@@ -98,18 +96,18 @@ export const addQuestionItems = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 문항 제거
+ * 문항 제거 뮤테이션
  */
 export const removeQuestionItems = /* GraphQL */ `
   mutation RemoveQuestionItems(\$surveyCatalogId: ID!, \$questionIds: [ID!]!) {
     removeQuestionItems(surveyCatalogId: \$surveyCatalogId, questionIds: \$questionIds) {
       surveyCatalogId
+      title
       questionItems {
         id
         type
         content
         required
-        order
       }
       updatedAt
     }
@@ -117,12 +115,13 @@ export const removeQuestionItems = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 문항 순서 업데이트
+ * 문항 순서 업데이트 뮤테이션
  */
 export const updateQuestionOrder = /* GraphQL */ `
   mutation UpdateQuestionOrder(\$surveyCatalogId: ID!, \$questionIds: [ID!]!) {
     updateQuestionOrder(surveyCatalogId: \$surveyCatalogId, questionIds: \$questionIds) {
       surveyCatalogId
+      title
       questionItems {
         id
         type
@@ -136,12 +135,13 @@ export const updateQuestionOrder = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 카탈로그 활성화
+ * 설문조사 템플릿 활성화 뮤테이션
  */
 export const activateSurveyCatalog = /* GraphQL */ `
   mutation ActivateSurveyCatalog(\$surveyCatalogId: ID!) {
     activateSurveyCatalog(surveyCatalogId: \$surveyCatalogId) {
       surveyCatalogId
+      title
       isActive
       updatedAt
     }
@@ -149,12 +149,13 @@ export const activateSurveyCatalog = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 카탈로그 비활성화
+ * 설문조사 템플릿 비활성화 뮤테이션
  */
 export const deactivateSurveyCatalog = /* GraphQL */ `
   mutation DeactivateSurveyCatalog(\$surveyCatalogId: ID!) {
     deactivateSurveyCatalog(surveyCatalogId: \$surveyCatalogId) {
       surveyCatalogId
+      title
       isActive
       updatedAt
     }
@@ -162,15 +163,13 @@ export const deactivateSurveyCatalog = /* GraphQL */ `
 `;
 
 /**
- * 설문조사 배포
+ * 설문조사 배포 뮤테이션
  */
 export const deploySurvey = /* GraphQL */ `
   mutation DeploySurvey(\$input: DeploySurveyInput!) {
     deploySurvey(input: \$input) {
       surveyCatalogId
       title
-      isActive
-      metadata
       updatedAt
     }
   }

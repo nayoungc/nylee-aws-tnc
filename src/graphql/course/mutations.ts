@@ -5,7 +5,7 @@
  * @param input - 생성할 과정 정보
  */
 export const createCourse = /* GraphQL */ `
-  mutation CreateCourse(\$input: CreateCourseInput!) {
+  mutation CreateCourse(\$input: CourseInput!) {
     createCourse(input: \$input) {
       courseId
       startDate
@@ -17,20 +17,21 @@ export const createCourse = /* GraphQL */ `
       location
       attendance
       status
-      isAddedToCalendar
       createdAt
       updatedAt
     }
   }
 `;
 
+
 /**
  * 과정 수정
  * @param input - 수정할 과정 정보
  */
+
 export const updateCourse = /* GraphQL */ `
-  mutation UpdateCourse(\$input: UpdateCourseInput!) {
-    updateCourse(input: \$input) {
+  mutation UpdateCourse(\$courseId: ID!, \$input: CourseUpdateInput!) {
+    updateCourse(courseId: \$courseId, input: \$input) {
       courseId
       startDate
       catalogId
@@ -41,7 +42,6 @@ export const updateCourse = /* GraphQL */ `
       location
       attendance
       status
-      isAddedToCalendar
       createdAt
       updatedAt
     }
@@ -53,12 +53,24 @@ export const updateCourse = /* GraphQL */ `
  * @param input - 삭제할 과정 ID
  */
 export const deleteCourse = /* GraphQL */ `
-  mutation DeleteCourse(\$input: DeleteCourseInput!) {
-    deleteCourse(input: \$input) {
+  mutation DeleteCourse(\$courseId: ID!) {
+    deleteCourse(courseId: \$courseId) {
       courseId
+      startDate
+      catalogId
+      instructor
+      customerId
+      status
+      createdAt
+      updatedAt
     }
   }
-`;
+`
+
+
+
+
+
 
 /**
  * 과정 상태 변경

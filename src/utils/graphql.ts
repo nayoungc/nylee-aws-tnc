@@ -1,23 +1,17 @@
 // src/utils/graphql.ts
 
 /**
- * GraphQL 응답에서 안전하게 데이터를 추출하는 유틸리티 함수
- * 타입 호환성 문제를 방지하기 위해 any 타입 사용
+ * GraphQL API 응답에서 데이터를 안전하게 추출하는 유틸리티 함수
+ * @param response GraphQL API 응답 객체
+ * @returns 응답에서 추출한 데이터 또는 undefined
  */
-export function safelyExtractData<T>(response: any): T | null {
+export function safelyExtractData<T = any>(response: any): T | undefined {
   console.log("safelyExtractData 입력 데이터:", JSON.stringify(response, null, 2));
-  
-  // 데이터가 있는지 확인
-  if (!response || !response.data) {
-    console.warn("safelyExtractData: 응답에서 데이터를 찾을 수 없음");
-    return null;
+
+  if (response && 'data' in response) {
+    return response.data as T;
   }
-  
-  // 데이터 추출
-  const result = response.data as T;
-  console.log("safelyExtractData 추출 결과:", JSON.stringify(result, null, 2));
-  
-  return result;
+  return undefined;
 }
 
 /**
@@ -34,4 +28,4 @@ export function extractGraphQLErrors(result: any): string[] {
     });
   }
   return [];
-}  
+}

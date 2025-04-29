@@ -8,8 +8,8 @@ import {
   createNewInstructor,
   updateInstructorInfo,
   changeInstructorStatusById
-} from '@/services/api/instructorApi';
-import { Instructor, InstructorInput, InstructorFilter } from '@/models/instructor';
+} from '@services/api/instructorApi';
+import { Instructor, InstructorInput, InstructorFilter, InstructorStatus } from '@/models/instructor';
 
 /**
  * InstructorsTab에서 사용할 통합된 강사 관리 훅
@@ -59,7 +59,7 @@ export const useInstructor = () => {
   const statusChangeMutation = useMutation<
     { id: string; status: string; updatedAt: string }, 
     Error, 
-    { id: string; status: 'ACTIVE' | 'INACTIVE' }
+    { id: string; status: InstructorStatus }
   >({
     mutationFn: ({ id, status }) => changeInstructorStatusById(id, status),
     onSuccess: (data) => {
@@ -85,7 +85,7 @@ export const useInstructor = () => {
   }, [selectedId, updateMutation]);
 
   // 선택된 강사 상태 변경
-  const changeSelectedInstructorStatus = useCallback(async (status: 'ACTIVE' | 'INACTIVE') => {
+  const changeSelectedInstructorStatus = useCallback(async (status: InstructorStatus) => {
     if (!selectedId) throw new Error('선택된 강사가 없습니다');
     return await statusChangeMutation.mutateAsync({ id: selectedId, status });
   }, [selectedId, statusChangeMutation]);
@@ -184,7 +184,7 @@ export const useChangeInstructorStatus = () => {
   
   interface ChangeStatusVars {
     id: string;
-    status: 'ACTIVE' | 'INACTIVE';
+    status: InstructorStatus;
   }
   
   return useMutation<{ id: string; status: string; updatedAt: string }, Error, ChangeStatusVars>({

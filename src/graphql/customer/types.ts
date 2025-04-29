@@ -1,83 +1,75 @@
 // src/graphql/customer/types.ts
+import { Customer } from '@/models/customer';
 
-export interface Customer {
+/**
+ * GraphQL API에서 반환되는 고객 타입
+ * @description 백엔드 스키마와 일치하는 고객 데이터 타입
+ */
+export interface ApiCustomer {
   id: string;
-  customerName: string; // name -> customerName
+  customerName: string;
   notes?: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
 /**
- * 필터 타입 정의
- * GraphQL API에서 사용되는 필터 입력 타입
- * @description Amplify에서 생성된 필터 타입은 보통 'Model' 접두사를 사용함
+ * 고객 연결 타입 (페이지네이션)
  */
-export interface ModelCustomerFilterInput {
-  id?: { eq?: string; contains?: string };
-  name?: { eq?: string; contains?: string };
-  and?: ModelCustomerFilterInput[];
-  or?: ModelCustomerFilterInput[];
-  not?: ModelCustomerFilterInput;
+export interface CustomerConnection {
+  items: ApiCustomer[];
+  nextToken?: string | null;
 }
 
 /**
- * 검색 필터 입력 타입
- * 고급 검색 기능을 위한 필터 옵션
- */
-export interface SearchableCustomerFilterInput {
-  text?: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-/**
- * 고객 목록 조회 결과 타입
+ * 고객 목록 쿼리 결과 타입
  */
 export interface ListCustomersResult {
-  listCustomers: {
-    items: Customer[];
-    nextToken?: string | null;
-  };
+  listCustomers: CustomerConnection;
 }
 
 /**
- * 고객 단일 조회 결과 타입
+ * 단일 고객 조회 쿼리 결과 타입
  */
 export interface GetCustomerResult {
-  getCustomer: Customer | null;
+  getCustomer: ApiCustomer | null;
 }
 
 /**
- * 고객 검색 결과 타입
+ * 고객 검색 쿼리 결과 타입
  */
 export interface SearchCustomersResult {
-  searchCustomers: {
-    items: Customer[];
-    nextToken?: string | null;
-  };
+  searchCustomers: CustomerConnection;
 }
 
 /**
- * 고객 생성 결과 타입
+ * 고객 생성 뮤테이션 결과 타입
  */
 export interface CreateCustomerResult {
-  createCustomer: Customer;
+  createCustomer: ApiCustomer;
 }
 
 /**
- * 고객 수정 결과 타입
+ * 고객 수정 뮤테이션 결과 타입
  */
 export interface UpdateCustomerResult {
-  updateCustomer: Customer;
+  updateCustomer: ApiCustomer;
 }
 
 /**
- * 고객 삭제 결과 타입
+ * 고객 삭제 뮤테이션 결과 타입
  */
 export interface DeleteCustomerResult {
   deleteCustomer: {
     id: string;
-    name: string;
+    customerName?: string;
   };
+}
+
+/**
+ * 고객 검색 필터 타입
+ */
+export interface CustomerFilterInput {
+  text?: string;
+  organization?: string;
 }

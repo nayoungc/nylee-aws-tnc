@@ -15,7 +15,7 @@ import {
   TextFilter
 } from '@cloudscape-design/components';
 import { useInstructor } from '@/hooks/useInstructor';
-import { Instructor, InstructorInput } from '@/models/instructor';
+import { Instructor, InstructorInput, InstructorStatus } from '@/models/instructor';
 import EnhancedTable from '@/components/common/EnhancedTable';
 import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
@@ -44,11 +44,10 @@ const InstructorsTab: React.FC = () => {
   const [searchText, setSearchText] = useState('');
 
   // 폼 상태 - 백엔드 스키마에 맞게 조정
-  // 백엔드 API 응답을 검사한 결과, 필드명이 이미 일치하는 것으로 보임
   const [formData, setFormData] = useState<InstructorInput>({
     name: '',
     email: '',
-    status: 'ACTIVE',
+    status: InstructorStatus.ACTIVE,
     profile: '',
   });
 
@@ -74,7 +73,7 @@ const InstructorsTab: React.FC = () => {
   };
 
   // 강사 상태 변경 처리
-  const handleStatusChange = async (newStatus: 'ACTIVE' | 'INACTIVE') => {
+  const handleStatusChange = async (newStatus: InstructorStatus) => {
     try {
       await changeSelectedInstructorStatus(newStatus);
       setShowStatusChangeModal(false);
@@ -85,7 +84,7 @@ const InstructorsTab: React.FC = () => {
   };
 
   // 상태 변경 모달 열기
-  const openStatusChangeModal = (instructor: Instructor, status: 'ACTIVE' | 'INACTIVE') => {
+  const openStatusChangeModal = (instructor: Instructor, status: InstructorStatus) => {
     selectInstructor(instructor.id);
     setSelectedInstructors([instructor]);
     setShowStatusChangeModal(true);
@@ -97,7 +96,7 @@ const InstructorsTab: React.FC = () => {
     setFormData({
       name: instructor.name,
       email: instructor.email,
-      status: instructor.status || 'ACTIVE',
+      status: instructor.status || InstructorStatus.ACTIVE,
       profile: instructor.profile || '',
     });
     setShowEditModal(true);
@@ -108,7 +107,7 @@ const InstructorsTab: React.FC = () => {
     setFormData({
       name: '',
       email: '',
-      status: 'ACTIVE',
+      status: InstructorStatus.ACTIVE,
       profile: '',
     });
   };
@@ -169,8 +168,8 @@ const InstructorsTab: React.FC = () => {
       header: t('instructors_fields_status'),
       cell: (item: Instructor) => {
         const statusMap: Record<string, { type: string; text: string }> = {
-          ACTIVE: { type: 'success', text: t('instructors_status_active') },
-          INACTIVE: { type: 'stopped', text: t('instructors_status_inactive') }
+          [InstructorStatus.ACTIVE]: { type: 'success', text: t('instructors_status_active') },
+          [InstructorStatus.INACTIVE]: { type: 'stopped', text: t('instructors_status_inactive') }
         };
 
         const statusKey = item.status || 'unknown';
@@ -218,10 +217,10 @@ const InstructorsTab: React.FC = () => {
           >
             {t('edit')}
           </Button>
-          {item.status === 'ACTIVE' ? (
+          {item.status === InstructorStatus.ACTIVE ? (
             <Button
               variant="link"
-              onClick={() => openStatusChangeModal(item, 'INACTIVE')}
+              onClick={() => openStatusChangeModal(item, InstructorStatus.INACTIVE)}
               iconName="remove"
             >
               {t('instructors_actions_deactivate')}
@@ -229,7 +228,7 @@ const InstructorsTab: React.FC = () => {
           ) : (
             <Button
               variant="link"
-              onClick={() => openStatusChangeModal(item, 'ACTIVE')}
+              onClick={() => openStatusChangeModal(item, InstructorStatus.ACTIVE)}
               iconName="check"
             >
               {t('instructors_actions_activate')}
@@ -485,7 +484,7 @@ const InstructorsTab: React.FC = () => {
           visible={showStatusChangeModal}
           onDismiss={() => setShowStatusChangeModal(false)}
           header={
-            selectedInstructor?.status === 'ACTIVE' ?
+            selectedInstructor?.status === InstructorStatus.ACTIVE ?
               t('instructors_modals_deactivate_title') :
               t('instructors_modals_activate_title')
           }
@@ -498,11 +497,13 @@ const InstructorsTab: React.FC = () => {
                 <Button
                   variant="primary"
                   onClick={() => handleStatusChange(
-                    selectedInstructor?.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+                    selectedInstructor?.status === InstructorStatus.ACTIVE ? 
+                      InstructorStatus.INACTIVE : 
+                      InstructorStatus.ACTIVE
                   )}
                   loading={isChangingStatus}
                 >
-                  {selectedInstructor?.status === 'ACTIVE' ?
+                  {selectedInstructor?.status === InstructorStatus.ACTIVE ?
                     t('instructors_actions_deactivate') :
                     t('instructors_actions_activate')
                   }
@@ -512,7 +513,7 @@ const InstructorsTab: React.FC = () => {
           }
         >
           <Box>
-            {selectedInstructor?.status === 'ACTIVE' ?
+            {selectedInstructor?.status === InstructorStatus.ACTIVE ?
               t('instructors_modals_deactivate_confirmation', { name: selectedInstructor?.name }) :
               t('instructors_modals_activate_confirmation', { name: selectedInstructor?.name })
             }

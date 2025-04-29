@@ -20,7 +20,7 @@ import SurveyManagementPage from '@/pages/survey/SurveyManagementPage';
 import QuizManagementPage from './pages/quiz/QuizManagementPage';
 import HomePage from '@/pages/public/HomePage';
 import TncPage from '@/pages/public/TncPage';
-import CourseCatalogPage from '@pages/catalog/CourseCatalogPage';
+import CourseCatalogPage from '@/pages/courseCatalog/CourseCatalogPage';
 import CourseManagementPage from '@pages/admin/CourseManagementPage';
 import SystemManagementPage from '@/pages/admin/SystemManagementPage';
 import NotFoundPage from './pages/errors/NotFoundPage';

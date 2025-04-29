@@ -7,25 +7,23 @@ import { safelyExtractData } from '@/utils/graphql';
 import { 
   listCustomers, 
   getCustomer,
-  searchCustomers
-} from '@/graphql/customer';
-import { 
+  searchCustomers,
   createCustomer, 
   updateCustomer,
   deleteCustomer 
 } from '@/graphql/customer';
+
 import {
   ListCustomersResult,
   GetCustomerResult,
   SearchCustomersResult,
   CreateCustomerResult,
   UpdateCustomerResult,
-  DeleteCustomerResult,
-  ModelCustomerFilterInput
-} from '@/graphql/customer';
+  DeleteCustomerResult
+} from '@/graphql/customer/types';
 
 // 모델과 모의 데이터
-import { Customer, CustomerInput, CustomerFilter } from '@/models/customers';
+import { Customer, CustomerInput, CustomerFilter, ModelCustomerFilterInput } from '@/models/customer';
 import { mockCustomers } from '@/mocks/customerData';
 
 // Amplify API 클라이언트 생성
@@ -35,7 +33,23 @@ const client = generateClient();
 const DEV_MODE = false;
 
 /**
+ * API 응답을 프론트엔드 모델로 변환
+ * @param apiCustomer 백엔드 API 응답
+ * @returns 프론트엔드 모델 형식의 고객 데이터
+ */
+const mapToFrontendModel = (apiCustomer: any): Customer => {
+  return {
+    id: apiCustomer.id,
+    customerName: apiCustomer.customerName,
+    notes: apiCustomer.notes,
+    createdAt: apiCustomer.createdAt,
+    updatedAt: apiCustomer.updatedAt
+  };
+};
+
+/**
  * 모든 고객 가져오기
+ * @returns 고객 목록
  */
 export const fetchAllCustomers = async (): Promise<Customer[]> => {
   // 개발 모드인 경우 모의 데이터 사용
@@ -51,7 +65,7 @@ export const fetchAllCustomers = async (): Promise<Customer[]> => {
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<ListCustomersResult>(response);
-    return data?.listCustomers?.items || [];
+    return (data?.listCustomers?.items || []).map(mapToFrontendModel);
   } catch (error: unknown) {
     console.error('고객 목록 조회 오류:', error);
     throw error;
@@ -60,6 +74,8 @@ export const fetchAllCustomers = async (): Promise<Customer[]> => {
 
 /**
  * ID로 특정 고객 가져오기
+ * @param id 고객 ID
+ * @returns 고객 정보 또는 null
  */
 export const fetchCustomerById = async (id: string): Promise<Customer | null> => {
   // 개발 모드인 경우 모의 데이터 사용
@@ -77,7 +93,7 @@ export const fetchCustomerById = async (id: string): Promise<Customer | null> =>
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<GetCustomerResult>(response);
-    return data?.getCustomer || null;
+    return data?.getCustomer ? mapToFrontendModel(data.getCustomer) : null;
   } catch (error: unknown) {
     console.error(`고객 조회 오류 (ID: \${id}):`, error);
     throw error;
@@ -86,11 +102,13 @@ export const fetchCustomerById = async (id: string): Promise<Customer | null> =>
 
 /**
  * 새 고객 생성
+ * @param input 고객 생성 정보
+ * @returns 생성된 고객 정보
  */
 export const createNewCustomer = async (input: CustomerInput): Promise<Customer> => {
   // 개발 모드인 경우 모의 데이터에 추가
   if (DEV_MODE) {
-    console.log(`[DEV_MODE] 새 고객 생성: \${input.name}`);
+    console.log(`[DEV_MODE] 새 고객 생성: \${input.customerName}`);
     const newCustomer: Customer = {
       id: uuidv4(),
       ...input,
@@ -114,7 +132,7 @@ export const createNewCustomer = async (input: CustomerInput): Promise<Customer>
       throw new Error('고객 생성 응답이 유효하지 않습니다');
     }
     
-    return data.createCustomer;
+    return mapToFrontendModel(data.createCustomer);
   } catch (error: unknown) {
     console.error('고객 생성 오류:', error);
     throw error;
@@ -123,6 +141,9 @@ export const createNewCustomer = async (input: CustomerInput): Promise<Customer>
 
 /**
  * 고객 정보 수정
+ * @param id 고객 ID
+ * @param input 수정할 정보
+ * @returns 수정된 고객 정보
  */
 export const updateCustomerInfo = async (id: string, input: Partial<CustomerInput>): Promise<Customer> => {
   // 개발 모드인 경우 모의 데이터 수정
@@ -156,7 +177,7 @@ export const updateCustomerInfo = async (id: string, input: Partial<CustomerInpu
       throw new Error(`ID가 \${id}인 고객 수정 응답이 유효하지 않습니다`);
     }
     
-    return data.updateCustomer;
+    return mapToFrontendModel(data.updateCustomer);
   } catch (error: unknown) {
     console.error(`고객 수정 오류 (ID: \${id}):`, error);
     throw error;
@@ -165,6 +186,8 @@ export const updateCustomerInfo = async (id: string, input: Partial<CustomerInpu
 
 /**
  * 고객 삭제
+ * @param id 삭제할 고객 ID
+ * @returns 삭제 성공 여부
  */
 export const deleteCustomerById = async (id: string): Promise<{ success: boolean }> => {
   // 개발 모드인 경우 모의 데이터에서 삭제
@@ -197,6 +220,8 @@ export const deleteCustomerById = async (id: string): Promise<{ success: boolean
 
 /**
  * 필터를 사용하여 고객 검색
+ * @param filter 검색 필터
+ * @returns 필터링된 고객 목록
  */
 export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<Customer[]> => {
   // 개발 모드인 경우 모의 데이터 필터링
@@ -208,8 +233,8 @@ export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<
     if (filter.text) {
       const searchText = filter.text.toLowerCase();
       filteredCustomers = filteredCustomers.filter(c => 
-        c.name.toLowerCase().includes(searchText)
-        // notes 필드 제거 (백엔드에 존재하지 않음)
+        c.customerName.toLowerCase().includes(searchText) ||
+        (c.notes && c.notes.toLowerCase().includes(searchText))
       );
     }
     
@@ -217,10 +242,10 @@ export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<
   }
 
   try {
-    // CustomerFilter를 SearchableCustomerFilterInput으로 변환
+    // 검색 필터 변환 
     const searchFilter = {
       text: filter.text,
-      // 다른 필드 필요시 추가
+      organization: filter.organization
     };
     
     const response = await client.graphql({
@@ -230,7 +255,7 @@ export const searchCustomersList = async (filter: CustomerFilter = {}): Promise<
     
     // 안전하게 데이터 추출
     const data = safelyExtractData<SearchCustomersResult>(response);
-    return data?.searchCustomers?.items || [];
+    return (data?.searchCustomers?.items || []).map(mapToFrontendModel);
   } catch (error: unknown) {
     console.error('고객 검색 오류:', error);
     throw error;

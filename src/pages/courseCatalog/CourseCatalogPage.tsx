@@ -1,6 +1,5 @@
-// src/pages/catalog/CourseCatalogPage.tsx
+// src/pages/courseCatalog/CourseCatalogPage.tsx
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
   Container, 
   Header, 
@@ -8,17 +7,19 @@ import {
   Button, 
   Pagination, 
   SpaceBetween,
-  Cards,
   TextFilter,
   Spinner,
   Box
 } from '@cloudscape-design/components';
-import { fetchAllCourseCatalogs, searchCourseCatalogs } from '@/services/api/courseCatalogApi';
+import { fetchAllCourseCatalogs, searchCourseCatalogs } from '@/services/api/courseCatalogApi'; // 경로 수정
 import { CourseCatalog, CourseCatalogFilter } from '@/models/courseCatalog';
 import { useNavigate } from 'react-router-dom';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
 
-
+/**
+ * 코스 카탈로그 목록 페이지 컴포넌트
+ * @description 사용자가 코스 카탈로그 목록을 볼 수 있는 페이지
+ */
 const CourseCatalogPage: React.FC = () => {
   const { t } = useAppTranslation();
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const CourseCatalogPage: React.FC = () => {
           }
           
           if (selectedLevels.length > 0) {
-            filter.level = selectedLevels[0]; // 현재는 단일 레벨만 지원
+            filter.level = selectedLevels[0] as any; // 타입 단언 추가
           }
           
           const data = await searchCourseCatalogs(filter);
@@ -84,11 +85,11 @@ const CourseCatalogPage: React.FC = () => {
   };
   
   const handleEditCatalog = (id: string) => {
-    navigate(`/catalog/edit/\${id}`); // 수정된 템플릿 문자열
+    navigate(`/catalog/edit/\${id}`); // 백슬래시 제거
   };
   
   const handleViewCatalog = (id: string) => {
-    navigate(`/catalog/\${id}`); // 수정된 템플릿 문자열
+    navigate(`/catalog/\${id}`); // 백슬래시 제거
   };
 
   if (loading) {
@@ -154,15 +155,15 @@ const CourseCatalogPage: React.FC = () => {
             <Table
               columnDefinitions={[
                 {
-                  id: 'title',
+                  id: 'course_name', // 필드명 수정
                   header: t('fields.title', { ns: 'courseCatalog' }),
-                  cell: item => item.course_name,
-                  sortingField: 'title'
+                  cell: item => item.course_name, // 필드명 수정
+                  sortingField: 'course_name' // 필드명 수정
                 },
                 {
-                  id: 'awsCode',
+                  id: 'course_id', // 필드명 수정
                   header: t('fields.awsCode', { ns: 'courseCatalog' }),
-                  cell: item => item.course_id || '-'
+                  cell: item => item.course_id || '-' // 필드명 수정
                 },
                 {
                   id: 'level',
@@ -172,7 +173,7 @@ const CourseCatalogPage: React.FC = () => {
                 {
                   id: 'status',
                   header: t('fields.status', { ns: 'courseCatalog' }),
-                  cell: item => item.status || 'DRAFT'
+                  cell: item => item.status || 'ACTIVE'
                 },
                 {
                   id: 'actions',

@@ -1,11 +1,11 @@
 // src/graphql/courseCatalog/queries.ts
 
 /**
- * 모든 코스 카탈로그 목록 조회
+ * 코스 카탈로그 목록 가져오기
  */
 export const listCourseCatalogs = /* GraphQL */ `
-  query ListCourseCatalogs {
-    listCourseCatalogs {
+  query ListCourseCatalogs(\$filter: ModelCourseCatalogFilterInput, \$limit: Int, \$nextToken: String) {
+    listCourseCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         id
         course_name
@@ -19,6 +19,7 @@ export const listCourseCatalogs = /* GraphQL */ `
         status
         createdAt
         updatedAt
+        createdBy
       }
       nextToken
     }
@@ -26,7 +27,7 @@ export const listCourseCatalogs = /* GraphQL */ `
 `;
 
 /**
- * 특정 코스 카탈로그 상세 조회
+ * 특정 코스 카탈로그 조회
  */
 export const getCourseCatalog = /* GraphQL */ `
   query GetCourseCatalog(\$id: ID!) {
@@ -43,6 +44,7 @@ export const getCourseCatalog = /* GraphQL */ `
       status
       createdAt
       updatedAt
+      createdBy
     }
   }
 `;

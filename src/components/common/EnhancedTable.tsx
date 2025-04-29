@@ -1,3 +1,4 @@
+// src/components/common/EnhancedTable.tsx
 import React, { useState } from 'react';
 import {
   Table,
@@ -12,8 +13,12 @@ import {
   PropertyFilterProps,
   TableProps
 } from '@cloudscape-design/components';
+import { NonCancelableEventHandler } from '@cloudscape-design/components/internal/events';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
 
+/**
+ * EnhancedTable의 빈 상태 텍스트 정의
+ */
 interface EnhancedTableEmptyText {
   title: string;
   subtitle?: string;
@@ -23,25 +28,48 @@ interface EnhancedTableEmptyText {
   };
 }
 
-// 필터링 속성의 확장된 타입 정의
+/**
+ * 필터링 속성의 확장된 타입 정의
+ */
 interface EnhancedFilteringProperty {
   key: string;
   label: string;
 }
 
-// 테이블 변형 타입
-type TableVariant = TableProps.Variant; // "container" | "borderless" | "embedded" | "stacked" | "full-page"
+/**
+ * 배치 액션 타입 정의
+ */
+interface BatchAction {
+  text: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
 
-interface EnhancedTableProps {
+/**
+ * 가시적 콘텐츠 옵션 그룹 타입
+ */
+interface VisibleContentOptionGroup {
+  id: string;
+  label: string;
+  options: {
+    id: string;
+    label: string;
+  }[];
+}
+
+/**
+ * EnhancedTable 컴포넌트 Props 정의
+ */
+export interface EnhancedTableProps<T = any> {
   title: string;
   description?: string;
-  columnDefinitions: any[];
-  items: any[];
+  columnDefinitions: TableProps.ColumnDefinition<T>[];
+  items: T[];
   loading?: boolean;
   loadingText?: string;
   selectionType?: "multi" | "single";
-  selectedItems?: any[];
-  onSelectionChange?: (items: any[]) => void;
+  selectedItems?: T[];
+  onSelectionChange?: (items: T[]) => void;
   onRefresh?: () => void;
   actions?: {
     primary?: {
@@ -53,11 +81,7 @@ interface EnhancedTableProps {
       onClick: () => void;
     }[];
   };
-  batchActions?: {
-    text: string;
-    onClick: () => void;
-    disabled?: boolean;
-  }[];
+  batchActions?: BatchAction[];
   filteringProperties?: EnhancedFilteringProperty[];
   usePropertyFilter?: boolean;
   defaultSortingColumn?: string;
@@ -67,15 +91,17 @@ interface EnhancedTableProps {
   stickyHeader?: boolean;
   stripedRows?: boolean;
   resizableColumns?: boolean;
-  visibleContentOptions?: any[];
+  visibleContentOptions?: VisibleContentOptionGroup[];
   preferences?: boolean;
   trackBy?: string;
-  variant?: TableVariant;
-  // 올바른 형식의 columnDisplay 타입 정의 
-  columnDisplay?: readonly TableProps.ColumnDisplayProperties[];
+  variant?: TableProps.Variant;
+  columnDisplay?: readonly { id: string; visible: boolean }[];
 }
 
-const EnhancedTable: React.FC<EnhancedTableProps> = ({
+/**
+ * 고급 테이블 컴포넌트
+ */
+function EnhancedTable<T extends Record<string, any> = any>({
   title,
   description,
   columnDefinitions,
@@ -102,17 +128,21 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
   trackBy = 'id',
   variant,
   columnDisplay
-}) => {
+}: EnhancedTableProps<T>): React.ReactElement {
   const { t } = useAppTranslation();
   
-  const [sortingColumn, setSortingColumn] = useState<any>(
-    defaultSortingColumn ? { sortingField: defaultSortingColumn } : undefined
+  const [sortingColumn, setSortingColumn] = useState<TableProps.ColumnDefinition<T> | null>(
+    defaultSortingColumn ? columnDefinitions.find(col => col.id === defaultSortingColumn) || null : null
   );
   const [sortingDescending, setSortingDescending] = useState<boolean>(defaultSortingDescending);
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(20);
-  const [selectedVisibleContent, setSelectedVisibleContent] = useState<any[]>(
-    visibleContentOptions ? visibleContentOptions.map(group => group.options.map((o: any) => o.id)).flat() : []
+  const [selectedVisibleContent, setSelectedVisibleContent] = useState<string[]>(
+    visibleContentOptions 
+      ? visibleContentOptions.flatMap(group => 
+          group.options.map((option) => option.id)
+        ) 
+      : []
   );
   const [filteringQuery, setFilteringQuery] = useState<PropertyFilterProps.Query>({ tokens: [], operation: "and" });
 
@@ -175,21 +205,24 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
   const pagesCount = Math.ceil(items.length / pageSize);
 
   // 기본 정렬 적용
-  const sortedItems = [...paginatedItems].sort((a, b) => {
-    if (!sortingColumn) return 0;
+  const sortedItems = [...paginatedItems].sort((a: T, b: T) => {
+    if (!sortingColumn || !sortingColumn.sortingField) return 0;
     
-    const aValue = a[sortingColumn.sortingField];
-    const bValue = b[sortingColumn.sortingField];
+    const sortField = sortingColumn.sortingField as keyof T;
+    
+    const aValue = a[sortField];
+    const bValue = b[sortField];
     
     if (aValue === bValue) return 0;
     if (aValue == null) return 1;
     if (bValue == null) return -1;
     
-    if (typeof aValue === 'string') {
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
       return sortingDescending ? bValue.localeCompare(aValue) : aValue.localeCompare(bValue);
     }
     
-    return sortingDescending ? bValue - aValue : aValue - bValue;
+    // 숫자 비교
+    return sortingDescending ? (Number(bValue) - Number(aValue)) : (Number(aValue) - Number(bValue));
   });
 
   // 페이지 변경 핸들러
@@ -197,32 +230,30 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
     setCurrentPageIndex(detail.currentPageIndex);
   };
 
-  // 열 정렬 핸들러 수정
-  const handleSortingChange = (event: any) => {
-    const { sortingColumn, isDescending = false } = event.detail;
-    setSortingColumn(sortingColumn);
-    setSortingDescending(isDescending);
+  // 열 정렬 핸들러
+  const handleSortingChange = ({ detail }: { 
+    detail: { sortingColumn: TableProps.ColumnDefinition<T> | null; isDescending?: boolean } 
+  }) => {
+    setSortingColumn(detail.sortingColumn);
+    setSortingDescending(detail.isDescending || false);
   };
 
-  // 가시적 콘텐츠 선택 처리
-  const handleVisibleContentChange = ({ detail }: { detail: { visibleContent: any[] } }) => {
-    setSelectedVisibleContent(detail.visibleContent);
+  // 기본 설정 변경 처리
+  const handlePreferencesChange: NonCancelableEventHandler<CollectionPreferences.Preferences> = (event) => {
+    const { detail } = event;
+    if (detail.pageSize) {
+      setPageSize(detail.pageSize);
+    }
+    if (detail.visibleContent) {
+      setSelectedVisibleContent([...detail.visibleContent]);
+    }
   };
 
-  // 기본 설정 변경 처리 수정
-  const handlePreferencesChange = (event: any) => {
-    const { pageSize = 20, visibleContent = [] } = event.detail;
-    setPageSize(pageSize);
-    setSelectedVisibleContent(visibleContent);
-  };
-
-  // 필터링 변경 처리 - 타입 수정
-  const handleFilterChange = (event: any) => {
-    // 필요한 경우 깊은 복사로 readonly 문제 해결
-    const tokens = [...event.detail.tokens];
+  // 필터링 변경 처리
+  const handleFilterChange = ({ detail }: { detail: PropertyFilterProps.Query }) => {
     setFilteringQuery({
-      tokens,
-      operation: event.detail.operation
+      tokens: [...detail.tokens],
+      operation: detail.operation
     });
   };
 
@@ -237,23 +268,19 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
   // 로딩 텍스트 - 제공된 값 또는 다국어 기본값 사용
   const finalLoadingText = loadingText || t('common:loading', '로딩 중...');
 
-  // selectedVisibleContent를 기반으로 ColumnDisplayProperties 배열 생성
-  let effectiveColumnDisplay: readonly TableProps.ColumnDisplayProperties[] | undefined = columnDisplay;
-  
-  // selectedVisibleContent를 기반으로 기본 columnDisplay 생성
-  if (!effectiveColumnDisplay && selectedVisibleContent.length > 0) {
-    effectiveColumnDisplay = selectedVisibleContent.map(id => ({
-      id,
-      visible: true
-    }));
-  }
+  // selectedVisibleContent를 기반으로 ColumnDisplay 생성
+  const effectiveColumnDisplay = columnDisplay || (
+    selectedVisibleContent.length > 0 ? 
+      selectedVisibleContent.map(id => ({ id, visible: true })) : 
+      undefined
+  );
 
   return (
-    <Table
+    <Table<T>
       columnDefinitions={columnDefinitions}
       items={sortedItems}
       loading={loading}
-      loadingText={finalLoadingText} // 다국어 지원 로딩 텍스트
+      loadingText={finalLoadingText}
       selectionType={selectionType}
       selectedItems={selectedItems}
       onSelectionChange={({ detail }) => onSelectionChange(detail.selectedItems)}
@@ -343,6 +370,6 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
       }
     />
   );
-};
+}
 
 export default EnhancedTable;

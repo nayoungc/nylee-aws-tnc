@@ -1,11 +1,11 @@
 // src/graphql/instructor/mutations.ts
-
-// 강사 추가 (Cognito에 사용자 추가)
+/**
+ * 강사 생성 뮤테이션
+ */
 export const createInstructor = /* GraphQL */ `
   mutation CreateInstructor(\$input: CreateInstructorInput!) {
     createInstructor(input: \$input) {
       id
-      username
       email
       name
       profile
@@ -16,12 +16,13 @@ export const createInstructor = /* GraphQL */ `
   }
 `;
 
-// 강사 정보 업데이트
+/**
+ * 강사 정보 업데이트 뮤테이션
+ */
 export const updateInstructor = /* GraphQL */ `
   mutation UpdateInstructor(\$input: UpdateInstructorInput!) {
     updateInstructor(input: \$input) {
       id
-      username
       email
       name
       profile
@@ -32,7 +33,9 @@ export const updateInstructor = /* GraphQL */ `
   }
 `;
 
-// 강사 상태 변경 (활성화/비활성화)
+/**
+ * 강사 상태 변경 뮤테이션
+ */
 export const changeInstructorStatus = /* GraphQL */ `
   mutation ChangeInstructorStatus(\$id: ID!, \$status: InstructorStatus!) {
     changeInstructorStatus(id: \$id, status: \$status) {

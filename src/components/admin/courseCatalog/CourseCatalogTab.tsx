@@ -18,24 +18,16 @@ import {
   StatusIndicator,
   SelectProps
 } from '@cloudscape-design/components';
-import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
 import { useCourseCatalog } from '@/hooks/useCourseCatalog';
-import { CourseCatalog } from '@/models/courseCatalog';
+import { CourseCatalog, CourseCatalogInput, CourseCatalogStatus } from '@/models/courseCatalog';
 import EnhancedTable from '@/components/common/EnhancedTable';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
+import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
 
-// 백엔드 모델에 맞는 입력 타입 정의
-interface CourseCatalogFormInput {
-  course_name: string;
-  course_id?: string;
-  level?: string;
-  duration?: string;
-  delivery_method?: string;
-  description?: string;
-  objectives?: string[];
-  target_audience?: string;
-}
-
+/**
+ * 코스 카탈로그 관리 탭 컴포넌트
+ * 백엔드 스키마와는 필드명 차이(title->course_name, awsCode->course_id 등)가 있으므로 변환 로직 포함
+ */
 const CourseCatalogTab: React.FC = () => {
   const { t } = useAppTranslation();
   const {
@@ -58,16 +50,17 @@ const CourseCatalogTab: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedCatalogs, setSelectedCatalogs] = useState<CourseCatalog[]>([]);
 
-  // 백엔드 스키마에 맞게 formData 구조 변경
-  const [formData, setFormData] = useState<CourseCatalogFormInput>({
-    course_name: '',          // title -> course_name
-    course_id: '',            // awsCode -> course_id
+  // 백엔드 스키마에 맞는 형식으로 정의
+  const [formData, setFormData] = useState<CourseCatalogInput>({
+    course_name: '',         // 필드명 통일
+    course_id: '',
     level: 'beginner',
-    duration: '8',            // durations(숫자) -> duration(문자열)
-    delivery_method: '',
+    duration: '8',
+    delivery_method: 'online',
     description: '',
     objectives: [],
-    target_audience: ''       // category -> target_audience
+    target_audience: '',
+    status: CourseCatalogStatus.ACTIVE
   });
 
   const handleCreate = async () => {
@@ -120,10 +113,11 @@ const CourseCatalogTab: React.FC = () => {
       course_id: catalog.course_id || '',
       level: catalog.level || 'beginner',
       duration: catalog.duration || '8',
-      delivery_method: catalog.delivery_method || '',
+      delivery_method: catalog.delivery_method || 'online',
       description: catalog.description || '',
       objectives: catalog.objectives || [],
-      target_audience: catalog.target_audience || ''
+      target_audience: catalog.target_audience || '',
+      status: catalog.status || CourseCatalogStatus.ACTIVE
     });
     setShowEditModal(true);
   };
@@ -135,35 +129,30 @@ const CourseCatalogTab: React.FC = () => {
       course_id: '',
       level: 'beginner',
       duration: '8',
-      delivery_method: '',
+      delivery_method: 'online',
       description: '',
       objectives: [],
-      target_audience: ''
+      target_audience: '',
+      status: CourseCatalogStatus.ACTIVE
     });
   };
 
   const handleLevelChange = (event: { detail: SelectProps.ChangeDetail }) => {
-    setFormData(prev => ({ ...prev, level: event.detail.selectedOption.value }));
+    setFormData(prev => ({ ...prev, level: event.detail.selectedOption.value as any }));
   };
 
   const columnDefinitions = [
     {
-      id: 'title',
+      id: 'course_name',  // 필드명 변경
       header: t('catalog_field_title'),
-      cell: (item: CourseCatalog) => item.course_name, // title -> course_name
+      cell: (item: CourseCatalog) => item.course_name,
       sortingField: 'course_name',
     },
     {
-      id: 'awsCode',
+      id: 'course_id',  // 필드명 변경
       header: t('catalog_field_aws_code'),
-      cell: (item: CourseCatalog) => item.course_id || '-', // awsCode -> course_id
+      cell: (item: CourseCatalog) => item.course_id || '-',
       sortingField: 'course_id',
-    },
-    {
-      id: 'version',
-      header: t('catalog_field_version'),
-      cell: (item: CourseCatalog) => '1.0', // 표시용 기본값
-      sortingField: 'version',
     },
     {
       id: 'level',
@@ -172,28 +161,19 @@ const CourseCatalogTab: React.FC = () => {
       sortingField: 'level',
     },
     {
-      id: 'duration',
+      id: 'duration',  // 필드명 변경
       header: t('catalog_field_duration'),
-      cell: (item: CourseCatalog) => item.duration ? `\${item.duration} \${t('hours')}` : '-', // durations -> duration
+      cell: (item: CourseCatalog) => item.duration ? `\${item.duration} \${t('hours')}` : '-',
       sortingField: 'duration',
     },
     {
       id: 'status',
       header: t('catalog_field_status'),
       cell: (item: CourseCatalog) => {
-        const statusKey = 'unknown'; // 상태 표시는 UI에만 사용
-        const statusTypes: Record<string, string> = {
-          'active': 'success',
-          'draft': 'pending',
-          'archived': 'stopped',
-          'unknown': 'info'
-        };
-        
-        const statusType = statusTypes[statusKey] || 'info';
-        
+        const statusType = item.status === CourseCatalogStatus.ACTIVE ? 'success' : 'stopped';
         return (
           <StatusIndicator type={statusType as any}>
-            {t(`catalog_status_\${statusKey}`)}
+            {t(`catalog_status_\${item.status?.toLowerCase() || 'active'}`)}
           </StatusIndicator>
         );
       },
@@ -222,8 +202,8 @@ const CourseCatalogTab: React.FC = () => {
   ];
 
   const filteringProperties = [
-    { key: 'course_name', label: t('catalog_field_title') }, // title -> course_name
-    { key: 'course_id', label: t('catalog_field_aws_code') }, // awsCode -> course_id
+    { key: 'course_name', label: t('catalog_field_title') },  // 필드명 변경
+    { key: 'course_id', label: t('catalog_field_aws_code') },  // 필드명 변경
     { key: 'level', label: t('catalog_field_level') },
     { key: 'status', label: t('catalog_field_status') },
   ];
@@ -232,13 +212,13 @@ const CourseCatalogTab: React.FC = () => {
     <ContentLayout>
       <SpaceBetween size="l">
         <Box padding={{ top: 's' }}>
-          {/* <BreadcrumbGroup
+          <BreadcrumbGroup
             items={[
               { translationKey: 'navigation_home', href: '/' },
               { translationKey: 'admin_title', href: '/admin' },
               { translationKey: 'catalog_title', href: '/admin/catalog' }
             ]}
-          /> */}
+          />
         </Box>
 
         {error && (
@@ -278,7 +258,7 @@ const CourseCatalogTab: React.FC = () => {
           filteringProperties={filteringProperties}
           stickyHeader={true}
           stripedRows={true}
-          defaultSortingColumn="title"
+          defaultSortingColumn="course_name"  // 필드명 변경
           emptyText={{
             title: t('empty_state_title'),
             subtitle: t('empty_state_message'),
@@ -287,29 +267,10 @@ const CourseCatalogTab: React.FC = () => {
               onClick: () => setShowCreateModal(true)
             }
           }}
-          visibleContentOptions={[
-            {
-              id: 'main',
-              label: t('catalog_column_main'),
-              options: [
-                { id: 'title', label: t('catalog_field_title') },
-                { id: 'awsCode', label: t('catalog_field_aws_code') },
-                { id: 'version', label: t('catalog_field_version') },
-              ]
-            },
-            {
-              id: 'details',
-              label: t('catalog_column_details'),
-              options: [
-                { id: 'level', label: t('catalog_field_level') },
-                { id: 'duration', label: t('catalog_field_duration') },
-                { id: 'status', label: t('catalog_field_status') },
-              ]
-            }
-          ]}
           preferences={true}
         />
 
+        {/* 생성 모달 */}
         <Modal
           visible={showCreateModal}
           onDismiss={() => setShowCreateModal(false)}
@@ -323,7 +284,7 @@ const CourseCatalogTab: React.FC = () => {
                   variant="primary"
                   onClick={handleCreate}
                   loading={isCreating}
-                  disabled={!formData.course_name} // title -> course_name
+                  disabled={!formData.course_name}
                 >
                   {t('catalog_action_create')}
                 </Button>
@@ -343,32 +304,24 @@ const CourseCatalogTab: React.FC = () => {
                 description={t('catalog_field_title_description')}
               >
                 <Input
-                  value={formData.course_name} // title -> course_name
+                  value={formData.course_name}
                   onChange={({ detail }) => setFormData(prev => ({ ...prev, course_name: detail.value }))}
                 />
               </FormField>
 
               <FormField label={t('catalog_field_aws_code')}>
                 <Input
-                  value={formData.course_id || ''} // awsCode -> course_id
+                  value={formData.course_id || ''}
                   onChange={({ detail }) => setFormData(prev => ({ ...prev, course_id: detail.value }))}
                   placeholder="AWS-100"
                 />
               </FormField>
 
               <SpaceBetween direction="horizontal" size="xs">
-                <FormField label={t('catalog_field_version')}>
-                  <Input
-                    value="1.0" // 버전은 UI에서만 표시
-                    disabled={true}
-                    placeholder="1.0"
-                  />
-                </FormField>
-
                 <FormField label={t('catalog_field_duration')}>
                   <Input
-                    type="text" // 숫자에서 문자열로 변경
-                    value={formData.duration || "8"} // durations -> duration
+                    type="text"
+                    value={formData.duration || "8"}
                     onChange={({ detail }) => setFormData(prev => ({
                       ...prev,
                       duration: detail.value
@@ -390,6 +343,24 @@ const CourseCatalogTab: React.FC = () => {
                     ]}
                   />
                 </FormField>
+                
+                <FormField label={t('catalog_field_delivery_method')}>
+                  <Select
+                    selectedOption={{
+                      value: formData.delivery_method || 'online',
+                      label: t(`catalog_delivery_\${formData.delivery_method || 'online'}`)
+                    }}
+                    onChange={({ detail }) => setFormData(prev => ({ 
+                      ...prev, 
+                      delivery_method: detail.selectedOption.value as any 
+                    }))}
+                    options={[
+                      { value: 'online', label: t('catalog_delivery_online') },
+                      { value: 'offline', label: t('catalog_delivery_offline') },
+                      { value: 'hybrid', label: t('catalog_delivery_hybrid') }
+                    ]}
+                  />
+                </FormField>
               </SpaceBetween>
 
               <FormField label={t('catalog_field_description')}>
@@ -400,16 +371,34 @@ const CourseCatalogTab: React.FC = () => {
                 />
               </FormField>
 
-              <FormField label={t('catalog_field_category')}>
+              <FormField label={t('catalog_field_target_audience')}>
                 <Input
-                  value={formData.target_audience || ''} // category -> target_audience
+                  value={formData.target_audience || ''}
                   onChange={({ detail }) => setFormData(prev => ({ ...prev, target_audience: detail.value }))}
+                />
+              </FormField>
+              
+              <FormField label={t('catalog_field_status')}>
+                <Select
+                  selectedOption={{
+                    value: formData.status || CourseCatalogStatus.ACTIVE,
+                    label: t(`catalog_status_\${(formData.status || CourseCatalogStatus.ACTIVE).toLowerCase()}`)
+                  }}
+                  onChange={({ detail }) => setFormData(prev => ({ 
+                    ...prev, 
+                    status: detail.selectedOption.value as CourseCatalogStatus
+                  }))}
+                  options={[
+                    { value: CourseCatalogStatus.ACTIVE, label: t('catalog_status_active') },
+                    { value: CourseCatalogStatus.EOL, label: t('catalog_status_eol') }
+                  ]}
                 />
               </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
 
+        {/* 편집 모달 */}
         <Modal
           visible={showEditModal}
           onDismiss={() => setShowEditModal(false)}
@@ -423,7 +412,7 @@ const CourseCatalogTab: React.FC = () => {
                   variant="primary"
                   onClick={handleEdit}
                   loading={isUpdating}
-                  disabled={!formData.course_name} // title -> course_name
+                  disabled={!formData.course_name}
                 >
                   {t('save')}
                 </Button>
@@ -433,11 +422,110 @@ const CourseCatalogTab: React.FC = () => {
         >
           <Form>
             <SpaceBetween size="l">
-              {/* 편집 모달 내용 - 생성 모달과 유사하므로 생략 */}
+              <FormField
+                label={
+                  <span>
+                    {t('catalog_field_title')}
+                    <span className="awsui-key-label-required"> *</span>
+                  </span>
+                }
+                description={t('catalog_field_title_description')}
+              >
+                <Input
+                  value={formData.course_name}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, course_name: detail.value }))}
+                />
+              </FormField>
+
+              <FormField label={t('catalog_field_aws_code')}>
+                <Input
+                  value={formData.course_id || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, course_id: detail.value }))}
+                />
+              </FormField>
+
+              <SpaceBetween direction="horizontal" size="xs">
+                <FormField label={t('catalog_field_duration')}>
+                  <Input
+                    type="text"
+                    value={formData.duration || "8"}
+                    onChange={({ detail }) => setFormData(prev => ({
+                      ...prev,
+                      duration: detail.value
+                    }))}
+                  />
+                </FormField>
+
+                <FormField label={t('catalog_field_level')}>
+                  <Select
+                    selectedOption={{
+                      value: formData.level || 'beginner',
+                      label: t(`catalog_level_\${formData.level || 'beginner'}`)
+                    }}
+                    onChange={handleLevelChange}
+                    options={[
+                      { value: 'beginner', label: t('catalog_level_beginner') },
+                      { value: 'intermediate', label: t('catalog_level_intermediate') },
+                      { value: 'advanced', label: t('catalog_level_advanced') }
+                    ]}
+                  />
+                </FormField>
+                
+                <FormField label={t('catalog_field_delivery_method')}>
+                  <Select
+                    selectedOption={{
+                      value: formData.delivery_method || 'online',
+                      label: t(`catalog_delivery_\${formData.delivery_method || 'online'}`)
+                    }}
+                    onChange={({ detail }) => setFormData(prev => ({ 
+                      ...prev, 
+                      delivery_method: detail.selectedOption.value as any 
+                    }))}
+                    options={[
+                      { value: 'online', label: t('catalog_delivery_online') },
+                      { value: 'offline', label: t('catalog_delivery_offline') },
+                      { value: 'hybrid', label: t('catalog_delivery_hybrid') }
+                    ]}
+                  />
+                </FormField>
+              </SpaceBetween>
+
+              <FormField label={t('catalog_field_description')}>
+                <Textarea
+                  value={formData.description || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, description: detail.value }))}
+                  rows={4}
+                />
+              </FormField>
+
+              <FormField label={t('catalog_field_target_audience')}>
+                <Input
+                  value={formData.target_audience || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, target_audience: detail.value }))}
+                />
+              </FormField>
+              
+              <FormField label={t('catalog_field_status')}>
+                <Select
+                  selectedOption={{
+                    value: formData.status || CourseCatalogStatus.ACTIVE,
+                    label: t(`catalog_status_\${(formData.status || CourseCatalogStatus.ACTIVE).toLowerCase()}`)
+                  }}
+                  onChange={({ detail }) => setFormData(prev => ({ 
+                    ...prev, 
+                    status: detail.selectedOption.value as CourseCatalogStatus
+                  }))}
+                  options={[
+                    { value: CourseCatalogStatus.ACTIVE, label: t('catalog_status_active') },
+                    { value: CourseCatalogStatus.EOL, label: t('catalog_status_eol') }
+                  ]}
+                />
+              </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
 
+        {/* 삭제 확인 모달 */}
         <Modal
           visible={showDeleteConfirm}
           onDismiss={() => setShowDeleteConfirm(false)}
@@ -462,7 +550,7 @@ const CourseCatalogTab: React.FC = () => {
         >
           <Box>
             {selectedCatalogs.length === 1 ?
-              t('catalog_modal_delete_confirmation', { title: selectedCatalogs[0].course_name }) : // title -> course_name
+              t('catalog_modal_delete_confirmation', { title: selectedCatalogs[0].course_name }) :
               t('catalog_modal_delete_confirmation_batch', { count: selectedCatalogs.length })}
           </Box>
         </Modal>

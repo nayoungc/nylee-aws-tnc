@@ -1,4 +1,5 @@
 // src/pages/courses/CoursesPage.tsx
+import React, { useState } from "react";
 import { useCollection } from '@cloudscape-design/collection-hooks';
 import {
   Table,
@@ -12,23 +13,7 @@ import {
   Input,
   StatusIndicator
 } from '@cloudscape-design/components';
-import { useState } from "react";
-
-// Course 타입 정의 - 백엔드 API 스키마에 맞게 그대로 유지
-interface Course {
-  courseId: string;
-  startDate: string;
-  catalogId: string;
-  instructor: string;
-  location?: string;
-  attendance?: number;
-  durations?: number;
-  status: string;
-  shareCode: string;
-  customerId: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { CourseStatus, Course } from '@/models/course'; // 통일된 타입 임포트
 
 // Props 타입 정의
 interface CourseTableProps {
@@ -37,24 +22,33 @@ interface CourseTableProps {
   onDeleteCourse: (courseId: string) => void;
 }
 
-// 상태 값 타입
-type CourseStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED' | 'SCHEDULED';
+/**
+ * 과정 상태 표시 정보
+ */
+interface CourseStatusDisplayInfo {
+  label: string;
+  indicatorType: "success" | "info" | "error" | "warning";
+}
 
-const CourseStatusOptions = [
-  { label: "활성", value: "ACTIVE" },
-  { label: "완료", value: "COMPLETED" },
-  { label: "취소", value: "CANCELLED" },
-  { label: "예정", value: "SCHEDULED" }
-];
-
-// status 매개변수 타입 명시
-const getStatusType = (status: string): "success" | "info" | "error" | "warning" => {
-  switch (status) {
-    case 'ACTIVE': return 'success';
-    case 'COMPLETED': return 'info';
-    case 'CANCELLED': return 'error';
-    case 'SCHEDULED': return 'warning';
-    default: return 'info';
+/**
+ * 과정 상태별 표시 정보
+ */
+const COURSE_STATUS_INFO: Record<CourseStatus, CourseStatusDisplayInfo> = {
+  [CourseStatus.SCHEDULED]: { 
+    label: '예정', 
+    indicatorType: 'warning' 
+  },
+  [CourseStatus.IN_PROGRESS]: { 
+    label: '진행 중', 
+    indicatorType: 'success' 
+  },
+  [CourseStatus.COMPLETED]: { 
+    label: '완료', 
+    indicatorType: 'info' 
+  },
+  [CourseStatus.CANCELLED]: { 
+    label: '취소', 
+    indicatorType: 'error' 
   }
 };
 
@@ -166,11 +160,19 @@ export default function CourseTable({ courses = [], onUpdateCourse, onDeleteCour
           {
             id: "status",
             header: "상태",
-            cell: (item: Course) => (
-              <StatusIndicator type={getStatusType(item.status)}>
-                {item.status}
-              </StatusIndicator>
-            ),
+            cell: (item: Course) => {
+              // item.status가 있는지 확인하고 CourseStatus 타입에 있는지 확인
+              const status = item.status as CourseStatus;
+              const statusInfo = status && COURSE_STATUS_INFO[status] ? 
+                COURSE_STATUS_INFO[status] : 
+                { label: item.status || '알 수 없음', indicatorType: 'info' as const };
+              
+              return (
+                <StatusIndicator type={statusInfo.indicatorType}>
+                  {statusInfo.label}
+                </StatusIndicator>
+              );
+            },
             sortingField: "status",
           },
           {
@@ -188,8 +190,6 @@ export default function CourseTable({ courses = [], onUpdateCourse, onDeleteCour
         loadingText="과정 데이터 로딩 중..."
         submitEdit={async (item: any) => {
           try {
-            // Cloudscape 컴포넌트에서는 item에 detail 속성이 없고 
-            // 직접 { item, column, value } 구조로 제공됩니다
             if (item.column.id === 'attendance') {
               await handleAttendanceChange(item.item.courseId, item.value);
             }

@@ -1,4 +1,4 @@
-// src/components/survey/SurveyCatalogTab.tsx
+// src/components/admin/surveys/SurveyCatalogTab.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -11,7 +11,6 @@ import {
   Textarea,
   Multiselect,
   ColumnLayout,
-  Container,
   TagEditor,
   Toggle,
   Select,
@@ -22,190 +21,339 @@ import Board, { BoardProps } from "@cloudscape-design/board-components/board";
 import BoardItem from "@cloudscape-design/board-components/board-item";
 import EnhancedTable from '@/components/common/EnhancedTable';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
-
-interface SurveyCatalog {
-  surveyCatalogId: string;
-  title: string;
-  description: string;
-  questionItems: QuestionItem[];
-  category: string;
-  tags: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  courseId?: string;
-  courseName?: string;
-}
-
-// 설문 문항 아이템 타입
-interface QuestionItem {
-  id: string;
-  type: string;
-  content: string;
-  required: boolean;
-}
-
-// 설문 문항 타입
-interface SurveyQuestion {
-  questionId: string;  // 명시적으로 속성 정의
-  content: string;
-  questionType: string;  // 명시적으로 속성 정의
-  required: boolean;
-  tags: string[];
-}
-
-// 배포 옵션 타입
-type DeployOption = 'manual' | 'auto';
-type DeployWhen = 'before' | 'after';
+import { useSurveyCatalog } from '@/hooks/useSurveyCatalog';
+import {
+  SurveyCatalog,
+  SurveyCatalogInput,
+  QuestionItem,
+  QuestionItemInput,
+  QuestionType,
+  DeployOption,
+  DeployTiming,
+  DeploySurveyInput
+} from '@/models/surveyCatalog';
 
 // 보드 아이템 데이터 타입
-type BoardItemData = SurveyQuestion;
+interface BoardItemData {
+  id: string;
+  questionType: string;
+  content: string;
+  required: boolean;
+  tags?: string[];
+}
 
 // 보드 아이템 타입
-type BoardItem = BoardProps.Item<BoardItemData>;
+type BoardItemType = BoardProps.Item<BoardItemData>;
 
-// 문항 타입 매핑 정의
+/**
+ * 문항 타입 매핑
+ */
 const typeMap: Record<string, string> = {
-  multipleChoice: '객관식',
-  rating: '평점', 
-  openEnded: '주관식',
-  dropdown: '드롭다운',
-  matrix: '행렬식'
+  [QuestionType.MULTIPLE_CHOICE]: '객관식',
+  [QuestionType.RATING]: '평점',
+  [QuestionType.OPEN_ENDED]: '주관식',
+  [QuestionType.DROPDOWN]: '드롭다운',
+  [QuestionType.MATRIX]: '행렬식'
 };
 
-// 난이도 매핑 정의
-const difficultyMap: Record<string, string> = {
-  easy: '쉬움',
-  medium: '보통',
-  hard: '어려움'
-};
-
+/**
+ * 설문조사 템플릿 관리 탭 컴포넌트
+ * @description 설문조사 템플릿의 CRUD 및 문항 관리, 배포 등의 기능을 제공하는 UI 컴포넌트
+ */
 const SurveyCatalogTab: React.FC = () => {
   const { t } = useAppTranslation();
-  const [surveys, setSurveys] = useState<SurveyCatalog[]>([]);
+  const {
+    surveyCatalogs,
+    loading,
+    error,
+    refetch,
+    selectSurveyCatalog,
+    createSurveyCatalog,
+    updateSurveyCatalog,
+    deleteSurveyCatalog,
+    addQuestionItems,
+    removeQuestionItems,
+    updateQuestionOrder,
+    deploySurvey,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    isAddingQuestions,
+    isRemovingQuestions,
+    isDeploying
+  } = useSurveyCatalog();
+
+  // 상태
   const [selectedSurveys, setSelectedSurveys] = useState<SurveyCatalog[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [editSurvey, setEditSurvey] = useState<SurveyCatalog | null>(null);
   const [questionManagementVisible, setQuestionManagementVisible] = useState<boolean>(false);
   const [currentSurveyForQuestions, setCurrentSurveyForQuestions] = useState<SurveyCatalog | null>(null);
-  const [availableQuestions, setAvailableQuestions] = useState<SurveyQuestion[]>([]);
-  const [selectedQuestions, setSelectedQuestions] = useState<SurveyQuestion[]>([]);
-  const [boardItems, setBoardItems] = useState<BoardItem[]>([]);
+  const [availableQuestions, setAvailableQuestions] = useState<BoardItemData[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<BoardItemData[]>([]);
+  const [boardItems, setBoardItems] = useState<BoardItemType[]>([]);
   const [deployModalVisible, setDeployModalVisible] = useState<boolean>(false);
   const [surveyToBeDeployed, setSurveyToBeDeployed] = useState<SurveyCatalog | null>(null);
-  const [deployOption, setDeployOption] = useState<DeployOption>('auto');
-  const [deployWhen, setDeployWhen] = useState<DeployWhen>('after');
-
-  // 샘플 데이터 로드
-  useEffect(() => {
-    // API 호출 또는 데이터 로드 로직
-    const sampleSurveys: SurveyCatalog[] = [
-      {
-        surveyCatalogId: '1',
-        title: '교육 만족도 조사',
-        description: '교육 프로그램에 대한 전반적인 만족도 평가 설문',
-        questionItems: [
-          { id: '1', type: 'rating', content: '강의 내용은 얼마나 유익했습니까?', required: true },
-          { id: '2', type: 'openEnded', content: '향후 개선되었으면 하는 점을 자유롭게 작성해주세요.', required: false }
-        ],
-        category: '교육평가',
-        tags: ['교육품질', '만족도'],
-        isActive: true,
-        createdAt: '2023-09-01',
-        updatedAt: '2023-09-01',
-        createdBy: 'admin',
-        courseId: 'course-1',
-        courseName: 'AWS 기초 과정'
-      },
-      {
-        surveyCatalogId: '2',
-        title: '강사 평가',
-        description: '강사의 교육 역량 및 커뮤니케이션 평가',
-        questionItems: [
-          { id: '3', type: 'rating', content: '강사의 교육 방식은 이해하기 쉬웠습니까?', required: true },
-          { id: '4', type: 'multipleChoice', content: '강사의 교육 자료는 충분했습니까?', required: true }
-        ],
-        category: '강사평가',
-        tags: ['강사역량', '교육방법'],
-        isActive: true,
-        createdAt: '2023-09-05',
-        updatedAt: '2023-09-05',
-        createdBy: 'admin',
-        courseId: 'course-2',
-        courseName: 'AWS 고급 과정'
-      }
-    ];
-    setSurveys(sampleSurveys);
-    setLoading(false);
-  }, []);
+  const [deployOption, setDeployOption] = useState<DeployOption>(DeployOption.AUTO);
+  const [deployWhen, setDeployWhen] = useState<DeployTiming>(DeployTiming.AFTER_COURSE);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [formData, setFormData] = useState<SurveyCatalogInput>({
+    title: '',
+    description: '',
+    category: '',
+    tags: [],
+    isActive: true
+  });
 
   // 샘플 문항 데이터 로드 - 문항 관리 모달용
   useEffect(() => {
     if (currentSurveyForQuestions) {
-      const sampleAvailableQuestions: SurveyQuestion[] = [
+      const sampleAvailableQuestions: BoardItemData[] = [
         {
-          questionId: '1',
+          id: '1',
           content: '강의 내용은 얼마나 유익했습니까?',
-          questionType: 'rating',
+          questionType: QuestionType.RATING,
           required: true,
           tags: ['강의평가', '교육품질']
         },
         {
-          questionId: '2',
+          id: '2',
           content: '향후 개선되었으면 하는 점을 자유롭게 작성해주세요.',
-          questionType: 'openEnded',
+          questionType: QuestionType.OPEN_ENDED,
           required: false,
           tags: ['피드백', '개선사항']
         },
         {
-          questionId: '3',
+          id: '3',
           content: '강사의 전문성에 대해 어떻게 평가하십니까?',
-          questionType: 'multipleChoice',
+          questionType: QuestionType.MULTIPLE_CHOICE,
           required: true,
           tags: ['강사평가', '전문성']
         },
         {
-          questionId: '5',
+          id: '4',
           content: '실습 환경은 학습에 적합했습니까?',
-          questionType: 'rating',
+          questionType: QuestionType.RATING,
           required: true,
           tags: ['실습환경', '교육시설']
         },
         {
-          questionId: '6',
+          id: '5',
           content: '교육 기간은 적절했습니까?',
-          questionType: 'multipleChoice',
+          questionType: QuestionType.MULTIPLE_CHOICE,
           required: false,
           tags: ['교육구성', '일정']
         }
       ];
-      
+
       // 현재 설문조사에 이미 포함된 문항들은 제외
-      const filteredQuestions = sampleAvailableQuestions.filter(question => 
-        !currentSurveyForQuestions.questionItems.some(item => item.id === question.questionId)
-      );
-      
-      setAvailableQuestions(filteredQuestions);
-      
-      // 현재 설문조사에 포함된 문항들을 보드 아이템으로 변환
       const currentQuestionIds = currentSurveyForQuestions.questionItems.map(q => q.id);
-      const selectedQuestionsData = sampleAvailableQuestions.filter(q => 
-        currentQuestionIds.includes(q.questionId)
+      const filteredQuestions = sampleAvailableQuestions.filter(
+        question => !currentQuestionIds.includes(question.id)
       );
-      
+
+      setAvailableQuestions(filteredQuestions);
+
+      // 현재 설문조사에 포함된 문항들을 보드 아이템으로 변환
+      const selectedQuestionsData = currentSurveyForQuestions.questionItems.map(q => ({
+        id: q.id,
+        content: q.content,
+        questionType: q.type,
+        required: q.required
+      }));
+
       // 보드 아이템 생성
       const boardItemsData = selectedQuestionsData.map((question) => ({
-        id: question.questionId,
+        id: question.id,
         rowSpan: 1,
         columnSpan: 2,
         data: question
       }));
-      
+
       setBoardItems(boardItemsData);
     }
   }, [currentSurveyForQuestions]);
+
+  // 액션 핸들러
+  const handleCreateSurvey = () => {
+    setEditSurvey(null);
+    resetForm();
+    setModalVisible(true);
+  };
+
+  const handleEditSurvey = (survey: SurveyCatalog) => {
+    setEditSurvey(survey);
+    setFormData({
+      title: survey.title,
+      description: survey.description || '',
+      category: survey.category,
+      tags: survey.tags,
+      isActive: survey.isActive,
+      courseId: survey.courseId,
+      courseName: survey.courseName
+    });
+    setModalVisible(true);
+  };
+
+  const handleDeploySurvey = (survey: SurveyCatalog) => {
+    setSurveyToBeDeployed(survey);
+    setDeployModalVisible(true);
+  };
+
+  const handleExecuteDeploy = async () => {
+    if (!surveyToBeDeployed) return;
+
+    try {
+      // 배포 입력 데이터 생성
+      const deployInput: DeploySurveyInput = {
+        surveyCatalogId: surveyToBeDeployed.surveyCatalogId,
+        deployOption: deployOption,
+        deployWhen: deployOption === DeployOption.AUTO ? deployWhen : undefined,
+        startDate,
+        endDate,
+        notifyParticipants: true,
+        sendReminders: false,
+        sendReportToAdmin: true
+      };
+
+      // 배포 API 호출
+      await deploySurvey(deployInput);
+
+      // 배포 후 모달 닫기
+      setDeployModalVisible(false);
+      setSurveyToBeDeployed(null);
+
+      // 성공 메시지 표시 (실제 UI에서는 Toast나 알림으로 대체할 수 있음)
+      alert('설문조사가 성공적으로 배포되었습니다.');
+    } catch (error) {
+      console.error('설문조사 배포 오류:', error);
+      alert('설문조사 배포에 실패했습니다.');
+    }
+  };
+
+  const handleManageQuestions = (survey: SurveyCatalog) => {
+    setCurrentSurveyForQuestions(survey);
+    setQuestionManagementVisible(true);
+  };
+
+  const handleDeleteSurvey = async (surveyCatalogId: string) => {
+    try {
+      await deleteSurveyCatalog(surveyCatalogId);
+    } catch (error) {
+      console.error('설문조사 삭제 오류:', error);
+      alert('설문조사 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    try {
+      for (const survey of selectedSurveys) {
+        await deleteSurveyCatalog(survey.surveyCatalogId);
+      }
+      setSelectedSurveys([]);
+    } catch (error) {
+      console.error('설문조사 일괄 삭제 오류:', error);
+      alert('일부 설문조사 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleModalSubmit = async () => {
+    try {
+      if (editSurvey) {
+        // 기존 설문조사 수정
+        await updateSurveyCatalog({
+          surveyCatalogId: editSurvey.surveyCatalogId,
+          ...formData
+        });
+      } else {
+        // 신규 설문조사 추가
+        await createSurveyCatalog(formData);
+      }
+      setModalVisible(false);
+      resetForm();
+    } catch (error) {
+      console.error('설문조사 저장 오류:', error);
+      alert('설문조사 저장에 실패했습니다.');
+    }
+  };
+
+  const handleQuestionManagementSave = async () => {
+    if (!currentSurveyForQuestions) return;
+
+    try {
+      // 보드 아이템에서 문항 정보 추출하고 타입 변환
+      const questionItems: QuestionItemInput[] = boardItems.map((item, index) => ({
+        id: item.id,
+        // 열거형으로 명시적 타입 변환
+        type: item.data.questionType as QuestionType,
+        content: item.data.content,
+        required: item.data.required,
+        order: index
+      }));
+
+      // 기존 문항 모두 제거 (API에서 지원하는 경우)
+      const existingQuestionIds = currentSurveyForQuestions.questionItems.map(q => q.id);
+      if (existingQuestionIds.length > 0) {
+        await removeQuestionItems(currentSurveyForQuestions.surveyCatalogId, existingQuestionIds);
+      }
+
+      // 새 문항 추가
+      if (questionItems.length > 0) {
+        await addQuestionItems(currentSurveyForQuestions.surveyCatalogId, questionItems);
+      }
+
+      // 모달 닫기
+      setQuestionManagementVisible(false);
+      setCurrentSurveyForQuestions(null);
+      setBoardItems([]);
+    } catch (error) {
+      console.error('문항 관리 저장 오류:', error);
+      alert('문항 저장에 실패했습니다.');
+    }
+  };
+
+  const handleAddSelectedQuestions = () => {
+    if (selectedQuestions.length === 0) return;
+
+    // 새로운 보드 아이템 생성
+    const newBoardItems: BoardItemType[] = selectedQuestions.map(question => ({
+      id: question.id,
+      rowSpan: 1,
+      columnSpan: 2,
+      data: question
+    }));
+
+    // 중복 문항 제거하면서 보드 아이템 추가
+    const updatedBoardItems: BoardItemType[] = [
+      ...boardItems.filter(item =>
+        !newBoardItems.some(newItem => newItem.id === item.id)
+      ),
+      ...newBoardItems
+    ];
+
+    setBoardItems(updatedBoardItems);
+    setSelectedQuestions([]);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      category: '',
+      tags: [],
+      isActive: true
+    });
+  };
+
+  // 샘플 과정 목록
+  const courseOptions = [
+    { value: 'course-1', label: 'AWS 기초 과정' },
+    { value: 'course-2', label: 'AWS 고급 과정' },
+    { value: 'course-3', label: 'AWS DevOps 전문가 과정' },
+    { value: 'course-4', label: 'AWS 보안 전문가 과정' },
+    { value: 'course-5', label: '클라우드 아키텍처 설계' }
+  ];
 
   // 테이블 컬럼 정의
   const columnDefinitions = [
@@ -243,8 +391,8 @@ const SurveyCatalogTab: React.FC = () => {
     {
       id: 'isActive',
       header: t('admin:surveyCatalog.columns.status', '상태'),
-      cell: (item: SurveyCatalog) => item.isActive ? 
-        t('admin:surveyCatalog.status.active', '활성화') : 
+      cell: (item: SurveyCatalog) => item.isActive ?
+        t('admin:surveyCatalog.status.active', '활성화') :
         t('admin:surveyCatalog.status.inactive', '비활성화'),
       sortingField: 'isActive',
     },
@@ -259,26 +407,26 @@ const SurveyCatalogTab: React.FC = () => {
       header: t('admin:surveyCatalog.columns.actions', '작업'),
       cell: (item: SurveyCatalog) => (
         <SpaceBetween direction="horizontal" size="xs">
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => handleDeploySurvey(item)}
           >
             {t('admin:surveyCatalog.actions.deploy', '배포')}
           </Button>
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => handleManageQuestions(item)}
           >
             {t('admin:surveyCatalog.actions.manageQuestions', '문항 관리')}
           </Button>
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => handleEditSurvey(item)}
           >
             {t('common:edit', '편집')}
           </Button>
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={() => handleDeleteSurvey(item.surveyCatalogId)}
           >
             {t('common:delete', '삭제')}
@@ -312,150 +460,6 @@ const SurveyCatalogTab: React.FC = () => {
     }
   ];
 
-  // 액션 핸들러
-  const handleRefresh = () => {
-    setLoading(true);
-    // API 호출 또는 데이터 리로드 로직
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  };
-
-  const handleCreateSurvey = () => {
-    setEditSurvey(null);
-    setModalVisible(true);
-  };
-
-  const handleEditSurvey = (survey: SurveyCatalog) => {
-    setEditSurvey(survey);
-    setModalVisible(true);
-  };
-
-  const handleDeploySurvey = (survey: SurveyCatalog) => {
-    // 설문조사 배포 모달 표시
-    setSurveyToBeDeployed(survey);
-    setDeployModalVisible(true);
-  };
-  
-  const handleExecuteDeploy = () => {
-    // 설문조사 배포 실행 로직
-    console.log('설문조사 배포:', surveyToBeDeployed, '배포 옵션:', deployOption, '배포 시점:', deployWhen);
-    
-    // 여기서 실제 배포 API 호출
-    
-    // 배포 후 모달 닫기
-    setDeployModalVisible(false);
-    setSurveyToBeDeployed(null);
-    
-    // 성공 메시지 표시
-    alert('설문조사가 성공적으로 배포되었습니다.');
-  };
-
-  const handleManageQuestions = (survey: SurveyCatalog) => {
-    // 설문조사 문항 관리 모달 열기
-    setCurrentSurveyForQuestions(survey);
-    setQuestionManagementVisible(true);
-  };
-
-  const handleDeleteSurvey = (surveyCatalogId: string) => {
-    // 삭제 로직 구현
-    setSurveys(surveys.filter(s => s.surveyCatalogId !== surveyCatalogId));
-  };
-
-  const handleBatchDelete = () => {
-    // 선택된 항목 일괄 삭제 로직
-    const remainingSurveys = surveys.filter(
-      s => !selectedSurveys.some(ss => ss.surveyCatalogId === s.surveyCatalogId)
-    );
-    setSurveys(remainingSurveys);
-    setSelectedSurveys([]);
-  };
-
-  const handleModalSubmit = (formData: any) => {
-    // 저장 로직 구현 (신규 또는 수정)
-    if (editSurvey) {
-      // 기존 설문조사 수정
-      setSurveys(surveys.map(s => 
-        s.surveyCatalogId === editSurvey.surveyCatalogId ? 
-          { ...s, ...formData, updatedAt: new Date().toISOString().split('T')[0] } : s
-      ));
-    } else {
-      // 신규 설문조사 추가
-      const newSurvey = {
-        ...formData,
-        surveyCatalogId: Date.now().toString(), // 임시 ID 생성
-        questionItems: [], // 초기에는 문항 없음
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-        createdBy: 'admin' // 현재 로그인한 사용자로 설정해야 함
-      };
-      setSurveys([...surveys, newSurvey]);
-    }
-    setModalVisible(false);
-  };
-  
-  const handleQuestionManagementSave = () => {
-    // 현재 보드 아이템을 기반으로 설문조사 문항 저장
-    if (currentSurveyForQuestions) {
-      // 보드 아이템에서 문항 ID와 필수 여부 추출
-      const questionItems = boardItems.map(item => ({
-        id: item.id,
-        type: item.data.questionType,
-        content: item.data.content,
-        required: item.data.required
-      }));
-      
-      // 설문조사 업데이트
-      const updatedSurvey = {
-        ...currentSurveyForQuestions,
-        questionItems,
-        updatedAt: new Date().toISOString().split('T')[0]
-      };
-      
-      // 설문조사 목록 업데이트
-      setSurveys(surveys.map(s => 
-        s.surveyCatalogId === currentSurveyForQuestions.surveyCatalogId ? updatedSurvey : s
-      ));
-      
-      // 모달 닫기
-      setQuestionManagementVisible(false);
-      setCurrentSurveyForQuestions(null);
-      setBoardItems([]);
-    }
-  };
-
-  const handleAddSelectedQuestions = () => {
-    if (selectedQuestions.length > 0) {
-      // 새로운 보드 아이템 생성
-      const newBoardItems: BoardItem[] = selectedQuestions.map(question => ({
-        id: question.questionId,
-        rowSpan: 1,
-        columnSpan: 2,
-        data: question
-      }));
-      
-      // 중복 문항 제거하면서 보드 아이템 추가
-      const updatedBoardItems: BoardItem[] = [
-        ...boardItems.filter(item => 
-          !newBoardItems.some(newItem => newItem.id === item.id)
-        ),
-        ...newBoardItems
-      ];
-      
-      setBoardItems(updatedBoardItems);
-      setSelectedQuestions([]);
-    }
-  };
-
-  // 샘플 과정 목록
-  const courseOptions = [
-    { value: 'course-1', label: 'AWS 기초 과정' },
-    { value: 'course-2', label: 'AWS 고급 과정' },
-    { value: 'course-3', label: 'AWS DevOps 전문가 과정' },
-    { value: 'course-4', label: 'AWS 보안 전문가 과정' },
-    { value: 'course-5', label: '클라우드 아키텍처 설계' }
-  ];
-
   // 설문조사 템플릿 편집/생성 모달
   const renderSurveyModal = () => {
     return (
@@ -464,8 +468,8 @@ const SurveyCatalogTab: React.FC = () => {
         onDismiss={() => setModalVisible(false)}
         header={
           <Header variant="h2">
-            {editSurvey 
-              ? t('admin:surveyCatalog.modal.editTitle', '설문조사 템플릿 편집') 
+            {editSurvey
+              ? t('admin:surveyCatalog.modal.editTitle', '설문조사 템플릿 편집')
               : t('admin:surveyCatalog.modal.createTitle', '새 설문조사 템플릿 생성')}
           </Header>
         }
@@ -475,7 +479,12 @@ const SurveyCatalogTab: React.FC = () => {
               <Button variant="link" onClick={() => setModalVisible(false)}>
                 {t('common:cancel', '취소')}
               </Button>
-              <Button variant="primary" onClick={() => handleModalSubmit({/* 폼 데이터 */})}>
+              <Button
+                variant="primary"
+                onClick={handleModalSubmit}
+                loading={isCreating || isUpdating}
+                disabled={!formData.title || !formData.category}
+              >
                 {t('common:save', '저장')}
               </Button>
             </SpaceBetween>
@@ -489,12 +498,8 @@ const SurveyCatalogTab: React.FC = () => {
             description={t('admin:surveyCatalog.form.titleDesc', '설문조사의 제목을 입력하세요')}
           >
             <Input
-              value={editSurvey?.title || ''}
-              onChange={({ detail }) => {
-                if (editSurvey) {
-                  setEditSurvey({ ...editSurvey, title: detail.value });
-                }
-              }}
+              value={formData.title}
+              onChange={({ detail }) => setFormData(prev => ({ ...prev, title: detail.value }))}
             />
           </FormField>
 
@@ -503,34 +508,28 @@ const SurveyCatalogTab: React.FC = () => {
             description={t('admin:surveyCatalog.form.descriptionDesc', '설문조사의 목적이나 내용에 대한 설명')}
           >
             <Textarea
-              value={editSurvey?.description || ''}
-              onChange={({ detail }) => {
-                if (editSurvey) {
-                  setEditSurvey({ ...editSurvey, description: detail.value });
-                }
-              }}
+              value={formData.description || ''}
+              onChange={({ detail }) => setFormData(prev => ({ ...prev, description: detail.value }))}
             />
           </FormField>
-          
+
           <FormField
             label={t('admin:surveyCatalog.form.course', '연결된 과정')}
             description={t('admin:surveyCatalog.form.courseDesc', '이 설문조사가 연결될 교육 과정')}
           >
             <Select
               selectedOption={
-                editSurvey?.courseId 
-                  ? { value: editSurvey.courseId, label: editSurvey.courseName || editSurvey.courseId } 
+                formData.courseId
+                  ? { value: formData.courseId, label: formData.courseName || formData.courseId }
                   : null
               }
               options={courseOptions}
               onChange={({ detail }) => {
-                if (editSurvey) {
-                  setEditSurvey({ 
-                    ...editSurvey, 
-                    courseId: detail.selectedOption?.value,
-                    courseName: detail.selectedOption?.label
-                  });
-                }
+                setFormData(prev => ({
+                  ...prev,
+                  courseId: detail.selectedOption?.value,
+                  courseName: detail.selectedOption?.label
+                }));
               }}
               placeholder="과정 선택(선택사항)"
             />
@@ -540,12 +539,8 @@ const SurveyCatalogTab: React.FC = () => {
             label={t('admin:surveyCatalog.form.category', '카테고리')}
           >
             <Input
-              value={editSurvey?.category || ''}
-              onChange={({ detail }) => {
-                if (editSurvey) {
-                  setEditSurvey({ ...editSurvey, category: detail.value });
-                }
-              }}
+              value={formData.category}
+              onChange={({ detail }) => setFormData(prev => ({ ...prev, category: detail.value }))}
             />
           </FormField>
 
@@ -554,22 +549,20 @@ const SurveyCatalogTab: React.FC = () => {
             description={t('admin:surveyCatalog.form.tagsDesc', '설문조사를 분류하는 태그를 추가하세요')}
           >
             <TagEditor
-              tags={(editSurvey?.tags || []).map(tag => ({ 
-                key: tag, 
+              tags={(formData.tags || []).map(tag => ({
+                key: tag,
                 value: tag,
                 existing: true,
                 markedForRemoval: false
               }))}
               onChange={({ detail }) => {
-                if (editSurvey) {
-                  setEditSurvey({ 
-                    ...editSurvey, 
-                    tags: detail.tags
-                      .filter(tag => !tag.markedForRemoval)
-                      .map(tag => tag.value)
-                      .filter((value): value is string => value !== undefined)
-                  });
-                }
+                setFormData(prev => ({
+                  ...prev,
+                  tags: detail.tags
+                    .filter(tag => !tag.markedForRemoval)
+                    .map(tag => tag.value)
+                    .filter((value): value is string => value !== undefined)
+                }));
               }}
               i18nStrings={{
                 keyHeader: t('common:tagEditor.keyHeader', '키'),
@@ -591,15 +584,11 @@ const SurveyCatalogTab: React.FC = () => {
             label={t('admin:surveyCatalog.form.isActive', '활성화 상태')}
           >
             <Toggle
-              checked={editSurvey?.isActive || false}
-              onChange={({ detail }) => {
-                if (editSurvey) {
-                  setEditSurvey({ ...editSurvey, isActive: detail.checked });
-                }
-              }}
+              checked={formData.isActive}
+              onChange={({ detail }) => setFormData(prev => ({ ...prev, isActive: detail.checked }))}
             >
-              {editSurvey?.isActive ? 
-                t('admin:surveyCatalog.status.active', '활성화') : 
+              {formData.isActive ?
+                t('admin:surveyCatalog.status.active', '활성화') :
                 t('admin:surveyCatalog.status.inactive', '비활성화')}
             </Toggle>
           </FormField>
@@ -607,27 +596,9 @@ const SurveyCatalogTab: React.FC = () => {
       </Modal>
     );
   };
-  
+
   // 문항 관리 모달 (드래그 앤 드롭으로 문항 구성)
   const renderQuestionManagementModal = () => {
-    // EnhancedTable에 전달할 테이블 헤더
-    const tableHeader = (
-      <SpaceBetween
-        direction="horizontal" 
-        size="xs" 
-        alignItems="center"
-      >
-        <span>총 {availableQuestions.length}개의 문항</span>
-        <Button 
-          iconName="add-plus" 
-          disabled={selectedQuestions.length === 0}
-          onClick={handleAddSelectedQuestions}
-        >
-          {t('admin:surveyCatalog.questionModal.addSelected', '선택 추가')}
-        </Button>
-      </SpaceBetween>
-    );
-
     return (
       <Modal
         visible={questionManagementVisible}
@@ -643,7 +614,11 @@ const SurveyCatalogTab: React.FC = () => {
               <Button variant="link" onClick={() => setQuestionManagementVisible(false)}>
                 {t('common:cancel', '취소')}
               </Button>
-              <Button variant="primary" onClick={handleQuestionManagementSave}>
+              <Button
+                variant="primary"
+                onClick={handleQuestionManagementSave}
+                loading={isAddingQuestions || isRemovingQuestions}
+              >
                 {t('common:save', '저장')}
               </Button>
             </SpaceBetween>
@@ -659,26 +634,23 @@ const SurveyCatalogTab: React.FC = () => {
                 {t('admin:surveyCatalog.questionModal.availableQuestions', '사용 가능한 문항')}
               </Header>
               <EnhancedTable
-                title="" // 제목은 비워두고 상단에 별도 헤더 사용
+                title=""
                 columnDefinitions={[
                   {
                     id: 'content',
                     header: t('admin:surveyQuestionBank.columns.content', '질문 내용'),
-                    cell: (item: SurveyQuestion) => item.content,
+                    cell: (item: BoardItemData) => item.content,
                     sortingField: 'content',
                   },
                   {
                     id: 'questionType',
                     header: t('admin:surveyQuestionBank.columns.questionType', '유형'),
-                    cell: (item: SurveyQuestion) => {
-                      // 안전하게 타입 가드 추가
-                      return typeMap[item.questionType] || item.questionType;
-                    },
+                    cell: (item: BoardItemData) => typeMap[item.questionType] || item.questionType,
                   },
                   {
                     id: 'required',
                     header: t('admin:surveyQuestionBank.columns.required', '필수 여부'),
-                    cell: (item: SurveyQuestion) => item.required ? '필수' : '선택',
+                    cell: (item: BoardItemData) => item.required ? '필수' : '선택',
                   }
                 ]}
                 items={availableQuestions}
@@ -690,10 +662,11 @@ const SurveyCatalogTab: React.FC = () => {
                 actions={{
                   primary: {
                     text: t('admin:surveyCatalog.questionModal.addSelected', '선택 추가'),
-                    onClick: handleAddSelectedQuestions
+                    onClick: handleAddSelectedQuestions,
+                    disabled: selectedQuestions.length === 0
                   }
                 }}
-                trackBy="questionId"
+                trackBy="id"
                 resizableColumns={true}
                 variant="container"
               />
@@ -719,7 +692,6 @@ const SurveyCatalogTab: React.FC = () => {
                           iconName="remove"
                           variant="icon"
                           onClick={() => {
-                            // 아이템 제거
                             setBoardItems(boardItems.filter(i => i.id !== item.id));
                           }}
                         />
@@ -737,15 +709,11 @@ const SurveyCatalogTab: React.FC = () => {
                     }}
                   >
                     <SpaceBetween size="s">
-                      <div>유형: {
-                        // 안전하게 타입 체크
-                        typeMap[item.data.questionType] || item.data.questionType
-                      }</div>
+                      <div>유형: {typeMap[item.data.questionType] || item.data.questionType}</div>
                       <div>
                         <Toggle
                           checked={item.data.required}
                           onChange={({ detail }) => {
-                            // 필수 여부 업데이트
                             const updatedItems = boardItems.map(i => {
                               if (i.id === item.id) {
                                 return {
@@ -768,8 +736,7 @@ const SurveyCatalogTab: React.FC = () => {
                   </BoardItem>
                 )}
                 onItemsChange={(event) => {
-                  // 새 배열로 복사하여 타입 오류 해결
-                  const newItems = [...event.detail.items] as BoardItem[];
+                  const newItems = [...event.detail.items] as BoardItemType[];
                   setBoardItems(newItems);
                 }}
                 items={boardItems}
@@ -797,7 +764,7 @@ const SurveyCatalogTab: React.FC = () => {
                   navigationItemAriaLabel: (item) => item ? item.data.content : "빈 영역"
                 }}
               />
-              
+
               <Box>
                 <SpaceBetween direction="horizontal" size="xs">
                   <div>{t('admin:surveyCatalog.questionModal.totalCount', '총 문항 수')}: {boardItems.length}개</div>
@@ -810,7 +777,7 @@ const SurveyCatalogTab: React.FC = () => {
       </Modal>
     );
   };
-  
+
   // 설문조사 배포 모달
   const renderDeployModal = () => {
     return (
@@ -828,7 +795,12 @@ const SurveyCatalogTab: React.FC = () => {
               <Button variant="link" onClick={() => setDeployModalVisible(false)}>
                 {t('common:cancel', '취소')}
               </Button>
-              <Button variant="primary" onClick={handleExecuteDeploy}>
+              <Button
+                variant="primary"
+                onClick={handleExecuteDeploy}
+                loading={isDeploying}
+                disabled={!startDate || !endDate}
+              >
                 {t('admin:surveyCatalog.deployModal.deploy', '배포하기')}
               </Button>
             </SpaceBetween>
@@ -843,13 +815,13 @@ const SurveyCatalogTab: React.FC = () => {
           >
             <SpaceBetween direction="vertical" size="xs">
               <Toggle
-                checked={deployOption === 'auto'}
-                onChange={({ detail }) => setDeployOption(detail.checked ? 'auto' : 'manual')}
+                checked={deployOption === DeployOption.AUTO}
+                onChange={({ detail }) => setDeployOption(detail.checked ? DeployOption.AUTO : DeployOption.MANUAL)}
               >
                 자동 배포: 교육 과정 수강생에게 자동으로 설문조사 요청
               </Toggle>
-              
-              {deployOption === 'auto' && (
+
+              {deployOption === DeployOption.AUTO && (
                 <FormField
                   label={t('admin:surveyCatalog.deployModal.deployWhen', '배포 시점')}
                   description={t('admin:surveyCatalog.deployModal.deployWhenDesc', '설문조사를 언제 배포할지 선택하세요')}
@@ -857,14 +829,15 @@ const SurveyCatalogTab: React.FC = () => {
                   <Select
                     selectedOption={{
                       value: deployWhen,
-                      label: deployWhen === 'before' ? '교육 시작 전' : '교육 종료 후'
+                      label: deployWhen === DeployTiming.BEFORE_COURSE ? '교육 시작 전' : '교육 종료 후'
                     }}
                     options={[
-                      { value: 'before', label: '교육 시작 전' },
-                      { value: 'after', label: '교육 종료 후' }
+                      { value: DeployTiming.BEFORE_COURSE, label: '교육 시작 전' },
+                      { value: DeployTiming.AFTER_COURSE, label: '교육 종료 후' }
                     ]}
                     onChange={({ detail }) => {
-                      if (detail.selectedOption?.value === 'before' || detail.selectedOption?.value === 'after') {
+                      if (detail.selectedOption?.value === DeployTiming.BEFORE_COURSE ||
+                        detail.selectedOption?.value === DeployTiming.AFTER_COURSE) {
                         setDeployWhen(detail.selectedOption.value);
                       }
                     }}
@@ -873,32 +846,32 @@ const SurveyCatalogTab: React.FC = () => {
               )}
             </SpaceBetween>
           </FormField>
-          
-          {deployOption === 'manual' && (
+
+          {deployOption === DeployOption.MANUAL && (
             <Alert type="info">
-              {t('admin:surveyCatalog.deployModal.manualInfo', 
+              {t('admin:surveyCatalog.deployModal.manualInfo',
                 '수동 배포를 선택하셨습니다. 배포 후 생성된 설문조사 링크를 복사하여 참여자들에게 전달할 수 있습니다.')}
             </Alert>
           )}
-          
+
           <FormField
             label={t('admin:surveyCatalog.deployModal.expires', '응답 가능 기간')}
             description={t('admin:surveyCatalog.deployModal.expiresDesc', '설문조사 응답을 받을 수 있는 기간을 설정하세요')}
           >
             <ColumnLayout columns={2}>
               <DatePicker
-                value="2023-12-01"
-                onChange={({ detail }) => console.log(detail.value)}
+                value={startDate}
+                onChange={({ detail }) => setStartDate(detail.value || "")}
                 placeholder="시작일"
               />
               <DatePicker
-                value="2023-12-15"
-                onChange={({ detail }) => console.log(detail.value)}
+                value={endDate}
+                onChange={({ detail }) => setEndDate(detail.value || "")}
                 placeholder="종료일"
               />
             </ColumnLayout>
           </FormField>
-          
+
           <FormField
             label={t('admin:surveyCatalog.deployModal.notifyOptions', '알림 설정')}
           >
@@ -933,13 +906,13 @@ const SurveyCatalogTab: React.FC = () => {
           title={t('admin:surveyCatalog.tableTitle', '설문조사 템플릿 목록')}
           description={t('admin:surveyCatalog.tableDescription', '모든 설문조사 템플릿을 조회하고 관리할 수 있습니다.')}
           columnDefinitions={columnDefinitions}
-          items={surveys}
+          items={surveyCatalogs}
           loading={loading}
           loadingText={t('common:loading', '로딩 중...')}
           selectionType="multi"
           selectedItems={selectedSurveys}
           onSelectionChange={setSelectedSurveys}
-          onRefresh={handleRefresh}
+          onRefresh={refetch}
           actions={{
             primary: {
               text: t('admin:surveyCatalog.actions.create', '새 설문조사 만들기'),
@@ -971,7 +944,7 @@ const SurveyCatalogTab: React.FC = () => {
           preferences={true}
           trackBy="surveyCatalogId"
         />
-        
+
         {renderSurveyModal()}
         {renderQuestionManagementModal()}
         {renderDeployModal()}

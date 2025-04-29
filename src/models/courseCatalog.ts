@@ -2,74 +2,108 @@
 import { z } from 'zod';
 
 /**
- * 코스 난이도 유형
+ * 코스 카탈로그 상태 열거형
+ * @description 백엔드 스키마와 일치하는 코스 상태 정의
+ */
+export enum CourseCatalogStatus {
+  ACTIVE = 'ACTIVE',   // 활성 상태
+  EOL = 'EOL'          // End of Life
+}
+
+/**
+ * 코스 난이도 타입
+ * @description 코스 난이도를 나타내는 문자열 타입
  */
 export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 
 /**
- * 코스 상태 유형
- */
-export type CourseStatus = 'ACTIVE' | 'EOL' | 'DRAFT';
-
-/**
- * 코스 제공 방식
+ * 코스 제공 방식 타입
+ * @description 코스 제공 방식을 나타내는 문자열 타입
  */
 export type DeliveryMethod = 'online' | 'offline' | 'hybrid';
 
 /**
- * 코스 목표 항목 스키마
+ * 코스 카탈로그 인터페이스
+ * @description 백엔드 GraphQL 스키마와 일치하는 코스 카탈로그 모델
  */
-export const CourseObjectiveSchema = z.string();
+export interface CourseCatalog {
+  id: string;                         // 고유 식별자
+  course_name: string;                // 코스 이름 (백엔드: course_name)
+  course_id?: string;                 // 코스 코드 (백엔드: course_id)
+  level?: CourseLevel;                // 난이도
+  duration?: string;                  // 교육 기간 (백엔드: duration - 문자열)
+  delivery_method?: DeliveryMethod;   // 교육 방식
+  description?: string;              // 코스 설명
+  objectives?: string[];             // 학습 목표
+  target_audience?: string;          // 대상 수강생
+  status?: CourseCatalogStatus;      // 코스 상태
+  createdAt?: string;                // 생성 일시
+  updatedAt?: string;                // 업데이트 일시
+  createdBy?: string;                // 작성자
+}
 
 /**
- * 코스 카탈로그 스키마 정의
- * 재사용 가능한 코스 템플릿
+ * 코스 카탈로그 입력 타입
+ * @description 코스 카탈로그 생성 및 수정에 사용되는 입력 타입
+ */
+export interface CourseCatalogInput {
+  course_name: string;
+  course_id?: string;
+  level?: CourseLevel;
+  duration?: string;
+  delivery_method?: DeliveryMethod;
+  description?: string;
+  objectives?: string[];
+  target_audience?: string;
+  status?: CourseCatalogStatus;
+}
+
+/**
+ * 코스 카탈로그 필터 타입
+ * @description 코스 카탈로그 검색 및 필터링에 사용되는 타입
+ */
+export interface CourseCatalogFilter {
+  text?: string;
+  level?: CourseLevel;
+  target_audience?: string;
+  status?: CourseCatalogStatus;
+}
+
+/**
+ * Zod 스키마를 사용한 유효성 검증
  */
 export const CourseCatalogSchema = z.object({
-  id: z.string(),              // 코스 카탈로그 ID
-  course_name: z.string(),      // 코스 이름
-  course_id: z.string().optional(),    // 코스 코드 (선택사항)
-  level: z.enum(['beginner', 'intermediate', 'advanced']).optional(), // 난이도
-  duration: z.string().optional(),    // 교육 기간
-  delivery_method: z.enum(['online', 'offline', 'hybrid']).optional(), // 교육 방식
-  description: z.string().optional(), // 코스 설명
-  objectives: z.array(CourseObjectiveSchema).optional(), // 학습 목표
-  target_audience: z.string().optional(), // 대상 수강생
-  status: z.enum(['ACTIVE', 'EOL', 'DRAFT']).default('ACTIVE'), // 코스 상태
-  createdAt: z.string().optional(),  // 생성 일시
-  updatedAt: z.string().optional(),  // 업데이트 일시
-  createdBy: z.string().optional(),  // 작성자 ID
-  category: z.string().optional(),   // 카테고리
-  tags: z.array(z.string()).optional(), // 태그
-  prerequisites: z.array(z.string()).optional(), // 선수 과목
-  certification: z.boolean().optional(), // 자격증 과정 여부
-  metadata: z.record(z.any()).optional(), // 추가 메타데이터
+  id: z.string(),
+  course_name: z.string().min(1, { message: "코스 이름은 필수입니다" }),
+  course_id: z.string().optional(),
+  level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  duration: z.string().optional(),
+  delivery_method: z.enum(['online', 'offline', 'hybrid']).optional(),
+  description: z.string().optional(),
+  objectives: z.array(z.string()).optional(),
+  target_audience: z.string().optional(),
+  status: z.nativeEnum(CourseCatalogStatus).default(CourseCatalogStatus.ACTIVE),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  createdBy: z.string().optional()
 });
 
 /**
  * 코스 카탈로그 입력 스키마
- * 생성 및 수정 시 사용
  */
 export const CourseCatalogInputSchema = CourseCatalogSchema.omit({
   id: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
+  createdBy: true
 });
 
 /**
  * 코스 카탈로그 필터 스키마
- * 검색 및 필터링 시 사용
  */
 export const CourseCatalogFilterSchema = z.object({
   text: z.string().optional(),
-  level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
+  level: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   target_audience: z.string().optional(),
-  category: z.string().optional(),
-  status: z.enum(['ACTIVE', 'EOL', 'DRAFT']).optional(),
-  tags: z.array(z.string()).optional(),
+  status: z.nativeEnum(CourseCatalogStatus).optional()
 });
-
-// 타입 내보내기
-export type CourseCatalog = z.infer<typeof CourseCatalogSchema>;
-export type CourseCatalogInput = z.infer<typeof CourseCatalogInputSchema>;
-export type CourseCatalogFilter = z.infer<typeof CourseCatalogFilterSchema>;

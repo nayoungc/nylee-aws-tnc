@@ -1,53 +1,24 @@
-/**
- * 강사 상태 열거형
- */
-export enum InstructorStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE'
-}
+// src/graphql/instructor/types.ts
+import { InstructorStatus } from '@/models/instructor';
 
 /**
- * 강사 번역 타입
+ * API에서 반환되는 강사 타입
  */
-export interface InstructorTranslation {
+export interface ApiInstructor {
   id: string;
-  instructorId: string;
-  locale: string;
-  name?: string;
-  profile?: string;
-}
-
-/**
- * 강사 기본 모델 타입
- */
-export interface Instructor {
-  id: string;
-  username: string;
   email: string;
   name: string;
   profile?: string;
-  specialties?: string[];
   status?: InstructorStatus;
-  createdAt?: string;
-  updatedAt?: string;
-  locale?: string;
-  translations?: InstructorTranslation[];
-}
-
-/**
- * 강사 필터 입력 타입
- */
-export interface InstructorFilterInput {
-  specialties?: string[];
-  status?: InstructorStatus;
-  searchText?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
  * 페이지네이션을 위한 연결 타입
  */
 export interface InstructorConnection {
-  items: Instructor[];
+  items: ApiInstructor[];
   nextToken?: string | null;
 }
 
@@ -62,40 +33,55 @@ export interface ListInstructorsResult {
  * 단일 강사 조회 쿼리 결과 타입
  */
 export interface GetInstructorResult {
-  getInstructor: Instructor | null;
+  getInstructor: ApiInstructor | null;
 }
 
 /**
- * 강사 검색 쿼리 결과 타입
+ * 강사 검색 쿼리 결과 타입 - API가 없으므로 listInstructors에 필터를 적용하여 사용
  */
 export interface SearchInstructorsResult {
-  searchInstructors: Instructor[];
+  listInstructors: InstructorConnection;
 }
 
 /**
- * 강사 상태 업데이트 뮤테이션 결과 타입
+ * 강사 생성 뮤테이션 결과 타입
  */
-export interface UpdateInstructorStatusResult {
-  updateInstructorStatus: Instructor;
+export interface CreateInstructorResult {
+  createInstructor: ApiInstructor;
 }
 
 /**
- * 강사 프로필 업데이트 뮤테이션 결과 타입
+ * 강사 업데이트 뮤테이션 결과 타입
  */
-export interface UpdateInstructorProfileResult {
-  updateInstructorProfile: Instructor;
+export interface UpdateInstructorResult {
+  updateInstructor: ApiInstructor;
 }
 
 /**
- * 강사 전문 분야 업데이트 뮤테이션 결과 타입
+ * 강사 상태 변경 뮤테이션 결과 타입
  */
-export interface UpdateInstructorSpecialtiesResult {
-  updateInstructorSpecialties: Instructor;
+export interface ChangeInstructorStatusResult {
+  changeInstructorStatus: {
+    id: string;
+    status: InstructorStatus;
+    updatedAt: string;
+  };
 }
 
 /**
- * 강사 번역 정보 업데이트 뮤테이션 결과 타입
+ * 강사 필터 타입 (API에서 사용)
  */
-export interface UpdateInstructorTranslationResult {
-  updateInstructorTranslation: InstructorTranslation;
+export interface ModelInstructorFilterInput {
+  status?: InstructorStatus;
+  name?: {
+    contains?: string;
+  };
+  email?: {
+    contains?: string;
+  };
+  profile?: {
+    contains?: string;
+  };
+  and?: ModelInstructorFilterInput[];
+  or?: ModelInstructorFilterInput[];
 }

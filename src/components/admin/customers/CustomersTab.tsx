@@ -14,11 +14,15 @@ import {
   TextFilter,
 } from '@cloudscape-design/components';
 import { useCustomer, useSearchCustomers } from '@/hooks/useCustomer';
-import { Customer, CustomerInput, CustomerFilter } from '@/models/customers';
+import { Customer, CustomerInput, CustomerFilter } from '@/models/customer';
 import EnhancedTable from '@/components/common/EnhancedTable';
 import BreadcrumbGroup from '@/components/layout/BreadcrumbGroup';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
 
+/**
+ * 관리자 고객 관리 탭 컴포넌트
+ * @description 백엔드 스키마에 맞게 필드명을 customerName으로 통일
+ */
 const CustomersTab: React.FC = () => {
   const { t } = useAppTranslation();
   const [searchFilter, setSearchFilter] = useState<CustomerFilter>({});
@@ -78,10 +82,10 @@ const CustomersTab: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
 
-  // 폼 상태 - 백엔드 스키마에 맞게 변경
+  // 폼 상태
   const [formData, setFormData] = useState<CustomerInput>({
-    name: '', // customerName → name
-    // notes는 백엔드 스키마에 있으면 유지, 없으면 제거
+    customerName: '',
+    notes: ''
   });
 
   // 고객 생성 처리
@@ -118,7 +122,7 @@ const CustomersTab: React.FC = () => {
 
   // 단일 고객 삭제 시작
   const handleDeleteClick = (customer: Customer) => {
-    selectCustomer(customer.id); // customerId → id
+    selectCustomer(customer.id);
     setSelectedCustomers([customer]);
     setShowDeleteConfirm(true);
   };
@@ -126,17 +130,17 @@ const CustomersTab: React.FC = () => {
   // 배치 삭제 시작
   const handleBatchDelete = () => {
     if (selectedCustomers.length === 1) {
-      selectCustomer(selectedCustomers[0].id); // customerId → id
+      selectCustomer(selectedCustomers[0].id);
     }
     setShowDeleteConfirm(true);
   };
 
   // 편집 모달 열기
   const openEditModal = (customer: Customer) => {
-    selectCustomer(customer.id); // customerId → id
+    selectCustomer(customer.id);
     setFormData({
-      name: customer.name || '', // customerName → name
-      // 백엔드 스키마에 다른 필드가 존재한다면 여기에 추가
+      customerName: customer.customerName || '',
+      notes: customer.notes || ''
     });
     setShowEditModal(true);
   };
@@ -144,15 +148,15 @@ const CustomersTab: React.FC = () => {
   // 폼 초기화
   const resetForm = () => {
     setFormData({
-      name: '', // customerName → name
-      // 백엔드 스키마에 다른 필드가 존재한다면 여기에 추가
+      customerName: '',
+      notes: ''
     });
   };
 
-  // 테이블 칼럼 정의 - 백엔드 스키마에 맞게 변경
+  // 테이블 칼럼 정의
   const columnDefinitions = [
     {
-      id: 'name', // customerName → name
+      id: 'customerName',
       header: t('customers_fields_customerName'),
       cell: (item: Customer) => (
         <div style={{
@@ -160,31 +164,37 @@ const CustomersTab: React.FC = () => {
           color: '#0972d3',
           cursor: 'pointer'
         }} onClick={() => openEditModal(item)}>
-          {item.name} {/* customerName → name */}
+          {item.customerName}
         </div>
       ),
-      sortingField: 'name', // customerName → name
+      sortingField: 'customerName',
       width: 180
     },
-    // 백엔드 스키마에 없는 필드는 제거하고 필요한 필드만 유지
+    {
+      id: 'notes',
+      header: t('customers_fields_notes'),
+      cell: (item: Customer) => item.notes || '-',
+      sortingField: 'notes',
+      width: 250
+    },
     {
       id: 'createdAt',
       header: t('customers_fields_createdAt'),
       cell: (item: Customer) => (
         <div style={{ whiteSpace: 'nowrap' }}>
-          {item.createdAt 
+          {item.createdAt
             ? new Date(item.createdAt).toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit', 
-                day: '2-digit'
-              })
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            })
             : '-'
           }
         </div>
       ),
       sortingField: 'createdAt',
       width: 120
-    },    
+    },
     {
       id: 'actions',
       header: t('actions'),
@@ -210,26 +220,27 @@ const CustomersTab: React.FC = () => {
     }
   ];
 
-  // 필터링 속성 - 백엔드 스키마에 맞게 변경
+  // 필터링 속성
   const filteringProperties = [
-    { key: 'name', label: t('customers_fields_customerName') }, // customerName → name
-    // 백엔드 스키마에 없는 필드는 제거
+    { key: 'customerName', label: t('customers_fields_customerName') },
+    { key: 'notes', label: t('customers_fields_notes') }
   ];
 
-  // 테이블 가시성 옵션 - 백엔드 스키마에 맞게 변경
+  // 테이블 가시성 옵션
   const visibleContentOptions = [
     {
       id: 'main',
       label: t('customers_columns_main'),
       options: [
-        { id: 'name', label: t('customers_fields_customerName') }, // customerName → name
+        { id: 'customerName', label: t('customers_fields_customerName') },
+        { id: 'notes', label: t('customers_fields_notes') }
       ]
     },
     {
       id: 'details',
       label: t('customers_columns_details'),
       options: [
-        { id: 'createdAt', label: t('customers_fields_createdAt') },
+        { id: 'createdAt', label: t('customers_fields_createdAt') }
       ]
     }
   ];
@@ -294,13 +305,13 @@ const CustomersTab: React.FC = () => {
               disabled: selectedCustomers.length === 0
             }
           ]}
-          usePropertyFilter={false}
-          filteringProperties={[]}
+          filteringProperties={filteringProperties}
+          usePropertyFilter={true}
           stickyHeader={true}
           stripedRows={true}
           resizableColumns={true}
-          trackBy="id" // customerId → id
-          defaultSortingColumn="name" // customerName → name
+          trackBy="id"
+          defaultSortingColumn="customerName"
           emptyText={{
             title: isSearchActive
               ? t('customers_noSearchResults')
@@ -333,7 +344,7 @@ const CustomersTab: React.FC = () => {
                   variant="primary"
                   onClick={handleCreate}
                   loading={isCreating}
-                  disabled={!formData.name} // customerName → name
+                  disabled={!formData.customerName}
                 >
                   {t('customers_actions_create')}
                 </Button>
@@ -353,12 +364,20 @@ const CustomersTab: React.FC = () => {
                 description={t('customers_fields_customerNameDescription')}
               >
                 <Input
-                  value={formData.name} // customerName → name
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, name: detail.value }))} // customerName → name
+                  value={formData.customerName}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, customerName: detail.value }))}
                 />
               </FormField>
 
-              {/* 백엔드 스키마에 맞게 필요없는 필드 제거하고 필요한 필드만 유지 */}
+              <FormField
+                label={t('customers_fields_notes')}
+                description={t('customers_fields_notesDescription')}
+              >
+                <Textarea
+                  value={formData.notes || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, notes: detail.value }))}
+                />
+              </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
@@ -377,7 +396,7 @@ const CustomersTab: React.FC = () => {
                   variant="primary"
                   onClick={handleEdit}
                   loading={isUpdating}
-                  disabled={!formData.name} // customerName → name
+                  disabled={!formData.customerName}
                 >
                   {t('save')}
                 </Button>
@@ -397,12 +416,20 @@ const CustomersTab: React.FC = () => {
                 description={t('customers_fields_customerNameDescription')}
               >
                 <Input
-                  value={formData.name} // customerName → name
-                  onChange={({ detail }) => setFormData(prev => ({ ...prev, name: detail.value }))} // customerName → name
+                  value={formData.customerName}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, customerName: detail.value }))}
                 />
               </FormField>
 
-              {/* 백엔드 스키마에 맞게 필요없는 필드 제거하고 필요한 필드만 유지 */}
+              <FormField
+                label={t('customers_fields_notes')}
+                description={t('customers_fields_notesDescription')}
+              >
+                <Textarea
+                  value={formData.notes || ''}
+                  onChange={({ detail }) => setFormData(prev => ({ ...prev, notes: detail.value }))}
+                />
+              </FormField>
             </SpaceBetween>
           </Form>
         </Modal>
@@ -432,7 +459,7 @@ const CustomersTab: React.FC = () => {
         >
           <Box>
             {selectedCustomers.length === 1 ?
-              t('customers_modals_delete_confirmation', { name: selectedCustomers[0].name }) : // customerName → name
+              t('customers_modals_delete_confirmation', { name: selectedCustomers[0].customerName }) :
               t('customers_modals_delete_confirmationBatch', { count: selectedCustomers.length })}
           </Box>
         </Modal>
