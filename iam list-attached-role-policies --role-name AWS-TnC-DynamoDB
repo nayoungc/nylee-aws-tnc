@@ -1,0 +1,31 @@
+{
+    "Role": {
+        "Path": "/service-role/",
+        "RoleName": "AWS-TnC-DynamoDB",
+        "RoleId": "AROAYWUYDM3TOKKPAJ7UC",
+        "Arn": "arn:aws:iam::598393186022:role/service-role/AWS-TnC-DynamoDB",
+        "CreateDate": "2025-04-28T23:30:19+00:00",
+        "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Federated": "cognito-identity.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRoleWithWebIdentity",
+                    "Condition": {
+                        "StringEquals": {
+                            "cognito-identity.amazonaws.com:aud": "us-east-1:668fc65c-a9a2-414c-8054-cc8da182e981"
+                        },
+                        "ForAnyValue:StringLike": {
+                            "cognito-identity.amazonaws.com:amr": "authenticated"
+                        }
+                    }
+                }
+            ]
+        },
+        "MaxSessionDuration": 3600,
+        "RoleLastUsed": {}
+    }
+}

@@ -1,43 +1,75 @@
-// src/models/quizCatalog.ts
+// src/models/courseCatalog.ts
 import { z } from 'zod';
 
 /**
- * 퀴즈 유형
+ * 코스 난이도 유형
  */
-export type QuizType = 'pre' | 'post';
+export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 
 /**
- * 퀴즈 문항 항목 스키마
+ * 코스 상태 유형
  */
-export const QuestionItemSchema = z.object({
-  questionId: z.string(),       // 문항 ID (QuestionBank 참조)
-  order: z.number().optional(), // 출제 순서
-  points: z.number(),          // 문항별 배점
+export type CourseStatus = 'ACTIVE' | 'EOL' | 'DRAFT';
+
+/**
+ * 코스 제공 방식
+ */
+export type DeliveryMethod = 'online' | 'offline' | 'hybrid';
+
+/**
+ * 코스 목표 항목 스키마
+ */
+export const CourseObjectiveSchema = z.string();
+
+/**
+ * 코스 카탈로그 스키마 정의
+ * 재사용 가능한 코스 템플릿
+ */
+export const CourseCatalogSchema = z.object({
+  id: z.string(),              // 코스 카탈로그 ID
+  course_name: z.string(),      // 코스 이름
+  course_id: z.string().optional(),    // 코스 코드 (선택사항)
+  level: z.enum(['beginner', 'intermediate', 'advanced']).optional(), // 난이도
+  duration: z.string().optional(),    // 교육 기간
+  delivery_method: z.enum(['online', 'offline', 'hybrid']).optional(), // 교육 방식
+  description: z.string().optional(), // 코스 설명
+  objectives: z.array(CourseObjectiveSchema).optional(), // 학습 목표
+  target_audience: z.string().optional(), // 대상 수강생
+  status: z.enum(['ACTIVE', 'EOL', 'DRAFT']).default('ACTIVE'), // 코스 상태
+  createdAt: z.string().optional(),  // 생성 일시
+  updatedAt: z.string().optional(),  // 업데이트 일시
+  createdBy: z.string().optional(),  // 작성자 ID
+  category: z.string().optional(),   // 카테고리
+  tags: z.array(z.string()).optional(), // 태그
+  prerequisites: z.array(z.string()).optional(), // 선수 과목
+  certification: z.boolean().optional(), // 자격증 과정 여부
+  metadata: z.record(z.any()).optional(), // 추가 메타데이터
 });
 
 /**
- * 퀴즈 카탈로그 스키마 정의
- * 재사용 가능한 퀴즈 템플릿
+ * 코스 카탈로그 입력 스키마
+ * 생성 및 수정 시 사용
  */
-export const QuizCatalogSchema = z.object({
-  quizCatalogId: z.string(),    // 퀴즈 카탈로그 ID
-  title: z.string(),            // 퀴즈 제목
-  description: z.string().optional(), // 퀴즈 설명
-  questionItems: z.array(QuestionItemSchema), // 퀴즈에 포함된 문항 정보
-  totalPoints: z.number(),      // 총 배점 (필수로 변경)
-  defaultTimeLimit: z.number(), // 기본 시간 제한 (분) (필수로 변경)
-  category: z.string(),         // 카테고리 (필수로 변경)
-  difficulty: z.enum(['beginner', 'intermediate', 'advanced']), // 난이도 (필수로 변경)
-  tags: z.array(z.string()),   // 태그 (필수로 변경)
-  isActive: z.boolean().default(true), // 활성 상태
-  metadata: z.record(z.any()).optional(), // 추가 설정
-  type: z.enum(['pre', 'post']).optional(), // 퀴즈 유형 추가
-  createdAt: z.string(),        // 생성 일시 (필수로 변경)
-  updatedAt: z.string(),        // 업데이트 일시 (필수로 변경)
-  createdBy: z.string(),        // 작성자 ID (필수로 변경)
-  courseId: z.string().optional(), // 연결된 코스 ID
-  courseName: z.string().optional(), // 연결된 코스 이름
+export const CourseCatalogInputSchema = CourseCatalogSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
 });
 
-export type QuizCatalog = z.infer<typeof QuizCatalogSchema>;
-export type QuestionItem = z.infer<typeof QuestionItemSchema>;
+/**
+ * 코스 카탈로그 필터 스키마
+ * 검색 및 필터링 시 사용
+ */
+export const CourseCatalogFilterSchema = z.object({
+  text: z.string().optional(),
+  level: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
+  target_audience: z.string().optional(),
+  category: z.string().optional(),
+  status: z.enum(['ACTIVE', 'EOL', 'DRAFT']).optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+// 타입 내보내기
+export type CourseCatalog = z.infer<typeof CourseCatalogSchema>;
+export type CourseCatalogInput = z.infer<typeof CourseCatalogInputSchema>;
+export type CourseCatalogFilter = z.infer<typeof CourseCatalogFilterSchema>;
