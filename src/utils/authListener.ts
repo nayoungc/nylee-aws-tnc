@@ -3,6 +3,17 @@ import { Hub } from 'aws-amplify/utils';
 import { fetchAuthSession, getCurrentUser } from 'aws-amplify/auth';
 import { AuthUser } from 'aws-amplify/auth';
 
+// AuthEventName 대신 직접 이벤트 이름 타입 정의
+type AuthEventType = 
+  | 'signedIn' 
+  | 'signedOut' 
+  | 'tokenRefresh' 
+  | 'tokenRefresh_failure'
+  | 'signInWithRedirect'
+  | 'signInWithRedirect_failure'
+  | 'customOAuthState'
+  | string;
+
 // 인증 이벤트 유형에 따른 데이터 타입 (예시)
 type AuthEventData = {
   user?: AuthUser;
@@ -24,8 +35,8 @@ const logger = new AuthLogger();
 // 인증 이벤트 리스너 설정
 export function setupAuthListener() {
   return Hub.listen('auth', ({ payload }) => {
-    // 이벤트 이름 추출
-    const eventName = payload.event as AuthEventName;
+    // 이벤트 이름 추출 (AuthEventName 대신 string으로 처리)
+    const eventName = payload.event as AuthEventType;
     
     // 이벤트에 따른 데이터 안전하게 처리
     switch (eventName) {
