@@ -3,6 +3,8 @@ const config = {
     Cognito: {
       userPoolId: "us-east-1_zrHUYDT0e",
       //userPoolClientId: "6tdhvgmafd2uuhbc2naqg96g12",
+      identiyPoolId: "us-east-1:668fc65c-a9a2-414c-8054-cc8da182e981",
+      region: "us-east-1"
     }
   },
   Storage: {

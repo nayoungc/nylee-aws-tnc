@@ -2,9 +2,9 @@
 /**
  * 모든 퀴즈 카탈로그 조회
  */
-export const listQuizCatalogItems = /* GraphQL */ `
-  query ListQuizCatalogItems(\$filter: ModelQuizCatalogFilterInput, \$limit: Int, \$nextToken: String) {
-    listQuizCatalogItems(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+export const listQuizCatalogs = /* GraphQL */ `
+  query ListQuizCatalogs(\$filter: QuizCatalogFilterInput, \$limit: Int, \$nextToken: String) {
+    listQuizCatalogs(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
       items {
         quizCatalogId
         title
@@ -20,9 +20,12 @@ export const listQuizCatalogItems = /* GraphQL */ `
         difficulty
         tags
         isActive
+        metadata
         createdAt
         updatedAt
         createdBy
+        courseId
+        courseName
       }
       nextToken
     }
@@ -32,9 +35,9 @@ export const listQuizCatalogItems = /* GraphQL */ `
 /**
  * 특정 퀴즈 카탈로그 조회
  */
-export const getQuizCatalogItem = /* GraphQL */ `
-  query GetQuizCatalogItem(\$quizCatalogId: ID!) {
-    getQuizCatalogItem(quizCatalogId: \$quizCatalogId) {
+export const getQuizCatalog = /* GraphQL */ `
+  query GetQuizCatalog(\$quizCatalogId: ID!) {
+    getQuizCatalog(quizCatalogId: \$quizCatalogId) {
       quizCatalogId
       title
       description
@@ -49,55 +52,12 @@ export const getQuizCatalogItem = /* GraphQL */ `
       difficulty
       tags
       isActive
+      metadata
       createdAt
       updatedAt
       createdBy
-    }
-  }
-`;
-
-/**
- * 퀴즈 카탈로그 검색
- */
-export const searchQuizCatalogItems = /* GraphQL */ `
-  query SearchQuizCatalogItems(\$filter: SearchableQuizCatalogFilterInput, \$limit: Int, \$nextToken: String) {
-    searchQuizCatalogItems(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        quizCatalogId
-        title
-        description
-        totalPoints
-        category
-        difficulty
-        tags
-        isActive
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-/**
- * 태그별 퀴즈 카탈로그 조회
- */
-export const getQuizCatalogItemsByTag = /* GraphQL */ `
-  query GetQuizCatalogItemsByTag(\$tag: String!, \$limit: Int, \$nextToken: String) {
-    getQuizCatalogItemsByTag(tag: \$tag, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        quizCatalogId
-        title
-        description
-        totalPoints
-        category
-        difficulty
-        tags
-        isActive
-        createdAt
-        updatedAt
-      }
-      nextToken
+      courseId
+      courseName
     }
   }
 `;
@@ -105,20 +65,25 @@ export const getQuizCatalogItemsByTag = /* GraphQL */ `
 /**
  * 카테고리별 퀴즈 카탈로그 조회
  */
-export const getQuizCatalogItemsByCategory = /* GraphQL */ `
-  query GetQuizCatalogItemsByCategory(\$category: String!, \$limit: Int, \$nextToken: String) {
-    getQuizCatalogItemsByCategory(category: \$category, limit: \$limit, nextToken: \$nextToken) {
+export const getQuizCatalogsByCategory = /* GraphQL */ `
+  query GetQuizCatalogsByCategory(\$category: String!, \$limit: Int, \$nextToken: String) {
+    getQuizCatalogsByCategory(category: \$category, limit: \$limit, nextToken: \$nextToken) {
       items {
         quizCatalogId
         title
         description
         totalPoints
+        defaultTimeLimit
         category
         difficulty
         tags
         isActive
+        metadata
         createdAt
         updatedAt
+        createdBy
+        courseId
+        courseName
       }
       nextToken
     }
@@ -128,9 +93,93 @@ export const getQuizCatalogItemsByCategory = /* GraphQL */ `
 /**
  * 난이도별 퀴즈 카탈로그 조회
  */
-export const getQuizCatalogItemsByDifficulty = /* GraphQL */ `
-  query GetQuizCatalogItemsByDifficulty(\$difficulty: String!, \$limit: Int, \$nextToken: String) {
-    getQuizCatalogItemsByDifficulty(difficulty: \$difficulty, limit: \$limit, nextToken: \$nextToken) {
+export const getQuizCatalogsByDifficulty = /* GraphQL */ `
+  query GetQuizCatalogsByDifficulty(\$difficulty: Difficulty!, \$limit: Int, \$nextToken: String) {
+    getQuizCatalogsByDifficulty(difficulty: \$difficulty, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        quizCatalogId
+        title
+        description
+        totalPoints
+        defaultTimeLimit
+        category
+        difficulty
+        tags
+        isActive
+        metadata
+        createdAt
+        updatedAt
+        createdBy
+        courseId
+        courseName
+      }
+      nextToken
+    }
+  }
+`;
+
+/**
+ * 작성자별 퀴즈 카탈로그 조회
+ */
+export const getQuizCatalogsByCreator = /* GraphQL */ `
+  query GetQuizCatalogsByCreator(\$createdBy: String!, \$limit: Int, \$nextToken: String) {
+    getQuizCatalogsByCreator(createdBy: \$createdBy, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        quizCatalogId
+        title
+        description
+        totalPoints
+        defaultTimeLimit
+        category
+        difficulty
+        tags
+        isActive
+        metadata
+        createdAt
+        updatedAt
+        createdBy
+        courseId
+        courseName
+      }
+      nextToken
+    }
+  }
+`;
+
+/**
+ * 코스별 퀴즈 카탈로그 조회
+ */
+export const getQuizCatalogsByCourse = /* GraphQL */ `
+  query GetQuizCatalogsByCourse(\$courseId: String!, \$limit: Int, \$nextToken: String) {
+    getQuizCatalogsByCourse(courseId: \$courseId, limit: \$limit, nextToken: \$nextToken) {
+      items {
+        quizCatalogId
+        title
+        description
+        totalPoints
+        defaultTimeLimit
+        category
+        difficulty
+        tags
+        isActive
+        metadata
+        createdAt
+        updatedAt
+        createdBy
+        courseId
+        courseName
+      }
+      nextToken
+    }
+  }
+`;
+
+/**
+ * 태그로 퀴즈 카탈로그 검색
+ */
+export const searchQuizCatalogsByTags = /* GraphQL */ `
+  query SearchQuizCatalogsByTags(\$tags: [String!]!, \$limit: Int, \$nextToken: String) {
+    searchQuizCatalogsByTags(tags: \$tags, limit: \$limit, nextToken: \$nextToken) {
       items {
         quizCatalogId
         title
@@ -140,6 +189,7 @@ export const getQuizCatalogItemsByDifficulty = /* GraphQL */ `
         difficulty
         tags
         isActive
+        metadata
         createdAt
         updatedAt
       }

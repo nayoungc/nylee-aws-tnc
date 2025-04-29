@@ -1,92 +1,136 @@
-// src/graphql/surveyCatalog/types.d.ts
-import { SurveyCatalog } from '@/models/surveyCatalog';
+// src/graphql/surveyCatalog/types.ts
+import { SurveyCatalog, QuestionItem, QuestionType, DeployOption, DeployTiming } from '@/models/surveyCatalog';
 
 // 쿼리 결과 타입
-export interface ListSurveyCatalogItemsResult {
-  listSurveyCatalogItems: {
-    items: SurveyCatalog[];
-    nextToken?: string | null;
-  };
+export interface GetSurveyCatalogResult {
+  getSurveyCatalog: SurveyCatalog | null;
 }
 
-export interface GetSurveyCatalogItemResult {
-  getSurveyCatalogItem: SurveyCatalog | null;
+export interface ListSurveyCatalogsResult {
+  listSurveyCatalogs: SurveyCatalogConnection;
 }
 
-export interface SearchSurveyCatalogItemsResult {
-  searchSurveyCatalogItems: {
-    items: SurveyCatalog[];
-    nextToken?: string | null;
-  };
+export interface GetSurveyCatalogsByCategoryResult {
+  getSurveyCatalogsByCategory: SurveyCatalogConnection;
 }
 
-export interface GetSurveyCatalogItemsByTagResult {
-  getSurveyCatalogItemsByTag: {
-    items: SurveyCatalog[];
-    nextToken?: string | null;
-  };
+export interface GetSurveyCatalogsByCreatorResult {
+  getSurveyCatalogsByCreator: SurveyCatalogConnection;
 }
 
-export interface GetSurveyCatalogItemsByCategoryResult {
-  getSurveyCatalogItemsByCategory: {
-    items: SurveyCatalog[];
-    nextToken?: string | null;
-  };
+export interface GetSurveyCatalogsByCourseResult {
+  getSurveyCatalogsByCourse: SurveyCatalogConnection;
+}
+
+export interface SearchSurveyCatalogsByTagsResult {
+  searchSurveyCatalogsByTags: SurveyCatalogConnection;
+}
+
+export interface SurveyCatalogConnection {
+  items: SurveyCatalog[];
+  nextToken?: string | null;
+}
+
+// 뮤테이션 입력 타입
+export interface SurveyCatalogInput {
+  title: string;
+  description?: string;
+  category: string;
+  tags: string[];
+  isActive?: boolean;
+  metadata?: Record<string, any>;
+  courseId?: string;
+  courseName?: string;
+}
+
+export interface UpdateSurveyCatalogInput {
+  surveyCatalogId: string;
+  title?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  isActive?: boolean;
+  metadata?: Record<string, any>;
+  courseId?: string;
+  courseName?: string;
+}
+
+export interface QuestionItemInput {
+  id: string;
+  type: QuestionType;
+  content: string;
+  required: boolean;
+  options?: QuestionOptionInput[];
+  order?: number;
+}
+
+export interface QuestionOptionInput {
+  value: string;
+  label: string;
+}
+
+export interface DeploySurveyInput {
+  surveyCatalogId: string;
+  deployOption: DeployOption;
+  deployWhen?: DeployTiming;
+  startDate: string;
+  endDate: string;
+  notifyParticipants?: boolean;
+  sendReminders?: boolean;
+  sendReportToAdmin?: boolean;
 }
 
 // 뮤테이션 결과 타입
-export interface CreateSurveyCatalogItemResult {
-  createSurveyCatalogItem: SurveyCatalog;
+export interface CreateSurveyCatalogResult {
+  createSurveyCatalog: SurveyCatalog;
 }
 
-export interface UpdateSurveyCatalogItemResult {
-  updateSurveyCatalogItem: SurveyCatalog;
+export interface UpdateSurveyCatalogResult {
+  updateSurveyCatalog: SurveyCatalog;
 }
 
-export interface DeleteSurveyCatalogItemResult {
-  deleteSurveyCatalogItem: {
-    surveyCatalogId: string;
-  };
+export interface DeleteSurveyCatalogResult {
+  deleteSurveyCatalog: boolean;
+}
+
+export interface AddQuestionItemsResult {
+  addQuestionItems: SurveyCatalog;
+}
+
+export interface RemoveQuestionItemsResult {
+  removeQuestionItems: SurveyCatalog;
+}
+
+export interface UpdateQuestionOrderResult {
+  updateQuestionOrder: SurveyCatalog;
+}
+
+export interface ActivateSurveyCatalogResult {
+  activateSurveyCatalog: SurveyCatalog;
+}
+
+export interface DeactivateSurveyCatalogResult {
+  deactivateSurveyCatalog: SurveyCatalog;
+}
+
+export interface DeploySurveyResult {
+  deploySurvey: SurveyCatalog;
 }
 
 // 필터 타입
-export interface ModelSurveyCatalogFilterInput {
-  surveyCatalogId?: ModelIDInput;
+export interface SurveyCatalogFilterInput {
   title?: ModelStringInput;
   category?: ModelStringInput;
   tags?: ModelStringInput;
   isActive?: ModelBooleanInput;
-  and?: ModelSurveyCatalogFilterInput[];
-  or?: ModelSurveyCatalogFilterInput[];
-  not?: ModelSurveyCatalogFilterInput;
+  createdBy?: ModelStringInput;
+  courseId?: ModelIDInput;
+  and?: SurveyCatalogFilterInput[];
+  or?: SurveyCatalogFilterInput[];
+  not?: SurveyCatalogFilterInput;
 }
 
-export interface SearchableSurveyCatalogFilterInput {
-  surveyCatalogId?: SearchableIDFilterInput;
-  title?: SearchableStringFilterInput;
-  description?: SearchableStringFilterInput;
-  category?: SearchableStringFilterInput;
-  tags?: SearchableStringFilterInput;
-  and?: SearchableSurveyCatalogFilterInput[];
-  or?: SearchableSurveyCatalogFilterInput[];
-  not?: SearchableSurveyCatalogFilterInput;
-}
-
-// 기본 필터 타입
-interface ModelIDInput {
-  ne?: string;
-  eq?: string;
-  le?: string;
-  lt?: string;
-  ge?: string;
-  gt?: string;
-  contains?: string;
-  notContains?: string;
-  between?: [string, string];
-  beginsWith?: string;
-}
-
-interface ModelStringInput {
+export interface ModelStringInput {
   ne?: string;
   eq?: string;
   le?: string;
@@ -98,18 +142,34 @@ interface ModelStringInput {
   between?: [string, string];
   beginsWith?: string;
   attributeExists?: boolean;
-  attributeType?: string;
+  attributeType?: ModelAttributeTypes;
   size?: ModelSizeInput;
 }
 
-interface ModelBooleanInput {
+export interface ModelBooleanInput {
   ne?: boolean;
   eq?: boolean;
   attributeExists?: boolean;
-  attributeType?: string;
+  attributeType?: ModelAttributeTypes;
 }
 
-interface ModelSizeInput {
+export interface ModelIDInput {
+  ne?: string;
+  eq?: string;
+  le?: string;
+  lt?: string;
+  ge?: string;
+  gt?: string;
+  contains?: string;
+  notContains?: string;
+  between?: [string, string];
+  beginsWith?: string;
+  attributeExists?: boolean;
+  attributeType?: ModelAttributeTypes;
+  size?: ModelSizeInput;
+}
+
+export interface ModelSizeInput {
   ne?: number;
   eq?: number;
   le?: number;
@@ -119,26 +179,15 @@ interface ModelSizeInput {
   between?: [number, number];
 }
 
-interface SearchableIDFilterInput {
-  ne?: string;
-  eq?: string;
-  match?: string;
-  matchPhrase?: string;
-  matchPhrasePrefix?: string;
-  multiMatch?: string;
-  exists?: boolean;
-  wildcard?: string;
-  regexp?: string;
-}
-
-interface SearchableStringFilterInput {
-  ne?: string;
-  eq?: string;
-  match?: string;
-  matchPhrase?: string;
-  matchPhrasePrefix?: string;
-  multiMatch?: string;
-  exists?: boolean;
-  wildcard?: string;
-  regexp?: string;
+export enum ModelAttributeTypes {
+  binary = 'binary',
+  binarySet = 'binarySet',
+  bool = 'bool',
+  list = 'list',
+  map = 'map',
+  number = 'number',
+  numberSet = 'numberSet',
+  string = 'string',
+  stringSet = 'stringSet',
+  _null = '_null'
 }

@@ -1,4 +1,3 @@
-// src/components/common/EnhancedTable.tsx
 import React, { useState } from 'react';
 import {
   Table,
@@ -10,7 +9,8 @@ import {
   CollectionPreferences,
   SpaceBetween,
   TextFilter,
-  PropertyFilterProps
+  PropertyFilterProps,
+  TableProps
 } from '@cloudscape-design/components';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
 
@@ -29,12 +29,16 @@ interface EnhancedFilteringProperty {
   label: string;
 }
 
+// 테이블 변형 타입
+type TableVariant = TableProps.Variant; // "container" | "borderless" | "embedded" | "stacked" | "full-page"
+
 interface EnhancedTableProps {
   title: string;
   description?: string;
   columnDefinitions: any[];
   items: any[];
   loading?: boolean;
+  loadingText?: string;
   selectionType?: "multi" | "single";
   selectedItems?: any[];
   onSelectionChange?: (items: any[]) => void;
@@ -59,12 +63,16 @@ interface EnhancedTableProps {
   defaultSortingColumn?: string;
   defaultSortingDescending?: boolean;
   emptyText?: EnhancedTableEmptyText;
+  empty?: string;
   stickyHeader?: boolean;
   stripedRows?: boolean;
   resizableColumns?: boolean;
   visibleContentOptions?: any[];
   preferences?: boolean;
   trackBy?: string;
+  variant?: TableVariant;
+  // 올바른 형식의 columnDisplay 타입 정의 
+  columnDisplay?: readonly TableProps.ColumnDisplayProperties[];
 }
 
 const EnhancedTable: React.FC<EnhancedTableProps> = ({
@@ -73,6 +81,7 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
   columnDefinitions,
   items,
   loading = false,
+  loadingText,
   selectionType,
   selectedItems = [],
   onSelectionChange = () => {},
@@ -84,12 +93,15 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
   defaultSortingColumn,
   defaultSortingDescending = false,
   emptyText,
+  empty,
   stickyHeader = false,
   stripedRows = false,
   resizableColumns = false,
   visibleContentOptions,
   preferences = false,
-  trackBy = 'id'
+  trackBy = 'id',
+  variant,
+  columnDisplay
 }) => {
   const { t } = useAppTranslation();
   
@@ -102,7 +114,6 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
   const [selectedVisibleContent, setSelectedVisibleContent] = useState<any[]>(
     visibleContentOptions ? visibleContentOptions.map(group => group.options.map((o: any) => o.id)).flat() : []
   );
-  // 추가: 필터링을 위한 상태
   const [filteringQuery, setFilteringQuery] = useState<PropertyFilterProps.Query>({ tokens: [], operation: "and" });
 
   // 테이블 헤더 렌더링
@@ -223,12 +234,26 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
     operators: [':', '!:', '=', '!='] as const
   }));
 
+  // 로딩 텍스트 - 제공된 값 또는 다국어 기본값 사용
+  const finalLoadingText = loadingText || t('common:loading', '로딩 중...');
+
+  // selectedVisibleContent를 기반으로 ColumnDisplayProperties 배열 생성
+  let effectiveColumnDisplay: readonly TableProps.ColumnDisplayProperties[] | undefined = columnDisplay;
+  
+  // selectedVisibleContent를 기반으로 기본 columnDisplay 생성
+  if (!effectiveColumnDisplay && selectedVisibleContent.length > 0) {
+    effectiveColumnDisplay = selectedVisibleContent.map(id => ({
+      id,
+      visible: true
+    }));
+  }
+
   return (
     <Table
       columnDefinitions={columnDefinitions}
       items={sortedItems}
       loading={loading}
-      loadingText={t('loading')}
+      loadingText={finalLoadingText} // 다국어 지원 로딩 텍스트
       selectionType={selectionType}
       selectedItems={selectedItems}
       onSelectionChange={({ detail }) => onSelectionChange(detail.selectedItems)}
@@ -239,7 +264,6 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
             i18nStrings={{
               filteringAriaLabel: t('table_filtering_aria_label'),
               filteringPlaceholder: t('table_filtering_placeholder'),
-              // filteringCounterText 제거 (지원되지 않음)
               groupValuesText: t('table_filtering_group_values', { count: 0 }).replace('0', '{count}'),
               operationAndText: t('table_filtering_operation_and'),
               operationOrText: t('table_filtering_operation_or'),
@@ -248,7 +272,6 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
               operatorEqualsText: t('equals'),
               operatorDoesNotEqualText: t('not_equals')
             }}
-            // 별도의 countText 속성으로 이동
             countText={t('table_filtering_count_text', { count: items.length })}
             filteringProperties={formattedFilteringProperties}
             query={filteringQuery}
@@ -295,9 +318,11 @@ const EnhancedTable: React.FC<EnhancedTableProps> = ({
       stickyHeader={stickyHeader}
       stripedRows={stripedRows}
       resizableColumns={resizableColumns}
-      visibleColumns={selectedVisibleContent}
+      columnDisplay={effectiveColumnDisplay}
       trackBy={trackBy}
+      variant={variant}
       empty={
+        empty ? empty : 
         emptyText ? (
           <Box textAlign="center" color="inherit">
             <Box variant="h2" padding="s">

@@ -1,153 +1,93 @@
-// src/graphql/quizCatalog/types.d.ts
-import { QuizCatalog } from '@/models/quizCatalog';
-
-// 쿼리 결과 타입
-export interface ListQuizCatalogItemsResult {
-  listQuizCatalogItems: {
-    items: QuizCatalog[];
-    nextToken?: string | null;
-  };
+// types.ts
+export enum Difficulty {
+  BEGINNER = 'beginner',
+  INTERMEDIATE = 'intermediate',
+  ADVANCED = 'advanced'
 }
 
-export interface GetQuizCatalogItemResult {
-  getQuizCatalogItem: QuizCatalog | null;
+export interface QuestionItem {
+  questionId: string;
+  order?: number; // order 추가
+  points: number;
 }
 
-export interface SearchQuizCatalogItemsResult {
-  searchQuizCatalogItems: {
-    items: QuizCatalog[];
-    nextToken?: string | null;
-  };
+export interface QuizCatalog {
+  quizCatalogId: string;
+  title: string;
+  description?: string;
+  questionItems: QuestionItem[];
+  totalPoints: number;
+  defaultTimeLimit: number;
+  category: string;
+  difficulty: Difficulty;
+  tags: string[];
+  isActive: boolean;
+  metadata?: Record<string, any>; // metadata 필드 추가
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  courseId?: string;
+  courseName?: string;
 }
 
-export interface GetQuizCatalogItemsByTagResult {
-  getQuizCatalogItemsByTag: {
-    items: QuizCatalog[];
-    nextToken?: string | null;
-  };
+export interface QuizCatalogInput {
+  title: string;
+  description?: string;
+  questionItems: QuestionItemInput[];
+  defaultTimeLimit: number;
+  category: string;
+  difficulty: Difficulty;
+  tags: string[];
+  isActive: boolean;
+  metadata?: Record<string, any>; // metadata 필드 추가
+  courseId?: string;
+  courseName?: string;
 }
 
-export interface GetQuizCatalogItemsByCategoryResult {
-  getQuizCatalogItemsByCategory: {
-    items: QuizCatalog[];
-    nextToken?: string | null;
-  };
+export interface QuestionItemInput {
+  questionId: string;
+  order?: number; // order 추가
+  points: number;
 }
 
-export interface GetQuizCatalogItemsByDifficultyResult {
-  getQuizCatalogItemsByDifficulty: {
-    items: QuizCatalog[];
-    nextToken?: string | null;
-  };
+export interface UpdateQuizCatalogInput {
+  quizCatalogId: string;
+  title?: string;
+  description?: string;
+  questionItems?: QuestionItemInput[];
+  defaultTimeLimit?: number;
+  category?: string;
+  difficulty?: Difficulty;
+  tags?: string[];
+  isActive?: boolean;
+  metadata?: Record<string, any>; // metadata 필드 추가
+  courseId?: string;
+  courseName?: string;
 }
 
-// 뮤테이션 결과 타입
-export interface CreateQuizCatalogItemResult {
-  createQuizCatalogItem: QuizCatalog;
+export interface QuizCatalogFilterInput {
+  category?: string;
+  difficulty?: Difficulty;
+  createdBy?: string;
+  courseId?: string;
+  searchTerm?: string;
+  isActive?: boolean;
+  tags?: string[]; // tags 필터링 추가
 }
 
-export interface UpdateQuizCatalogItemResult {
-  updateQuizCatalogItem: QuizCatalog;
+export interface QuizCatalogConnection {
+  items: QuizCatalog[];
+  nextToken?: string;
 }
 
-export interface DeleteQuizCatalogItemResult {
-  deleteQuizCatalogItem: {
-    quizCatalogId: string;
-  };
+// 퀴즈 유형 추가 (src/models/quizCatalog.ts에서 정의됨)
+export type QuizType = 'pre' | 'post';
+
+// 퀴즈 타입 인터페이스 추가
+export interface QuizTypeDetails {
+  type?: QuizType;
+  // 기타 타입 관련 속성 추가 가능
 }
 
-// 필터 타입
-export interface ModelQuizCatalogFilterInput {
-  quizCatalogId?: ModelIDInput;
-  title?: ModelStringInput;
-  category?: ModelStringInput;
-  difficulty?: ModelStringInput;
-  tags?: ModelStringInput;
-  isActive?: ModelBooleanInput;
-  and?: ModelQuizCatalogFilterInput[];
-  or?: ModelQuizCatalogFilterInput[];
-  not?: ModelQuizCatalogFilterInput;
-}
-
-export interface SearchableQuizCatalogFilterInput {
-  quizCatalogId?: SearchableIDFilterInput;
-  title?: SearchableStringFilterInput;
-  description?: SearchableStringFilterInput;
-  category?: SearchableStringFilterInput;
-  difficulty?: SearchableStringFilterInput;
-  tags?: SearchableStringFilterInput;
-  and?: SearchableQuizCatalogFilterInput[];
-  or?: SearchableQuizCatalogFilterInput[];
-  not?: SearchableQuizCatalogFilterInput;
-}
-
-// 기본 필터 타입
-interface ModelIDInput {
-  ne?: string;
-  eq?: string;
-  le?: string;
-  lt?: string;
-  ge?: string;
-  gt?: string;
-  contains?: string;
-  notContains?: string;
-  between?: [string, string];
-  beginsWith?: string;
-}
-
-interface ModelStringInput {
-  ne?: string;
-  eq?: string;
-  le?: string;
-  lt?: string;
-  ge?: string;
-  gt?: string;
-  contains?: string;
-  notContains?: string;
-  between?: [string, string];
-  beginsWith?: string;
-  attributeExists?: boolean;
-  attributeType?: string;
-  size?: ModelSizeInput;
-}
-
-interface ModelBooleanInput {
-  ne?: boolean;
-  eq?: boolean;
-  attributeExists?: boolean;
-  attributeType?: string;
-}
-
-interface ModelSizeInput {
-  ne?: number;
-  eq?: number;
-  le?: number;
-  lt?: number;
-  ge?: number;
-  gt?: number;
-  between?: [number, number];
-}
-
-interface SearchableIDFilterInput {
-  ne?: string;
-  eq?: string;
-  match?: string;
-  matchPhrase?: string;
-  matchPhrasePrefix?: string;
-  multiMatch?: string;
-  exists?: boolean;
-  wildcard?: string;
-  regexp?: string;
-}
-
-interface SearchableStringFilterInput {
-  ne?: string;
-  eq?: string;
-  match?: string;
-  matchPhrase?: string;
-  matchPhrasePrefix?: string;
-  multiMatch?: string;
-  exists?: boolean;
-  wildcard?: string;
-  regexp?: string;
-}
+// QuizCatalog에 타입 정보를 포함시키려면 아래처럼 확장할 수 있음
+export interface QuizCatalogWithType extends QuizCatalog, QuizTypeDetails {}

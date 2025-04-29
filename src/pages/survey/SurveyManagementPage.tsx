@@ -46,7 +46,7 @@ const SurveyManagementPage: React.FC = () => {
                 },
                 {
                   id: 'questionBank',
-                  label: t('navigation:admin.tabs.surveyQuestionBank', '설문 문항 관리'),
+                  label: t('navigation:admin.tabs.surveyQuestionBank', '설문 문항 은행'),
                   content: <SurveyQuestionBankTab />
                 },
                 {

@@ -1,49 +1,43 @@
-// src/models/courseCatalog.ts
+// src/models/quizCatalog.ts
 import { z } from 'zod';
 
-// 기존 타입 정의 앞에 CourseCatalogStatus 열거형 추가
-export const CourseCatalogStatusEnum = z.enum([
-  'ACTIVE',
-  'EOL'
-]);
-export type CourseCatalogStatus = z.infer<typeof CourseCatalogStatusEnum>;
+/**
+ * 퀴즈 유형
+ */
+export type QuizType = 'pre' | 'post';
 
-// 기존 타입 정의에 status 필드 추가
-export const CourseCatalogSchema = z.object({
-  id: z.string(),
-  course_name: z.string(),
-  course_id: z.string().optional(),
-  level: z.string().optional(),
-  duration: z.string().optional(),
-  delivery_method: z.string().optional(),
-  description: z.string().optional(),
-  objectives: z.array(z.string()).optional(),
-  target_audience: z.string().optional(),
-  status: CourseCatalogStatusEnum.default('ACTIVE'), // 상태 필드 추가
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional()
+/**
+ * 퀴즈 문항 항목 스키마
+ */
+export const QuestionItemSchema = z.object({
+  questionId: z.string(),       // 문항 ID (QuestionBank 참조)
+  order: z.number().optional(), // 출제 순서
+  points: z.number(),          // 문항별 배점
 });
-export type CourseCatalog = z.infer<typeof CourseCatalogSchema>;
 
-// 입력 타입에도 status 추가
-export const CourseCatalogInputSchema = z.object({
-  course_name: z.string(),
-  course_id: z.string().optional(),
-  level: z.string().optional(),
-  duration: z.string().optional(),
-  delivery_method: z.string().optional(),
-  description: z.string().optional(),
-  objectives: z.array(z.string()).optional(),
-  target_audience: z.string().optional(),
-  status: CourseCatalogStatusEnum.optional() // 선택적 상태 필드
+/**
+ * 퀴즈 카탈로그 스키마 정의
+ * 재사용 가능한 퀴즈 템플릿
+ */
+export const QuizCatalogSchema = z.object({
+  quizCatalogId: z.string(),    // 퀴즈 카탈로그 ID
+  title: z.string(),            // 퀴즈 제목
+  description: z.string().optional(), // 퀴즈 설명
+  questionItems: z.array(QuestionItemSchema), // 퀴즈에 포함된 문항 정보
+  totalPoints: z.number(),      // 총 배점 (필수로 변경)
+  defaultTimeLimit: z.number(), // 기본 시간 제한 (분) (필수로 변경)
+  category: z.string(),         // 카테고리 (필수로 변경)
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']), // 난이도 (필수로 변경)
+  tags: z.array(z.string()),   // 태그 (필수로 변경)
+  isActive: z.boolean().default(true), // 활성 상태
+  metadata: z.record(z.any()).optional(), // 추가 설정
+  type: z.enum(['pre', 'post']).optional(), // 퀴즈 유형 추가
+  createdAt: z.string(),        // 생성 일시 (필수로 변경)
+  updatedAt: z.string(),        // 업데이트 일시 (필수로 변경)
+  createdBy: z.string(),        // 작성자 ID (필수로 변경)
+  courseId: z.string().optional(), // 연결된 코스 ID
+  courseName: z.string().optional(), // 연결된 코스 이름
 });
-export type CourseCatalogInput = z.infer<typeof CourseCatalogInputSchema>;
 
-// 필터 타입에도 status 추가
-export const CourseCatalogFilterSchema = z.object({
-  text: z.string().optional(),
-  level: z.string().optional(),
-  target_audience: z.string().optional(),
-  status: CourseCatalogStatusEnum.optional() // 상태로 필터링 가능
-});
-export type CourseCatalogFilter = z.infer<typeof CourseCatalogFilterSchema>;
+export type QuizCatalog = z.infer<typeof QuizCatalogSchema>;
+export type QuestionItem = z.infer<typeof QuestionItemSchema>;

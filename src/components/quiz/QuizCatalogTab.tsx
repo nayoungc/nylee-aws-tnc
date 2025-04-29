@@ -1,4 +1,4 @@
-// src/components/admin/quiz/QuizCatalogTab.tsx
+// src/components/quiz/QuizCatalogTab.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -10,8 +10,12 @@ import {
   Input,
   Select,
   Textarea,
-  Toggle
+  Toggle,
+  ColumnLayout,
+  Table
 } from '@cloudscape-design/components';
+import Board, { BoardProps } from "@cloudscape-design/board-components/board";
+import BoardItem from "@cloudscape-design/board-components/board-item";
 import EnhancedTable from '@/components/common/EnhancedTable';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
 
@@ -20,7 +24,7 @@ interface QuizCatalog {
   quizCatalogId: string;
   title: string;
   description: string;
-  questionItems: any[];
+  questionItems: QuestionItem[];
   totalPoints: number;
   defaultTimeLimit: number;
   category: string;
@@ -30,7 +34,31 @@ interface QuizCatalog {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+  courseId?: string;
+  courseName?: string;
 }
+
+// 퀴즈 아이템 타입 (questionItems 배열의 요소)
+interface QuestionItem {
+  questionId: string;
+  points: number;
+}
+
+// 퀴즈 문제 타입
+interface Question {
+  questionId: string;
+  content: string;
+  questionType: 'multipleChoice' | 'trueFalse' | 'essay' | 'matching' | 'coding' | string;
+  points: number;
+  tags: string[];
+  difficulty: 'easy' | 'medium' | 'hard' | string;
+}
+
+// 보드 아이템 데이터 타입
+type BoardItemData = Question;
+
+// 보드 아이템 타입 (Board 컴포넌트의 요구사항에 맞춤)
+type BoardItem = BoardProps.Item<BoardItemData>;
 
 const QuizCatalogTab: React.FC = () => {
   const { t } = useAppTranslation();
@@ -39,6 +67,11 @@ const QuizCatalogTab: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [editQuiz, setEditQuiz] = useState<QuizCatalog | null>(null);
+  const [questionManagementVisible, setQuestionManagementVisible] = useState<boolean>(false);
+  const [currentQuizForQuestions, setCurrentQuizForQuestions] = useState<QuizCatalog | null>(null);
+  const [availableQuestions, setAvailableQuestions] = useState<Question[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
+  const [boardItems, setBoardItems] = useState<BoardItem[]>([]);
 
   // 샘플 데이터 로드
   useEffect(() => {
@@ -60,7 +93,9 @@ const QuizCatalogTab: React.FC = () => {
         isActive: true,
         createdAt: '2023-09-01',
         updatedAt: '2023-09-01',
-        createdBy: 'admin'
+        createdBy: 'admin',
+        courseId: 'aws-101',
+        courseName: 'AWS 입문'
       },
       {
         quizCatalogId: '2',
@@ -79,13 +114,86 @@ const QuizCatalogTab: React.FC = () => {
         isActive: true,
         createdAt: '2023-09-10',
         updatedAt: '2023-09-10',
-        createdBy: 'admin'
+        createdBy: 'admin',
+        courseId: 'aws-security',
+        courseName: 'AWS 보안'
       }
     ];
     
     setQuizzes(sampleQuizzes);
     setLoading(false);
   }, []);
+
+  // 샘플 문제 데이터 로드 - 문제 관리 모달용
+  useEffect(() => {
+    if (currentQuizForQuestions) {
+      const sampleAvailableQuestions: Question[] = [
+        {
+          questionId: '1',
+          content: 'AWS IAM의 주요 구성 요소가 아닌 것은?',
+          questionType: 'multipleChoice',
+          points: 10,
+          tags: ['AWS', 'IAM', '보안'],
+          difficulty: 'medium'
+        },
+        {
+          questionId: '2',
+          content: 'Amazon S3 스토리지 클래스 중 가장 비용 효율적인 장기 보관용 클래스는?',
+          questionType: 'multipleChoice',
+          points: 10,
+          tags: ['AWS', 'S3', '스토리지'],
+          difficulty: 'medium'
+        },
+        {
+          questionId: '3',
+          content: '클라우드 컴퓨팅의 주요 이점은 무엇인지 설명하시오.',
+          questionType: 'essay',
+          points: 20,
+          tags: ['클라우드', '기초'],
+          difficulty: 'medium'
+        },
+        {
+          questionId: '4',
+          content: 'AWS에서 서버리스 아키텍처를 구성하는 주요 서비스는?',
+          questionType: 'multipleChoice',
+          points: 15,
+          tags: ['AWS', '서버리스'],
+          difficulty: 'hard'
+        },
+        {
+          questionId: '5',
+          content: 'EC2 인스턴스 유형 중 메모리 최적화 인스턴스는?',
+          questionType: 'multipleChoice',
+          points: 10,
+          tags: ['AWS', 'EC2'],
+          difficulty: 'easy'
+        }
+      ];
+      
+      // 현재 퀴즈에 이미 포함된 문제들은 제외
+      const filteredQuestions = sampleAvailableQuestions.filter(question => 
+        !currentQuizForQuestions.questionItems.some(item => item.questionId === question.questionId)
+      );
+      
+      setAvailableQuestions(filteredQuestions);
+      
+      // 현재 퀴즈에 포함된 문제들을 보드 아이템으로 변환
+      const currentQuestionIds = currentQuizForQuestions.questionItems.map(q => q.questionId);
+      const selectedQuestionsData = sampleAvailableQuestions.filter(q => 
+        currentQuestionIds.includes(q.questionId)
+      );
+      
+      // 보드 아이템 생성
+      const boardItemsData = selectedQuestionsData.map((question) => ({
+        id: question.questionId,
+        columnSpan: 2,
+        rowSpan: 1,
+        data: question
+      }));
+      
+      setBoardItems(boardItemsData);
+    }
+  }, [currentQuizForQuestions]);
 
   // 테이블 컬럼 정의
   const columnDefinitions = [
@@ -95,6 +203,12 @@ const QuizCatalogTab: React.FC = () => {
       cell: (item: QuizCatalog) => item.title,
       sortingField: 'title',
       isRowHeader: true,
+    },
+    {
+      id: 'courseName',
+      header: t('admin:quizCatalog.columns.course', '연결된 과정'),
+      cell: (item: QuizCatalog) => item.courseName || '-',
+      sortingField: 'courseName',
     },
     {
       id: 'category',
@@ -117,7 +231,7 @@ const QuizCatalogTab: React.FC = () => {
     },
     {
       id: 'questionCount',
-      header: t('admin:quizCatalog.columns.questionCount', '문항 수'),
+      header: t('admin:quizCatalog.columns.questionCount', '문제 수'),
       cell: (item: QuizCatalog) => item.questionItems.length,
       sortingField: 'questionCount',
     },
@@ -162,7 +276,7 @@ const QuizCatalogTab: React.FC = () => {
             variant="link" 
             onClick={() => handleManageQuestions(item)}
           >
-            {t('admin:quizCatalog.actions.manageQuestions', '문항 관리')}
+            {t('admin:quizCatalog.actions.manageQuestions', '문제 관리')}
           </Button>
           <Button 
             variant="link" 
@@ -186,6 +300,10 @@ const QuizCatalogTab: React.FC = () => {
     {
       key: 'title',
       label: t('admin:quizCatalog.columns.title', '퀴즈 제목')
+    },
+    {
+      key: 'courseName',
+      label: t('admin:quizCatalog.columns.course', '연결된 과정')
     },
     {
       key: 'category',
@@ -221,9 +339,9 @@ const QuizCatalogTab: React.FC = () => {
   };
 
   const handleManageQuestions = (quiz: QuizCatalog) => {
-    // 퀴즈 문항 관리 로직 구현
-    console.log('문항 관리:', quiz);
-    // 여기서 별도의 문항 관리 모달을 열거나 관리 페이지로 이동
+    // 퀴즈 문제 관리 모달 열기
+    setCurrentQuizForQuestions(quiz);
+    setQuestionManagementVisible(true);
   };
 
   const handlePreviewQuiz = (quiz: QuizCatalog) => {
@@ -259,16 +377,86 @@ const QuizCatalogTab: React.FC = () => {
       const newQuiz = {
         ...formData,
         quizCatalogId: Date.now().toString(), // 임시 ID 생성
-        questionItems: [], // 초기에는 문항 없음
+        questionItems: [], // 초기에는 문제 없음
         createdAt: new Date().toISOString().split('T')[0],
         updatedAt: new Date().toISOString().split('T')[0],
         createdBy: 'admin', // 현재 로그인한 사용자로 설정해야 함
-        totalPoints: 0 // 문항이 없으므로 초기 배점은 0
+        totalPoints: 0 // 문제가 없으므로 초기 배점은 0
       };
       setQuizzes([...quizzes, newQuiz]);
     }
     setModalVisible(false);
   };
+
+  const handleQuestionManagementSave = () => {
+    // 현재 보드 아이템을 기반으로 퀴즈 문제 저장
+    if (currentQuizForQuestions) {
+      // 보드 아이템에서 문제 ID와 배점 추출
+      const questionItems = boardItems.map(item => ({
+        questionId: item.id,
+        points: item.data.points
+      }));
+      
+      // 총 배점 계산 - 수정: boardItems에서 바로 계산
+      const totalPoints = boardItems.reduce((sum, item) => sum + item.data.points, 0);
+      
+      // 퀴즈 업데이트
+      const updatedQuiz = {
+        ...currentQuizForQuestions,
+        questionItems,
+        totalPoints,
+        updatedAt: new Date().toISOString().split('T')[0]
+      };
+      
+      // 퀴즈 목록 업데이트
+      setQuizzes(quizzes.map(q => 
+        q.quizCatalogId === currentQuizForQuestions.quizCatalogId ? updatedQuiz : q
+      ));
+      
+      // 모달 닫기
+      setQuestionManagementVisible(false);
+      setCurrentQuizForQuestions(null);
+      setBoardItems([]);
+    }
+  };
+
+  const handleAddSelectedQuestions = () => {
+    if (selectedQuestions.length > 0) {
+      // 새로운 보드 아이템 생성
+      const newBoardItems: BoardItem[] = selectedQuestions.map(question => ({
+        id: question.questionId,
+        rowSpan: 1,
+        columnSpan: 2,
+        data: question
+      }));
+      
+      // 중복 문제 제거하면서 보드 아이템 추가
+      const updatedBoardItems: BoardItem[] = [
+        ...boardItems.filter(item => 
+          !newBoardItems.some(newItem => newItem.id === item.id)
+        ),
+        ...newBoardItems
+      ];
+      
+      setBoardItems(updatedBoardItems);
+      setSelectedQuestions([]);
+    }
+  };
+
+  const handleRemoveSelectedBoardItems = () => {
+    // 선택한 보드 아이템 제거 로직
+    // (현재 구현은 없지만, 보드 컴포넌트에 선택 기능을 추가할 수 있음)
+  };
+
+  // 샘플 과정 목록
+  const courseOptions = [
+    { value: 'aws-101', label: 'AWS 입문' },
+    { value: 'aws-solutions-architect', label: 'AWS 솔루션 아키텍트' },
+    { value: 'aws-developer', label: 'AWS 개발자' },
+    { value: 'aws-sysops', label: 'AWS SysOps' },
+    { value: 'aws-security', label: 'AWS 보안' },
+    { value: 'cloud-intro', label: '클라우드 컴퓨팅 개론' }
+  ];
 
   // 퀴즈 템플릿 편집/생성 모달
   const renderQuizModal = () => {
@@ -323,6 +511,30 @@ const QuizCatalogTab: React.FC = () => {
                   setEditQuiz({ ...editQuiz, description: detail.value });
                 }
               }}
+            />
+          </FormField>
+
+          <FormField
+            label={t('admin:quizCatalog.form.course', '연결된 과정')}
+            description={t('admin:quizCatalog.form.courseDesc', '이 퀴즈가 연결될 교육 과정')}
+          >
+            <Select
+              selectedOption={
+                editQuiz?.courseId 
+                  ? { value: editQuiz.courseId, label: editQuiz.courseName || editQuiz.courseId } 
+                  : null
+              }
+              options={courseOptions}
+              onChange={({ detail }) => {
+                if (editQuiz) {
+                  setEditQuiz({ 
+                    ...editQuiz, 
+                    courseId: detail.selectedOption?.value,
+                    courseName: detail.selectedOption?.label
+                  });
+                }
+              }}
+              placeholder="과정 선택(선택사항)"
             />
           </FormField>
 
@@ -429,6 +641,219 @@ const QuizCatalogTab: React.FC = () => {
     );
   };
 
+  // 문제 관리 모달 (드래그 앤 드롭으로 문제 구성)
+  const renderQuestionManagementModal = () => {
+    // 타입 매핑 정의
+    const typeMap: Record<string, string> = {
+      multipleChoice: '객관식',
+      trueFalse: '진위형',
+      essay: '서술형',
+      matching: '짝맞추기',
+      coding: '코딩'
+    };
+    
+    const difficultyMap: Record<string, string> = {
+      easy: '쉬움',
+      medium: '보통',
+      hard: '어려움'
+    };
+
+    return (
+      <Modal
+        visible={questionManagementVisible}
+        onDismiss={() => setQuestionManagementVisible(false)}
+        header={
+          <Header variant="h2" description={currentQuizForQuestions?.title}>
+            {t('admin:quizCatalog.questionModal.title', '퀴즈 문제 관리')}
+          </Header>
+        }
+        footer={
+          <Box float="right">
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button variant="link" onClick={() => setQuestionManagementVisible(false)}>
+                {t('common:cancel', '취소')}
+              </Button>
+              <Button variant="primary" onClick={handleQuestionManagementSave}>
+                {t('common:save', '저장')}
+              </Button>
+            </SpaceBetween>
+          </Box>
+        }
+        size="large"
+      >
+        <SpaceBetween size="l">
+          <ColumnLayout columns={2}>
+            {/* 문제 은행 (왼쪽 패널) */}
+            <SpaceBetween size="m">
+              <Header variant="h3">
+                {t('admin:quizCatalog.questionModal.availableQuestions', '사용 가능한 문제')}
+              </Header>
+              <Table
+                columnDefinitions={[
+                  {
+                    id: 'content',
+                    header: t('admin:questionBank.columns.content', '문제 내용'),
+                    cell: (item: Question) => item.content,
+                    sortingField: 'content',
+                  },
+                  {
+                    id: 'questionType',
+                    header: t('admin:questionBank.columns.questionType', '유형'),
+                    cell: (item: Question) => {
+                      return typeMap[item.questionType] || item.questionType;
+                    },
+                  },
+                  {
+                    id: 'difficulty',
+                    header: t('admin:questionBank.columns.difficulty', '난이도'),
+                    cell: (item: Question) => {
+                      return difficultyMap[item.difficulty] || item.difficulty;
+                    },
+                  },
+                  {
+                    id: 'points',
+                    header: t('admin:questionBank.columns.points', '배점'),
+                    cell: (item: Question) => item.points,
+                  },
+                ]}
+                items={availableQuestions}
+                selectionType="multi"
+                selectedItems={selectedQuestions}
+                onSelectionChange={({ detail }) => setSelectedQuestions(detail.selectedItems)}
+                loading={loading}
+                loadingText="로딩 중..."
+                empty="사용 가능한 문제가 없습니다"
+                header={<SpaceBetween
+                  direction="horizontal" 
+                  size="xs" 
+                  alignItems="center"
+                >
+                  <span>총 {availableQuestions.length}개의 문제</span>
+                  <Button 
+                    iconName="add-plus" 
+                    disabled={selectedQuestions.length === 0}
+                    onClick={handleAddSelectedQuestions}
+                  >
+                    {t('admin:quizCatalog.questionModal.addSelected', '선택 추가')}
+                  </Button>
+                </SpaceBetween>}
+                trackBy="questionId"
+                visibleColumns={['content', 'questionType', 'difficulty', 'points']}
+                stickyHeader={true}
+                resizableColumns={true}
+              />
+            </SpaceBetween>
+
+            {/* 선택된 문제 (오른쪽 패널) - 드래그 앤 드롭으로 순서 조정 가능 */}
+            <SpaceBetween size="m">
+              <Box>
+                <Header variant="h3">
+                  {t('admin:quizCatalog.questionModal.selectedQuestions', '선택된 문제')}
+                </Header>
+                <div style={{ marginTop: '8px' }}>
+                  {t('admin:quizCatalog.questionModal.dragHint', '문제를 드래그하여 순서를 조정하세요')}
+                </div>
+              </Box>
+
+              <Board<BoardItemData>
+                renderItem={(item) => (
+                  <BoardItem
+                    header={
+                      <Header actions={
+                        <Button
+                          iconName="remove"
+                          variant="icon"
+                          onClick={() => {
+                            // 아이템 제거
+                            setBoardItems(boardItems.filter(i => i.id !== item.id));
+                          }}
+                        />
+                      }>
+                        {item.data.content.length > 50 ? item.data.content.substring(0, 50) + '...' : item.data.content}
+                      </Header>
+                    }
+                    i18nStrings={{
+                      dragHandleAriaLabel: "드래그 핸들",
+                      dragHandleAriaDescription:
+                        "Space 또는 Enter 키를 눌러 드래그 모드를 활성화하고, 방향키로 이동, 다시 Space 또는 Enter 키를 눌러 확정하거나 Escape 키를 눌러 취소합니다.",
+                      resizeHandleAriaLabel: "크기 조절 핸들",
+                      resizeHandleAriaDescription:
+                        "Space 또는 Enter 키를 눌러 크기 조절 모드를 활성화하고, 방향키로 크기 조절, 다시 Space 또는 Enter 키를 눌러 확정하거나 Escape 키를 눌러 취소합니다."
+                    }}
+                  >
+                    <SpaceBetween size="s">
+                      <div>유형: {typeMap[item.data.questionType] || item.data.questionType}</div>
+                      <div>난이도: {difficultyMap[item.data.difficulty] || item.data.difficulty}</div>
+                      <div>배점: 
+                        <Input
+                          type="number"
+                          value={item.data.points.toString()}
+                          onChange={({ detail }) => {
+                            // 배점 업데이트
+                            const updatedItems = boardItems.map(i => {
+                              if (i.id === item.id) {
+                                return {
+                                  ...i,
+                                  data: {
+                                    ...i.data,
+                                    points: parseInt(detail.value) || i.data.points
+                                  }
+                                };
+                              }
+                              return i;
+                            });
+                            setBoardItems(updatedItems);
+                          }}
+                        />
+                      </div>
+                    </SpaceBetween>
+                  </BoardItem>
+                )}
+                onItemsChange={(event) => {
+                  // TypeScript는 readonly 배열을 변경 가능한 배열에 할당할 수 없으므로
+                  // 새 배열로 복사해야 함
+                  const newItems = [...event.detail.items] as BoardItem[];
+                  setBoardItems(newItems);
+                }}
+                items={boardItems}
+                empty={
+                  <Box textAlign="center" color="inherit" padding="l">
+                    <b>문제가 없습니다</b>
+                    <Box padding={{ bottom: "s" }} variant="p" color="inherit">
+                      왼쪽에서 문제를 선택하여 추가하세요
+                    </Box>
+                  </Box>
+                }
+                i18nStrings={{
+                  liveAnnouncementDndStarted: (operationType) =>
+                    operationType === "resize" ? "크기 조절 시작" : "드래그 시작",
+                  liveAnnouncementDndItemReordered: () => "아이템 위치 이동됨",
+                  liveAnnouncementDndItemResized: () => "아이템 크기 조절됨",
+                  liveAnnouncementDndItemInserted: () => "아이템 삽입됨",
+                  liveAnnouncementDndCommitted: (operationType) =>
+                    operationType === "resize" ? "크기 조절 완료" : "드래그 완료",
+                  liveAnnouncementDndDiscarded: (operationType) =>
+                    operationType === "resize" ? "크기 조절 취소됨" : "드래그 취소됨",
+                  liveAnnouncementItemRemoved: () => "아이템 제거됨",
+                  navigationAriaLabel: "보드 네비게이션",
+                  navigationAriaDescription: "빈 공간이 아닌 곳을 클릭하여 포커스를 이동할 수 있습니다",
+                  navigationItemAriaLabel: (item) => item ? item.data.content : "빈 영역"
+                }}
+              />
+              
+              <Box>
+                <SpaceBetween direction="horizontal" size="xs">
+                  <div>{t('admin:quizCatalog.questionModal.totalCount', '총 문제 수')}: {boardItems.length}개</div>
+                  <div>{t('admin:quizCatalog.questionModal.totalPoints', '총 배점')}: {boardItems.reduce((sum, item) => sum + item.data.points, 0)}점</div>
+                </SpaceBetween>
+              </Box>
+            </SpaceBetween>
+          </ColumnLayout>
+        </SpaceBetween>
+      </Modal>
+    );
+  };
+
   return (
     <Box padding="l">
       <SpaceBetween size="l">
@@ -482,6 +907,7 @@ const QuizCatalogTab: React.FC = () => {
         />
         
         {renderQuizModal()}
+        {renderQuestionManagementModal()}
       </SpaceBetween>
     </Box>
   );

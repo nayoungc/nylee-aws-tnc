@@ -10,7 +10,7 @@ import {
 } from '@cloudscape-design/components';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAppTranslation } from '@/hooks/useAppTranslation';
-import QuestionBankTab from '@/components/quiz/QuestionBankTab';
+import QuizQuestionBankTab from '@/components/quiz/QuizQuestionBankTab';
 import QuizCatalogTab from '@/components/quiz/QuizCatalogTab';
 import QuizDashboardTab from '@/components/quiz/QuizDashboardTab';
 
@@ -46,8 +46,8 @@ const QuizManagementPage: React.FC = () => {
                 },
                 {
                   id: 'questionBank',
-                  label: t('navigation:admin.tabs.questionBank', '문항 은행'),
-                  content: <QuestionBankTab />
+                  label: t('navigation:admin.tabs.questionBank', '퀴즈 문제 은행'),
+                  content: <QuizQuestionBankTab />
                 },
                 {
                   id: 'quizCatalog',
