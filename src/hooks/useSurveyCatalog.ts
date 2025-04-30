@@ -6,7 +6,23 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient, QueryFunctionContext } from '@tanstack/react-query';
-import surveyApi from '@/services/api/surveyApi';
+import {
+  fetchSurveyCatalogs,
+  fetchSurveyCatalog,
+  createSurveyCatalog as createSurveyCatalogApi,
+  updateSurveyCatalog as updateSurveyCatalogApi,
+  deleteSurveyCatalog as deleteSurveyCatalogApi,
+  addQuestionItems as addQuestionItemsApi,
+  removeQuestionItems as removeQuestionItemsApi,
+  updateQuestionOrder as updateQuestionOrderApi,
+  activateSurveyCatalog as activateSurveyCatalogApi,
+  deactivateSurveyCatalog as deactivateSurveyCatalogApi,
+  deploySurvey as deploySurveyApi,
+  fetchSurveyCatalogsByCategory as fetchSurveyCatalogsByCategoryApi,
+  fetchSurveyCatalogsByCourse as fetchSurveyCatalogsByCourseApi,
+  searchSurveyCatalogsByTags as searchSurveyCatalogsByTagsApi
+} from '@/services/api/surveyCatalogApi';
+
 import {
   SurveyCatalog,
   SurveyCatalogInput,
@@ -33,8 +49,7 @@ export const useSurveyCatalog = () => {
   } = useQuery({
     queryKey: ['surveyCatalogs'],
     queryFn: async () => {
-      const response = await surveyApi.getSurveyCatalogs();
-      return response;
+      return await fetchSurveyCatalogs();
     },
     staleTime: 5 * 60 * 1000 // 5분
   });
@@ -46,7 +61,7 @@ export const useSurveyCatalog = () => {
       // queryKey[1]에서 ID 추출
       const id = queryKey[1];
       if (!id) return null;
-      return surveyApi.getSurveyCatalog(id);
+      return await fetchSurveyCatalog(id);
     },
     enabled: !!selectedId,
     staleTime: 5 * 60 * 1000 // 5분
@@ -54,7 +69,7 @@ export const useSurveyCatalog = () => {
 
   // 설문조사 템플릿 생성 뮤테이션
   const createMutation = useMutation({
-    mutationFn: surveyApi.createSurveyCatalog,
+    mutationFn: createSurveyCatalogApi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
     }
@@ -62,7 +77,7 @@ export const useSurveyCatalog = () => {
 
   // 설문조사 템플릿 업데이트 뮤테이션
   const updateMutation = useMutation({
-    mutationFn: surveyApi.updateSurveyCatalog,
+    mutationFn: updateSurveyCatalogApi,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (data?.surveyCatalogId) {
@@ -73,7 +88,7 @@ export const useSurveyCatalog = () => {
 
   // 설문조사 템플릿 삭제 뮤테이션
   const deleteMutation = useMutation({
-    mutationFn: surveyApi.deleteSurveyCatalog,
+    mutationFn: deleteSurveyCatalogApi,
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (selectedId === id) {
@@ -85,7 +100,7 @@ export const useSurveyCatalog = () => {
   // 문항 추가 뮤테이션
   const addQuestionItemsMutation = useMutation({
     mutationFn: ({ surveyCatalogId, questionItems }: { surveyCatalogId: string; questionItems: QuestionItemInput[] }) => 
-      surveyApi.addQuestionItems(surveyCatalogId, questionItems),
+      addQuestionItemsApi(surveyCatalogId, questionItems),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (data?.surveyCatalogId) {
@@ -97,7 +112,7 @@ export const useSurveyCatalog = () => {
   // 문항 제거 뮤테이션
   const removeQuestionItemsMutation = useMutation({
     mutationFn: ({ surveyCatalogId, questionIds }: { surveyCatalogId: string; questionIds: string[] }) => 
-      surveyApi.removeQuestionItems(surveyCatalogId, questionIds),
+      removeQuestionItemsApi(surveyCatalogId, questionIds),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (data?.surveyCatalogId) {
@@ -109,7 +124,7 @@ export const useSurveyCatalog = () => {
   // 문항 순서 업데이트 뮤테이션
   const updateQuestionOrderMutation = useMutation({
     mutationFn: ({ surveyCatalogId, questionIds }: { surveyCatalogId: string; questionIds: string[] }) => 
-      surveyApi.updateQuestionOrder(surveyCatalogId, questionIds),
+      updateQuestionOrderApi(surveyCatalogId, questionIds),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (data?.surveyCatalogId) {
@@ -120,7 +135,7 @@ export const useSurveyCatalog = () => {
 
   // 설문조사 템플릿 활성화 뮤테이션
   const activateMutation = useMutation({
-    mutationFn: surveyApi.activateSurveyCatalog,
+    mutationFn: activateSurveyCatalogApi,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (data?.surveyCatalogId) {
@@ -131,7 +146,7 @@ export const useSurveyCatalog = () => {
 
   // 설문조사 템플릿 비활성화 뮤테이션
   const deactivateMutation = useMutation({
-    mutationFn: surveyApi.deactivateSurveyCatalog,
+    mutationFn: deactivateSurveyCatalogApi,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (data?.surveyCatalogId) {
@@ -142,7 +157,7 @@ export const useSurveyCatalog = () => {
 
   // 설문조사 배포 뮤테이션
   const deployMutation = useMutation({
-    mutationFn: surveyApi.deploySurvey,
+    mutationFn: deploySurveyApi,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['surveyCatalogs'] });
       if (data?.surveyCatalogId) {
@@ -241,7 +256,7 @@ export const useSurveyCatalogsByCategory = (category: string, enabled = true) =>
     queryFn: async ({ queryKey }: QueryFunctionContext<[string, string, string]>) => {
       // queryKey[2]에서 카테고리 추출
       const categoryValue = queryKey[2];
-      return surveyApi.getSurveyCatalogsByCategory(categoryValue);
+      return await fetchSurveyCatalogsByCategoryApi(categoryValue);
     },
     enabled: !!category && enabled,
     staleTime: 5 * 60 * 1000 // 5분
@@ -260,7 +275,7 @@ export const useSurveyCatalogsByCourse = (courseId: string, enabled = true) => {
     queryFn: async ({ queryKey }: QueryFunctionContext<[string, string, string]>) => {
       // queryKey[2]에서 과정 ID 추출
       const courseIdValue = queryKey[2];
-      return surveyApi.getSurveyCatalogsByCourse(courseIdValue);
+      return await fetchSurveyCatalogsByCourseApi(courseIdValue);
     },
     enabled: !!courseId && enabled,
     staleTime: 5 * 60 * 1000 // 5분
@@ -279,7 +294,7 @@ export const useSearchSurveyCatalogsByTags = (tags: string[], enabled = true) =>
     queryFn: async ({ queryKey }: QueryFunctionContext<[string, string, string[]]>) => {
       // queryKey[2]에서 태그 목록 추출
       const tagValues = queryKey[2];
-      return surveyApi.searchSurveyCatalogsByTags(tagValues);
+      return await searchSurveyCatalogsByTagsApi(tagValues);
     },
     enabled: tags.length > 0 && enabled,
     staleTime: 5 * 60 * 1000 // 5분

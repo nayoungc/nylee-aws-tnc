@@ -1,108 +1,81 @@
-// src/graphql/surveyResponse/types.d.ts
-import { SurveyResponse } from '@/models/surveyResponse';
+// src/graphql/surveyQuestionBank/types.ts
+export interface ApiSurveyQuestionBank {
+  questionId: string;
+  text: string;
+  type: string;
+  options?: string[] | null;
+  tags?: string[] | null;
+  category?: string | null;
+  metadata?: Record<string, any> | null;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string | null;
+}
 
-// 쿼리 결과 타입
-export interface ListSurveyResponsesResult {
-  listSurveyResponses: {
-    items: SurveyResponse[];
+export interface ListSurveyQuestionBankItemsResult {
+  listSurveyQuestionBankItems?: {
+    items: ApiSurveyQuestionBank[];
+    nextToken?: string | null;
+  };
+  getSurveyQuestionBankItemsByTag?: {
+    items: ApiSurveyQuestionBank[];
+    nextToken?: string | null;
+  };
+  getSurveyQuestionBankItemsByType?: {
+    items: ApiSurveyQuestionBank[];
+    nextToken?: string | null;
+  };
+  searchSurveyQuestionBankItems?: {
+    items: ApiSurveyQuestionBank[];
     nextToken?: string | null;
   };
 }
 
-export interface GetSurveyResponseResult {
-  getSurveyResponse: SurveyResponse | null;
+export interface GetSurveyQuestionBankItemResult {
+  getSurveyQuestionBankItem: ApiSurveyQuestionBank | null;
 }
 
-export interface GetSurveyResponsesByCourseSurveyIdResult {
-  getSurveyResponsesByCourseSurveyId: {
-    items: SurveyResponse[];
-    nextToken?: string | null;
-  };
+export interface CreateSurveyQuestionBankItemInput {
+  text: string;
+  type: string;
+  options?: string[] | null;
+  tags?: string[] | null;
+  category?: string | null;
+  metadata?: Record<string, any> | null;
+  createdBy?: string | null;
 }
 
-export interface GetSurveyResponsesByStudentIdResult {
-  getSurveyResponsesByStudentId: {
-    items: SurveyResponse[];
-    nextToken?: string | null;
-  };
+export interface UpdateSurveyQuestionBankItemInput {
+  questionId: string;
+  text?: string;
+  type?: string;
+  options?: string[] | null;
+  tags?: string[] | null;
+  category?: string | null;
+  metadata?: Record<string, any> | null;
 }
 
-export interface GetSurveyResponseStatisticsResult {
-  getSurveyResponseStatistics: {
-    courseSurveyId: string;
-    totalResponses: number;
-    completionRate: number;
-    questionStatistics: Array<{
-      questionId: string;
-      responseCounts: Record<string, number>; // 응답 옵션별 집계
-      averageRating?: number; // 평점 질문인 경우
-      textResponses?: string[]; // 자유 응답인 경우
-    }>;
-  };
+export interface CreateSurveyQuestionBankItemResult {
+  createSurveyQuestionBankItem: ApiSurveyQuestionBank;
 }
 
-// 뮤테이션 결과 타입
-export interface CreateSurveyResponseResult {
-  createSurveyResponse: SurveyResponse;
+export interface UpdateSurveyQuestionBankItemResult {
+  updateSurveyQuestionBankItem: ApiSurveyQuestionBank;
 }
 
-export interface UpdateSurveyResponseResult {
-  updateSurveyResponse: SurveyResponse;
+export interface DeleteSurveyQuestionBankItemResult {
+  deleteSurveyQuestionBankItem: {
+    questionId: string;
+  } | null;
 }
 
-export interface DeleteSurveyResponseResult {
-  deleteSurveyResponse: {
-    responseId: string;
-  };
-}
-
-// 필터 타입
-export interface ModelSurveyResponseFilterInput {
-  responseId?: ModelIDInput;
-  courseSurveyId?: ModelIDInput;
-  studentId?: ModelIDInput;
-  submittedAt?: ModelStringInput;
-  and?: ModelSurveyResponseFilterInput[];
-  or?: ModelSurveyResponseFilterInput[];
-  not?: ModelSurveyResponseFilterInput;
-}
-
-// 기본 필터 타입
-interface ModelIDInput {
-  ne?: string;
-  eq?: string;
-  le?: string;
-  lt?: string;
-  ge?: string;
-  gt?: string;
-  contains?: string;
-  notContains?: string;
-  between?: [string, string];
-  beginsWith?: string;
-}
-
-interface ModelStringInput {
-  ne?: string;
-  eq?: string;
-  le?: string;
-  lt?: string;
-  ge?: string;
-  gt?: string;
-  contains?: string;
-  notContains?: string;
-  between?: [string, string];
-  beginsWith?: string;
-  attributeExists?: boolean;
-  attributeType?: string;
-  size?: ModelSizeInput;
-}
-
-interface ModelSizeInput {
-  ne?: number;
-  eq?: number;
-  le?: number;
-  lt?: number;
-  ge?: number;
-  gt?: number;
-  between?: [number, number];
+export interface ModelSurveyQuestionBankFilterInput {
+  questionId?: { eq?: string; contains?: string };
+  text?: { eq?: string; contains?: string };
+  type?: { eq?: string; contains?: string };
+  category?: { eq?: string; contains?: string };
+  tags?: { contains?: string };
+  and?: ModelSurveyQuestionBankFilterInput[];
+  or?: ModelSurveyQuestionBankFilterInput[];
+  not?: ModelSurveyQuestionBankFilterInput;
 }

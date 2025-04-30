@@ -21,6 +21,13 @@ export interface ListCoursesResult {
 }
 
 /**
+ * GraphQL 응답 타입 가드 함수
+ */
+function isGraphQLResult(result: any): result is { data: any } {
+  return result && typeof result === 'object' && 'data' in result;
+}
+
+/**
  * 과정 API 서비스
  */
 const courseApi = {
@@ -36,7 +43,10 @@ const courseApi = {
         variables: { courseId },
       });
       
-      return response.data?.getCourse || null;
+      if (isGraphQLResult(response)) {
+        return response.data?.getCourse || null;
+      }
+      return null;
     } catch (error: any) {
       console.error('Error fetching course:', error);
       throw new Error(i18n.t('errors.failedToGetCourse', { error: error.message }));
@@ -61,7 +71,10 @@ const courseApi = {
         variables: { filter, limit, nextToken },
       });
       
-      return response.data?.listCourses || { items: [] };
+      if (isGraphQLResult(response)) {
+        return response.data?.listCourses || { items: [] };
+      }
+      return { items: [] };
     } catch (error: any) {
       console.error('Error listing courses:', error);
       throw new Error(i18n.t('errors.failedToListCourses', { error: error.message }));
@@ -79,6 +92,10 @@ const courseApi = {
         query: mutations.createCourse,
         variables: { input },
       });
+      
+      if (!isGraphQLResult(response)) {
+        throw new Error('Failed to create course: Invalid response format');
+      }
       
       const createdCourse = response.data?.createCourse;
       if (!createdCourse) {
@@ -105,6 +122,10 @@ const courseApi = {
         variables: { courseId, input },
       });
       
+      if (!isGraphQLResult(response)) {
+        throw new Error('Failed to update course: Invalid response format');
+      }
+      
       const updatedCourse = response.data?.updateCourse;
       if (!updatedCourse) {
         throw new Error('Failed to update course: No data returned');
@@ -129,7 +150,10 @@ const courseApi = {
         variables: { courseId },
       });
       
-      return response.data?.deleteCourse || null;
+      if (isGraphQLResult(response)) {
+        return response.data?.deleteCourse || null;
+      }
+      return null;
     } catch (error: any) {
       console.error('Error deleting course:', error);
       throw new Error(i18n.t('errors.failedToDeleteCourse', { error: error.message }));

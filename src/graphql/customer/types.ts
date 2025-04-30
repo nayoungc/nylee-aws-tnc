@@ -1,6 +1,4 @@
 // src/graphql/customer/types.ts
-import { Customer } from '@/models/customer';
-
 /**
  * GraphQL API에서 반환되는 고객 타입
  * @description 백엔드 스키마와 일치하는 고객 데이터 타입

@@ -1,104 +1,128 @@
-// src/graphql/surveyResponse/queries.ts
-/**
- * 모든 설문조사 응답 조회
- */
-export const listSurveyResponses = /* GraphQL */ `
-  query ListSurveyResponses(\$filter: ModelSurveyResponseFilterInput, \$limit: Int, \$nextToken: String) {
-    listSurveyResponses(filter: \$filter, limit: \$limit, nextToken: \$nextToken) {
+export const listSurveyQuestionBankItems = /* GraphQL */ `
+  query ListSurveyQuestionBankItems(
+    \$filter: ModelSurveyQuestionBankFilterInput
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    listSurveyQuestionBankItems(
+      filter: \$filter
+      limit: \$limit
+      nextToken: \$nextToken
+    ) {
       items {
-        responseId
-        courseSurveyId
-        studentId
-        answers {
-          questionId
-          answer
-        }
-        submittedAt
-        completionTime
+        questionId
+        text
+        type
+        options
+        tags
+        category
+        metadata
         createdAt
         updatedAt
+        createdBy
       }
       nextToken
     }
   }
 `;
 
-/**
- * 특정 설문조사 응답 조회
- */
-export const getSurveyResponse = /* GraphQL */ `
-  query GetSurveyResponse(\$responseId: ID!) {
-    getSurveyResponse(responseId: \$responseId) {
-      responseId
-      courseSurveyId
-      studentId
-      answers {
-        questionId
-        answer
-      }
-      submittedAt
-      completionTime
+export const getSurveyQuestionBankItem = /* GraphQL */ `
+  query GetSurveyQuestionBankItem(\$questionId: ID!) {
+    getSurveyQuestionBankItem(questionId: \$questionId) {
+      questionId
+      text
+      type
+      options
+      tags
+      category
+      metadata
       createdAt
       updatedAt
+      createdBy
     }
   }
 `;
 
-/**
- * 특정 코스-설문조사의 모든 응답 조회
- */
-export const getSurveyResponsesByCourseSurveyId = /* GraphQL */ `
-  query GetSurveyResponsesByCourseSurveyId(\$courseSurveyId: ID!, \$limit: Int, \$nextToken: String) {
-    getSurveyResponsesByCourseSurveyId(courseSurveyId: \$courseSurveyId, limit: \$limit, nextToken: \$nextToken) {
+export const getSurveyQuestionBankItemsByTag = /* GraphQL */ `
+  query GetSurveyQuestionBankItemsByTag(
+    \$tag: String!
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    getSurveyQuestionBankItemsByTag(
+      tag: \$tag
+      limit: \$limit
+      nextToken: \$nextToken
+    ) {
       items {
-        responseId
-        courseSurveyId
-        studentId
-        submittedAt
-        completionTime
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-/**
- * 특정 학생의 설문조사 응답 조회
- */
-export const getSurveyResponsesByStudentId = /* GraphQL */ `
-  query GetSurveyResponsesByStudentId(\$studentId: ID!, \$limit: Int, \$nextToken: String) {
-    getSurveyResponsesByStudentId(studentId: \$studentId, limit: \$limit, nextToken: \$nextToken) {
-      items {
-        responseId
-        courseSurveyId
-        studentId
-        submittedAt
-        completionTime
-        createdAt
-        updatedAt
-      }
-      nextToken
-    }
-  }
-`;
-
-/**
- * 설문조사 응답 통계 조회
- */
-export const getSurveyResponseStatistics = /* GraphQL */ `
-  query GetSurveyResponseStatistics(\$courseSurveyId: ID!) {
-    getSurveyResponseStatistics(courseSurveyId: \$courseSurveyId) {
-      courseSurveyId
-      totalResponses
-      completionRate
-      questionStatistics {
         questionId
-        responseCounts
-        averageRating
-        textResponses
+        text
+        type
+        options
+        tags
+        category
+        metadata
+        createdAt
+        updatedAt
+        createdBy
       }
+      nextToken
+    }
+  }
+`;
+
+export const getSurveyQuestionBankItemsByType = /* GraphQL */ `
+  query GetSurveyQuestionBankItemsByType(
+    \$type: String!
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    getSurveyQuestionBankItemsByType(
+      type: \$type
+      limit: \$limit
+      nextToken: \$nextToken
+    ) {
+      items {
+        questionId
+        text
+        type
+        options
+        tags
+        category
+        metadata
+        createdAt
+        updatedAt
+        createdBy
+      }
+      nextToken
+    }
+  }
+`;
+
+export const searchSurveyQuestionBankItems = /* GraphQL */ `
+  query SearchSurveyQuestionBankItems(
+    \$text: String!
+    \$limit: Int
+    \$nextToken: String
+  ) {
+    searchSurveyQuestionBankItems(
+      text: \$text
+      limit: \$limit
+      nextToken: \$nextToken
+    ) {
+      items {
+        questionId
+        text
+        type
+        options
+        tags
+        category
+        metadata
+        createdAt
+        updatedAt
+        createdBy
+      }
+      nextToken
     }
   }
 `;
